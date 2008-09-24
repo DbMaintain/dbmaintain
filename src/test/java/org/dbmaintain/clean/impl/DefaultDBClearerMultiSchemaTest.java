@@ -23,14 +23,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.PropertyUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.database.SQLUnitils;
+import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
@@ -66,7 +66,7 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		Properties configuration = new ConfigurationLoader().loadConfiguration();
+		Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
 		String databaseDialect = PropertyUtils.getString(PROPKEY_DATABASE_DIALECT, configuration);
 		this.disabled = !"hsqldb".equals(databaseDialect);
 		if (disabled) {
@@ -159,20 +159,20 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	private void createTestDatabase() throws Exception {
 		// create schemas
-		SQLUnitils.executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
-		SQLUnitils.executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
+		SQLTestUtils.executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
+		SQLTestUtils.executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
 		// create tables
-		SQLUnitils.executeUpdate("create table TEST_TABLE (col1 varchar(100))", dataSource);
-		SQLUnitils.executeUpdate("create table SCHEMA_A.TEST_TABLE (col1 varchar(100))", dataSource);
-		SQLUnitils.executeUpdate("create table SCHEMA_B.TEST_TABLE (col1 varchar(100))", dataSource);
+		SQLTestUtils.executeUpdate("create table TEST_TABLE (col1 varchar(100))", dataSource);
+		SQLTestUtils.executeUpdate("create table SCHEMA_A.TEST_TABLE (col1 varchar(100))", dataSource);
+		SQLTestUtils.executeUpdate("create table SCHEMA_B.TEST_TABLE (col1 varchar(100))", dataSource);
 		// create views
-		SQLUnitils.executeUpdate("create view TEST_VIEW as select col1 from TEST_TABLE", dataSource);
-		SQLUnitils.executeUpdate("create view SCHEMA_A.TEST_VIEW as select col1 from SCHEMA_A.TEST_TABLE", dataSource);
-		SQLUnitils.executeUpdate("create view SCHEMA_B.TEST_VIEW as select col1 from SCHEMA_B.TEST_TABLE", dataSource);
+		SQLTestUtils.executeUpdate("create view TEST_VIEW as select col1 from TEST_TABLE", dataSource);
+		SQLTestUtils.executeUpdate("create view SCHEMA_A.TEST_VIEW as select col1 from SCHEMA_A.TEST_TABLE", dataSource);
+		SQLTestUtils.executeUpdate("create view SCHEMA_B.TEST_VIEW as select col1 from SCHEMA_B.TEST_TABLE", dataSource);
 		// create sequences
-		SQLUnitils.executeUpdate("create sequence TEST_SEQUENCE", dataSource);
-		SQLUnitils.executeUpdate("create sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
-		SQLUnitils.executeUpdate("create sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
+		SQLTestUtils.executeUpdate("create sequence TEST_SEQUENCE", dataSource);
+		SQLTestUtils.executeUpdate("create sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
+		SQLTestUtils.executeUpdate("create sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
 	}
 
 
@@ -181,20 +181,20 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	private void dropTestDatabase() throws Exception {
 		// drop sequences
-		SQLUnitils.executeUpdateQuietly("drop sequence TEST_SEQUENCE", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop sequence TEST_SEQUENCE", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
 		// drop views
-		SQLUnitils.executeUpdateQuietly("drop view TEST_VIEW", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop view SCHEMA_A.TEST_VIEW", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop view SCHEMA_B.TEST_VIEW", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop view TEST_VIEW", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop view SCHEMA_A.TEST_VIEW", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop view SCHEMA_B.TEST_VIEW", dataSource);
 		// drop tables
-		SQLUnitils.executeUpdateQuietly("drop table TEST_TABLE", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop table SCHEMA_A.TEST_TABLE", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop table SCHEMA_B.TEST_TABLE", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop table TEST_TABLE", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop table SCHEMA_A.TEST_TABLE", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop table SCHEMA_B.TEST_TABLE", dataSource);
 		// drop schemas
-		SQLUnitils.executeUpdateQuietly("drop schema SCHEMA_A", dataSource);
-		SQLUnitils.executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_A", dataSource);
+		SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
 	}
 
 

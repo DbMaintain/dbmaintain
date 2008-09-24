@@ -15,24 +15,24 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.util.DatabaseModuleConfigUtils.PROPKEY_DATABASE_DIALECT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DatabaseModuleConfigUtils;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.PropertyUtils;
+import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.database.SQLUnitils;
-
-import javax.sql.DataSource;
-
-import java.util.Properties;
 
 /**
  * Test class for the DBCleaner with multiple schemas.
@@ -62,8 +62,8 @@ public class DefaultDBCleanerMultiSchemaTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new ConfigurationLoader().loadConfiguration();
-        this.disabled = !"hsqldb".equals(PropertyUtils.getString(PROPKEY_DATABASE_DIALECT, configuration));
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
+        this.disabled = !"hsqldb".equals(PropertyUtils.getString(DatabaseModuleConfigUtils.PROPKEY_DATABASE_DIALECT, configuration));
         if (disabled) {
             return;
         }
@@ -100,13 +100,13 @@ public class DefaultDBCleanerMultiSchemaTest {
             logger.warn("Test is not for current dialect. Skipping test.");
             return;
         }
-        assertFalse(SQLUnitils.isEmpty("TEST", dataSource));
-        assertFalse(SQLUnitils.isEmpty("SCHEMA_A.TEST", dataSource));
-        assertFalse(SQLUnitils.isEmpty("SCHEMA_B.TEST", dataSource));
+        assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
+        assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
+        assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));
         defaultDbCleaner.cleanSchemas();
-        assertTrue(SQLUnitils.isEmpty("TEST", dataSource));
-        assertTrue(SQLUnitils.isEmpty("SCHEMA_A.TEST", dataSource));
-        assertTrue(SQLUnitils.isEmpty("SCHEMA_B.TEST", dataSource));
+        assertTrue(SQLTestUtils.isEmpty("TEST", dataSource));
+        assertTrue(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
+        assertTrue(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));
     }
 
 
@@ -115,16 +115,16 @@ public class DefaultDBCleanerMultiSchemaTest {
      */
     private void createTestTables() {
         // PUBLIC SCHEMA
-        SQLUnitils.executeUpdate("create table TEST (dataset varchar(100))", dataSource);
-        SQLUnitils.executeUpdate("insert into TEST values('test')", dataSource);
+        SQLTestUtils.executeUpdate("create table TEST (dataset varchar(100))", dataSource);
+        SQLTestUtils.executeUpdate("insert into TEST values('test')", dataSource);
         // SCHEMA_A
-        SQLUnitils.executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
-        SQLUnitils.executeUpdate("create table SCHEMA_A.TEST (dataset varchar(100))", dataSource);
-        SQLUnitils.executeUpdate("insert into SCHEMA_A.TEST values('test')", dataSource);
+        SQLTestUtils.executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
+        SQLTestUtils.executeUpdate("create table SCHEMA_A.TEST (dataset varchar(100))", dataSource);
+        SQLTestUtils.executeUpdate("insert into SCHEMA_A.TEST values('test')", dataSource);
         // SCHEMA_B
-        SQLUnitils.executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
-        SQLUnitils.executeUpdate("create table SCHEMA_B.TEST (dataset varchar(100))", dataSource);
-        SQLUnitils.executeUpdate("insert into SCHEMA_B.TEST values('test')", dataSource);
+        SQLTestUtils.executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
+        SQLTestUtils.executeUpdate("create table SCHEMA_B.TEST (dataset varchar(100))", dataSource);
+        SQLTestUtils.executeUpdate("insert into SCHEMA_B.TEST values('test')", dataSource);
     }
 
 
@@ -132,11 +132,11 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Removes the test database tables
      */
     private void dropTestTables() {
-        SQLUnitils.executeUpdateQuietly("drop table TEST", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop table SCHEMA_A.TEST", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop schema SCHEMA_A", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop table SCHEMA_B.TEST", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table TEST", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table SCHEMA_A.TEST", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_A", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table SCHEMA_B.TEST", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
     }
 
 

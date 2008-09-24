@@ -74,7 +74,7 @@ public class DbScriptJarCreator {
     
     private String targetDatabasePrefix;
     
-    private Properties defaultConfiguration = new ConfigurationLoader().getDefaultConfiguration();
+    private Properties defaultConfiguration = new DbMaintainConfigurationLoader().getDefaultConfiguration();
 
     
     /**

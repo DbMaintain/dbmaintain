@@ -56,7 +56,7 @@ public abstract class DbScriptJarHandler {
 	 * @return
 	 */
 	protected Properties getDbMaintainerConfiguration(String jarFileName) {
-		Properties configuration = new ConfigurationLoader().getDefaultConfiguration();
+		Properties configuration = new DbMaintainConfigurationLoader().getDefaultConfiguration();
 		
 		// Initialize the script organization properties, which are read from the properties file that is packaged
         // with the jar

@@ -20,12 +20,12 @@ import static junit.framework.Assert.assertTrue;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.database.SQLUnitils;
+import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
@@ -58,7 +58,7 @@ public class DefaultScriptRunnerTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new ConfigurationLoader().loadConfiguration();
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         
         DbSupport dbSupport = TestUtils.getDefaultDbSupport(configuration);
         dataSource = dbSupport.getDataSource();
@@ -89,9 +89,9 @@ public class DefaultScriptRunnerTest {
         defaultScriptRunner.execute(script2);
 
         // all tables should exist (otherwise an exception will be thrown)
-        assertTrue(SQLUnitils.isEmpty("table1", dataSource));
-        assertTrue(SQLUnitils.isEmpty("table2", dataSource));
-        assertTrue(SQLUnitils.isEmpty("table3", dataSource));
+        assertTrue(SQLTestUtils.isEmpty("table1", dataSource));
+        assertTrue(SQLTestUtils.isEmpty("table2", dataSource));
+        assertTrue(SQLTestUtils.isEmpty("table3", dataSource));
     }
 
 
@@ -99,9 +99,9 @@ public class DefaultScriptRunnerTest {
      * Drops the test tables
      */
     private void cleanupTestDatabase() {
-        SQLUnitils.executeUpdateQuietly("drop table table1", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop table table2", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop table table3", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table table1", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table table2", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table table3", dataSource);
     }
 
 }

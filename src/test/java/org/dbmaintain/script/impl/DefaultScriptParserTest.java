@@ -60,7 +60,7 @@ public class DefaultScriptParserTest {
     @Before
     public void setUp() throws Exception {
         defaultScriptParser = new DefaultScriptParser();
-        configuration = new org.dbmaintain.util.ConfigurationLoader().loadConfiguration();
+        configuration = new org.dbmaintain.util.DbMaintainConfigurationLoader().loadConfiguration();
         testSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
         testSQLMissingSemiColonScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script-missing-semicolon.sql").toURI()));
         emptyScriptReader = new StringReader("");

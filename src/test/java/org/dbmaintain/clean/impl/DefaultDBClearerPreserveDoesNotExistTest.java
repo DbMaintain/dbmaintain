@@ -29,7 +29,7 @@ import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
@@ -71,7 +71,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Before
     public void setUp() throws Exception {
-        configuration = new ConfigurationLoader().loadConfiguration();
+        configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         sqlHandler = new DefaultSQLHandler();
         defaultDbClearer = new DefaultDBClearer();
         dbSupport = TestUtils.getDefaultDbSupport(configuration);

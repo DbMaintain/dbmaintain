@@ -37,7 +37,7 @@ public final class DbItemIdentifierTest {
 
 	@Before
 	public void init() {
-		Properties configuration = new ConfigurationLoader().loadConfiguration();
+		Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
 		dbSupport = TestUtils.getDefaultDbSupport(configuration);
 		dbNameDbSupportMap = new HashMap<String, DbSupport>();
 		dbNameDbSupportMap.put("mydatabase", dbSupport);

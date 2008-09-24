@@ -21,15 +21,6 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
-import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils;
-import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.version.Version;
-import org.junit.Before;
-import org.junit.Test;
-import org.unitils.UnitilsJUnit4;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -39,13 +30,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils;
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.version.Version;
+import org.junit.Before;
+import org.junit.Test;
+
 /**
  * Tests the DefaultScriptSource
  *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultScriptSourceTest extends UnitilsJUnit4 {
+public class DefaultScriptSourceTest {
 
     /* Tested object */
     DefaultScriptSource scriptSource;
@@ -89,6 +88,8 @@ public class DefaultScriptSourceTest extends UnitilsJUnit4 {
         configuration.setProperty(DefaultScriptSource.PROPKEY_SCRIPT_EXTENSIONS, "sql");
         configuration.setProperty(DefaultScriptSource.PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, "postprocessing");
         configuration.setProperty(DefaultScriptSource.PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES, Boolean.FALSE.toString());
+        configuration.setProperty(DefaultScriptSource.PROPKEY_SCRIPTS_ENCODING, "ISO-8859-1");
+        configuration.setProperty(DefaultScriptSource.PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX, "@");
         scriptSource = new DefaultScriptSource();
         scriptSource.init(configuration);
     }

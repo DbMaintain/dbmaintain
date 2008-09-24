@@ -15,25 +15,23 @@
  */
 package org.dbmaintain.structure;
 
-import static org.dbmaintain.structure.impl.DefaultSequenceUpdater.PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.unitils.database.SQLUnitils.getItemAsLong;
+
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.core.ConfigurationLoader;
-import org.unitils.database.SQLUnitils;
-
-import javax.sql.DataSource;
-
-import java.util.Properties;
 
 /**
  * Test class for the SequenceUpdater. Contains tests that can be implemented generally for all different database dialects.
@@ -68,8 +66,8 @@ public class SequenceUpdaterTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new ConfigurationLoader().loadConfiguration();
-        configuration.setProperty(PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, "1000");
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
+        configuration.setProperty(DefaultSequenceUpdater.PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, "1000");
 
         dbSupport = TestUtils.getDefaultDbSupport(configuration);
         dataSource = dbSupport.getDataSource();
@@ -173,9 +171,9 @@ public class SequenceUpdaterTest {
      * @param maxValue The maximum value (included)
      */
     private void assertCurrentIdentityColumnValueBetween(long minValue, long maxValue) {
-        SQLUnitils.executeUpdate("delete from test_table1", dataSource);
-        SQLUnitils.executeUpdate("insert into test_table1(col2) values('test')", dataSource);
-        long currentValue = getItemAsLong("select col1 from test_table1 where col2 = 'test'", dataSource);
+        SQLTestUtils.executeUpdate("delete from test_table1", dataSource);
+        SQLTestUtils.executeUpdate("insert into test_table1(col2) values('test')", dataSource);
+        long currentValue = SQLTestUtils.getItemAsLong("select col1 from test_table1 where col2 = 'test'", dataSource);
         assertTrue("Current sequence value is not between " + minValue + " and " + maxValue, (currentValue >= minValue && currentValue <= maxValue));
     }
 
@@ -236,11 +234,11 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabaseHsqlDb() throws Exception {
         // create table containing identity
-        SQLUnitils.executeUpdate("create table test_table1 (col1 int not null identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null identity, col2 varchar(12) not null)", dataSource);
         // create table without identity
-        SQLUnitils.executeUpdate("create table test_table2 (col1 int primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table2 (col1 int primary key, col2 varchar(12) not null)", dataSource);
         // create sequences
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
     }
 
 
@@ -261,9 +259,9 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabaseMySql() throws Exception {
         // create tables with auto increment column
-        SQLUnitils.executeUpdate("create table test_table1 (col1 int not null primary key AUTO_INCREMENT, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key AUTO_INCREMENT, col2 varchar(12) not null)", dataSource);
         // create table without increment column
-        SQLUnitils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
     }
 
 
@@ -283,7 +281,7 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabaseOracle() throws Exception {
         // create sequence
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
     }
 
 
@@ -303,7 +301,7 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabasePostgreSql() throws Exception {
         // create sequence
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
     }
 
 
@@ -323,11 +321,11 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabaseDb2() throws Exception {
         // create tables with auto increment column
-        SQLUnitils.executeUpdate("create table test_table1 (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
         // create table without increment column
-        SQLUnitils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
         // create sequences
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
     }
 
 
@@ -348,9 +346,9 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabaseDerby() throws Exception {
         // create table containing identity
-        SQLUnitils.executeUpdate("create table test_table1 (col1 int not null primary key generated always as identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key generated always as identity, col2 varchar(12) not null)", dataSource);
         // create table without identity
-        SQLUnitils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
     }
 
 
@@ -370,9 +368,9 @@ public class SequenceUpdaterTest {
      */
     private void createTestDatabaseMsSql() throws Exception {
         // create table containing identity
-        SQLUnitils.executeUpdate("create table test_table1 (col1 int not null primary key identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key identity, col2 varchar(12) not null)", dataSource);
         // create table without identity
-        SQLUnitils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table2 (col1 int not null primary key, col2 varchar(12) not null)", dataSource);
     }
 
 

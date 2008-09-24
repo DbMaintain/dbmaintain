@@ -50,26 +50,26 @@ import java.util.Properties;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class ConfigurationLoader {
+public class DbMaintainConfigurationLoader {
 
     /**
      * Name of the fixed configuration file that contains all defaults
      */
-    public static final String DEFAULT_PROPERTIES_FILE_NAME = "unitils-default.properties";
+    public static final String DEFAULT_PROPERTIES_FILE_NAME = "dbmaintain-default.properties";
 
     /**
      * Property in the defaults configuration file that contains the name of the custom configuration file
      */
-    public static final String PROPKEY_CUSTOM_CONFIGURATION = "unitils.configuration.customFileName";
+    public static final String PROPKEY_CUSTOM_CONFIGURATION = "dbmaintain.configuration.customFileName";
 
     /**
      * Property in the defaults and/or custom configuration file that contains the name of
      * the user local configuration file
      */
-    public static final String PROPKEY_LOCAL_CONFIGURATION = "unitils.configuration.localFileName";
+    public static final String PROPKEY_LOCAL_CONFIGURATION = "dbmaintain.configuration.localFileName";
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(ConfigurationLoader.class);
+    private static Log logger = LogFactory.getLog(DbMaintainConfigurationLoader.class);
 
     
     /**
@@ -96,7 +96,7 @@ public class ConfigurationLoader {
     	// Load the default properties file, that is distributed with unitils (unitils-default.properties)
     	Properties defaultProperties = loadPropertiesFileFromClasspath(DEFAULT_PROPERTIES_FILE_NAME);
     	if (defaultProperties == null) {
-    		throw new DbMaintainException("Configuration file: " + defaultProperties + " not found in classpath.");
+    		throw new DbMaintainException("Configuration file: " + DEFAULT_PROPERTIES_FILE_NAME + " not found in classpath.");
     	}
     	properties.putAll(defaultProperties);
     	

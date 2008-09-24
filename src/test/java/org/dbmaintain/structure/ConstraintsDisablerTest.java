@@ -18,13 +18,13 @@ package org.dbmaintain.structure;
 import static org.junit.Assert.fail;
 
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.database.SQLUnitils;
+import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
@@ -55,7 +55,7 @@ public class ConstraintsDisablerTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new ConfigurationLoader().loadConfiguration();
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         dbSupport = TestUtils.getDefaultDbSupport(configuration);
         dataSource = dbSupport.getDataSource();
         constraintsDisabler = TestUtils.getDefaultConstraintsDisabler(configuration, dbSupport);
@@ -80,14 +80,14 @@ public class ConstraintsDisablerTest {
     @Test
     public void testDisableConstraints_foreignKey() throws Exception {
         try {
-            SQLUnitils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
+            SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
             fail("DbMaintainException should have been thrown");
         } catch (DbMaintainException e) {
             // Expected foreign key violation
         }
         constraintsDisabler.removeConstraints();
         // Should not throw exception anymore
-        SQLUnitils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
     }
 
 
@@ -98,14 +98,14 @@ public class ConstraintsDisablerTest {
     @Test
     public void testDisableConstraints_foreignKeyToAlternateKey() throws Exception {
         try {
-            SQLUnitils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
+            SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
             fail("DbMaintainException should have been thrown");
         } catch (DbMaintainException e) {
             // Expected foreign key violation
         }
         constraintsDisabler.removeConstraints();
         // Should not throw exception anymore
-        SQLUnitils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
     }
 
 
@@ -115,14 +115,14 @@ public class ConstraintsDisablerTest {
     @Test
     public void testDisableConstraints_notNull() throws Exception {
         try {
-            SQLUnitils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
+            SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
             fail("DbMaintainException should have been thrown");
         } catch (DbMaintainException e) {
             // Expected not null violation
         }
         constraintsDisabler.removeConstraints();
         // Should not throw exception anymore
-        SQLUnitils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
+        SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
     }
 
 
@@ -130,9 +130,9 @@ public class ConstraintsDisablerTest {
      * Creates the test tables
      */
     protected void createTestTables() {
-        SQLUnitils.executeUpdate("create table table1 (col1 varchar(10) not null primary key, col2 varchar(10) not null, unique (col2))", dataSource);
-        SQLUnitils.executeUpdate("create table table2 (col1 varchar(10), foreign key (col1) references table1(col1))", dataSource);
-        SQLUnitils.executeUpdate("create table table3 (col1 varchar(10), foreign key (col1) references table1(col2))", dataSource);
+        SQLTestUtils.executeUpdate("create table table1 (col1 varchar(10) not null primary key, col2 varchar(10) not null, unique (col2))", dataSource);
+        SQLTestUtils.executeUpdate("create table table2 (col1 varchar(10), foreign key (col1) references table1(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table table3 (col1 varchar(10), foreign key (col1) references table1(col2))", dataSource);
     }
 
 
@@ -140,9 +140,9 @@ public class ConstraintsDisablerTest {
      * Drops the test tables
      */
     protected void cleanupTestDatabase() {
-        SQLUnitils.executeUpdateQuietly("drop table table3", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop table table2", dataSource);
-        SQLUnitils.executeUpdateQuietly("drop table table1", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table table3", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table table2", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table table1", dataSource);
     }
 
 }

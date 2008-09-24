@@ -15,29 +15,25 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.UnitilsJUnit4;
-import org.unitils.database.SQLUnitils;
-import org.unitils.database.annotations.TestDataSource;
-
-import javax.sql.DataSource;
-
-import java.util.Properties;
 
 /**
  * Test class for the {@link DBClearer}.
@@ -46,14 +42,12 @@ import java.util.Properties;
  * @author Tim Ducheyne
  * @author Scott Prater
  */
-public class DefaultDBClearerTest extends UnitilsJUnit4 {
+public class DefaultDBClearerTest {
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultDBClearerTest.class);
 
-    /* DataSource for the test database, is injected */
-    @TestDataSource
-    private DataSource dataSource = null;
+    private DataSource dataSource;
 
     /* Tested object */
     private DefaultDBClearer defaultDbClearer;
@@ -70,11 +64,12 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new ConfigurationLoader().loadConfiguration();
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dataSource = dbSupport.getDataSource();
         // create clearer instance
         defaultDbClearer = TestUtils.getDefaultDBClearer(configuration, dbSupport);
-        versionTableName = configuration.getProperty(PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
+        versionTableName = configuration.getProperty(DefaultDBClearer.PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -106,7 +101,7 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     @Test
     public void testClearDatabase_dbVersionTables() throws Exception {
-        SQLUnitils.executeUpdate("create table " + versionTableName + "(testcolumn varchar(10))", dataSource);
+        SQLTestUtils.executeUpdate("create table " + versionTableName + "(testcolumn varchar(10))", dataSource);
         assertEquals(3, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size());
         defaultDbClearer.clearSchemas();
         assertEquals(1, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size()); // version table
@@ -225,17 +220,17 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabaseHsqlDb() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table test_table (col1 int not null identity, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table (col1 int not null identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
         // create sequences
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
-        SQLUnitils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
         // create triggers
-        SQLUnitils.executeUpdate("create trigger test_trigger before insert on \"Test_CASE_Table\" call \"org.unitils.core.dbsupport.HsqldbDbSupportTest.TestTrigger\"", dataSource);
-        SQLUnitils.executeUpdate("create trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" call \"org.unitils.core.dbsupport.HsqldbDbSupportTest.TestTrigger\"", dataSource);
+        SQLTestUtils.executeUpdate("create trigger test_trigger before insert on \"Test_CASE_Table\" call \"org.unitils.core.dbsupport.HsqldbDbSupportTest.TestTrigger\"", dataSource);
+        SQLTestUtils.executeUpdate("create trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" call \"org.unitils.core.dbsupport.HsqldbDbSupportTest.TestTrigger\"", dataSource);
     }
 
 
@@ -272,14 +267,14 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabaseMySql() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table test_table (col1 int not null primary key AUTO_INCREMENT, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table `Test_CASE_Table` (col1 int)", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table (col1 int not null primary key AUTO_INCREMENT, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table `Test_CASE_Table` (col1 int)", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view `Test_CASE_View` as select col1 from `Test_CASE_Table`", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view `Test_CASE_View` as select col1 from `Test_CASE_Table`", dataSource);
         // create triggers
-        SQLUnitils.executeUpdate("create trigger test_trigger before insert on `Test_CASE_Table` FOR EACH ROW begin end", dataSource);
-        SQLUnitils.executeUpdate("create trigger `Test_CASE_Trigger` after insert on `Test_CASE_Table` FOR EACH ROW begin end", dataSource);
+        SQLTestUtils.executeUpdate("create trigger test_trigger before insert on `Test_CASE_Table` FOR EACH ROW begin end", dataSource);
+        SQLTestUtils.executeUpdate("create trigger `Test_CASE_Trigger` after insert on `Test_CASE_Table` FOR EACH ROW begin end", dataSource);
     }
 
 
@@ -301,26 +296,26 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabaseOracle() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table test_table (col1 varchar(10) not null primary key, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table \"Test_CASE_Table\" (col1 varchar(10), foreign key (col1) references test_table(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table (col1 varchar(10) not null primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table \"Test_CASE_Table\" (col1 varchar(10), foreign key (col1) references test_table(col1))", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
         // create materialized views
-        SQLUnitils.executeUpdate("create materialized view test_mview as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create materialized view \"Test_CASE_MView\" as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create materialized view test_mview as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create materialized view \"Test_CASE_MView\" as select col1 from test_table", dataSource);
         // create synonyms
-        SQLUnitils.executeUpdate("create synonym test_synonym for test_table", dataSource);
-        SQLUnitils.executeUpdate("create synonym \"Test_CASE_Synonym\" for \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create synonym test_synonym for test_table", dataSource);
+        SQLTestUtils.executeUpdate("create synonym \"Test_CASE_Synonym\" for \"Test_CASE_Table\"", dataSource);
         // create sequences
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
-        SQLUnitils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
         // create triggers
-        SQLUnitils.executeUpdate("create or replace trigger test_trigger before insert on \"Test_CASE_Table\" begin dbms_output.put_line('test'); end test_trigger", dataSource);
-        SQLUnitils.executeUpdate("create or replace trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" begin dbms_output.put_line('test'); end \"Test_CASE_Trigger\"", dataSource);
+        SQLTestUtils.executeUpdate("create or replace trigger test_trigger before insert on \"Test_CASE_Table\" begin dbms_output.put_line('test'); end test_trigger", dataSource);
+        SQLTestUtils.executeUpdate("create or replace trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" begin dbms_output.put_line('test'); end \"Test_CASE_Trigger\"", dataSource);
         // create types
-        SQLUnitils.executeUpdate("create type test_type AS (col1 int)", dataSource);
-        SQLUnitils.executeUpdate("create type \"Test_CASE_Type\" AS (col1 int)", dataSource);
+        SQLTestUtils.executeUpdate("create type test_type AS (col1 int)", dataSource);
+        SQLTestUtils.executeUpdate("create type \"Test_CASE_Type\" AS (col1 int)", dataSource);
     }
 
 
@@ -346,26 +341,26 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabasePostgreSql() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table test_table (col1 varchar(10) not null primary key, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table \"Test_CASE_Table\" (col1 varchar(10), foreign key (col1) references test_table(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table (col1 varchar(10) not null primary key, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table \"Test_CASE_Table\" (col1 varchar(10), foreign key (col1) references test_table(col1))", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
         // create sequences
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
-        SQLUnitils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
         // create triggers
         try {
-            SQLUnitils.executeUpdate("create language plpgsql", dataSource);
+            SQLTestUtils.executeUpdate("create language plpgsql", dataSource);
         } catch (Exception e) {
             // ignore language already exists
         }
-        SQLUnitils.executeUpdate("create or replace function test() returns trigger as $$ declare begin end; $$ language plpgsql", dataSource);
-        SQLUnitils.executeUpdate("create trigger test_trigger before insert on \"Test_CASE_Table\" FOR EACH ROW EXECUTE PROCEDURE test()", dataSource);
-        SQLUnitils.executeUpdate("create trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" FOR EACH ROW EXECUTE PROCEDURE test()", dataSource);
+        SQLTestUtils.executeUpdate("create or replace function test() returns trigger as $$ declare begin end; $$ language plpgsql", dataSource);
+        SQLTestUtils.executeUpdate("create trigger test_trigger before insert on \"Test_CASE_Table\" FOR EACH ROW EXECUTE PROCEDURE test()", dataSource);
+        SQLTestUtils.executeUpdate("create trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" FOR EACH ROW EXECUTE PROCEDURE test()", dataSource);
         // create types
-        SQLUnitils.executeUpdate("create type test_type AS (col1 int)", dataSource);
-        SQLUnitils.executeUpdate("create type \"Test_CASE_Type\" AS (col1 int)", dataSource);
+        SQLTestUtils.executeUpdate("create type test_type AS (col1 int)", dataSource);
+        SQLTestUtils.executeUpdate("create type \"Test_CASE_Type\" AS (col1 int)", dataSource);
     }
 
 
@@ -389,20 +384,20 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabaseDb2() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table test_table (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
         // create sequences
-        SQLUnitils.executeUpdate("create sequence test_sequence", dataSource);
-        SQLUnitils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
+        SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
+        SQLTestUtils.executeUpdate("create sequence \"Test_CASE_Sequence\"", dataSource);
         // create triggers
-        SQLUnitils.executeUpdate("create trigger test_trigger before insert on \"Test_CASE_Table\" FOR EACH ROW when (1 < 0) SIGNAL SQLSTATE '0'", dataSource);
-        SQLUnitils.executeUpdate("create trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" FOR EACH ROW when (1 < 0) SIGNAL SQLSTATE '0'", dataSource);
+        SQLTestUtils.executeUpdate("create trigger test_trigger before insert on \"Test_CASE_Table\" FOR EACH ROW when (1 < 0) SIGNAL SQLSTATE '0'", dataSource);
+        SQLTestUtils.executeUpdate("create trigger \"Test_CASE_Trigger\" before insert on \"Test_CASE_Table\" FOR EACH ROW when (1 < 0) SIGNAL SQLSTATE '0'", dataSource);
         // create types
-        SQLUnitils.executeUpdate("create type test_type AS (col1 int) MODE DB2SQL", dataSource);
-        SQLUnitils.executeUpdate("create type \"Test_CASE_Type\" AS (col1 int) MODE DB2SQL", dataSource);
+        SQLTestUtils.executeUpdate("create type test_type AS (col1 int) MODE DB2SQL", dataSource);
+        SQLTestUtils.executeUpdate("create type \"Test_CASE_Type\" AS (col1 int) MODE DB2SQL", dataSource);
     }
 
 
@@ -427,18 +422,18 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabaseDerby() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table \"TEST_TABLE\" (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table \"TEST_TABLE\" (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
         // create synonyms
-        SQLUnitils.executeUpdate("create synonym test_synonym for test_table", dataSource);
-        SQLUnitils.executeUpdate("create synonym \"Test_CASE_Synonym\" for \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create synonym test_synonym for test_table", dataSource);
+        SQLTestUtils.executeUpdate("create synonym \"Test_CASE_Synonym\" for \"Test_CASE_Table\"", dataSource);
         // create triggers
-        SQLUnitils.executeUpdate("call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('testKey', 'test')", dataSource);
-        SQLUnitils.executeUpdate("create trigger test_trigger no cascade before insert on \"Test_CASE_Table\" FOR EACH ROW MODE DB2SQL VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY('testKey')", dataSource);
-        SQLUnitils.executeUpdate("create trigger \"Test_CASE_Trigger\" no cascade before insert on \"Test_CASE_Table\" FOR EACH ROW MODE DB2SQL VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY('testKey')", dataSource);
+        SQLTestUtils.executeUpdate("call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('testKey', 'test')", dataSource);
+        SQLTestUtils.executeUpdate("create trigger test_trigger no cascade before insert on \"Test_CASE_Table\" FOR EACH ROW MODE DB2SQL VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY('testKey')", dataSource);
+        SQLTestUtils.executeUpdate("create trigger \"Test_CASE_Trigger\" no cascade before insert on \"Test_CASE_Table\" FOR EACH ROW MODE DB2SQL VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY('testKey')", dataSource);
     }
 
 
@@ -462,20 +457,20 @@ public class DefaultDBClearerTest extends UnitilsJUnit4 {
      */
     private void createTestDatabaseMsSql() throws Exception {
         // create tables
-        SQLUnitils.executeUpdate("create table test_table (col1 int not null primary key identity, col2 varchar(12) not null)", dataSource);
-        SQLUnitils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
+        SQLTestUtils.executeUpdate("create table test_table (col1 int not null primary key identity, col2 varchar(12) not null)", dataSource);
+        SQLTestUtils.executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
         // create views
-        SQLUnitils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
-        SQLUnitils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create view test_view as select col1 from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create view \"Test_CASE_View\" as select col1 from \"Test_CASE_Table\"", dataSource);
         // create synonyms
-        SQLUnitils.executeUpdate("create synonym test_synonym for test_table", dataSource);
-        SQLUnitils.executeUpdate("create synonym \"Test_CASE_Synonym\" for \"Test_CASE_Table\"", dataSource);
+        SQLTestUtils.executeUpdate("create synonym test_synonym for test_table", dataSource);
+        SQLTestUtils.executeUpdate("create synonym \"Test_CASE_Synonym\" for \"Test_CASE_Table\"", dataSource);
         // create triggers
-        SQLUnitils.executeUpdate("create trigger test_trigger on \"Test_CASE_Table\" after insert AS select * from test_table", dataSource);
-        SQLUnitils.executeUpdate("create trigger \"Test_CASE_Trigger\" on \"Test_CASE_Table\" after insert AS select * from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create trigger test_trigger on \"Test_CASE_Table\" after insert AS select * from test_table", dataSource);
+        SQLTestUtils.executeUpdate("create trigger \"Test_CASE_Trigger\" on \"Test_CASE_Table\" after insert AS select * from test_table", dataSource);
         // create types
-        SQLUnitils.executeUpdate("create type test_type from int", dataSource);
-        SQLUnitils.executeUpdate("create type \"Test_CASE_Type\" from int", dataSource);
+        SQLTestUtils.executeUpdate("create type test_type from int", dataSource);
+        SQLTestUtils.executeUpdate("create type \"Test_CASE_Type\" from int", dataSource);
     }
 
 

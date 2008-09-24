@@ -19,7 +19,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class OracleScriptParserTest {
     @Before
     public void setUp() throws Exception {
         oracleScriptParser = new OracleScriptParser();
-        configuration = new ConfigurationLoader().loadConfiguration();
+        configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         testSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
         testPLSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/plsql-script.sql").toURI()));
         emptyScriptReader = new StringReader("");

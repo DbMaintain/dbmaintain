@@ -20,7 +20,7 @@ import org.apache.tools.ant.Task;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DefaultSQLHandler;
 import org.dbmaintain.util.ConfigUtils;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 
 import java.util.Collections;
 import java.util.Properties;
@@ -33,7 +33,7 @@ import java.util.Set;
 abstract public class BaseDatabaseTask extends Task {
 
 	protected DbSupport createDbSupport(DatabaseType database) {
-    	Properties configuration = new ConfigurationLoader().getDefaultConfiguration();
+    	Properties configuration = new DbMaintainConfigurationLoader().getDefaultConfiguration();
     	
     	BasicDataSource dataSource = new BasicDataSource();
     	dataSource.setDriverClassName(database.getDriverClassName());

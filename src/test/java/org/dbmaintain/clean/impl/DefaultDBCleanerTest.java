@@ -15,24 +15,20 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBCleaner.PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME;
-import static org.dbmaintain.clean.impl.DefaultDBCleaner.PROPKEY_PRESERVE_DATA_TABLES;
-import static org.dbmaintain.clean.impl.DefaultDBCleaner.PROPKEY_PRESERVE_TABLES;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.ConfigurationLoader;
+import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.database.SQLUnitils;
-
-import javax.sql.DataSource;
-
-import java.util.Properties;
 
 /**
  * Test class for the DBCleaner.
@@ -61,16 +57,16 @@ public class DefaultDBCleanerTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new ConfigurationLoader().loadConfiguration();
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         dbSupport = TestUtils.getDefaultDbSupport(configuration);
         dataSource = dbSupport.getDataSource();
         
         // items to preserve
-        configuration.setProperty(PROPKEY_PRESERVE_DATA_TABLES, "Test_table_Preserve");
-        configuration.setProperty(PROPKEY_PRESERVE_TABLES, dbSupport.quoted("Test_CASE_Table_Preserve"));
+        configuration.setProperty(DefaultDBCleaner.PROPKEY_PRESERVE_DATA_TABLES, "Test_table_Preserve");
+        configuration.setProperty(DefaultDBCleaner.PROPKEY_PRESERVE_TABLES, dbSupport.quoted("Test_CASE_Table_Preserve"));
         // create cleaner instance
         defaultDbCleaner = TestUtils.getDefaultDBCleaner(configuration, dbSupport);
-        versionTableName = configuration.getProperty(PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
+        versionTableName = configuration.getProperty(DefaultDBCleaner.PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -92,11 +88,11 @@ public class DefaultDBCleanerTest {
      */
     @Test
     public void testCleanDatabase() throws Exception {
-        assertFalse(SQLUnitils.isEmpty("TEST_TABLE", dataSource));
-        assertFalse(SQLUnitils.isEmpty(dbSupport.quoted("Test_CASE_Table"), dataSource));
+        assertFalse(SQLTestUtils.isEmpty("TEST_TABLE", dataSource));
+        assertFalse(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table"), dataSource));
         defaultDbCleaner.cleanSchemas();
-        assertTrue(SQLUnitils.isEmpty("TEST_TABLE", dataSource));
-        assertTrue(SQLUnitils.isEmpty(dbSupport.quoted("Test_CASE_Table"), dataSource));
+        assertTrue(SQLTestUtils.isEmpty("TEST_TABLE", dataSource));
+        assertTrue(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table"), dataSource));
     }
 
 
@@ -105,9 +101,9 @@ public class DefaultDBCleanerTest {
      */
     @Test
     public void testCleanDatabase_preserveDbVersionTable() throws Exception {
-        assertFalse(SQLUnitils.isEmpty(versionTableName, dataSource));
+        assertFalse(SQLTestUtils.isEmpty(versionTableName, dataSource));
         defaultDbCleaner.cleanSchemas();
-        assertFalse(SQLUnitils.isEmpty(versionTableName, dataSource));
+        assertFalse(SQLTestUtils.isEmpty(versionTableName, dataSource));
     }
 
 
@@ -116,11 +112,11 @@ public class DefaultDBCleanerTest {
      */
     @Test
     public void testCleanDatabase_preserveTablesToPreserve() throws Exception {
-        assertFalse(SQLUnitils.isEmpty("TEST_TABLE_PRESERVE", dataSource));
-        assertFalse(SQLUnitils.isEmpty(dbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
+        assertFalse(SQLTestUtils.isEmpty("TEST_TABLE_PRESERVE", dataSource));
+        assertFalse(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
         defaultDbCleaner.cleanSchemas();
-        assertFalse(SQLUnitils.isEmpty("TEST_TABLE_PRESERVE", dataSource));
-        assertFalse(SQLUnitils.isEmpty(dbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
+        assertFalse(SQLTestUtils.isEmpty("TEST_TABLE_PRESERVE", dataSource));
+        assertFalse(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
     }
 
 
@@ -128,13 +124,13 @@ public class DefaultDBCleanerTest {
      * Creates the test tables
      */
     private void createTestDatabase() throws Exception {
-        SQLUnitils.executeUpdate("create table " + versionTableName + "(testcolumn varchar(10))", dataSource);
-        SQLUnitils.executeUpdate("create table TEST_TABLE(testcolumn varchar(10))", dataSource);
-        SQLUnitils.executeUpdate("create table TEST_TABLE_PRESERVE(testcolumn varchar(10))", dataSource);
-        SQLUnitils.executeUpdate("create table " + dbSupport.quoted("Test_CASE_Table") + " (col1 varchar(10))", dataSource);
-        SQLUnitils.executeUpdate("create table " + dbSupport.quoted("Test_CASE_Table_Preserve") + " (col1 varchar(10))", dataSource);
+        SQLTestUtils.executeUpdate("create table " + versionTableName + "(testcolumn varchar(10))", dataSource);
+        SQLTestUtils.executeUpdate("create table TEST_TABLE(testcolumn varchar(10))", dataSource);
+        SQLTestUtils.executeUpdate("create table TEST_TABLE_PRESERVE(testcolumn varchar(10))", dataSource);
+        SQLTestUtils.executeUpdate("create table " + dbSupport.quoted("Test_CASE_Table") + " (col1 varchar(10))", dataSource);
+        SQLTestUtils.executeUpdate("create table " + dbSupport.quoted("Test_CASE_Table_Preserve") + " (col1 varchar(10))", dataSource);
         // Also create a view, to see if the DBCleaner doesn't crash on views
-        SQLUnitils.executeUpdate("create view TEST_VIEW as (select * from TEST_TABLE_PRESERVE)", dataSource);
+        SQLTestUtils.executeUpdate("create view TEST_VIEW as (select * from TEST_TABLE_PRESERVE)", dataSource);
     }
 
 
@@ -151,11 +147,11 @@ public class DefaultDBCleanerTest {
      * Inserts a test record in each test table
      */
     private void insertTestData() throws Exception {
-        SQLUnitils.executeUpdate("insert into " + versionTableName + " values('test')", dataSource);
-        SQLUnitils.executeUpdate("insert into TEST_TABLE values('test')", dataSource);
-        SQLUnitils.executeUpdate("insert into TEST_TABLE_PRESERVE values('test')", dataSource);
-        SQLUnitils.executeUpdate("insert into " + dbSupport.quoted("Test_CASE_Table") + " values('test')", dataSource);
-        SQLUnitils.executeUpdate("insert into " + dbSupport.quoted("Test_CASE_Table_Preserve") + " values('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into " + versionTableName + " values('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into TEST_TABLE values('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into TEST_TABLE_PRESERVE values('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into " + dbSupport.quoted("Test_CASE_Table") + " values('test')", dataSource);
+        SQLTestUtils.executeUpdate("insert into " + dbSupport.quoted("Test_CASE_Table_Preserve") + " values('test')", dataSource);
     }
 
 }
