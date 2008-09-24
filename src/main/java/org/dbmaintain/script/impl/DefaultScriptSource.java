@@ -55,23 +55,23 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
     /**
      * Property key for the directory in which the script files are located
      */
-    public static final String PROPKEY_SCRIPTS_LOCATION = "dbMaintainer.scripts.location";
+    public static final String PROPKEY_SCRIPTS_LOCATION = "dbMaintainer.script.locations";
 
     /**
      * Property key for the extension of the script files
      */
-    public static final String PROPKEY_SCRIPT_EXTENSIONS = "dbMaintainer.scripts.fileExtensions";
+    public static final String PROPKEY_SCRIPT_EXTENSIONS = "dbMaintainer.script.fileExtensions";
 
     /**
      * Property key for the directory in which the code script files are located
      */
-    public static final String PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME = "dbMaintainer.postProcessingScripts.directoryName";
+    public static final String PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
 
     public static final String PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates.enabled";
     
-    public static final String PROPKEY_SCRIPTS_ENCODING = "dbMaintainer.scripts.encoding";
+    public static final String PROPKEY_SCRIPTS_ENCODING = "dbMaintainer.script.encoding";
     
-    public static final String PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX = "dbMaintainer.scripts.targetDatabase.prefix";
+    public static final String PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
     
     protected List<Script> allUpdateScripts, allPostProcessingScripts;
 
@@ -293,7 +293,7 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
     		return false;
     	}
 		return script.getFileName().startsWith(postProcessingScriptDirName + '/') ||
-		script.getFileName().startsWith(postProcessingScriptDirName + '\\');
+		    script.getFileName().startsWith(postProcessingScriptDirName + '\\');
 	}
 
 
