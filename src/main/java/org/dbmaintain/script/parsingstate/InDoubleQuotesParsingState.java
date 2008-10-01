@@ -16,6 +16,7 @@
 package org.dbmaintain.script.parsingstate;
 
 import org.dbmaintain.script.ParsingState;
+import org.dbmaintain.script.StatementFlags;
 
 /**
  * A state for parsing double quotes ("text") literal part of a script.
@@ -61,9 +62,10 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
      * @param currentChar  The current char
      * @param nextChar     The next char, 0 if none
      * @param statement    The statement that is built, not null
+     * @param flags        The statement flags
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement) {
+    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags) {
         // escape current character
         if (escaping) {
             escaping = false;

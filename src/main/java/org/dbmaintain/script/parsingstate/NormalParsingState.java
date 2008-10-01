@@ -16,6 +16,7 @@
 package org.dbmaintain.script.parsingstate;
 
 import org.dbmaintain.script.ParsingState;
+import org.dbmaintain.script.StatementFlags;
 
 /**
  * The default initial parsing state that is able to recognize the beginning of line comments, block comments,
@@ -83,10 +84,11 @@ public class NormalParsingState extends BaseParsingState {
      * @param currentChar  The current char
      * @param nextChar     The next char, 0 if none
      * @param statement    The statement that is built, not null
+     * @param flags        The statement flags
      * @return The next parsing state, null if the end of the statement is reached
      */
     @Override
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement) {
+    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags) {
         // check ending of statement
         if (currentChar == ';') {
             return null;
@@ -94,11 +96,13 @@ public class NormalParsingState extends BaseParsingState {
         // escape current character
         if (escaping) {
             escaping = false;
+            flags.setExecutable(true);
             return this;
         }
         // check escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
             escaping = true;
+            flags.setExecutable(true);
             return this;
         }
         // check line comment
@@ -116,6 +120,9 @@ public class NormalParsingState extends BaseParsingState {
         // check identifier with double quotes
         if (currentChar == '"') {
             return inDoubleQuotesParsingState;
+        }
+        if (previousChar != 0) {
+            flags.setExecutable(true);
         }
         return this;
     }

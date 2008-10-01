@@ -32,8 +32,9 @@ public interface ParsingState {
      * @param currentChar  The current char
      * @param nextChar     The next char, 0 if none
      * @param statement    The statement that is built, not null
+     * @param flags        The statement flags
      * @return The next parsing state, null if the end of the statement is reached
      */
-    ParsingState handleNextChar(char previousChar, char currentChar, char nextChar, StringBuilder statement);
+    ParsingState handleNextChar(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags);
 
 }

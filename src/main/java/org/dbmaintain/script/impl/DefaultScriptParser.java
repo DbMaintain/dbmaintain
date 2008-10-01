@@ -18,6 +18,7 @@ package org.dbmaintain.script.impl;
 import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.script.ParsingState;
 import org.dbmaintain.script.ScriptParser;
+import org.dbmaintain.script.StatementFlags;
 import org.dbmaintain.script.parsingstate.InBlockCommentParsingState;
 import org.dbmaintain.script.parsingstate.InDoubleQuotesParsingState;
 import org.dbmaintain.script.parsingstate.InLineCommentParsingState;
@@ -127,6 +128,7 @@ public class DefaultScriptParser implements ScriptParser {
         char previousChar = 0;
         currentParsingState = initialParsingState;
         StringBuilder statementStringBuilder = new StringBuilder();
+        StatementFlags flags = new DefaultStatementFlags();
 
         // parse script
         while (currentChar != -1) {
@@ -146,7 +148,7 @@ public class DefaultScriptParser implements ScriptParser {
             }
 
             // handle character
-            currentParsingState = currentParsingState.handleNextChar(previousChar, (char) currentChar, nextChar, statementStringBuilder);
+            currentParsingState = currentParsingState.handleNextChar(previousChar, (char) currentChar, nextChar, statementStringBuilder, flags);
             previousChar = (char) currentChar;
             currentChar = nextCharInt;
 
@@ -157,6 +159,7 @@ public class DefaultScriptParser implements ScriptParser {
                 // reset initial state
                 previousChar = 0;
                 statementStringBuilder.setLength(0);
+                flags.setExecutable(false);
                 currentParsingState = initialParsingState;
 
                 if (statement != null) {
@@ -165,11 +168,13 @@ public class DefaultScriptParser implements ScriptParser {
             }
         }
 
-        // check whether there was still a statement in the script
+        // check whether there was still an executable statement in the script
         // or only whitespace was left
-        String finalStatement = createStatement(statementStringBuilder);
-        if (finalStatement != null) {
-            throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(getTrailingSeparatorCharsToRemove()));
+        if (flags.isExecutable()) {
+            String finalStatement = createStatement(statementStringBuilder);
+            if (finalStatement != null) {
+                throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(getTrailingSeparatorCharsToRemove()));
+            }
         }
         return null;
     }
