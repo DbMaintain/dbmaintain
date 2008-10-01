@@ -15,6 +15,10 @@
  */
 package org.dbmaintain.dbsupport;
 
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
+
 import java.util.Set;
 
 /**
@@ -26,10 +30,18 @@ import java.util.Set;
 public class HsqldbDbSupport extends DbSupport {
 
     /**
-     * Creates support for HsqlDb databases.
+     * Creates support for a HsqlDb database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public HsqldbDbSupport() {
-        super("hsqldb");
+    public HsqldbDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "hsqldb", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
 

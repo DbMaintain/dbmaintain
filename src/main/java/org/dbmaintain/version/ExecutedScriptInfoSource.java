@@ -27,7 +27,7 @@ import org.dbmaintain.util.DatabaseAccessing;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface ExecutedScriptInfoSource extends DatabaseAccessing {
+public interface ExecutedScriptInfoSource {
 
 
     /**

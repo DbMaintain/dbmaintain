@@ -99,13 +99,13 @@ public class DbItemIdentifier {
 	}
 	
 	
-	public static DbItemIdentifier parseItemIdentifier(String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> dbNameDbSupportMap) {
+	public static DbItemIdentifier parseItemIdentifier(String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
 		String[] identifierParts = StringUtils.split(identifierAsString, '.');
     	String databaseName, schemaName, itemName;
     	DbSupport dbSupport;
     	if (identifierParts.length == 3) {
     		databaseName = identifierParts[0];
-    		dbSupport = dbNameDbSupportMap.get(databaseName);
+    		dbSupport = nameDbSupportMap.get(databaseName);
     		if (dbSupport == null) {
     			throw new DbMaintainException("No database configured with the name " + databaseName);
     		}

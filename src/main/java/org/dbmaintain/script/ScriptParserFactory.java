@@ -15,21 +15,15 @@
  */
 package org.dbmaintain.script;
 
+import java.io.Reader;
+
 
 /**
- * An interface for a parser that can parse statements out of a script.
- *
- * @author Tim Ducheyne
  * @author Filip Neven
+ * @author Tim Ducheyne
  */
-public interface ScriptParser {
+public interface ScriptParserFactory {
 
-
-    /**
-     * Gets the next statement out of the given script stream.
-     *
-     * @return the statements, null if no more statements
-     */
-    String getNextStatement();
+    public ScriptParser createScriptParser(String databaseDialect, Reader scriptContentReader);
 
 }

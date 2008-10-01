@@ -15,26 +15,24 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBCleaner.PROPKEY_PRESERVE_DATA_SCHEMAS;
-import static org.dbmaintain.clean.impl.DefaultDBCleaner.PROPKEY_PRESERVE_DATA_TABLES;
-import static org.dbmaintain.util.DatabaseModuleConfigUtils.PROPKEY_DATABASE_DIALECT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
-import org.dbmaintain.util.PropertyUtils;
+import org.dbmaintain.util.CollectionUtils;
+import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
-import java.util.Properties;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Test class for the DBCleaner with multiple schemas with configuration to preserve all tables. <p/> Currently this is
@@ -45,9 +43,6 @@ import java.util.Properties;
  */
 public class DefaultDBCleanerMultiSchemaPreserveTest {
 
-	/* The logger instance for this class */
-	private static Log logger = LogFactory.getLog(DefaultDBCleanerMultiSchemaPreserveTest.class);
-
 	/* DataSource for the test database */
 	private DataSource dataSource;
 
@@ -57,33 +52,29 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
 	/* The DbSupport object */
 	private DbSupport dbSupport;
 
-	/* True if current test is not for the current dialect */
-	private boolean disabled;
-
-
 	/**
 	 * Initializes the test fixture.
 	 */
 	@Before
 	public void setUp() throws Exception {
-		Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-		this.disabled = !"hsqldb".equals(PropertyUtils.getString(PROPKEY_DATABASE_DIALECT, configuration));
-		if (disabled) {
-			return;
-		}
-
 		// configure 3 schemas
-		configuration.setProperty("database.schemaNames", "PUBLIC, SCHEMA_A, \"SCHEMA_B\", schema_c");
-		dbSupport = TestUtils.getDefaultDbSupport(configuration);
+		dbSupport = TestUtils.getDbSupport("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
+		Map<String, DbSupport> nameDbSupportMap = TestUtils.getNameDbSupportMap(dbSupport);
 		dataSource = dbSupport.getDataSource();
 
-		// items to preserve
-		configuration.setProperty(PROPKEY_PRESERVE_DATA_SCHEMAS, "schema_c");
-		configuration.setProperty(PROPKEY_PRESERVE_DATA_TABLES, "test, " + dbSupport.quoted("SCHEMA_A") + "." + dbSupport.quoted("TEST"));
-		defaultDbCleaner = TestUtils.getDefaultDBCleaner(configuration, dbSupport);
-
 		dropTestTables();
-		createTestTables();
+        createTestTables();
+		
+		defaultDbCleaner = TestUtils.getDefaultDBCleaner(dbSupport);
+		// items to preserve
+		Set<DbItemIdentifier> schemasToPreserve = CollectionUtils.asSet(
+		        DbItemIdentifier.parseSchemaIdentifier("schema_c", dbSupport, nameDbSupportMap));
+        defaultDbCleaner.setSchemasToPreserve(schemasToPreserve);
+        
+        Set<DbItemIdentifier> tablesToPreserve = CollectionUtils.asSet(
+                DbItemIdentifier.parseItemIdentifier("test", dbSupport, nameDbSupportMap),
+                DbItemIdentifier.parseItemIdentifier("\"SCHEMA_A\".\"TEST\"", dbSupport, nameDbSupportMap));
+        defaultDbCleaner.setTablesToPreserve(tablesToPreserve);
 	}
 
 
@@ -92,9 +83,6 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
-		if (disabled) {
-			return;
-		}
 		dropTestTables();
 	}
 
@@ -104,10 +92,6 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
 	 */
 	@Test
 	public void testCleanDatabase() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
 		assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
 		assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));

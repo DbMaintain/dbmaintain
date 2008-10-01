@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.util.DatabaseModuleConfigUtils.PROPKEY_DATABASE_DIALECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,18 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
-import org.dbmaintain.util.PropertyUtils;
+import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
-
-import java.util.Properties;
 
 /**
  * Test class for the {@link DBClearer} using multiple database schemas. <p/> This test is currenlty only implemented
@@ -57,28 +52,15 @@ public class DefaultDBClearerMultiSchemaTest {
 	/* The db support */
 	private DbSupport dbSupport;
 
-	/* True if current test is not for the current dialect */
-	private boolean disabled;
-
 
 	/**
 	 * Configures the tested object. Creates a test table, index, view and sequence
 	 */
 	@Before
 	public void setUp() throws Exception {
-		Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-		String databaseDialect = PropertyUtils.getString(PROPKEY_DATABASE_DIALECT, configuration);
-		this.disabled = !"hsqldb".equals(databaseDialect);
-		if (disabled) {
-			return;
-		}
-
-		// configure 3 schemas
-		configuration.setProperty("database.schemaNames", "PUBLIC, SCHEMA_A, SCHEMA_B");
-
-		dbSupport = TestUtils.getDefaultDbSupport(configuration);
+		dbSupport = TestUtils.getDbSupport("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         dataSource = dbSupport.getDataSource();
-		defaultDbClearer = TestUtils.getDefaultDBClearer(configuration, dbSupport);
+		defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
 
 		dropTestDatabase();
 		createTestDatabase();
@@ -90,9 +72,6 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
-		if (disabled) {
-			return;
-		}
 		dropTestDatabase();
 	}
 
@@ -102,10 +81,6 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Test
 	public void testClearDatabase_tables() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertEquals(1, dbSupport.getTableNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getTableNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getTableNames("SCHEMA_B").size());
@@ -121,10 +96,6 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Test
 	public void testClearDatabase_views() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertEquals(1, dbSupport.getViewNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getViewNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getViewNames("SCHEMA_B").size());
@@ -140,10 +111,6 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Test
 	public void testClearDatabase_sequences() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertEquals(1, dbSupport.getSequenceNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_B").size());
@@ -199,10 +166,7 @@ public class DefaultDBClearerMultiSchemaTest {
 
 
 	/**
-	 * Test trigger for hypersonic.
-	 * 
-	 * @author Filip Neven
-	 * @author Tim Ducheyne
+	 * Test trigger for hsqldb.
 	 */
 	public static class TestTrigger implements Trigger {
 

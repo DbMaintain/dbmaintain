@@ -20,16 +20,13 @@ import static junit.framework.Assert.assertTrue;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
+import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
-
-import java.util.Properties;
 
 /**
  * Test class for the DefaultScriptRunner.
@@ -58,14 +55,12 @@ public class DefaultScriptRunnerTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        
-        DbSupport dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        DbSupport dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
-        defaultScriptRunner = TestUtils.getDefaultScriptRunner(configuration, dbSupport);
+        defaultScriptRunner = TestUtils.getDefaultScriptRunner(dbSupport);
 
-        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@");
-        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@");
+        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", false);
+        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", false);
 
         cleanupTestDatabase();
     }

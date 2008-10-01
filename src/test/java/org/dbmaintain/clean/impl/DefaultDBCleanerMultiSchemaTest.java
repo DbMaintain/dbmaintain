@@ -18,21 +18,14 @@ package org.dbmaintain.clean.impl;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DatabaseModuleConfigUtils;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
-import org.dbmaintain.util.PropertyUtils;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.sql.DataSource;
 
 /**
  * Test class for the DBCleaner with multiple schemas.
@@ -44,17 +37,11 @@ import org.junit.Test;
  */
 public class DefaultDBCleanerMultiSchemaTest {
 
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DefaultDBCleanerMultiSchemaTest.class);
-
     /* DataSource for the test database */
     private DataSource dataSource;
 
     /* Tested object */
     private DefaultDBCleaner defaultDbCleaner;
-
-    /* True if current test is not for the current dialect */
-    private boolean disabled;
 
 
     /**
@@ -62,17 +49,10 @@ public class DefaultDBCleanerMultiSchemaTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        this.disabled = !"hsqldb".equals(PropertyUtils.getString(DatabaseModuleConfigUtils.PROPKEY_DATABASE_DIALECT, configuration));
-        if (disabled) {
-            return;
-        }
-
         // configure 3 schemas
-        configuration.setProperty("database.schemaNames", "PUBLIC, SCHEMA_A, SCHEMA_B");
-        DbSupport dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        DbSupport dbSupport = TestUtils.getDbSupport("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         dataSource = dbSupport.getDataSource();
-        defaultDbCleaner = TestUtils.getDefaultDBCleaner(configuration, dbSupport);
+        defaultDbCleaner = TestUtils.getDefaultDBCleaner(dbSupport);
 
         dropTestTables();
         createTestTables();
@@ -84,9 +64,6 @@ public class DefaultDBCleanerMultiSchemaTest {
      */
     @After
     public void tearDown() throws Exception {
-        if (disabled) {
-            return;
-        }
         dropTestTables();
     }
 
@@ -96,10 +73,6 @@ public class DefaultDBCleanerMultiSchemaTest {
      */
     @Test
     public void testCleanDatabase() throws Exception {
-        if (disabled) {
-            logger.warn("Test is not for current dialect. Skipping test.");
-            return;
-        }
         assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));

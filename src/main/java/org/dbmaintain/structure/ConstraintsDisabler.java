@@ -16,7 +16,6 @@
 package org.dbmaintain.structure;
 
 
-import org.dbmaintain.util.DatabaseAccessing;
 
 /**
  * A task for disabling all foreign key, check and not-null constraints on a database schema.
@@ -26,12 +25,12 @@ import org.dbmaintain.util.DatabaseAccessing;
  * @author Tim Ducheyne
  * @author Bart Vermeiren
  */
-public interface ConstraintsDisabler extends DatabaseAccessing {
+public interface ConstraintsDisabler {
 
 
     /**
      * Disables all constraints of the database schemas.
      */
-    void removeConstraints();
+    void disableConstraints();
 
 }

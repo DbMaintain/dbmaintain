@@ -18,6 +18,8 @@ package org.dbmaintain.script.impl;
 import org.dbmaintain.script.parsingstate.NormalParsingState;
 import org.dbmaintain.script.parsingstate.OracleNormalParsingState;
 
+import java.io.Reader;
+
 /**
  * A parser that can handle Oracle specific things like PL/SQL and a forward slash (/) as separator.
  *
@@ -25,6 +27,16 @@ import org.dbmaintain.script.parsingstate.OracleNormalParsingState;
  * @author Filip Neven
  */
 public class OracleScriptParser extends DefaultScriptParser {
+
+    
+    /**
+     * Constructor for OracleScriptParser.
+     * @param scriptReader
+     * @param backSlashEscapingEnabled
+     */
+    public OracleScriptParser(Reader scriptReader, boolean backSlashEscapingEnabled) {
+        super(scriptReader, backSlashEscapingEnabled);
+    }
 
 
     /**

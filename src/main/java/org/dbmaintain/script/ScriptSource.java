@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.util.Configurable;
 import org.dbmaintain.version.Version;
 
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.Set;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface ScriptSource extends Configurable {
+public interface ScriptSource {
 
 
     /**
@@ -53,15 +52,14 @@ public interface ScriptSource extends Configurable {
 
 
     /**
-     * Returns true if one or more scripts that have a version index equal to or lower than
-     * the index specified by the given version object has been modified since the timestamp specfied by
-     * the given version.
+     * Returns the scripts that have a version index equal to or lower than the index specified by the given version object 
+     * that have been modified according to the given already executed scripts.
      *
      * @param currentVersion The current database version, not null
      * @param alreadyExecutedScripts 
      * @return True if an existing script has been modified, false otherwise
      */
-    boolean isExistingIndexedScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts);
+    boolean isIncrementalScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts);
 
 
     /**

@@ -15,6 +15,10 @@
  */
 package org.dbmaintain.structure.impl;
 
+import java.util.Collection;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
@@ -23,9 +27,6 @@ import org.dbmaintain.util.BaseDatabaseAccessor;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.PropertyUtils;
 
-import java.util.Properties;
-import java.util.Set;
-
 /**
  * Implementation of {@link SequenceUpdater}. All sequences and identity columns that have a value lower than the value
  * defined by {@link #PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE} are set to this value.
@@ -33,26 +34,25 @@ import java.util.Set;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultSequenceUpdater extends BaseDatabaseAccessor implements SequenceUpdater {
+public class DefaultSequenceUpdater implements SequenceUpdater {
 
-    /* Property key for the lowest acceptacle sequence value */
-    public static final String PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE = "sequenceUpdater.sequencevalue.lowestacceptable";
-
+    
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultSequenceUpdater.class);
 
     /* The lowest acceptable sequence value */
     protected long lowestAcceptableSequenceValue;
 
+    protected Collection<DbSupport> dbSupports;
 
+    
     /**
-     * Initializes the lowest acceptable sequence value using the given configuration object
-     *
-     * @param configuration The config, not null
+     * @param lowestAcceptableSequenceValue
+     * @param dbSupports
      */
-    @Override
-    protected void doInit(Properties configuration) {
-        lowestAcceptableSequenceValue = PropertyUtils.getLong(PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, configuration);
+    public DefaultSequenceUpdater(long lowestAcceptableSequenceValue, Collection<DbSupport> dbSupports) {
+        this.lowestAcceptableSequenceValue = lowestAcceptableSequenceValue;
+        this.dbSupports = dbSupports;
     }
 
 
@@ -61,7 +61,7 @@ public class DefaultSequenceUpdater extends BaseDatabaseAccessor implements Sequ
      * easily.
      */
     public void updateSequences() {
-        for (DbSupport dbSupport : getDbSupports()) {
+        for (DbSupport dbSupport : dbSupports) {
         	for (String schemaName : dbSupport.getSchemaNames()) {
 	            logger.info("Updating sequences and identity columns in database " + (dbSupport.getDatabaseName() != null ? dbSupport.getDatabaseName() + 
 	        			", and schema " : "schema ") + schemaName);

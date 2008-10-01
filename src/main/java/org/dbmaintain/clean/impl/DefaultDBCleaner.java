@@ -15,19 +15,18 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SCHEMAS;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.BaseDatabaseAccessor;
+import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.util.DbItemIdentifier;
-import org.dbmaintain.util.PropertyUtils;
+import org.dbmaintain.util.DbMaintainException;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 /**
  * Implementation of {@link DBCleaner}. This implementation will delete all data from a database, except for the tables
@@ -38,28 +37,8 @@ import java.util.Set;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultDBCleaner extends BaseDatabaseAccessor implements DBCleaner {
+public class DefaultDBCleaner implements DBCleaner {
 
-    /**
-     * Property key for schemas in which none of the tables should be cleaned
-     */
-    public static final String PROPKEY_PRESERVE_DATA_SCHEMAS = "dbMaintainer.preserveDataOnly.schemas";
-
-    /**
-     * Property key for the tables that should not be cleaned
-     */
-    public static final String PROPKEY_PRESERVE_DATA_TABLES = "dbMaintainer.preserveDataOnly.tables";
-
-    /**
-     * Property that specifies which tables should not be dropped (should also not be cleaned)
-     */
-    public static final String PROPKEY_PRESERVE_TABLES = "dbMaintainer.preserve.tables";
-
-    /**
-     * The key of the property that specifies the name of the database table in which the
-     * DB version is stored. This table should not be deleted
-     */
-    public static final String PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME = "dbMaintainer.executedScriptsTableName";
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultDBCleaner.class);
@@ -73,20 +52,23 @@ public class DefaultDBCleaner extends BaseDatabaseAccessor implements DBCleaner 
      * The tables that should not be cleaned
      */
     protected Set<DbItemIdentifier> tablesToPreserve;
+    
+    protected Map<String, DbSupport> nameDbSupportMap;
+    
+    protected SQLHandler sqlHandler;
 
 
     /**
-     * Configures this object.
-     *
-     * @param configuration The configuration, not null
+     * Constructor for DefaultDBCleaner.
+     * @param nameDbSupportMap
+     * @param sqlHandler
      */
-    @Override
-    protected void doInit(Properties configuration) {
-        schemasToPreserve = getSchemasToPreserve(PROPKEY_PRESERVE_SCHEMAS);
-        schemasToPreserve.addAll(getSchemasToPreserve(PROPKEY_PRESERVE_DATA_SCHEMAS));
-        tablesToPreserve = getItemsToPreserve(PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
-        tablesToPreserve.addAll(getItemsToPreserve(PROPKEY_PRESERVE_TABLES));
-        tablesToPreserve.addAll(getItemsToPreserve(PROPKEY_PRESERVE_DATA_TABLES));
+    public DefaultDBCleaner(Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {
+        this.nameDbSupportMap = nameDbSupportMap;
+        this.sqlHandler = sqlHandler;
+        
+        this.schemasToPreserve = Collections.emptySet();
+        this.tablesToPreserve = Collections.emptySet();
     }
 
 
@@ -95,7 +77,7 @@ public class DefaultDBCleaner extends BaseDatabaseAccessor implements DBCleaner 
      * configured as <i>tablesToPreserve</i> , and the table in which the database version is stored
      */
     public void cleanSchemas() {
-        for (DbSupport dbSupport : getDbSupports()) {
+        for (DbSupport dbSupport : nameDbSupportMap.values()) {
 			for (String schemaName : dbSupport.getSchemaNames()) {
 	            // check whether schema needs to be preserved
 	            if (schemasToPreserve.contains(DbItemIdentifier.getSchemaIdentifier(schemaName, dbSupport))) {
@@ -128,41 +110,53 @@ public class DefaultDBCleaner extends BaseDatabaseAccessor implements DBCleaner 
         logger.debug("Deleting all records from table " + tableName + " in database schema " + schemaName);
         sqlHandler.executeUpdate("delete from " + dbSupport.qualified(schemaName, tableName), dbSupport.getDataSource());
     }
+    
+    
+    public void setSchemasToPreserve(Set<DbItemIdentifier> schemasToPreserve) {
+        this.schemasToPreserve = schemasToPreserve;
+        assertSchemasToPreserveExist();
+    }
 
-
-    /**
-     * Gets the list of items to preserve. The case is correct if necesSary. Quoting an identifier
-     * makes it case sensitive. If requested, the identifiers will be qualified with the default schema name if no
-     * schema name is used as prefix.
-     *
-     * @param propertyName        The name of the property that defines the items, not null
-     * @return The set of items, not null
-     */
-    protected Set<DbItemIdentifier> getSchemasToPreserve(String propertyName) {
-        Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        List<String> schemasToPreserve = PropertyUtils.getStringList(propertyName, configuration);
-        for (String schemaToPreserve : schemasToPreserve) {
-        	DbItemIdentifier itemIdentifier = DbItemIdentifier.parseSchemaIdentifier(schemaToPreserve, defaultDbSupport, dbNameDbSupportMap);
-        	result.add(itemIdentifier);
-        }
-        return result;
+    
+    public void setTablesToPreserve(Set<DbItemIdentifier> tablesToPreserve) {
+        this.tablesToPreserve = tablesToPreserve;
+        assertTablesToPreserveExist();
     }
 
 
-    /**
-     * Gets the list of items to preserve. The case is correct if necesSary. Quoting an identifier
-     * makes it case sensitive. If requested, the identifiers will be qualified with the default schema name if no
-     * schema name is used as prefix.
-     *
-     * @param propertyName        The name of the property that defines the items, not null
-     * @return The set of items, not null
-     */
-    protected Set<DbItemIdentifier> getItemsToPreserve(String propertyName) {
+    protected void assertSchemasToPreserveExist() {
+        for (DbItemIdentifier schemaToPreserve : schemasToPreserve) {
+            // Verify if the schema exists.
+            DbSupport dbSupport = nameDbSupportMap.get(schemaToPreserve.getDatabaseName());
+            if (!dbSupport.getSchemaNames().contains(schemaToPreserve.getSchemaName())) {
+                throw new DbMaintainException("Schema of which data must be preserved does not exist: " + schemaToPreserve.getSchemaName());
+            }
+        }
+    }
+
+
+    protected void assertTablesToPreserveExist() {
+        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTableNames = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
+        for (DbItemIdentifier tableToPreserve : tablesToPreserve) {
+            Set<DbItemIdentifier> tableNames = schemaTableNames.get(tableToPreserve.getSchema());
+            if (tableNames == null) {
+                DbSupport dbSupport = nameDbSupportMap.get(tableToPreserve.getDatabaseName());
+                tableNames = toDbItemIdentifiers(dbSupport, tableToPreserve.getSchemaName(), dbSupport.getTableNames(tableToPreserve.getSchemaName()));
+                schemaTableNames.put(tableToPreserve.getSchema(), tableNames);
+            }
+            
+            if (!tableNames.contains(tableToPreserve)) {
+                throw new DbMaintainException("Table of which data must be preserved does not exist: " + tableToPreserve.getItemName() + 
+                        " in schema: " + tableToPreserve.getSchemaName());
+            }
+        }
+    }
+    
+    
+    protected Set<DbItemIdentifier> toDbItemIdentifiers(DbSupport dbSupport, String schemaName, Set<String> itemNames) {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        List<String> itemsToPreserve = PropertyUtils.getStringList(propertyName, configuration);
-        for (String itemToPreserve : itemsToPreserve) {
-        	DbItemIdentifier itemIdentifier = DbItemIdentifier.parseItemIdentifier(itemToPreserve, defaultDbSupport, dbNameDbSupportMap);
-        	result.add(itemIdentifier);
+        for (String itemName : itemNames) {
+            result.add(DbItemIdentifier.getItemIdentifier(schemaName, itemName, dbSupport));
         }
         return result;
     }

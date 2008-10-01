@@ -15,11 +15,6 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_MATERIALIZED_VIEWS;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SEQUENCES;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SYNONYMS;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_TABLES;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_VIEWS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -27,18 +22,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
+import org.dbmaintain.util.CollectionUtils;
+import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
-import java.util.Properties;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Test class for the {@link DBClearer} with configuration to preserve all items.
@@ -61,34 +57,37 @@ public class DefaultDBClearerPreserveTest {
     /* The DbSupport object */
     private DbSupport dbSupport;
 
+    private Map<String, DbSupport> nameDbSupportMap;
+
 
     /**
      * Configures the tested object. Creates a test table, index, view and sequence
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dbSupport = TestUtils.getDbSupport();
+        nameDbSupportMap = TestUtils.getNameDbSupportMap(dbSupport);
         dataSource = dbSupport.getDataSource();
 
         // first create database, otherwise items to preserve do not yet exist
         cleanupTestDatabase();
         createTestDatabase();
 
+        defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
+        
         // configure items to preserve
-        configuration.setProperty(PROPKEY_PRESERVE_TABLES, "Test_Table, " + dbSupport.quoted("Test_CASE_Table"));
-        configuration.setProperty(PROPKEY_PRESERVE_VIEWS, "Test_View, " + dbSupport.quoted("Test_CASE_View"));
+        defaultDbClearer.setTablesToPreserve(toDbItemIdentifiers("Test_Table", dbSupport.quoted("Test_CASE_Table")));
+        defaultDbClearer.setViewsToPreserve(toDbItemIdentifiers("Test_View", dbSupport.quoted("Test_CASE_View")));
+        
         if (dbSupport.supportsMaterializedViews()) {
-            configuration.setProperty(PROPKEY_PRESERVE_MATERIALIZED_VIEWS, "Test_MView, " + dbSupport.quoted("Test_CASE_MView"));
+            defaultDbClearer.setMaterializedViewsToPreserve(toDbItemIdentifiers("Test_MView", dbSupport.quoted("Test_CASE_MView")));
         }
         if (dbSupport.supportsSequences()) {
-            configuration.setProperty(PROPKEY_PRESERVE_SEQUENCES, "Test_Sequence, " + dbSupport.quoted("Test_CASE_Sequence"));
+            defaultDbClearer.setSequencesToPreserve(toDbItemIdentifiers("Test_Sequence", dbSupport.quoted("Test_CASE_Sequence")));
         }
         if (dbSupport.supportsSynonyms()) {
-            configuration.setProperty(PROPKEY_PRESERVE_SYNONYMS, "Test_Synonym, " + dbSupport.quoted("Test_CASE_Synonym"));
+            defaultDbClearer.setSynonymsToPreserve(toDbItemIdentifiers("Test_Synonym", dbSupport.quoted("Test_CASE_Synonym")));
         }
-        // create clearer instance
-        defaultDbClearer = TestUtils.getDefaultDBClearer(configuration, dbSupport);
     }
 
 
@@ -487,5 +486,9 @@ public class DefaultDBClearerPreserveTest {
         SQLTestUtils.dropTestTriggers(dbSupport, "test_trigger", "\"Test_CASE_Trigger\"");
         SQLTestUtils.dropTestTables(dbSupport, "\"Test_CASE_Table\"", "test_table");
         SQLTestUtils.dropTestTypes(dbSupport, "test_type", "\"Test_CASE_Type\"");
+    }
+    
+    private Set<DbItemIdentifier> toDbItemIdentifiers(String... itemIdentifiers) {
+        return TestUtils.toDbItemIdentifiers(CollectionUtils.asSet(itemIdentifiers), dbSupport, nameDbSupportMap);
     }
 }

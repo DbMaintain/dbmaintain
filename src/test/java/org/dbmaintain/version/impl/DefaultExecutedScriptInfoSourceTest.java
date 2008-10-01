@@ -17,24 +17,22 @@ package org.dbmaintain.version.impl;
 
 import static junit.framework.Assert.assertEquals;
 
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import org.apache.commons.lang.time.DateUtils;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.sql.DataSource;
+
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Test class for {@link org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -46,10 +44,10 @@ import org.junit.Test;
 public class DefaultExecutedScriptInfoSourceTest {
 
     /* The tested instance */
-    DefaultExecutedScriptInfoSource dbVersionSource;
+    DefaultExecutedScriptInfoSource dbExecutedScriptInfoSource;
 
     /* The tested instance with auto-create configured */
-    DefaultExecutedScriptInfoSource dbVersionSourceAutoCreate;
+    DefaultExecutedScriptInfoSource dbExecutedScriptInfoSourceAutoCreate;
 
     /* The dataSource */
     DataSource dataSource;
@@ -65,15 +63,11 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @Before
     public void setUp() {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
 
-        configuration.setProperty(DefaultExecutedScriptInfoSource.PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, "false");
-        dbVersionSource = TestUtils.getDefaultExecutedScriptInfoSource(configuration, dbSupport);
-
-        configuration.setProperty(DefaultExecutedScriptInfoSource.PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, "true");
-        dbVersionSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(configuration, dbSupport);
+        dbExecutedScriptInfoSource = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, false);
+        dbExecutedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, true);
 
         dropExecutedScriptsTable();
         createExecutedScriptsTable();
@@ -102,11 +96,11 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @Test
     public void testRegisterAndRetrieveExecutedScript() {
-        dbVersionSource.registerExecutedScript(executedScript1);
-        assertEquals(executedScript1, dbVersionSource.getExecutedScripts().iterator().next());
+        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
+        assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
 //        assertLenEquals(asList(executedScript1), dbVersionSource.getExecutedScripts());
-        dbVersionSource.registerExecutedScript(executedScript2);
-        Iterator<ExecutedScript> executedScriptsIterator = dbVersionSource.getExecutedScripts().iterator();
+        dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
+        Iterator<ExecutedScript> executedScriptsIterator = dbExecutedScriptInfoSource.getExecutedScripts().iterator();
         assertEquals(executedScript1, executedScriptsIterator.next());
         assertEquals(executedScript2, executedScriptsIterator.next());
 //        assertLenEquals(asList(executedScript1, executedScript2), dbVersionSource.getExecutedScripts());
@@ -119,7 +113,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     @Test(expected = DbMaintainException.class)
     public void testRegisterExecutedScript_NoExecutedScriptsTable() {
     	dropExecutedScriptsTable();
-        dbVersionSource.registerExecutedScript(executedScript1);
+        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
     }
 
 
@@ -130,26 +124,26 @@ public class DefaultExecutedScriptInfoSourceTest {
     public void testGetDBVersion_noExecutedScriptsTableAutoCreate() {
     	dropExecutedScriptsTable();
 
-        dbVersionSourceAutoCreate.registerExecutedScript(executedScript1);
-        assertEquals(executedScript1, dbVersionSource.getExecutedScripts().iterator().next());
+        dbExecutedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
+        assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
 //        assertLenEquals(asList(executedScript1), dbVersionSource.getExecutedScripts());
     }
     
     @Test
     public void testUpdateExecutedScript() {
-    	dbVersionSource.registerExecutedScript(executedScript1);
+    	dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
     	executedScript1 = new ExecutedScript(executedScript1.getScript(), new Date(), false);
-    	dbVersionSource.updateExecutedScript(executedScript1);
-    	assertEquals(executedScript1, dbVersionSource.getExecutedScripts().iterator().next());
+    	dbExecutedScriptInfoSource.updateExecutedScript(executedScript1);
+    	assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
 //    	assertLenEquals(CollectionUtils.asSet(executedScript1), dbVersionSource.getExecutedScripts());
     }
     
     @Test
     public void testClearAllRegisteredScripts() {
-    	dbVersionSource.registerExecutedScript(executedScript1);
-    	dbVersionSource.registerExecutedScript(executedScript2);
-    	dbVersionSource.clearAllExecutedScripts();
-    	assertEquals(0, dbVersionSource.getExecutedScripts().size());
+    	dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
+    	dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
+    	dbExecutedScriptInfoSource.clearAllExecutedScripts();
+    	assertEquals(0, dbExecutedScriptInfoSource.getExecutedScripts().size());
     }
 
 
@@ -157,7 +151,7 @@ public class DefaultExecutedScriptInfoSourceTest {
      * Utility method to create the test version table.
      */
     private void createExecutedScriptsTable() {
-        SQLTestUtils.executeUpdate(dbVersionSource.getCreateVersionTableStatement(), dataSource);
+        SQLTestUtils.executeUpdate(dbExecutedScriptInfoSource.getCreateVersionTableStatement(), dataSource);
     }
 
 

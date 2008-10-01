@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author Filip Neven
@@ -37,8 +36,7 @@ public final class DbItemIdentifierTest {
 
 	@Before
 	public void init() {
-		Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-		dbSupport = TestUtils.getDefaultDbSupport(configuration);
+		dbSupport = TestUtils.getDbSupport();
 		dbNameDbSupportMap = new HashMap<String, DbSupport>();
 		dbNameDbSupportMap.put("mydatabase", dbSupport);
 	}

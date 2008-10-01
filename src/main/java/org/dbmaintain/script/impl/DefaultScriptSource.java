@@ -15,20 +15,15 @@
  */
 package org.dbmaintain.script.impl;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.ScriptSource;
-import org.dbmaintain.util.BaseConfigurable;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.FileUtils;
-import org.dbmaintain.util.PropertyUtils;
 import org.dbmaintain.version.Version;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,45 +33,44 @@ import java.util.Set;
 
 /**
  * Implementation of {@link ScriptSource} that reads script files from the filesystem. <p/> Script
- * files should be located in the directory configured by {@link #PROPKEY_SCRIPT_LOCATIONS}.
+ * files should be located in the directory configured by scriptLocations.
  * Valid script files start with a version number followed by an underscore, and end with the
- * extension configured by {@link #PROPKEY_SCRIPT_EXTENSIONS}.
+ * extension configured by scriptFileExtensions.
  * <p/>
- * todo refactor -> this is not a database task
  *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultScriptSource extends BaseConfigurable implements ScriptSource {
+public class DefaultScriptSource implements ScriptSource {
 
     /* Logger instance for this class */
     private static final Log logger = LogFactory.getLog(DefaultScriptSource.class);
 
-    /**
-     * Property key for the directory in which the script files are located
-     */
-    public static final String PROPKEY_SCRIPTS_LOCATION = "dbMaintainer.script.locations";
-
-    /**
-     * Property key for the extension of the script files
-     */
-    public static final String PROPKEY_SCRIPT_EXTENSIONS = "dbMaintainer.script.fileExtensions";
-
-    /**
-     * Property key for the directory in which the code script files are located
-     */
-    public static final String PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
-
-    public static final String PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates.enabled";
+    protected boolean useScriptFileLastModificationDates;
     
-    public static final String PROPKEY_SCRIPTS_ENCODING = "dbMaintainer.script.encoding";
+    protected Set<ScriptContainer> scriptContainers;
     
-    public static final String PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
+    protected Set<String> scriptFileExtensions;
     
     protected List<Script> allUpdateScripts, allPostProcessingScripts;
 
 
-     /**
+    /**
+     * Constructor for DefaultScriptSource.
+     * @param scriptContainers 
+     * @param useScriptFileLastModificationDates
+     * @param scriptFileExtensions 
+     */
+    public DefaultScriptSource(Set<ScriptContainer> scriptContainers, boolean useScriptFileLastModificationDates,
+            Set<String> scriptFileExtensions) {
+        this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
+        this.scriptContainers = scriptContainers;
+        this.scriptFileExtensions = scriptFileExtensions;
+        assertValidScriptExtensions();
+    }
+
+
+    /**
      * Gets a list of all available update scripts. These scripts can be used to completely recreate the
      * database from scratch, not null.
      * <p/>
@@ -97,13 +91,13 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
      */
     protected List<Script> getIncrementalScripts() {
     	List<Script> scripts = getAllUpdateScripts();
-    	List<Script> indexedScripts = new ArrayList<Script>();
+    	List<Script> incrementalScripts = new ArrayList<Script>();
     	for (Script script : scripts) {
     		if (script.isIncremental()) {
-    			indexedScripts.add(script);
+    			incrementalScripts.add(script);
     		}
     	}
-    	return indexedScripts;
+    	return incrementalScripts;
     }
 
 
@@ -154,7 +148,7 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
                 continue;
             }
             // Add the script if it's not indexed and if it's contents have changed
-            if (!script.isIncremental() && !alreadyExecutedScript.isScriptContentEqualTo(script, useScriptFileLastModificationDates())) {
+            if (!script.isIncremental() && !alreadyExecutedScript.isScriptContentEqualTo(script, useScriptFileLastModificationDates)) {
             	logger.info("Contents of script " + script.getFileName() + " have changed since the last database update: "
             		 + script.getCheckSum());
             	result.add(script);
@@ -166,13 +160,13 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
 
     /**
      * Returns true if one or more scripts that have a version index equal to or lower than
-     * the index specified by the given version object has been modified since the timestamp specfied by
+     * the index specified by the given version object has been modified since the timestamp specified by
      * the given version.
      *
      * @param currentVersion The current database version, not null
      * @return True if an existing script has been modified, false otherwise
      */
-    public boolean isExistingIndexedScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
+    public boolean isIncrementalScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
     	Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
     	List<Script> incrementalScripts = getIncrementalScripts();
     	// Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
@@ -191,7 +185,7 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
                 	logger.warn("New index script has been added, with at least one already executed script having an higher index." + indexedScript.getFileName());
                 	return true;
                 }
-                if (!alreadyExecutedScript.isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates())) {
+                if (!alreadyExecutedScript.isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates)) {
                 	logger.warn("Script found of which the contents have changed: " + indexedScript.getFileName());
                 	return true;
                 }
@@ -201,16 +195,11 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
     }
     
     
-    protected boolean useScriptFileLastModificationDates() {
-    	return PropertyUtils.getBoolean(PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
-    }
-
-
     /**
-     * Gets the configured post-processing script files and verfies that they on the file system. If one of them
+     * Gets the configured post-processing script files and verifies that they on the file system. If one of them
      * doesn't exist or is not a file, an exception is thrown.
      *
-     * @return All the postprocessing code scripts, not null
+     * @return All the postprocessing scripts, not null
      */
     public List<Script> getPostProcessingScripts() {
     	if (allPostProcessingScripts == null) {
@@ -230,7 +219,10 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
     	allUpdateScripts = new ArrayList<Script>();
     	allPostProcessingScripts = new ArrayList<Script>();
     	for (Script script : allScripts) {
-    		if (isPostProcessingScript(script)) {
+    	    if (!isConfiguredExtension(script)) {
+    	        continue;
+    	    }
+    		if (script.isPostProcessingScript()) {
     			allPostProcessingScripts.add(script);
     		} else {
     			allUpdateScripts.add(script);
@@ -245,68 +237,12 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
 
 
     /**
-     * @return A List containing all scripts in the given script locations, not null
+     * @param script
+     * @return
      */
-	protected List<Script> loadAllScripts() {
-		String scriptsLocation = PropertyUtils.getString(PROPKEY_SCRIPTS_LOCATION, configuration);
-		if (!new File(scriptsLocation).exists()) {
-            throw new DbMaintainException("File location " + scriptsLocation + " defined in property " + PROPKEY_SCRIPTS_LOCATION + " doesn't exist");
-        }
-		List<Script> scripts = new ArrayList<Script>();
-		getScriptsAt(scripts, scriptsLocation, "");
-		return scripts;
-	}
-
-    
-    /**
-     * Adds all scripts available in the given directory or one of its subdirectories to the
-     * given List of files
-     *
-     * @param scriptLocation       The current script location, not null
-     * @param currentParentIndexes The indexes of the current parent folders, not null
-     * @param scriptFiles          The list to which the available script have to be added
-     */
-    protected void getScriptsAt(List<Script> scripts, String scriptRoot, String relativeLocation) {
-        File currentLocation = new File(scriptRoot + "/" + relativeLocation);
-    	if (currentLocation.isFile() && isScriptFile(currentLocation)) {
-            Script script = createScript(currentLocation, relativeLocation);
-            scripts.add(script);
-            return;
-        }
-        // recursively scan sub folders for script files
-        if (currentLocation.isDirectory()) {
-            for (File subLocation : currentLocation.listFiles()) {
-                getScriptsAt(scripts, scriptRoot, 
-                		"".equals(relativeLocation) ? subLocation.getName() : relativeLocation + '/' + subLocation.getName());
-            }
-        }
-    }
-
-
-    /**
-     * @param script A database script, not null
-     * @return True if the given script is a post processing script according to the script source configuration
-     */
-    protected boolean isPostProcessingScript(Script script) {
-    	String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-    	if (StringUtils.isEmpty(postProcessingScriptDirName)) {
-    		return false;
-    	}
-		return script.getFileName().startsWith(postProcessingScriptDirName + '/') ||
-		    script.getFileName().startsWith(postProcessingScriptDirName + '\\');
-	}
-
-
-	/**
-     * Indicates if the given file is a database update script file
-     *
-     * @param file The file, not null
-     * @return True if the given file is a database update script file
-     */
-    protected boolean isScriptFile(File file) {
-        String name = file.getName();
-        for (String fileExtension : getScriptExtensions()) {
-            if (name.endsWith(fileExtension)) {
+    protected boolean isConfiguredExtension(Script script) {
+        for (String extension : scriptFileExtensions) {
+            if (script.getFileName().endsWith(extension)) {
                 return true;
             }
         }
@@ -315,77 +251,16 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
 
 
     /**
-     * Creates a script object for the given script file
-     *
-     * @param scriptFile The script file, not null
-     * @return The script, not null
+     * @return A List containing all scripts in the given script locations, not null
      */
-    protected Script createScript(File scriptFile, String relativePath) {
-        return new Script(relativePath, scriptFile.lastModified(), 
-                new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), 
-                PropertyUtils.getString(PROPKEY_SCRIPTS_ENCODING, configuration)),
-                PropertyUtils.getString(PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX, configuration));
-    }
+	protected List<Script> loadAllScripts() {
+		List<Script> scripts = new ArrayList<Script>();
+		for (ScriptContainer scriptContainer : scriptContainers) {
+		    scripts.addAll(scriptContainer.getScripts());
+		}
+		return scripts;
+	}
 
-
-    /**
-     * Gets the configured script locations and verifies that they on the file system. If one of them
-     * doesn't exist, an exception is thrown.
-     *
-     * @return The files, not null
-     */
-    protected File getScriptsLocation() {
-        String location = PropertyUtils.getString(PROPKEY_SCRIPTS_LOCATION, configuration);
-        File locationFile = new File(location);
-        if (!locationFile.exists()) {
-            throw new DbMaintainException("File location " + location + " defined in property " + PROPKEY_SCRIPTS_LOCATION + " doesn't exist");
-        }
-		return locationFile;
-    }
-
-
-    /**
-     * Gets the configured extensions for the script files.
-     *
-     * @return The extensions, not null
-     */
-    protected List<String> getScriptExtensions() {
-        List<String> extensions = PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration);
-
-        // check whether an extension is configured
-        if (extensions.isEmpty()) {
-            logger.warn("No extensions are specificied using the property " + PROPKEY_SCRIPT_EXTENSIONS + ". The Unitils database maintainer won't do anyting");
-        }
-        // Verify the correctness of the script extensions
-        for (String extension : extensions) {
-            if (extension.startsWith(".")) {
-                throw new DbMaintainException("DefaultScriptSource file extension defined by " + PROPKEY_SCRIPT_EXTENSIONS + " should not start with a '.'");
-            }
-        }
-        return extensions;
-    }
-
-
-    /**
-     * Verifies that directories and files in the given list of fileLocations exist on the file
-     * system. If one of them doesn't exist, an exception is thrown
-     *
-     * @param locations    The directories and files that need to be checked
-     * @param propertyName The name of the property, for the error message if a location does not exist
-     * @return The list of files, not null
-     */
-    protected List<File> getFiles(List<String> locations, String propertyName) {
-        List<File> result = new ArrayList<File>();
-        for (String fileLocation : locations) {
-            File file = new File(fileLocation);
-            if (!file.exists()) {
-                throw new DbMaintainException("File location " + fileLocation + " defined in property " + propertyName + " doesn't exist");
-            }
-            result.add(file);
-        }
-        return result;
-    }
-    
     
     protected Map<String, Script> convertToScriptNameScriptMap(Set<ExecutedScript> executedScripts) {
 		Map<String, Script> scriptMap = new HashMap<String, Script>();
@@ -394,5 +269,18 @@ public class DefaultScriptSource extends BaseConfigurable implements ScriptSourc
         }
 		return scriptMap;
 	}
+    
+    protected void assertValidScriptExtensions() {
+        // check whether an extension is configured
+        if (scriptFileExtensions.isEmpty()) {
+            throw new DbMaintainException("No script file extensions specified!");
+        }
+        // Verify the correctness of the script extensions
+        for (String extension : scriptFileExtensions) {
+            if (extension.startsWith(".")) {
+                throw new DbMaintainException("Script file extension " + extension + " should not start with a '.'");
+            }
+        }
+    }
 
 }

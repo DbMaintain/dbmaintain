@@ -62,12 +62,6 @@ public class DbMaintainConfigurationLoader {
      */
     public static final String PROPKEY_CUSTOM_CONFIGURATION = "dbmaintain.configuration.customFileName";
 
-    /**
-     * Property in the defaults and/or custom configuration file that contains the name of
-     * the user local configuration file
-     */
-    public static final String PROPKEY_LOCAL_CONFIGURATION = "dbmaintain.configuration.localFileName";
-
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DbMaintainConfigurationLoader.class);
 
@@ -109,18 +103,6 @@ public class DbMaintainConfigurationLoader {
     		logger.warn("No custom configuration file " + customConfigurationFileName + " found.");
         } else {
         	properties.putAll(customProperties);
-        }
-    	
-    	// Load the local configuration file from the user home, or from the classpath
-    	String localConfigurationFileName = PropertyUtils.getString(PROPKEY_LOCAL_CONFIGURATION, properties);
-    	Properties localProperties = loadPropertiesFileFromUserHome(localConfigurationFileName);
-    	if (localProperties == null) {
-    		localProperties = loadPropertiesFileFromClasspath(localConfigurationFileName);
-    	}
-    	if (localProperties == null) {
-    		logger.info("No custom configuration file " + customConfigurationFileName + " found.");
-        } else {
-        	properties.putAll(localProperties);
         }
         
         return properties;

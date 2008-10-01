@@ -18,15 +18,16 @@ package org.dbmaintain.script.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptParser;
+import org.dbmaintain.script.ScriptParserFactory;
 import org.dbmaintain.script.ScriptRunner;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import org.dbmaintain.util.BaseDatabaseAccessor;
-import org.dbmaintain.util.ConfigUtils;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.Reader;
+import java.util.Map;
 
 /**
  * Default implementation of a script runner.
@@ -34,11 +35,37 @@ import java.io.Reader;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultScriptRunner extends BaseDatabaseAccessor implements ScriptRunner {
+public class DefaultScriptRunner implements ScriptRunner {
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultScriptRunner.class);
+
+    protected DbSupport defaultDbSupport;
     
+    protected Map<String, DbSupport> nameDbSupportMap;
+    
+    protected SQLHandler sqlHandler;
+    
+    protected ScriptParserFactory scriptParserFactory;
+    
+    
+    /**
+     * Constructor for DefaultScriptRunner.
+     * @param scriptParserFactory
+     * @param defaultDbSupport
+     * @param nameDbSupportMap
+     * @param sqlHandler 
+     */
+    public DefaultScriptRunner(ScriptParserFactory scriptParserFactory, DbSupport defaultDbSupport, 
+            Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {
+
+        this.scriptParserFactory = scriptParserFactory;
+        this.defaultDbSupport = defaultDbSupport;
+        this.nameDbSupportMap = nameDbSupportMap;
+        this.sqlHandler = sqlHandler;
+    }
+
+
     /**
      * Executes the given script.
      * <p/>
@@ -51,31 +78,19 @@ public class DefaultScriptRunner extends BaseDatabaseAccessor implements ScriptR
 
         Reader scriptContentReader = null;
         try {
+            // Define the target database on which to execute the script
+            DbSupport targetDbSupport = getTargetDatabaseDbSupport(script);
+            if (targetDbSupport == null) {
+                logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() +
+                    ". This database is disabled, so the script is not executed.");
+                return;
+            }
+                
             // get content stream
             scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
-
-            // Define the target database on which to execute the script
-            DbSupport targetDbSupport;
-            if (script.getTargetDatabaseName() == null) {
-            	targetDbSupport = defaultDbSupport;
-            } else {
-            	targetDbSupport = dbNameDbSupportMap.get(script.getTargetDatabaseName());
-            	if (!dbNameDbSupportMap.containsKey(script.getTargetDatabaseName())) {
-            		throw new DbMaintainException("Error executing script " + script.getFileName() + 
-            				". No database initialized with the name " + script.getTargetDatabaseName());
-            	}
-            	targetDbSupport = dbNameDbSupportMap.get(script.getTargetDatabaseName());
-            	if (targetDbSupport == null) {
-            	    logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() +
-            	            ". This database is disabled, so the script is not executed.");
-            	    return;
-            	}
-            }
-            
             // create a script parser for the target database in question 
-            ScriptParser scriptParser = createScriptParser(targetDbSupport.getDatabaseDialect());
-            scriptParser.init(configuration, scriptContentReader);
-            
+            ScriptParser scriptParser = scriptParserFactory.createScriptParser(targetDbSupport
+                    .getDatabaseDialect(), scriptContentReader);
             // parse and execute the statements
             String statement;
             while ((statement = scriptParser.getNextStatement()) != null) {
@@ -88,13 +103,18 @@ public class DefaultScriptRunner extends BaseDatabaseAccessor implements ScriptR
 
 
     /**
-     * Creates a script parser for the given database dialect
-     * 
-     * @param databaseDialect 
-     *
-     * @return The parser, not null
+     * @param script
+     * @return
      */
-    protected ScriptParser createScriptParser(String databaseDialect) {
-        return ConfigUtils.getInstanceOf(ScriptParser.class, configuration, databaseDialect);
+    protected DbSupport getTargetDatabaseDbSupport(Script script) {
+        if (script.getTargetDatabaseName() == null) {
+        	return defaultDbSupport;
+        } 
+    	if (!nameDbSupportMap.containsKey(script.getTargetDatabaseName())) {
+    		throw new DbMaintainException("Error executing script " + script.getFileName() + 
+    				". No database initialized with the name " + script.getTargetDatabaseName());
+    	}
+    	return nameDbSupportMap.get(script.getTargetDatabaseName());
     }
+
 }

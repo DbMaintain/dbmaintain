@@ -15,17 +15,16 @@
  */
 package org.dbmaintain.clean;
 
-import org.dbmaintain.util.DatabaseAccessing;
 
 
 /**
  * Defines the contract for implementations that clear a database schema, so that it can for instance 
- * be recreated from scratch by the {@link org.dbmaintain.DBMaintainer}
+ * be recreated from scratch by the {@link org.dbmaintain.DefaultDbMaintainer}
  *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DBClearer extends DatabaseAccessing {
+public interface DBClearer {
 
 
     /**

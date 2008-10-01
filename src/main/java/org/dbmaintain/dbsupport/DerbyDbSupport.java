@@ -17,6 +17,9 @@ package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -37,12 +40,20 @@ import java.util.Set;
  */
 public class DerbyDbSupport extends DbSupport {
 
-
+    
     /**
-     * Creates support for Derby databases.
+     * Creates support for a Derby database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public DerbyDbSupport() {
-        super("derby");
+    public DerbyDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "derby", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
 

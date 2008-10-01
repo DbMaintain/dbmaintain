@@ -42,38 +42,45 @@ import java.util.Properties;
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
+ * @author Alexander Snaps <alex.snaps@gmail.com>
  */
-public class MarkDatabaseAsUpToDateTask extends Task {
+public class UpdateDatabaseTask extends Task {
 
     private String configFile;
     private List<Database> databases = new ArrayList<Database>();
     private String scriptLocations;
     private String extensions;
+    private Boolean useLastModificationDates;
+    private Boolean fromScratchEnabled;
+    private Boolean cleanDb;
+    private Boolean disableConstraints;
+    private Boolean updateSequences;
     
     @Override
     public void execute() throws BuildException {
-        try {
-            DbSupport defaultDbSupport = null;
+
+    	try {
+    	    DbSupport defaultDbSupport = null;
             Map<String, DbSupport> nameDbSupportMap = null;
-            if (databases != null) {
-                nameDbSupportMap = new HashMap<String, DbSupport>();
-                for (Database database : databases) {
-                    DbSupport dbSupport = createDbSupport(database);
-                    nameDbSupportMap.put(dbSupport.getDatabaseName(), dbSupport);
-                    if (defaultDbSupport == null) {
-                        defaultDbSupport = dbSupport;
-                    }
-                }
-            }
-            PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
-                    getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
-            DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-            dbMaintainer.markDatabaseAsUptodate();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BuildException(e);
-        }
+			if (databases != null) {
+    			nameDbSupportMap = new HashMap<String, DbSupport>();
+    			for (Database database : databases) {
+    				DbSupport dbSupport = createDbSupport(database);
+    				nameDbSupportMap.put(dbSupport.getDatabaseName(), dbSupport);
+    				if (defaultDbSupport == null) {
+    					defaultDbSupport = dbSupport;
+    				}
+    			}
+			}
+			PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
+			        getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
+			DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+			dbMaintainer.updateDatabase();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new BuildException(e);
+		}
     }
 
     /**
@@ -89,6 +96,21 @@ public class MarkDatabaseAsUpToDateTask extends Task {
         }
         if (extensions != null) {
             configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS, extensions);
+        }
+        if (useLastModificationDates != null) {
+            configuration.put(DbMaintainProperties.PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES, String.valueOf(useLastModificationDates));
+        }
+        if (fromScratchEnabled != null) {
+            configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, String.valueOf(fromScratchEnabled));
+        }
+        if (cleanDb != null) {
+            configuration.put(DbMaintainProperties.PROPKEY_CLEANDB_ENABLED, String.valueOf(cleanDb));
+        }
+        if (disableConstraints != null) {
+            configuration.put(DbMaintainProperties.PROPKEY_DISABLE_CONSTRAINTS_ENABLED, disableConstraints);
+        }
+        if (updateSequences != null) {
+            configuration.put(DbMaintainProperties.PROPKEY_UPDATE_SEQUENCES_ENABLED, updateSequences);
         }
         
         
@@ -138,8 +160,8 @@ public class MarkDatabaseAsUpToDateTask extends Task {
         if (databases == null) {
             databases = new ArrayList<Database>();
         }
-        databases.add(database);
-    }
+		databases.add(database);
+	}
     
     public void setScriptLocations(String scriptLocations) {
         this.scriptLocations = scriptLocations;
@@ -148,5 +170,25 @@ public class MarkDatabaseAsUpToDateTask extends Task {
     public void setExtensions(String extensions) {
         this.extensions = extensions;
     }
-	
+    
+    public void setUseLastModificationDates(boolean useLastModificationDates) {
+        this.useLastModificationDates = useLastModificationDates;
+    }
+    
+    public void setFromScratchEnabled(boolean fromScratchEnabled) {
+        this.fromScratchEnabled = fromScratchEnabled;
+    }
+
+    public void setCleanDb(boolean cleanDb) {
+        this.cleanDb = cleanDb;
+    }
+
+    public void setDisableConstraints(boolean disableConstraints) {
+        this.disableConstraints = disableConstraints;
+    }
+    
+    public void setUpdateSequences(boolean updateSequences) {
+        this.updateSequences = updateSequences;
+    }
+
 }

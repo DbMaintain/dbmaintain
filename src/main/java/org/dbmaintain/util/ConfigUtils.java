@@ -70,6 +70,24 @@ public class ConfigUtils {
         logger.debug("Creating instance of " + type + ". Implementation class " + implClassName);
         return (T) ReflectionUtils.createInstanceOfType(implClassName, false);
     }
+    
+    
+    /**
+     * Retrieves the concrete instance of the class with the given type as configured by the given <code>Configuration</code>.
+     * Tries to retrieve a specific implementation first (propery key = fully qualified name of the interface
+     * type + '.impl.className.' + implementationDiscriminatorValue). If this key does not exist, the generally configured
+     * instance is retrieved (same property key without the implementationDiscriminatorValue).
+     *
+     * @param type          The type of the instance
+     * @param configuration The configuration containing the necessary properties for configuring the instance
+     * @param implementationDiscriminatorValues
+     *                      The values that define which specific implementation class should be used.
+     *                      This is typically an environment specific property, like the DBMS that is used.
+     * @return The configured class name
+     */
+    public static <T> Class<T> getConfiguredClass(Class<T> type, Properties configuration, String... implementationDiscriminatorValues) {
+        return ReflectionUtils.getClassWithName(getConfiguredClassName(type, configuration, implementationDiscriminatorValues));
+    }
 
 
     /**

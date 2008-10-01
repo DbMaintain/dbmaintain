@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.structure;
 
-import org.dbmaintain.util.DatabaseAccessing;
 
 /**
  * Defines the contract for implementation classes that update all sequences and identity columns of a database to
@@ -24,7 +23,7 @@ import org.dbmaintain.util.DatabaseAccessing;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface SequenceUpdater extends DatabaseAccessing {
+public interface SequenceUpdater {
 
 
     /**

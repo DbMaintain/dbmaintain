@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright 2008,  Unitils.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script;
+package org.dbmaintain.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
- * An interface for a parser that can parse statements out of a script.
- *
- * @author Tim Ducheyne
- * @author Filip Neven
+ * Wrapper that makes an Reader available as an InputStream 
  */
-public interface ScriptParser {
-
-
-    /**
-     * Gets the next statement out of the given script stream.
-     *
-     * @return the statements, null if no more statements
-     */
-    String getNextStatement();
-
+public class ReaderInputStream extends InputStream {
+	
+	private Reader reader;
+	
+	public ReaderInputStream(Reader reader) {
+		this.reader = reader;
+	}
+	
+	public int read() throws IOException {
+		return reader.read();
+	}
+	
 }

@@ -8,6 +8,10 @@
  */
 package org.dbmaintain.dbsupport;
 
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,12 +25,20 @@ import java.util.Set;
 public class PostgreSqlDbSupport extends DbSupport {
 
     /**
-     * Creates support for PostgreSql databases.
+     * Creates support for a postgresql database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public PostgreSqlDbSupport() {
-        super("postgresql");
+    public PostgreSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "postgresql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
-
+    
 
     /**
      * Returns the names of all tables in the database.

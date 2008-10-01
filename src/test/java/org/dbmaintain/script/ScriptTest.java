@@ -70,7 +70,7 @@ public class ScriptTest {
 
 	@Test
 	public void testIsScriptContentEqualTo() {
-		Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "@");
+		Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "@", false);
 		
 		Script sameScriptWithoutContent = new Script("fileName", 0L, script.getCheckSum(), "@");
 		assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, true));

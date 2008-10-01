@@ -15,29 +15,23 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_MATERIALIZED_VIEWS;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SCHEMAS;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SEQUENCES;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SYNONYMS;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_TABLES;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_VIEWS;
 import static org.junit.Assert.fail;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
+import org.dbmaintain.util.CollectionUtils;
+import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Test class for the {@link DBClearer} with preserve items configured, but some items do not exist.
@@ -61,7 +55,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     
     DbSupport dbSupport;
     
-    Map<String, DbSupport> dbNameDbSupportMap;
+    Map<String, DbSupport> nameDbSupportMap;
 
 
     /**
@@ -71,13 +65,9 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Before
     public void setUp() throws Exception {
-        configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        sqlHandler = new DefaultSQLHandler();
-        defaultDbClearer = new DefaultDBClearer();
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
-		dbNameDbSupportMap = new HashMap<String, DbSupport>();
-		dbNameDbSupportMap.put(null, dbSupport);
-
+        dbSupport = TestUtils.getDbSupport();
+        nameDbSupportMap = TestUtils.getNameDbSupportMap(dbSupport);
+        defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
     }
 
 
@@ -86,8 +76,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_schemasToPreserveDoNotExist() throws Exception {
-        configuration.setProperty(PROPKEY_PRESERVE_SCHEMAS, "unexisting_schema1, unexisting_schema2");
-        defaultDbClearer.init(configuration, sqlHandler, dbSupport, dbNameDbSupportMap);
+        Set<DbItemIdentifier> schemasToPreserve = CollectionUtils.asSet(
+                DbItemIdentifier.parseSchemaIdentifier("unexisting_schema1", dbSupport, nameDbSupportMap),
+                DbItemIdentifier.parseSchemaIdentifier("unexisting_schema2", dbSupport, nameDbSupportMap));
+        defaultDbClearer.setSchemasToPreserve(schemasToPreserve);
     }
 
 
@@ -96,8 +88,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_tablesToPreserveDoNotExist() throws Exception {
-        configuration.setProperty(PROPKEY_PRESERVE_TABLES, "unexisting_table1, unexisting_table2");
-        defaultDbClearer.init(configuration, sqlHandler, dbSupport, dbNameDbSupportMap);
+        Set<DbItemIdentifier> tablesToPreserve = CollectionUtils.asSet(
+                DbItemIdentifier.parseItemIdentifier("unexisting_table1", dbSupport, nameDbSupportMap),
+                DbItemIdentifier.parseItemIdentifier("unexisting_table2", dbSupport, nameDbSupportMap));
+        defaultDbClearer.setTablesToPreserve(tablesToPreserve);
     }
 
 
@@ -106,8 +100,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_viewsToPreserveDoNotExist() throws Exception {
-        configuration.setProperty(PROPKEY_PRESERVE_VIEWS, "unexisting_view1, unexisting_view2");
-        defaultDbClearer.init(configuration, sqlHandler, dbSupport, dbNameDbSupportMap);
+        Set<DbItemIdentifier> viewsToPreserve = CollectionUtils.asSet(
+                DbItemIdentifier.parseItemIdentifier("unexisting_view1", dbSupport, nameDbSupportMap),
+                DbItemIdentifier.parseItemIdentifier("unexisting_view2", dbSupport, nameDbSupportMap));
+        defaultDbClearer.setViewsToPreserve(viewsToPreserve);
     }
 
 
@@ -116,8 +112,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_materializedViewsToPreserveDoNotExist() throws Exception {
-        configuration.setProperty(PROPKEY_PRESERVE_MATERIALIZED_VIEWS, "unexisting_materializedView1, unexisting_materializedView2");
-        defaultDbClearer.init(configuration, sqlHandler, dbSupport, dbNameDbSupportMap);
+        Set<DbItemIdentifier> materializedViewsToPreserve = CollectionUtils.asSet(
+                DbItemIdentifier.parseItemIdentifier("unexisting_materializedView1", dbSupport, nameDbSupportMap),
+                DbItemIdentifier.parseItemIdentifier("unexisting_materializedView1", dbSupport, nameDbSupportMap));
+        defaultDbClearer.setMaterializedViewsToPreserve(materializedViewsToPreserve);
     }
 
 
@@ -131,9 +129,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             return;
         }
         try {
-            configuration.setProperty(PROPKEY_PRESERVE_SEQUENCES, "unexisting_sequence1, unexisting_sequence2");
-            defaultDbClearer.init(configuration, sqlHandler, dbSupport, dbNameDbSupportMap);
-            fail("DbMaintainException expected.");
+            Set<DbItemIdentifier> sequencesToPreserve = CollectionUtils.asSet(
+                    DbItemIdentifier.parseItemIdentifier("unexisting_sequence1", dbSupport, nameDbSupportMap),
+                    DbItemIdentifier.parseItemIdentifier("unexisting_sequence2", dbSupport, nameDbSupportMap));
+            defaultDbClearer.setSequencesToPreserve(sequencesToPreserve);
         } catch (DbMaintainException e) {
             // expected
         }
@@ -150,8 +149,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             return;
         }
         try {
-            configuration.setProperty(PROPKEY_PRESERVE_SYNONYMS, "unexisting_synonym1, unexisting_synonym2");
-            defaultDbClearer.init(configuration, sqlHandler, dbSupport, dbNameDbSupportMap);
+            Set<DbItemIdentifier> synonymsToPreserve = CollectionUtils.asSet(
+                    DbItemIdentifier.parseItemIdentifier("unexisting_synonym1", dbSupport, nameDbSupportMap),
+                    DbItemIdentifier.parseItemIdentifier("unexisting_synonym2", dbSupport, nameDbSupportMap));
+            defaultDbClearer.setSynonymsToPreserve(synonymsToPreserve);
             fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected

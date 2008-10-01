@@ -15,27 +15,25 @@
  */
 package org.dbmaintain.version.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
-import org.dbmaintain.util.BaseDatabaseAccessor;
-import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.PropertyUtils;
-import org.dbmaintain.version.ExecutedScriptInfoSource;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.SQLHandler;
+import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.version.ExecutedScriptInfoSource;
 
 /**
  * Implementation of <code>VersionSource</code> that stores the version in the database. The version is stored in the
@@ -47,41 +45,14 @@ import java.util.Set;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultExecutedScriptInfoSource extends BaseDatabaseAccessor implements ExecutedScriptInfoSource {
+public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource {
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultExecutedScriptInfoSource.class);
 
-    /* The key of the property that specifies the datase table in which the DB version is stored */
-    public static final String PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME = "dbMaintainer.executedScriptsTableName";
-
-    /* The key of the property that specifies the column in which the script filenames are stored */
-    public static final String PROPERTY_FILE_NAME_COLUMN_NAME = "dbMaintainer.fileNameColumnName";
-    public static final String PROPERTY_FILE_NAME_COLUMN_SIZE = "dbMaintainer.fileNameColumnSize";
-
-    /* The key of the property that specifies the column in which the last modification timestamp is stored */
-    public static final String PROPERTY_SCRIPT_VERSION_COLUMN_NAME = "dbMaintainer.versionColumnName";
-    public static final String PROPERTY_SCRIPT_VERSION_COLUMN_SIZE = "dbMaintainer.versionColumnSize";
-
-    /* The key of the property that specifies the column in which the last modification timestamp is stored */
-    public static final String PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME = "dbMaintainer.fileLastModifiedAtColumnName";
+    protected DbSupport defaultDbSupport;
     
-    /* The key of the property that specifies the column in which the last modification timestamp is stored */
-    public static final String PROPERTY_CHECKSUM_COLUMN_NAME = "dbMaintainer.checksumColumnName";
-    public static final String PROPERTY_CHECKSUM_COLUMN_SIZE = "dbMaintainer.checksumColumnSize";
-    
-    /* The key of the property that specifies the column in which is stored whether the last update succeeded. */
-    public static final String PROPERTY_EXECUTED_AT_COLUMN_NAME = "dbMaintainer.executedAtColumnName";
-    public static final String PROPERTY_EXECUTED_AT_COLUMN_SIZE = "dbMaintainer.executedAtColumnSize";
-    
-    /* The key of the property that specifies the column in which is stored whether the last update succeeded. */
-    public static final String PROPERTY_SUCCEEDED_COLUMN_NAME = "dbMaintainer.succeededColumnName";
-    public static final String PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX = "dbMaintainer.scripts.targetDatabase.prefix";
-
-    /* The key of the property that specifies whether the executec scripts table should be created automatically. */
-    public static final String PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE = "dbMaintainer.autoCreateExecutedScriptsTable";
-
-    public static final String PROPERTY_TIMESTAMP_FORMAT = "dbMaintainer.timestampFormat";
+    protected SQLHandler sqlHandler;
 
     protected Set<ExecutedScript> executedScripts;
     
@@ -127,36 +98,56 @@ public class DefaultExecutedScriptInfoSource extends BaseDatabaseAccessor implem
     /**
      * True if the scripts table should be created automatically if it does not exist yet
      */
-    protected boolean autoCreateVersionTable;
+    protected boolean autoCreateExecutedScriptsTable;
     
     /**
      * Format of the contents of the executed_at column
      */
     protected DateFormat timestampFormat;
+    
+    protected String targetDatabasePrefix;
 
 
     /**
-     * Initializes the name of the version table and its columns using the given configuration.
-     *
-     * @param configuration the configuration, not null
+     * Constructor for DefaultExecutedScriptInfoSource.
+     * @param autoCreateExecutedScriptsTable
+     * @param executedScriptsTableName
+     * @param fileNameColumnName
+     * @param fileNameColumnSize
+     * @param versionColumnName
+     * @param versionColumnSize
+     * @param fileLastModifiedAtColumnName
+     * @param checksumColumnName
+     * @param checksumColumnSize
+     * @param executedAtColumnName
+     * @param executedAtColumnSize
+     * @param succeededColumnName
+     * @param timestampFormat
+     * @param defaultSupport 
+     * @param sqlHandler 
+     * @param targetDatabasePrefix 
      */
-    @Override
-    protected void doInit(Properties configuration) {
-        this.executedScriptsTableName = defaultDbSupport.toCorrectCaseIdentifier(
-        		PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration));
-        this.fileNameColumnName = defaultDbSupport.toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_NAME_COLUMN_NAME, configuration));
-        this.fileNameColumnSize = PropertyUtils.getInt(PROPERTY_FILE_NAME_COLUMN_SIZE, configuration);
-        this.versionColumnName = defaultDbSupport.toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SCRIPT_VERSION_COLUMN_NAME, configuration));
-        this.versionColumnSize = PropertyUtils.getInt(PROPERTY_SCRIPT_VERSION_COLUMN_SIZE, configuration);
-        this.fileLastModifiedAtColumnName = defaultDbSupport.toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME, configuration));
-        this.checksumColumnName = defaultDbSupport.toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_CHECKSUM_COLUMN_NAME, configuration));
-        this.checksumColumnSize = PropertyUtils.getInt(PROPERTY_CHECKSUM_COLUMN_SIZE, configuration);
-        this.executedAtColumnName = defaultDbSupport.toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_EXECUTED_AT_COLUMN_NAME, configuration));
-        this.executedAtColumnSize = PropertyUtils.getInt(PROPERTY_EXECUTED_AT_COLUMN_SIZE, configuration);
-        this.succeededColumnName = defaultDbSupport.toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SUCCEEDED_COLUMN_NAME, configuration));
+    public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName, 
+            int fileNameColumnSize, String versionColumnName, int versionColumnSize, String fileLastModifiedAtColumnName, 
+            String checksumColumnName, int checksumColumnSize, String executedAtColumnName, int executedAtColumnSize, 
+            String succeededColumnName, DateFormat timestampFormat, DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix) {
 
-        this.autoCreateVersionTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, configuration);
-        this.timestampFormat = new SimpleDateFormat(PropertyUtils.getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
+        this.defaultDbSupport = defaultSupport;
+        this.sqlHandler = sqlHandler;
+        this.autoCreateExecutedScriptsTable = autoCreateExecutedScriptsTable;
+        this.executedScriptsTableName = defaultDbSupport.toCorrectCaseIdentifier(executedScriptsTableName);
+        this.fileNameColumnName = defaultDbSupport.toCorrectCaseIdentifier(fileNameColumnName);
+        this.fileNameColumnSize = fileNameColumnSize;
+        this.versionColumnName = defaultDbSupport.toCorrectCaseIdentifier(versionColumnName);
+        this.versionColumnSize = versionColumnSize;
+        this.fileLastModifiedAtColumnName = defaultDbSupport.toCorrectCaseIdentifier(fileLastModifiedAtColumnName);
+        this.checksumColumnName = defaultDbSupport.toCorrectCaseIdentifier(checksumColumnName);
+        this.checksumColumnSize = checksumColumnSize;
+        this.executedAtColumnName = defaultDbSupport.toCorrectCaseIdentifier(executedAtColumnName);
+        this.executedAtColumnSize = executedAtColumnSize;
+        this.succeededColumnName = defaultDbSupport.toCorrectCaseIdentifier(succeededColumnName);
+        this.timestampFormat = timestampFormat;
+        this.targetDatabasePrefix = targetDatabasePrefix;
     }
 
 
@@ -208,7 +199,7 @@ public class DefaultExecutedScriptInfoSource extends BaseDatabaseAccessor implem
 					}
 					Boolean succeeded = rs.getInt(succeededColumnName) == 1 ? Boolean.TRUE : Boolean.FALSE;
 					ExecutedScript executedScript = new ExecutedScript(
-					        new Script(fileName, fileLastModifiedAt, checkSum, PropertyUtils.getString(PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX, configuration)), 
+					        new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix), 
 					        executedAt, succeeded);
 					executedScripts.add(executedScript);
 				}
@@ -356,7 +347,7 @@ public class DefaultExecutedScriptInfoSource extends BaseDatabaseAccessor implem
         }
 
         // does not exist yet, if auto-create create version table
-        if (autoCreateVersionTable) {
+        if (autoCreateExecutedScriptsTable) {
             logger.warn("Executed scripts table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " doesn't exist yet or is invalid. A new one is created automatically.");
             createVersionTable();
             return false;
@@ -364,7 +355,7 @@ public class DefaultExecutedScriptInfoSource extends BaseDatabaseAccessor implem
 
         // throw an exception that shows how to create the version table
         String message = "Executed scripts table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " doesn't exist yet or is invalid.\n";
-        message += "Please create it manually or let Unitils create it automatically by setting the " + PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE + " property to true.\n";
+        message += "Please create it manually or let Unitils create it automatically by setting the autoCreateExecutedScriptsTable property to true.\n";
         message += "The table can be created manually by executing following statement:\n";
         message += getCreateVersionTableStatement();
         throw new DbMaintainException(message);

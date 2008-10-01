@@ -18,6 +18,7 @@ package org.dbmaintain.script.impl;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.dbmaintain.script.ScriptParser;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.After;
@@ -28,7 +29,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Properties;
 
 /**
  * Tests the SQL script parser
@@ -37,12 +37,6 @@ import java.util.Properties;
  * @author Filip Neven
  */
 public class DefaultScriptParserTest {
-
-    /* Tested instance  */
-    private DefaultScriptParser defaultScriptParser;
-
-    /* The unitils properties */
-    private Properties configuration;
 
     /* Reader for the test script */
     private Reader testSQLScriptReader;
@@ -59,8 +53,6 @@ public class DefaultScriptParserTest {
      */
     @Before
     public void setUp() throws Exception {
-        defaultScriptParser = new DefaultScriptParser();
-        configuration = new org.dbmaintain.util.DbMaintainConfigurationLoader().loadConfiguration();
         testSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
         testSQLMissingSemiColonScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script-missing-semicolon.sql").toURI()));
         emptyScriptReader = new StringReader("");
@@ -83,12 +75,12 @@ public class DefaultScriptParserTest {
      */
     @Test
     public void testParseStatements() throws Exception {
-        defaultScriptParser.init(configuration, testSQLScriptReader);
+        ScriptParser scriptParser = new DefaultScriptParser(testSQLScriptReader, false);
 
         for (int i = 0; i < 13; i++) {
-            assertNotNull(defaultScriptParser.getNextStatement());
+            assertNotNull(scriptParser.getNextStatement());
         }
-        assertNull(defaultScriptParser.getNextStatement());
+        assertNull(scriptParser.getNextStatement());
     }
 
 
@@ -98,8 +90,8 @@ public class DefaultScriptParserTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testParseStatements_missingEndingSemiColon() throws Exception {
-        defaultScriptParser.init(configuration, testSQLMissingSemiColonScriptReader);
-        defaultScriptParser.getNextStatement();
+        ScriptParser scriptParser = new DefaultScriptParser(testSQLMissingSemiColonScriptReader, false);
+        scriptParser.getNextStatement();
     }
 
 
@@ -108,7 +100,8 @@ public class DefaultScriptParserTest {
      */
     @Test
     public void testParseStatements_emptyScript() throws Exception {
-        defaultScriptParser.init(configuration, emptyScriptReader);
-        assertNull(defaultScriptParser.getNextStatement());
+        ScriptParser scriptParser = new DefaultScriptParser(emptyScriptReader, false);
+        
+        assertNull(scriptParser.getNextStatement());
     }
 }

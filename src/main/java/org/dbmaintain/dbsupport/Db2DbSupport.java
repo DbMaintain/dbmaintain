@@ -15,6 +15,10 @@
  */
 package org.dbmaintain.dbsupport;
 
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
+
 import java.util.Set;
 
 /**
@@ -29,10 +33,19 @@ public class Db2DbSupport extends DbSupport {
 
 
     /**
-     * Creates support for Db2 databases.
+     * Creates support for a Db2 database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public Db2DbSupport() {
-        super("db2");
+    public Db2DbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "db2", dataSource, defaultSchemaName, schemaNames, sqlHandler, 
+                customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
 

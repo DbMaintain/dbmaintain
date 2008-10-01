@@ -18,12 +18,14 @@ package org.dbmaintain.clean.impl;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
+import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
+import org.dbmaintain.util.CollectionUtils;
+import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -47,9 +49,6 @@ public class DefaultDBCleanerTest {
     /* The DbSupport object */
     private DbSupport dbSupport;
 
-    /* The name of the version table */
-    private String versionTableName;
-
 
     /**
      * Test fixture. The DefaultDBCleaner is instantiated and configured. Test tables are created and filled with test
@@ -57,20 +56,20 @@ public class DefaultDBCleanerTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dbSupport = TestUtils.getDbSupport();
+        Map<String, DbSupport> nameDbSupportMap = TestUtils.getNameDbSupportMap(dbSupport);
         dataSource = dbSupport.getDataSource();
-        
-        // items to preserve
-        configuration.setProperty(DefaultDBCleaner.PROPKEY_PRESERVE_DATA_TABLES, "Test_table_Preserve");
-        configuration.setProperty(DefaultDBCleaner.PROPKEY_PRESERVE_TABLES, dbSupport.quoted("Test_CASE_Table_Preserve"));
-        // create cleaner instance
-        defaultDbCleaner = TestUtils.getDefaultDBCleaner(configuration, dbSupport);
-        versionTableName = configuration.getProperty(DefaultDBCleaner.PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
 
+        // setup test database
         cleanupTestDatabase();
         createTestDatabase();
         insertTestData();
+        
+        // create cleaner instance
+        defaultDbCleaner = TestUtils.getDefaultDBCleaner(dbSupport);
+        Set<DbItemIdentifier> tablesToPreserve = TestUtils.toDbItemIdentifiers(
+                CollectionUtils.asSet("Test_table_Preserve", "Test_CASE_Table_Preserve"), dbSupport, nameDbSupportMap);
+        defaultDbCleaner.setTablesToPreserve(tablesToPreserve);
     }
 
 
@@ -97,17 +96,6 @@ public class DefaultDBCleanerTest {
 
 
     /**
-     * Tests if the tables that are configured as tables to preserve are left untouched
-     */
-    @Test
-    public void testCleanDatabase_preserveDbVersionTable() throws Exception {
-        assertFalse(SQLTestUtils.isEmpty(versionTableName, dataSource));
-        defaultDbCleaner.cleanSchemas();
-        assertFalse(SQLTestUtils.isEmpty(versionTableName, dataSource));
-    }
-
-
-    /**
      * Tests if the tables to preserve are left untouched
      */
     @Test
@@ -124,7 +112,6 @@ public class DefaultDBCleanerTest {
      * Creates the test tables
      */
     private void createTestDatabase() throws Exception {
-        SQLTestUtils.executeUpdate("create table " + versionTableName + "(testcolumn varchar(10))", dataSource);
         SQLTestUtils.executeUpdate("create table TEST_TABLE(testcolumn varchar(10))", dataSource);
         SQLTestUtils.executeUpdate("create table TEST_TABLE_PRESERVE(testcolumn varchar(10))", dataSource);
         SQLTestUtils.executeUpdate("create table " + dbSupport.quoted("Test_CASE_Table") + " (col1 varchar(10))", dataSource);
@@ -139,7 +126,7 @@ public class DefaultDBCleanerTest {
      */
     private void cleanupTestDatabase() {
         SQLTestUtils.dropTestViews(dbSupport, "TEST_VIEW");
-        SQLTestUtils.dropTestTables(dbSupport, "TEST_TABLE", "TEST_TABLE_PRESERVE", dbSupport.quoted("Test_CASE_Table"), dbSupport.quoted("Test_CASE_Table_Preserve"), versionTableName);
+        SQLTestUtils.dropTestTables(dbSupport, "TEST_TABLE", "TEST_TABLE_PRESERVE", dbSupport.quoted("Test_CASE_Table"), dbSupport.quoted("Test_CASE_Table_Preserve"));
     }
 
 
@@ -147,7 +134,6 @@ public class DefaultDBCleanerTest {
      * Inserts a test record in each test table
      */
     private void insertTestData() throws Exception {
-        SQLTestUtils.executeUpdate("insert into " + versionTableName + " values('test')", dataSource);
         SQLTestUtils.executeUpdate("insert into TEST_TABLE values('test')", dataSource);
         SQLTestUtils.executeUpdate("insert into TEST_TABLE_PRESERVE values('test')", dataSource);
         SQLTestUtils.executeUpdate("insert into " + dbSupport.quoted("Test_CASE_Table") + " values('test')", dataSource);

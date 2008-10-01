@@ -15,13 +15,13 @@
  */
 package org.dbmaintain.structure.impl;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.structure.ConstraintsDisabler;
-import org.dbmaintain.util.BaseDatabaseAccessor;
-
-import java.util.Set;
 
 /**
  * Default implementation of {@link ConstraintsDisabler}.
@@ -32,17 +32,27 @@ import java.util.Set;
  * @author Filip Neven
  * @author Bart Vermeiren
  */
-public class DefaultConstraintsDisabler extends BaseDatabaseAccessor implements ConstraintsDisabler {
+public class DefaultConstraintsDisabler implements ConstraintsDisabler {
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultConstraintsDisabler.class);
+
+    protected Collection<DbSupport> dbSupports;
+    
+    
+    /**
+     * @param dbSupports
+     */
+    public DefaultConstraintsDisabler(Collection<DbSupport> dbSupports) {
+        this.dbSupports = dbSupports;
+    }
 
 
     /**
      * Permanently disable every foreign key or not-null constraint
      */
-    public void removeConstraints() {
-        for (DbSupport dbSupport : getDbSupports()) {
+    public void disableConstraints() {
+        for (DbSupport dbSupport : dbSupports) {
             for (String schemaName : dbSupport.getSchemaNames()) {
 	        	logger.info("Disabling contraints in database " + (dbSupport.getDatabaseName() != null ? dbSupport.getDatabaseName() + 
 	        			", and schema " : "schema ") + schemaName);

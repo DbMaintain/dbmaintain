@@ -24,13 +24,11 @@ import org.dbmaintain.script.parsingstate.InLineCommentParsingState;
 import org.dbmaintain.script.parsingstate.InSingleQuotesParsingState;
 import org.dbmaintain.script.parsingstate.NormalParsingState;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.PropertyUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
-import java.util.Properties;
 
 /**
  * A class for parsing statements out of sql scripts.
@@ -46,11 +44,17 @@ import java.util.Properties;
  */
 public class DefaultScriptParser implements ScriptParser {
 
-    /**
-     * Property indicating if the characters can be escaped by using backslashes. For example '\'' instead of the standard SQL way ''''.
-     */
-    public static final String PROPKEY_BACKSLASH_ESCAPING_ENABLED = "org.dbmaintain.script.ScriptParser.backSlashEscapingEnabled";
 
+    /**
+     * The reader for the script content stream.
+     */
+    protected Reader scriptReader;
+
+    /**
+     * Whether backslash escaping is enabled
+     */
+    protected boolean backSlashEscapingEnabled;
+    
     /**
      * The starting state.
      */
@@ -66,21 +70,16 @@ public class DefaultScriptParser implements ScriptParser {
      */
     protected int currentChar;
 
-    /**
-     * The reader for the script content stream.
-     */
-    protected Reader scriptReader;
-
 
     /**
-     * Initializes the parser with the given configuration settings.
-     *
-     * @param configuration The config, not null
-     * @param scriptReader  the script stream, not null
+     * Constructor for DefaultScriptParser.
+     * @param scriptReader
+     * @param backSlashEscapingEnabled
      */
-    public void init(Properties configuration, Reader scriptReader) {
-        boolean backSlashEscapingEnabled = PropertyUtils.getBoolean(PROPKEY_BACKSLASH_ESCAPING_ENABLED, configuration);
-        this.initialParsingState = createInitialParsingState(backSlashEscapingEnabled);
+    public DefaultScriptParser(Reader scriptReader, boolean backSlashEscapingEnabled) {
+        this.scriptReader = scriptReader;
+        this.backSlashEscapingEnabled = backSlashEscapingEnabled;
+        this.initialParsingState = createInitialParsingState();
         this.currentParsingState = initialParsingState;
         this.scriptReader = new BufferedReader(scriptReader);
     }
@@ -115,6 +114,7 @@ public class DefaultScriptParser implements ScriptParser {
      * Actual implementation of getNextStatement.
      *
      * @return the statements, null if no more statements
+     * @throws IOException 
      */
     protected String getNextStatementImpl() throws IOException {
         currentChar = scriptReader.read();
@@ -215,10 +215,9 @@ public class DefaultScriptParser implements ScriptParser {
      * This will create a normal, in-line-comment, in-block-comment, in-double-quotes and in-single-quotes state
      * and link them together.
      *
-     * @param backSlashEscapingEnabled True if a backslash can be used for escaping characters
      * @return The initial parsing state, not null
      */
-    protected ParsingState createInitialParsingState(boolean backSlashEscapingEnabled) {
+    protected ParsingState createInitialParsingState() {
         // create states
         NormalParsingState normalParsingState = createNormalParsingState();
         InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();

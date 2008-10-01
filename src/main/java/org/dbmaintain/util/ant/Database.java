@@ -27,7 +27,7 @@ import java.util.Set;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DatabaseType {
+public class Database {
 
 	private String name;
 	
@@ -45,7 +45,7 @@ public class DatabaseType {
 	
 	private Set<String> schemaNames;
 
-	public DatabaseType() {
+	public Database() {
 	}
 
 	public String getName() {

@@ -17,6 +17,9 @@ package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -34,14 +37,23 @@ import java.util.Set;
  */
 public class MsSqlDbSupport extends DbSupport {
 
+    
     /**
-     * Creates a new DB support instance for MS SQL.
+     * Creates support for a MsSql database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public MsSqlDbSupport() {
-        super("mssql");
+    public MsSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "mssql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
-
+    
     /**
      * Returns the names of all tables in the database.
      *

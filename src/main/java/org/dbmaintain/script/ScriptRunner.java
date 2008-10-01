@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.util.DatabaseAccessing;
 
 
 /**
@@ -24,7 +23,7 @@ import org.dbmaintain.util.DatabaseAccessing;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface ScriptRunner extends DatabaseAccessing {
+public interface ScriptRunner {
 
 
     /**

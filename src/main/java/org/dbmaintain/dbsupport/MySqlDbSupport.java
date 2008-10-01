@@ -17,6 +17,8 @@ package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.util.StoredIdentifierCase;
 
+import javax.sql.DataSource;
+
 import java.util.Set;
 
 /**
@@ -37,12 +39,20 @@ public class MySqlDbSupport extends DbSupport {
 
 
     /**
-     * Creates support for MySql databases.
+     * Creates support for a mysql database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public MySqlDbSupport() {
-        super("mysql");
+    public MySqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "mysql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
-
+    
 
     /**
      * Returns the names of all tables in the database.

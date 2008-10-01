@@ -1,27 +1,23 @@
 package org.dbmaintain.clean.impl;
 
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SCHEMAS;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_SEQUENCES;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_TABLES;
-import static org.dbmaintain.clean.impl.DefaultDBClearer.PROPKEY_PRESERVE_VIEWS;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
-import org.dbmaintain.util.DatabaseModuleConfigUtils;
-import org.dbmaintain.util.PropertyUtils;
+import org.dbmaintain.util.CollectionUtils;
+import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
-import java.util.Properties;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Test class for the {@link DBClearer} using multiple database schemas with configuration to preserve all items. <p/>
@@ -43,9 +39,8 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 
 	/* The db support */
 	private DbSupport dbSupport;
-
-	/* True if current test is not for the current dialect */
-	private boolean disabled;
+	
+	private Map<String, DbSupport> nameDbSupportMap;
 
 
 	/**
@@ -53,31 +48,21 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-		this.disabled = !"hsqldb".equals(PropertyUtils.getString(DatabaseModuleConfigUtils.PROPKEY_DATABASE_DIALECT, configuration));
-		if (disabled) {
-			return;
-		}
-		
-		// configure 3 schemas
-		configuration.setProperty("database.schemaNames", "PUBLIC, SCHEMA_A, \"SCHEMA_B\", schema_c");
-
-		dbSupport = TestUtils.getDefaultDbSupport(configuration);
+		dbSupport = TestUtils.getDbSupport("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
 		dataSource = dbSupport.getDataSource();
-
-		// configure items to preserve
-		configuration.setProperty(PROPKEY_PRESERVE_SCHEMAS, "schema_c");
-		configuration.setProperty(PROPKEY_PRESERVE_TABLES, "test_table, " + dbSupport.quoted("SCHEMA_A") + "." + dbSupport.quoted("TEST_TABLE"));
-		configuration.setProperty(PROPKEY_PRESERVE_VIEWS, "test_view, " + "schema_a." + dbSupport.quoted("TEST_VIEW"));
-		configuration.setProperty(PROPKEY_PRESERVE_SEQUENCES, "test_sequence, " + dbSupport.quoted("SCHEMA_A") + ".test_sequence");
-		
 		
 		// first create database, otherwise items to preserve do not yet exist
-		cleanupTestDatabase();
-		createTestDatabase();
-
+        cleanupTestDatabase();
+        createTestDatabase();
+		
 		// create clearer instance
-		defaultDbClearer = TestUtils.getDefaultDBClearer(configuration, dbSupport);
+        defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
+        
+		// configure items to preserve
+        defaultDbClearer.setSchemasToPreserve(toDbSchemaIdentifiers("schema_c"));
+        defaultDbClearer.setTablesToPreserve(toDbItemIdentifiers("test_table", dbSupport.quoted("SCHEMA_A") + "." + dbSupport.quoted("TEST_TABLE")));
+        defaultDbClearer.setViewsToPreserve(toDbItemIdentifiers("test_view", "schema_a." + dbSupport.quoted("TEST_VIEW")));
+        defaultDbClearer.setSequencesToPreserve(toDbItemIdentifiers("test_sequence", dbSupport.quoted("SCHEMA_A") + ".test_sequence"));
 	}
 
 
@@ -86,9 +71,6 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
-		if (disabled) {
-			return;
-		}
 		cleanupTestDatabase();
 	}
 
@@ -98,10 +80,6 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 	 */
 	@Test
 	public void testClearDatabase_tables() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertEquals(1, dbSupport.getTableNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getTableNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getTableNames("SCHEMA_B").size());
@@ -118,10 +96,6 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 	 */
 	@Test
 	public void testClearDatabase_views() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertEquals(1, dbSupport.getViewNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getViewNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getViewNames("SCHEMA_B").size());
@@ -138,10 +112,6 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 	 */
 	@Test
 	public void testClearDatabase_sequences() throws Exception {
-		if (disabled) {
-			logger.warn("Test is not for current dialect. Skipping test.");
-			return;
-		}
 		assertEquals(1, dbSupport.getSequenceNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_B").size());
@@ -203,5 +173,13 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 		SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
 		SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_C", dataSource);
 	}
+	
+	private Set<DbItemIdentifier> toDbSchemaIdentifiers(String... schemaIdentifiers) {
+        return TestUtils.toDbSchemaIdentifiers(CollectionUtils.asSet(schemaIdentifiers), dbSupport, nameDbSupportMap);
+    }
+	
+	private Set<DbItemIdentifier> toDbItemIdentifiers(String... itemIdentifiers) {
+        return TestUtils.toDbItemIdentifiers(CollectionUtils.asSet(itemIdentifiers), dbSupport, nameDbSupportMap);
+    }
 
 }

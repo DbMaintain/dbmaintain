@@ -15,12 +15,12 @@
  */
 package org.dbmaintain.script;
 
+import org.apache.commons.lang.StringUtils;
+import org.dbmaintain.version.Version;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.version.Version;
 
 /**
  * A class representing a script file and it's content.
@@ -46,6 +46,8 @@ public class Script implements Comparable<Script> {
     
     /* The handle to the content of the script */
     private ScriptContentHandle scriptContentHandle;
+    
+    private boolean postProcessingScript;
 
 
     /**
@@ -55,13 +57,16 @@ public class Script implements Comparable<Script> {
      * @param fileLastModifiedAt 
      * @param scriptContentHandle Handle providing access to the contents of the script, not null
      * @param targetDatabasePrefix 
+     * @param isPostProcessingScript 
      */
-    public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String targetDatabasePrefix) {
+    public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String targetDatabasePrefix,
+            boolean isPostProcessingScript) {
         this.fileName = fileName;
         this.version = getVersionFromPath(fileName);
         this.targetDatabaseName = getTargetDatabaseNameFromPath(fileName, targetDatabasePrefix);
         this.fileLastModifiedAt = fileLastModifiedAt;
         this.scriptContentHandle = scriptContentHandle;
+        this.postProcessingScript = isPostProcessingScript;
     }
     
     
@@ -178,6 +183,11 @@ public class Script implements Comparable<Script> {
 	public boolean isIncremental() {
 		return version.getScriptIndex() != null;
 	}
+
+    
+    public boolean isPostProcessingScript() {
+        return postProcessingScript;
+    }
 
 
     /**
@@ -298,7 +308,7 @@ public class Script implements Comparable<Script> {
      */
     @Override
     public String toString() {
-        return fileName + " " + getCheckSum();
+        return fileName;
     }
 
 

@@ -18,20 +18,16 @@ package org.dbmaintain.structure;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.sql.DataSource;
 
 /**
  * Test class for the SequenceUpdater. Contains tests that can be implemented generally for all different database dialects.
@@ -66,12 +62,9 @@ public class SequenceUpdaterTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        configuration.setProperty(DefaultSequenceUpdater.PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, "1000");
-
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
-        sequenceUpdater = TestUtils.getDefaultSequenceUpdater(configuration, dbSupport);
+        sequenceUpdater = TestUtils.getDefaultSequenceUpdater(dbSupport);
 
         cleanupTestDatabase();
         createTestDatabase();

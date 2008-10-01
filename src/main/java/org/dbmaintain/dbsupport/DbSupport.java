@@ -17,7 +17,6 @@ package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.PropertyUtils;
 import org.dbmaintain.util.StoredIdentifierCase;
 
 import javax.sql.DataSource;
@@ -26,7 +25,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -39,16 +37,6 @@ import java.util.Set;
  * @author Frederick Beernaert
  */
 abstract public class DbSupport {
-
-    /**
-     * Property key for the default identifier casing (lower_case, upper_case, mixed_case, auto)
-     */
-    public static final String PROPKEY_STORED_IDENTIFIER_CASE = "database.storedIndentifierCase";
-
-    /**
-     * Property key for the default identifier quote string (empty value for not supported, auto)
-     */
-    public static final String PROPKEY_IDENTIFIER_QUOTE_STRING = "database.identifierQuoteString";
 
 
     /* The name of the DBMS implementation that is supported by this implementation */
@@ -75,46 +63,30 @@ abstract public class DbSupport {
     /**
      * Creates a new, unconfigured instance. To have a instance that can be used, the {@link #init} method must be
      * called first.
+     * @param databaseName 
      *
      * @param databaseDialect The name of the DBMS implementation that is supported by this implementation, not null
-     */
-    protected DbSupport(String databaseDialect) {
-        this.databaseDialect = databaseDialect;
-    }
-
-
-    /**
-     * Initializes this DbSupport object with the given schemaName and dataSource.
-     * If the storedIdentifierCase or identifierQuoteString is set to null, the metadata of the connection will be used to determine the
-     * correct value.
-     *
-     * @param configuration The config, not null
-     * @param sqlHandler    The sql handler, not null
      * @param dataSource 
-     * @param databaseName 
      * @param defaultSchemaName 
      * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public void init(Properties configuration, SQLHandler sqlHandler, DataSource dataSource, String databaseName, 
-    		String defaultSchemaName, Set<String> schemaNames) {
-        
-    	this.sqlHandler = sqlHandler;
-        this.dataSource = dataSource;
+    protected DbSupport(String databaseName, String databaseDialect, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         this.databaseName = databaseName;
-
-        String identifierQuoteStringProperty = PropertyUtils.getString(PROPKEY_IDENTIFIER_QUOTE_STRING + "." + getDatabaseDialect(), configuration);
-        String storedIdentifierCaseValue = PropertyUtils.getString(PROPKEY_STORED_IDENTIFIER_CASE + "." + getDatabaseDialect(), configuration);
-
-        this.identifierQuoteString = determineIdentifierQuoteString(identifierQuoteStringProperty);
-        this.storedIdentifierCase = determineStoredIdentifierCase(storedIdentifierCaseValue);
-        
+        this.databaseDialect = databaseDialect;
+        this.dataSource = dataSource;
+        this.identifierQuoteString = determineIdentifierQuoteString(customIdentifierQuoteString);
+        this.storedIdentifierCase = determineStoredIdentifierCase(customStoredIdentifierCase);
         this.defaultSchemaName = toCorrectCaseIdentifier(defaultSchemaName);
         this.schemaNames = new HashSet<String>();
         for (String schemaName : schemaNames) {
-        	this.schemaNames.add(toCorrectCaseIdentifier(schemaName));
+            this.schemaNames.add(toCorrectCaseIdentifier(schemaName));
         }
+        this.sqlHandler = sqlHandler;
     }
-
 
     /**
      * Gets the database dialect.
@@ -504,8 +476,8 @@ abstract public class DbSupport {
      * @param storedIdentifierCase The stored case: possible values 'lower_case', 'upper_case', 'mixed_case' and 'auto'
      * @return The stored case, not null
      */
-    private StoredIdentifierCase determineStoredIdentifierCase(String storedIdentifierCase) {
-        if ("lower_case".equals(storedIdentifierCase)) {
+    private StoredIdentifierCase determineStoredIdentifierCase(StoredIdentifierCase customStoredIdentifierCase) {
+        /*if ("lower_case".equals(storedIdentifierCase)) {
             return StoredIdentifierCase.LOWER_CASE;
         } else if ("upper_case".equals(storedIdentifierCase)) {
             return StoredIdentifierCase.UPPER_CASE;
@@ -513,6 +485,9 @@ abstract public class DbSupport {
             return StoredIdentifierCase.MIXED_CASE;
         } else if (!"auto".equals(storedIdentifierCase)) {
             throw new DbMaintainException("Unknown value " + storedIdentifierCase + " for property " + PROPKEY_STORED_IDENTIFIER_CASE + ". It should be one of lower_case, upper_case, mixed_case or auto.");
+        }*/
+        if (customStoredIdentifierCase != null) {
+            return customStoredIdentifierCase;
         }
 
         Connection connection = null;
@@ -542,11 +517,18 @@ abstract public class DbSupport {
      * @param identifierQuoteStringProperty The string to quote identifiers, 'none' if quoting is not supported, 'auto' for auto detection
      * @return The quote string, null if quoting is not supported
      */
-    private String determineIdentifierQuoteString(String identifierQuoteStringProperty) {
-        if ("none".equals(identifierQuoteStringProperty)) {
+    private String determineIdentifierQuoteString(String customIdentifierQuoteString) {
+        /*if ("none".equals(identifierQuoteStringProperty)) {
             return null;
         } else if (!"auto".equals(identifierQuoteStringProperty)) {
             return identifierQuoteStringProperty;
+        }*/
+        
+        if (customIdentifierQuoteString != null) {
+            if ("".equals(customIdentifierQuoteString.trim())) {
+                return null;
+            }
+            return customIdentifierQuoteString;
         }
 
         Connection connection = null;

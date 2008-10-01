@@ -19,21 +19,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.sql.DataSource;
 
 /**
  * Test class for the {@link DBClearer}.
@@ -55,21 +52,16 @@ public class DefaultDBClearerTest {
     /* The DbSupport object */
     private DbSupport dbSupport;
 
-    /* The name of the version tabel */
-    private String versionTableName;
-
 
     /**
      * Configures the tested object. Creates a test table, index, view and sequence
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
         // create clearer instance
-        defaultDbClearer = TestUtils.getDefaultDBClearer(configuration, dbSupport);
-        versionTableName = configuration.getProperty(DefaultDBClearer.PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME);
+        defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -93,18 +85,6 @@ public class DefaultDBClearerTest {
         assertEquals(2, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size());
         defaultDbClearer.clearSchemas();
         assertTrue(dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).isEmpty());
-    }
-
-
-    /**
-     * Checks if the db version table is preserved.
-     */
-    @Test
-    public void testClearDatabase_dbVersionTables() throws Exception {
-        SQLTestUtils.executeUpdate("create table " + versionTableName + "(testcolumn varchar(10))", dataSource);
-        assertEquals(3, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size());
-        defaultDbClearer.clearSchemas();
-        assertEquals(1, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size()); // version table
     }
 
 
@@ -238,7 +218,7 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabaseHsqlDb() throws Exception {
-        SQLTestUtils.dropTestTables(dbSupport, "test_table", "\"Test_CASE_Table\"", versionTableName);
+        SQLTestUtils.dropTestTables(dbSupport, "test_table", "\"Test_CASE_Table\"");
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "\"Test_CASE_View\"");
         SQLTestUtils.dropTestSequences(dbSupport, "test_sequence", "\"Test_CASE_Sequence\"");
         SQLTestUtils.dropTestTriggers(dbSupport, "test_trigger", "\"Test_CASE_Trigger\"");
@@ -282,7 +262,6 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabaseMySql() throws Exception {
-        SQLTestUtils.dropTestTables(dbSupport, "test_table", "`Test_CASE_Table`", versionTableName);
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "`Test_CASE_View`");
         SQLTestUtils.dropTestTriggers(dbSupport, "test_trigger", "`Test_CASE_Trigger`");
     }
@@ -323,7 +302,6 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabaseOracle() throws Exception {
-        SQLTestUtils.dropTestTables(dbSupport, "test_table", "\"Test_CASE_Table\"", versionTableName);
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "\"Test_CASE_View\"");
         SQLTestUtils.dropTestMaterializedViews(dbSupport, "test_mview", "\"Test_CASE_MView\"");
         SQLTestUtils.dropTestSynonyms(dbSupport, "test_synonym", "\"Test_CASE_Synonym\"");
@@ -368,7 +346,6 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabasePostgreSql() throws Exception {
-        SQLTestUtils.dropTestTables(dbSupport, "test_table", "\"Test_CASE_Table\"", versionTableName);
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "\"Test_CASE_View\"");
         SQLTestUtils.dropTestSequences(dbSupport, "test_sequence", "\"Test_CASE_Sequence\"");
         SQLTestUtils.dropTestTriggers(dbSupport, "test_trigger", "\"Test_CASE_Trigger\"");
@@ -405,7 +382,6 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabaseDb2() throws Exception {
-        SQLTestUtils.dropTestTables(dbSupport, "test_table", "\"Test_CASE_Table\"", versionTableName);
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "\"Test_CASE_View\"");
         SQLTestUtils.dropTestSynonyms(dbSupport, "test_synonym", "\"Test_CASE_Synonym\"");
         SQLTestUtils.dropTestSequences(dbSupport, "test_sequence", "\"Test_CASE_Sequence\"");
@@ -445,7 +421,6 @@ public class DefaultDBClearerTest {
         SQLTestUtils.dropTestSynonyms(dbSupport, "test_synonym", "\"Test_CASE_Synonym\"");
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "\"Test_CASE_View\"");
         SQLTestUtils.dropTestTriggers(dbSupport, "test_trigger", "\"Test_CASE_Trigger\"");
-        SQLTestUtils.dropTestTables(dbSupport, "\"Test_CASE_Table\"", "TEST_TABLE", versionTableName);
     }
 
     //
@@ -482,7 +457,6 @@ public class DefaultDBClearerTest {
         SQLTestUtils.dropTestSynonyms(dbSupport, "test_synonym", "\"Test_CASE_Synonym\"");
         SQLTestUtils.dropTestViews(dbSupport, "test_view", "\"Test_CASE_View\"");
         SQLTestUtils.dropTestTriggers(dbSupport, "test_trigger", "\"Test_CASE_Trigger\"");
-        SQLTestUtils.dropTestTables(dbSupport, "\"Test_CASE_Table\"", "test_table", versionTableName);
         SQLTestUtils.dropTestTypes(dbSupport, "test_type", "\"Test_CASE_Type\"");
     }
 }

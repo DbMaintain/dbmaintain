@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.dbsupport;
+package org.dbmaintain.script;
 
-
-import org.dbmaintain.util.Configurable;
+import java.util.List;
 
 /**
- * todo javadoc
- * <p/>
- * todo cache instances
+ * @author Filip Neven
+ * @author Tim Ducheyne
  */
-public interface DbSupportFactory extends Configurable {
+public interface ScriptContainer {
 
-
-	DbSupport createDefaultDbSupport(SQLHandler sqlHandler);
-	
-	
-	DbSupport createDbSupport(String databaseName, SQLHandler sqlHandler);
-
+    List<Script> getScripts();
+    
 }

@@ -39,12 +39,20 @@ import java.security.NoSuchAlgorithmException;
  */
 public abstract class ScriptContentHandle {
 
-	private MessageDigest scriptDigest;
+	protected MessageDigest scriptDigest;
 	
-	private Reader scriptReader;
+	protected Reader scriptReader;
 	
 	protected String encoding;
 	
+	
+    /**
+     * @param encoding
+     */
+    protected ScriptContentHandle(String encoding) {
+        this.encoding = encoding;
+    }
+
     /**
      * Opens a stream to the content of the script.
      * 
@@ -74,8 +82,6 @@ public abstract class ScriptContentHandle {
 		try {
 			if (scriptDigest == null) {
 				readScript();
-			} else if (scriptReader.ready()) {
-				throw new DbMaintainException("Cannot obtain checksum, since a script is currently being read");
 			}
 			return getHexPresentation(scriptDigest.digest());
 		} catch (IOException e) {
@@ -118,8 +124,8 @@ public abstract class ScriptContentHandle {
          * @param encoding 
          */
         public UrlScriptContentHandle(URL url, String encoding) {
+            super(encoding);
             this.url = url;
-            this.encoding = encoding;
         }
 
 
@@ -154,8 +160,8 @@ public abstract class ScriptContentHandle {
          * @param encoding 
          */
         public StringScriptContentHandle(String scriptContent, String encoding) {
+            super(encoding);
             this.scriptContent = scriptContent;
-            this.encoding = encoding;
         }
 
 

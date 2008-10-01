@@ -15,33 +15,22 @@
  */
 package org.dbmaintain;
 
-import static org.dbmaintain.util.DatabaseModuleConfigUtils.getConfiguredDatabaseTaskInstance;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clean.DBClearer;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
-import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptRunner;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
-import org.dbmaintain.util.ConfigUtils;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.PropertyUtils;
 import org.dbmaintain.version.ExecutedScriptInfoSource;
 import org.dbmaintain.version.Version;
 
-import javax.sql.DataSource;
-
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -64,60 +53,19 @@ import java.util.Set;
  * <li>A DTD is generated that describes the database's table structure, to use in test data XML
  * files</li>
  * </ul>
- * <p/> To obtain a properly configured <code>DBMaintainer</code>, invoke the constructor
- * {@link #DBMaintainer(Properties,DefaultSQLHandler, DataSource, Set)} with a <code>TestDataSource</code> providing
- * access to the database and a <code>Configuration</code> object containing all necessary
- * properties.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DBMaintainer {
+public class DefaultDbMaintainer implements DbMaintainer {
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DBMaintainer.class);
+    private static Log logger = LogFactory.getLog(DefaultDbMaintainer.class);
 
-    /**
-     * Property indicating if deleting all data from all tables before updating is enabled
-     */
-    public static final String PROPKEY_DB_CLEANER_ENABLED = "dbMaintainer.cleanDb.enabled";
-
-    /**
-     * Property indicating if updating the database from scratch is enabled
-     */
-    public static final String PROPKEY_FROM_SCRATCH_ENABLED = "dbMaintainer.fromScratch.enabled";
-
-    /**
-     * Property indicating if database code should be cleared before installing a new version of
-     * the code or when updating the database from scratch
-     */
-    public static final String PROPKEY_CLEAR_DB_CODE_ENABLED = "dbMaintainer.clearDbCode.enabled";
-
-    /**
-     * Property indicating if an retry of an update should only be performed when changes to script files were made
-     */
-    public static final String PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED = "dbMaintainer.keepRetryingAfterError.enabled";
-
-    /**
-     * Property indicating if the database constraints should org disabled after updating the database
-     */
-    public static final String PROPKEY_DISABLE_CONSTRAINTS_ENABLED = "dbMaintainer.disableConstraints.enabled";
-
-    /**
-     * Property indicating if the database constraints should org disabled after updating the database
-     */
-    public static final String PROPKEY_UPDATE_SEQUENCES_ENABLED = "dbMaintainer.updateSequences.enabled";
-
-    /**
-     * Property that indicates if a data set DTD or XSD is to be generated or not
-     */
-    public static final String PROPKEY_GENERATE_DATA_SET_STRUCTURE_ENABLED = "dbMaintainer.generateDataSetStructure.enabled";
-
-    
     /**
      * Provider of the current version of the database, and means to increment it
      */
-    protected ExecutedScriptInfoSource versionSource;
+    protected ExecutedScriptInfoSource executedScriptInfoSource;
 
     /**
      * Provider of scripts for updating the database to a higher version
@@ -149,6 +97,8 @@ public class DBMaintainer {
      */
     protected SequenceUpdater sequenceUpdater;
 
+    protected boolean cleanDbEnabled;
+    
     /**
      * Indicates whether updating the database from scratch is enabled. If true, the database is
      * cleared before updating if an already executed script is modified
@@ -162,74 +112,56 @@ public class DBMaintainer {
     protected boolean disableConstraintsEnabled;
 
     /**
+     * Indicates whether sequences and identity columns must be updated to a certain minimal value
+     */
+    protected boolean updateSequencesEnabled;
+
+    /**
      * Indicates whether a from scratch update should be performed when the previous update failed,
      * but none of the scripts were modified since that last update. If true a new update will be
      * tried only when changes were made to the script files
      */
-    protected boolean keepRetryingAfterError;
+//    protected boolean keepRetryingAfterError;
 
     
     /**
      * Default constructor for testing.
      */
-    protected DBMaintainer() {
+    protected DefaultDbMaintainer() {
     }
 
 
     /**
-     * Create a new instance of <code>DBMaintainer</code>, The concrete implementations of all
-     * helper classes are derived from the given <code>Configuration</code> object.
-     *
-     * @param configuration the configuration, not null
-     * @param sqlHandler    the data source, not null
-     * @param defaultDataSource 
-     * @param dataSources 
+     * @param scriptRunner
+     * @param scriptSource
+     * @param executedScriptInfoSource
+     * @param fromScratchEnabled
+     * @param dbClearer 
+     * @param dbCleaner
      */
-    public DBMaintainer(Properties configuration, SQLHandler sqlHandler, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
-        try {
-            scriptRunner = getConfiguredDatabaseTaskInstance(ScriptRunner.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-            versionSource = getConfiguredDatabaseTaskInstance(ExecutedScriptInfoSource.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-            scriptSource = ConfigUtils.getConfiguredInstanceOf(ScriptSource.class, configuration);
-
-            boolean cleanDbEnabled = PropertyUtils.getBoolean(PROPKEY_DB_CLEANER_ENABLED, configuration);
-            if (cleanDbEnabled) {
-                dbCleaner = getConfiguredDatabaseTaskInstance(DBCleaner.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-            }
-
-            fromScratchEnabled = PropertyUtils.getBoolean(PROPKEY_FROM_SCRATCH_ENABLED, configuration);
-            keepRetryingAfterError = PropertyUtils.getBoolean(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, configuration);
-            if (fromScratchEnabled) {
-                dbClearer = getConfiguredDatabaseTaskInstance(DBClearer.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-            }
-
-            disableConstraintsEnabled = PropertyUtils.getBoolean(PROPKEY_DISABLE_CONSTRAINTS_ENABLED, configuration);
-            constraintsDisabler = getConfiguredDatabaseTaskInstance(ConstraintsDisabler.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-
-            boolean updateSequences = PropertyUtils.getBoolean(PROPKEY_UPDATE_SEQUENCES_ENABLED, configuration);
-            if (updateSequences) {
-                sequenceUpdater = getConfiguredDatabaseTaskInstance(SequenceUpdater.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-            }
-
-            /*boolean generateDtd = PropertyUtils.getBoolean(PROPKEY_GENERATE_DATA_SET_STRUCTURE_ENABLED, configuration);
-            if (generateDtd) {
-                dataSetStructureGenerator = getConfiguredDatabaseTaskInstance(DataSetStructureGenerator.class, configuration, sqlHandler, defaultDbSupport, nameDbSupportMap);
-            }*/
-            
-        } catch (DbMaintainException e) {
-            logger.error("Error while initializing DbMaintainer", e);
-            throw e;
-        }
+    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptSource scriptSource, ExecutedScriptInfoSource executedScriptInfoSource, 
+            boolean fromScratchEnabled, boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled,
+            DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
+        this.scriptRunner = scriptRunner;
+        this.scriptSource = scriptSource;
+        this.executedScriptInfoSource = executedScriptInfoSource;
+        this.fromScratchEnabled = fromScratchEnabled;
+        this.cleanDbEnabled = cleanDbEnabled;
+        this.disableConstraintsEnabled = disableConstraintsEnabled;
+        this.updateSequencesEnabled = updateSequencesEnabled;
+        this.dbClearer = dbClearer;
+        this.dbCleaner = dbCleaner;
+        this.constraintsDisabler = constraintsDisabler;
+        this.sequenceUpdater = sequenceUpdater;
     }
 
 
-    /**
-     * Checks if the new scripts are available to update the version of the database. If yes, these
-     * scripts are executed and the version number is increased. If an existing script has been
-     * modified, the database is cleared and completely rebuilt from scratch. If an error occurs
-     * with one of the scripts, a {@link DbMaintainException} is thrown.
+
+    /* (non-Javadoc)
+     * @see org.dbmaintain.DbMaintainer#updateDatabase()
      */
     public void updateDatabase() {
-        Set<ExecutedScript> alreadyExecutedScripts = versionSource.getExecutedScripts();
+        Set<ExecutedScript> alreadyExecutedScripts = executedScriptInfoSource.getExecutedScripts();
         Version highestExecutedScriptVersion = getHighestExecutedScriptVersion(alreadyExecutedScripts);
 
         // check whether an incremental update can be performed
@@ -242,10 +174,10 @@ public class DBMaintainer {
         // From scratch needed, clear the database and retrieve scripts
         // constraints are removed before clearing the database, to be sure there will be no
         // conflicts when dropping tables
-        constraintsDisabler.removeConstraints();
+        constraintsDisabler.disableConstraints();
         dbClearer.clearSchemas();
         // reset the database version
-        versionSource.clearAllExecutedScripts();
+        executedScriptInfoSource.clearAllExecutedScripts();
         // update database with all scripts
         updateDatabase(scriptSource.getAllUpdateScripts());
     }
@@ -264,18 +196,15 @@ public class DBMaintainer {
 	}
 
 
-	/**
-     * Updates the database version to the current version of the update scripts, without changing
-     * anything else in the database. Can be used to initialize the database for future updates,
-     * knowning that the current state of the database is synchronized with the current state of the
-     * scripts.
+	/* (non-Javadoc)
+     * @see org.dbmaintain.DbMaintainer#markDatabaseAsUptodate()
      */
-    public void resetDatabaseState() {
-        versionSource.clearAllExecutedScripts();
+    public void markDatabaseAsUptodate() {
+        executedScriptInfoSource.clearAllExecutedScripts();
     	
     	List<Script> allScripts = scriptSource.getAllUpdateScripts();
         for (Script script : allScripts) {
-        	versionSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
+        	executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
         }
     }
 
@@ -307,7 +236,7 @@ public class DBMaintainer {
 
         // Disable FK and not null constraints, if enabled
         if (disableConstraintsEnabled) {
-            constraintsDisabler.removeConstraints();
+            constraintsDisabler.disableConstraints();
         }
         // Update sequences to a sufficiently high value, if enabled
         if (sequenceUpdater != null) {
@@ -346,12 +275,12 @@ public class DBMaintainer {
         	// We register the script execution, but we indicate it to be unsuccessful. If anything goes wrong or if the update is
             // interrupted before being completed, this will be the final state and the DbMaintainer will do a from-scratch update the next time
         	ExecutedScript executedScript = new ExecutedScript(script, new Date(), false);
-        	versionSource.registerExecutedScript(executedScript);
+        	executedScriptInfoSource.registerExecutedScript(executedScript);
         	
         	scriptRunner.execute(script);
             // We now register the previously registered script execution as being successful
             executedScript.setSuccessful(true);
-            versionSource.updateExecutedScript(executedScript);
+            executedScriptInfoSource.updateExecutedScript(executedScript);
             
         } catch (DbMaintainException e) {
             logger.error("Error while executing script " + script.getFileName(), e);
@@ -398,7 +327,7 @@ public class DBMaintainer {
      */
     protected boolean shouldUpdateDatabaseFromScratch(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
     	// check whether the last run was successful
-        if (errorInIndexedScriptDuringLastUpdate(alreadyExecutedScripts)) {
+        /*if (errorInIndexedScriptDuringLastUpdate(alreadyExecutedScripts)) {
         	if (fromScratchEnabled) {
         		if (!keepRetryingAfterError) {
                     logger.warn("During a previous database update, the execution of an incremental script failed! Since " + 
@@ -415,15 +344,14 @@ public class DBMaintainer {
         			"manually on the database, and then reset the database state by invoking resetDatabaseState()");
                 return false;
         	}
-        }
+        }*/
 
     	
         // check whether an existing script was updated
-        if (scriptSource.isExistingIndexedScriptModified(currentVersion, alreadyExecutedScripts)) {
+        if (scriptSource.isIncrementalScriptModified(currentVersion, alreadyExecutedScripts)) {
             if (!fromScratchEnabled) {
                 throw new DbMaintainException("One or more existing incremental database update scripts have been modified, but updating from scratch is disabled. " +
-                		"You should either revert to the original version of the modified script and add an new incremental script that performs the desired " +
-                		"update, or perform the update manually on the database and then reset the database state by invoking resetDatabaseState()");
+                		"You should revert to the original version of the modified script and add an new incremental script that performs the desired update");
             }
             logger.info("One or more existing database update scripts have been modified. Database will be cleared and rebuilt from scratch.");
             return true;

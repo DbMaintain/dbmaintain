@@ -20,11 +20,11 @@ import static org.junit.Assert.fail;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.dbmaintain.util.SQLTestUtils;
 
 import javax.sql.DataSource;
 
@@ -56,9 +56,9 @@ public class ConstraintsDisablerTest {
     @Before
     public void setUp() throws Exception {
         Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        dbSupport = TestUtils.getDefaultDbSupport(configuration);
+        dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
-        constraintsDisabler = TestUtils.getDefaultConstraintsDisabler(configuration, dbSupport);
+        constraintsDisabler = TestUtils.getDefaultConstraintsDisabler(dbSupport);
 
         cleanupTestDatabase();
         createTestTables();
@@ -85,7 +85,7 @@ public class ConstraintsDisablerTest {
         } catch (DbMaintainException e) {
             // Expected foreign key violation
         }
-        constraintsDisabler.removeConstraints();
+        constraintsDisabler.disableConstraints();
         // Should not throw exception anymore
         SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
     }
@@ -103,7 +103,7 @@ public class ConstraintsDisablerTest {
         } catch (DbMaintainException e) {
             // Expected foreign key violation
         }
-        constraintsDisabler.removeConstraints();
+        constraintsDisabler.disableConstraints();
         // Should not throw exception anymore
         SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
     }
@@ -120,7 +120,7 @@ public class ConstraintsDisablerTest {
         } catch (DbMaintainException e) {
             // Expected not null violation
         }
-        constraintsDisabler.removeConstraints();
+        constraintsDisabler.disableConstraints();
         // Should not throw exception anymore
         SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
     }

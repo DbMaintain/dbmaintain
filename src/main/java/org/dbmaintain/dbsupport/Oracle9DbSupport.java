@@ -15,12 +15,36 @@
  */
 package org.dbmaintain.dbsupport;
 
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
+
+import java.util.Set;
+
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class Oracle9DbSupport extends OracleDbSupport {
 
+    /**
+     * Creates support for a Oracle 9 database. Normally you don't need to use this class: OracleDbSupport
+     * can find out the version automatically. Use this class only if your driver is not capable to 
+     * retrieve the oracle version automatically.
+     * 
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
+     */
+    public Oracle9DbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "oracle9", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    }
+    
 	@Override
 	protected Integer getOracleMajorVersionNumber() {
 		return 9;

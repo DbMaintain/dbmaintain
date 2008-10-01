@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.clean;
 
-import org.dbmaintain.util.DatabaseAccessing;
 
 /**
  * Defines the contract for implementations that delete data from the database, that could cause problems when performing
@@ -24,7 +23,7 @@ import org.dbmaintain.util.DatabaseAccessing;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DBCleaner extends DatabaseAccessing {
+public interface DBCleaner {
 
 
     /**

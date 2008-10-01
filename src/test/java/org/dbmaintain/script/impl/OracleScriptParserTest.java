@@ -19,17 +19,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Properties;
 
 /**
  * Tests the Oracle SQL and PL-SQL script parser
@@ -39,33 +35,7 @@ import java.util.Properties;
  */
 public class OracleScriptParserTest {
 
-    /* Tested instance  */
-    private OracleScriptParser oracleScriptParser;
-
-    /* The unitils properties */
-    private Properties configuration;
-
-    /* Reader for the standard SQL test script */
-    private Reader testSQLScriptReader;
-
-    /* Reader for the Oracle PL-SQL test script */
-    private Reader testPLSQLScriptReader;
-
-    /* Reader for the empty script */
-    private Reader emptyScriptReader;
-
-
-    /**
-     * Initialize test fixture
-     */
-    @Before
-    public void setUp() throws Exception {
-        oracleScriptParser = new OracleScriptParser();
-        configuration = new DbMaintainConfigurationLoader().loadConfiguration();
-        testSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
-        testPLSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/plsql-script.sql").toURI()));
-        emptyScriptReader = new StringReader("");
-    }
+    private Reader scriptReader;
 
 
     /**
@@ -73,9 +43,7 @@ public class OracleScriptParserTest {
      */
     @After
     public void tearDown() throws Exception {
-        IOUtils.closeQuietly(testSQLScriptReader);
-        IOUtils.closeQuietly(testPLSQLScriptReader);
-        IOUtils.closeQuietly(emptyScriptReader);
+        IOUtils.closeQuietly(scriptReader);
     }
 
 
@@ -85,7 +53,8 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_SQL() throws Exception {
-        oracleScriptParser.init(configuration, testSQLScriptReader);
+        scriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
+        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
 
         for (int i = 0; i < 13; i++) {
             assertNotNull(oracleScriptParser.getNextStatement());
@@ -100,7 +69,8 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_PLSQL() throws Exception {
-        oracleScriptParser.init(configuration, testPLSQLScriptReader);
+        scriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/plsql-script.sql").toURI()));
+        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
 
         for (int i = 0; i < 5; i++) {
             assertNotNull(oracleScriptParser.getNextStatement());
@@ -114,14 +84,9 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_emptyScript() throws Exception {
-        oracleScriptParser.init(configuration, emptyScriptReader);
+        scriptReader = new StringReader("");
+        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
         assertNull(oracleScriptParser.getNextStatement());
     }
     
-    @Test 
-    public void testParseCompileScript() throws FileNotFoundException {
-    	Reader reader = new FileReader("C:/1_compile.sql");
-    	oracleScriptParser.init(configuration, reader);
-    	System.out.println(oracleScriptParser.getNextStatement());
-    }
 }

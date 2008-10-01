@@ -17,6 +17,9 @@ package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.StoredIdentifierCase;
+
+import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -36,12 +39,37 @@ public class OracleDbSupport extends DbSupport {
     /* The major version number of the Oracle database */
     private Integer oracleMajorVersionNumber;
 
-
+    
     /**
-     * Creates support for Oracle databases.
+     * Creates support for a Oracle database.
+     * @param databaseName 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
      */
-    public OracleDbSupport() {
-        super("oracle");
+    public OracleDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        this(databaseName, "oracle", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    }
+    
+    
+    /**
+     * Creates support for a Oracle database.
+     * @param databaseName 
+     * @param dialect 
+     * @param dataSource 
+     * @param defaultSchemaName 
+     * @param schemaNames 
+     * @param sqlHandler 
+     * @param customIdentifierQuoteString 
+     * @param customStoredIdentifierCase 
+     */
+    protected OracleDbSupport(String databaseName, String dialect, DataSource dataSource, String defaultSchemaName, 
+            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, dialect, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
 
