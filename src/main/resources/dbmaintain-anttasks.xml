@@ -2,4 +2,5 @@
     <taskdef name="updateDatabase" classname="org.dbmaintain.util.ant.UpdateDatabaseTask"/>
     <taskdef name="markDatabaseAsUpToDate" classname="org.dbmaintain.util.ant.MarkDatabaseAsUpToDateTask"/>
     <taskdef name="createScriptJar" classname="org.dbmaintain.util.ant.CreateScriptJarTask"/>
+    <taskdef name="clearDatabase" classname="org.dbmaintain.util.ant.ClearDatabaseTask"/>
 </antlib>

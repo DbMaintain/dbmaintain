@@ -25,12 +25,8 @@ import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.script.impl.JarScriptContainer;
 import org.dbmaintain.util.DbMaintainConfigurationLoader;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -53,7 +49,6 @@ import java.util.Properties;
 public class CreateScriptJarTask extends Task {
 
     private String jarFileName;
-    private String configFile;
     private String scriptLocations;
     private String extensions;
     private String postProcessingDirName;
@@ -81,9 +76,6 @@ public class CreateScriptJarTask extends Task {
      */
     private Properties getConfiguration() {
         Properties configuration = getDefaultConfiguration();
-        if (configFile != null) {
-            configuration.putAll(loadConfigFile());
-        }
         if (scriptLocations != null) {
             configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
         }
@@ -103,21 +95,6 @@ public class CreateScriptJarTask extends Task {
         return configuration;
     }
 
-    /**
-     * @return
-     */
-    protected Properties loadConfigFile() {
-        Properties customConfiguration = new Properties();
-        try {
-            customConfiguration.load(new FileInputStream(configFile));
-        } catch (FileNotFoundException e) {
-            throw new DbMaintainException("Could not find config file " + configFile, e);
-        } catch (IOException e) {
-            throw new DbMaintainException("Error loading config file " + configFile, e);
-        }
-        return customConfiguration;
-    }
-    
     protected Properties getDefaultConfiguration() {
         return new DbMaintainConfigurationLoader().getDefaultConfiguration();
     }

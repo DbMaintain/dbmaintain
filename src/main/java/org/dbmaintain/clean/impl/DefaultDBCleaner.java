@@ -23,7 +23,6 @@ import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.DbMaintainException;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -61,14 +60,17 @@ public class DefaultDBCleaner implements DBCleaner {
     /**
      * Constructor for DefaultDBCleaner.
      * @param nameDbSupportMap
+     * @param schemasToPreserve 
+     * @param tablesToPreserve 
      * @param sqlHandler
      */
-    public DefaultDBCleaner(Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {
+    public DefaultDBCleaner(Map<String, DbSupport> nameDbSupportMap, Set<DbItemIdentifier> schemasToPreserve,
+            Set<DbItemIdentifier> tablesToPreserve, SQLHandler sqlHandler) {
         this.nameDbSupportMap = nameDbSupportMap;
         this.sqlHandler = sqlHandler;
         
-        this.schemasToPreserve = Collections.emptySet();
-        this.tablesToPreserve = Collections.emptySet();
+        this.schemasToPreserve = schemasToPreserve;
+        this.tablesToPreserve = tablesToPreserve;
     }
 
 

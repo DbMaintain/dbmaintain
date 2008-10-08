@@ -31,6 +31,8 @@ public class Database {
 
 	private String name;
 	
+	private boolean enabled = true;
+	
 	private String dialect;
 	
 	private String driverClassName;
@@ -51,8 +53,12 @@ public class Database {
 	public String getName() {
 		return name;
 	}
+	
+    public boolean getEnabled() {
+        return enabled;
+    }
 
-	public String getDialect() {
+    public String getDialect() {
 		return dialect;
 	}
 
@@ -83,8 +89,12 @@ public class Database {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-	public void setDialect(String dialect) {
+    public void setDialect(String dialect) {
 		this.dialect = dialect;
 	}
 

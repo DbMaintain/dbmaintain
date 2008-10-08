@@ -21,8 +21,10 @@ package org.dbmaintain;
  */
 public interface DbMaintainer {
 
-    public abstract void updateDatabase();
+    void updateDatabase();
 
-    public abstract void markDatabaseAsUptodate();
+    void markDatabaseAsUptodate();
+    
+    void clearDatabase();
 
 }

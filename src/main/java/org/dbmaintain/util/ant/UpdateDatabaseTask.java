@@ -18,25 +18,10 @@
 package org.dbmaintain.util.ant;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
-import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
-import org.dbmaintain.util.DbMaintainException;
 
-import javax.sql.DataSource;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -44,37 +29,24 @@ import java.util.Properties;
  * @author Tim Ducheyne
  * @author Alexander Snaps <alex.snaps@gmail.com>
  */
-public class UpdateDatabaseTask extends Task {
+public class UpdateDatabaseTask extends BaseDbMaintainTask {
 
-    private String configFile;
-    private List<Database> databases = new ArrayList<Database>();
     private String scriptLocations;
     private String extensions;
     private Boolean useLastModificationDates;
     private Boolean fromScratchEnabled;
+    private Boolean autoCreateExecutedScriptsTable;
     private Boolean cleanDb;
     private Boolean disableConstraints;
     private Boolean updateSequences;
-    
     @Override
     public void execute() throws BuildException {
 
     	try {
-    	    DbSupport defaultDbSupport = null;
-            Map<String, DbSupport> nameDbSupportMap = null;
-			if (databases != null) {
-    			nameDbSupportMap = new HashMap<String, DbSupport>();
-    			for (Database database : databases) {
-    				DbSupport dbSupport = createDbSupport(database);
-    				nameDbSupportMap.put(dbSupport.getDatabaseName(), dbSupport);
-    				if (defaultDbSupport == null) {
-    					defaultDbSupport = dbSupport;
-    				}
-    			}
-			}
-			PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
-			        getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
-			DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+            initDbSupports();
+            PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
+                    getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
+            DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
 			dbMaintainer.updateDatabase();
 			
 		} catch (Exception e) {
@@ -86,11 +58,8 @@ public class UpdateDatabaseTask extends Task {
     /**
      * @return
      */
-    private Properties getConfiguration() {
+    protected Properties getConfiguration() {
         Properties configuration = getDefaultConfiguration();
-        if (configFile != null) {
-            configuration.putAll(loadConfigFile());
-        }
         if (scriptLocations != null) {
             configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
         }
@@ -102,6 +71,9 @@ public class UpdateDatabaseTask extends Task {
         }
         if (fromScratchEnabled != null) {
             configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, String.valueOf(fromScratchEnabled));
+        }
+        if (autoCreateExecutedScriptsTable != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
         }
         if (cleanDb != null) {
             configuration.put(DbMaintainProperties.PROPKEY_CLEANDB_ENABLED, String.valueOf(cleanDb));
@@ -117,52 +89,6 @@ public class UpdateDatabaseTask extends Task {
         return configuration;
     }
 
-    /**
-     * @return
-     */
-    protected Properties loadConfigFile() {
-        Properties customConfiguration = new Properties();
-        try {
-            customConfiguration.load(new FileInputStream(configFile));
-        } catch (FileNotFoundException e) {
-            throw new DbMaintainException("Could not find config file " + configFile, e);
-        } catch (IOException e) {
-            throw new DbMaintainException("Error loading config file " + configFile, e);
-        }
-        return customConfiguration;
-    }
-    
-    protected DbSupport createDbSupport(Database database) {
-        DataSource dataSource = getDbMaintainConfigurer().createDataSource(database.getDriverClassName(), 
-                database.getUrl(), database.getUserName(), database.getPassword());
-
-        return getDbMaintainConfigurer().createDbSupport(database.getName(), database.getDialect(), dataSource, 
-                database.getDefaultSchemaName(), database.getSchemaNames());
-    }
-
-    protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        return new PropertiesDbMaintainConfigurer(getDefaultConfiguration(), getSQLHandler());
-    }
-
-    protected SQLHandler getSQLHandler() {
-        return new DefaultSQLHandler();
-    }
-
-    protected Properties getDefaultConfiguration() {
-        return new DbMaintainConfigurationLoader().getDefaultConfiguration();
-    }
-    
-    public void setConfigFile(String configFile) {
-        this.configFile = configFile;
-    }
-
-    public void addDatabase(Database database) {
-        if (databases == null) {
-            databases = new ArrayList<Database>();
-        }
-		databases.add(database);
-	}
-    
     public void setScriptLocations(String scriptLocations) {
         this.scriptLocations = scriptLocations;
     }
@@ -177,6 +103,10 @@ public class UpdateDatabaseTask extends Task {
     
     public void setFromScratchEnabled(boolean fromScratchEnabled) {
         this.fromScratchEnabled = fromScratchEnabled;
+    }
+    
+    public void setAutoCreateExecutedScriptsTable(Boolean autoCreateExecutedScriptsTable) {
+        this.autoCreateExecutedScriptsTable = autoCreateExecutedScriptsTable;
     }
 
     public void setCleanDb(boolean cleanDb) {

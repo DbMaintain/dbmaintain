@@ -69,7 +69,6 @@ import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clean.DBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContainer;
@@ -158,10 +157,10 @@ public class PropertiesDbMaintainConfigurer {
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPKEY_DISABLE_CONSTRAINTS_ENABLED, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPKEY_UPDATE_SEQUENCES_ENABLED, configuration);
         
-        DBCleaner dbCleaner = cleanDbEnabled ? createDbCleaner() : null;
-        DBClearer dbClearer = fromScratchEnabled ? createDbClearer() : null;
+        DBCleaner dbCleaner = createDbCleaner();
+        DBClearer dbClearer = createDbClearer();
         ConstraintsDisabler constraintsDisabler = createConstraintsDisabler();
-        SequenceUpdater sequenceUpdater = updateSequencesEnabled ? createSequenceUpdater() : null;
+        SequenceUpdater sequenceUpdater = createSequenceUpdater();
 
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         DbMaintainer dbMaintainer = ReflectionUtils.createInstanceOfType(clazz, false,
@@ -205,7 +204,9 @@ public class PropertiesDbMaintainConfigurer {
     protected Set<String> getDatabaseDialects() {
         Set<String> dialects = new HashSet<String>();
         for (DbSupport dbSupport : getNameDbSupportMap().values()) {
-            dialects.add(dbSupport.getDatabaseDialect());
+            if (dbSupport != null) {
+                dialects.add(dbSupport.getDatabaseDialect());
+            }
         }
         return dialects;
     }
@@ -301,8 +302,8 @@ public class PropertiesDbMaintainConfigurer {
 
         Class<DBCleaner> clazz = ConfigUtils.getConfiguredClass(DBCleaner.class, configuration);
         DBCleaner dbCleaner = ReflectionUtils.createInstanceOfType(clazz, false,
-                new Class<?>[] {Map.class, SQLHandler.class, Set.class, Set.class}, 
-                new Object[] {getNameDbSupportMap(), new DefaultSQLHandler(), schemasToPreserve, tablesToPreserve});
+                new Class<?>[] {Map.class, Set.class, Set.class, SQLHandler.class}, 
+                new Object[] {getNameDbSupportMap(), schemasToPreserve, tablesToPreserve, sqlHandler});
         
         return dbCleaner;
     }
@@ -434,7 +435,7 @@ public class PropertiesDbMaintainConfigurer {
         Class<DbSupport> clazz = ConfigUtils.getConfiguredClass(DbSupport.class, configuration, databaseDialect);
         DbSupport dbSupport = ReflectionUtils.createInstanceOfType(clazz, false, 
                 new Class<?>[] {String.class, DataSource.class, String.class, Set.class, SQLHandler.class, String.class, StoredIdentifierCase.class},
-                new Object[] {null, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase}
+                new Object[] {databaseName, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase}
         );
         return dbSupport;
     }

@@ -124,23 +124,25 @@ public class DefaultDBClearer implements DBClearer {
         assertAllItemsToPreserveExist();
         
         for (DbSupport dbSupport : nameDbSupportMap.values()) {
-        	for (String schemaName : dbSupport.getSchemaNames()) {
-        	
-	            // check whether schema needs to be preserved
-	            if (schemasToPreserve.contains(DbItemIdentifier.getSchemaIdentifier(schemaName, dbSupport))) {
-	                continue;
-	            }
-	            logger.info("Clearing (dropping) database schema " + schemaName);
-	            dropSynonyms(dbSupport, schemaName);
-	            dropViews(dbSupport, schemaName);
-	            dropMaterializedViews(dbSupport, schemaName);
-	            dropSequences(dbSupport, schemaName);
-	            dropTables(dbSupport, schemaName);
-	
-	            dropTriggers(dbSupport, schemaName);
-	            dropTypes(dbSupport, schemaName);
-	            // todo drop functions, stored procedures.
-        	}
+            if (dbSupport != null) {
+            	for (String schemaName : dbSupport.getSchemaNames()) {
+            	
+    	            // check whether schema needs to be preserved
+    	            if (schemasToPreserve.contains(DbItemIdentifier.getSchemaIdentifier(schemaName, dbSupport))) {
+    	                continue;
+    	            }
+    	            logger.info("Clearing (dropping) database schema " + schemaName);
+    	            dropSynonyms(dbSupport, schemaName);
+    	            dropViews(dbSupport, schemaName);
+    	            dropMaterializedViews(dbSupport, schemaName);
+    	            dropSequences(dbSupport, schemaName);
+    	            dropTables(dbSupport, schemaName);
+    	
+    	            dropTriggers(dbSupport, schemaName);
+    	            dropTypes(dbSupport, schemaName);
+    	            // todo drop functions, stored procedures.
+            	}
+            }
         }
     }
 
@@ -294,34 +296,42 @@ public class DefaultDBClearer implements DBClearer {
 
     public void setSchemasToPreserve(Set<DbItemIdentifier> schemasToPreserve) {
         this.schemasToPreserve = schemasToPreserve;
+        assertSchemasToPreserveExist();
     }
     
     public void setTablesToPreserve(Set<DbItemIdentifier> tablesToPreserve) {
         this.tablesToPreserve = tablesToPreserve;
+        assertTablesToPreserveExist();
     }
     
     public void setViewsToPreserve(Set<DbItemIdentifier> viewsToPreserve) {
         this.viewsToPreserve = viewsToPreserve;
+        assertViewsToPreserveExist();
     }
     
     public void setMaterializedViewsToPreserve(Set<DbItemIdentifier> materializedViewsToPreserve) {
         this.materializedViewsToPreserve = materializedViewsToPreserve;
+        assertMaterializedViewsToPreserveExist();
     }
     
     public void setSynonymsToPreserve(Set<DbItemIdentifier> synonymsToPreserve) {
         this.synonymsToPreserve = synonymsToPreserve;
+        assertSynonymsToPreserveExist();
     }
     
     public void setSequencesToPreserve(Set<DbItemIdentifier> sequencesToPreserve) {
         this.sequencesToPreserve = sequencesToPreserve;
+        assertSynonymsToPreserveExist();
     }
     
     public void setTriggersToPreserve(Set<DbItemIdentifier> triggersToPreserve) {
         this.triggersToPreserve = triggersToPreserve;
+        assertTriggersToPreserveExist();
     }
     
     public void setTypesToPreserve(Set<DbItemIdentifier> typesToPreserve) {
         this.typesToPreserve = typesToPreserve;
+        assertTypesToPreserveExist();
     }
     
     

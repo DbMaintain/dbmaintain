@@ -101,8 +101,8 @@ public class DefaultExecutedScriptInfoSourceTest {
 //        assertLenEquals(asList(executedScript1), dbVersionSource.getExecutedScripts());
         dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
         Iterator<ExecutedScript> executedScriptsIterator = dbExecutedScriptInfoSource.getExecutedScripts().iterator();
-        assertEquals(executedScript1, executedScriptsIterator.next());
         assertEquals(executedScript2, executedScriptsIterator.next());
+        assertEquals(executedScript1, executedScriptsIterator.next());
 //        assertLenEquals(asList(executedScript1, executedScript2), dbVersionSource.getExecutedScripts());
     }
 

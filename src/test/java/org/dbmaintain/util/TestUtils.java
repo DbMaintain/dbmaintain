@@ -48,7 +48,7 @@ import java.util.Set;
  * @author Tim Ducheyne
  *
  */
-public class TestUtils {
+abstract public class TestUtils {
 
 	public static DbSupport getDbSupport() {
 	    return getDbSupport("PUBLIC");
@@ -82,7 +82,8 @@ public class TestUtils {
 	
 	
 	public static DefaultDBCleaner getDefaultDBCleaner(DbSupport dbSupport) {
-		DefaultDBCleaner defaultDbCleaner = new DefaultDBCleaner(getNameDbSupportMap(dbSupport), new DefaultSQLHandler());
+		DefaultDBCleaner defaultDbCleaner = new DefaultDBCleaner(getNameDbSupportMap(dbSupport), 
+		        Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), new DefaultSQLHandler());
 		return defaultDbCleaner;
 	}
 	

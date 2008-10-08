@@ -207,6 +207,12 @@ public class DefaultDbMaintainer implements DbMaintainer {
         	executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
         }
     }
+    
+
+    public void clearDatabase() {
+        dbClearer.clearSchemas();
+        executedScriptInfoSource.clearAllExecutedScripts();
+    }
 
 
     /**
@@ -224,11 +230,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
         // Remove data from the database, that could cause errors when executing scripts. Such
         // as for example when added a not null column.
-        if (dbCleaner != null) {
+        if (cleanDbEnabled) {
             dbCleaner.cleanSchemas();
         }
 
-        // Excute all of the scripts
+        // Execute all of the scripts
         executeScripts(scripts);
 
         // Execute postprocessing scripts, if any
@@ -239,7 +245,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
             constraintsDisabler.disableConstraints();
         }
         // Update sequences to a sufficiently high value, if enabled
-        if (sequenceUpdater != null) {
+        if (updateSequencesEnabled) {
             sequenceUpdater.updateSequences();
         }
     }
