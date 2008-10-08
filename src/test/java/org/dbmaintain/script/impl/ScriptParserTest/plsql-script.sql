@@ -52,4 +52,3 @@ table table1 (col1 smallint);
 
 /
 /
--- Ending with comment
