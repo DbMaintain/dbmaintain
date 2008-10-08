@@ -16,7 +16,7 @@
 package org.dbmaintain.script.parsingstate;
 
 import org.dbmaintain.script.ParsingState;
-import org.dbmaintain.script.StatementFlags;
+import org.dbmaintain.script.StatementBuilder;
 
 /**
  * A state for parsing an in-block comment (/ * comment * /) part of a script.
@@ -46,14 +46,13 @@ public class InBlockCommentParsingState extends BaseParsingState {
      * Determines whether the end of the block comment is reached.
      * If that is the case, the normal parsing state is returned.
      *
-     * @param previousChar The previous char, 0 if none
-     * @param currentChar  The current char
-     * @param nextChar     The next char, 0 if none
-     * @param statement    The statement that is built, not null
-     * @param flags        The statement flags
+     * @param previousChar     The previous char, 0 if none
+     * @param currentChar      The current char
+     * @param nextChar         The next char, 0 if none
+     * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags) {
+    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         // check for ending chars
         if (previousChar == '*' && currentChar == '/') {
             return normalParsingState;

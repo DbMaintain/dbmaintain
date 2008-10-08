@@ -78,6 +78,20 @@ public class OracleScriptParserTest {
         assertNull(oracleScriptParser.getNextStatement());
     }
 
+    /**
+     * Test parsing some statements out of a PL-SQL script ending with a comment.
+     * 4 statements should have been found in the script.
+     */
+    @Test
+    public void testParseStatements_PLSQL_endingWithComment() throws Exception {
+        scriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/plsql-script-ending-with-comment.sql").toURI()));
+        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
+
+        for (int i = 0; i < 5; i++) {
+            assertNotNull(oracleScriptParser.getNextStatement());
+        }
+        assertNull(oracleScriptParser.getNextStatement());
+    }
 
     /**
      * Test parsing some statements out of an empty script.

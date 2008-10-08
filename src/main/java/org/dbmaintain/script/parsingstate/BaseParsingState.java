@@ -16,10 +16,10 @@
 package org.dbmaintain.script.parsingstate;
 
 import org.dbmaintain.script.ParsingState;
-import org.dbmaintain.script.StatementFlags;
+import org.dbmaintain.script.StatementBuilder;
 
 /**
- * Base class for a parsing state. This will handle a character by simply adding it to the statement.
+ * Base class for a parsing state. This will handle a character by simply adding it to the statement builder.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -28,31 +28,29 @@ public abstract class BaseParsingState implements ParsingState {
 
 
     /**
-     * Handles the next character by adding it to the statement.
+     * Handles the next character by adding it to the statement builder.
      *
-     * @param previousChar The previous char, 0 if none
-     * @param currentChar  The current char
-     * @param nextChar     The next char, 0 if none
-     * @param statement    The statement that is built, not null
-     * @param flags        The statement flags
+     * @param previousChar     The previous char, 0 if none
+     * @param currentChar      The current char
+     * @param nextChar         The next char, 0 if none
+     * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    public ParsingState handleNextChar(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags) {
-        statement.append(currentChar);
-        return getNextParsingState(previousChar, currentChar, nextChar, statement, flags);
+    public ParsingState handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+        statementBuilder.append(currentChar);
+        return getNextParsingState(previousChar, currentChar, nextChar, statementBuilder);
     }
 
 
     /**
      * Determines the next state.
      *
-     * @param previousChar The previous char, 0 if none
-     * @param currentChar  The current char
-     * @param nextChar     The next char, 0 if none
-     * @param statement    The statement that is built, not null
-     * @param flags        The statement flags
+     * @param previousChar     The previous char, 0 if none
+     * @param currentChar      The current char
+     * @param nextChar         The next char, 0 if none
+     * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected abstract ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags);
+    protected abstract ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
 
 }

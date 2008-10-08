@@ -18,12 +18,8 @@ package org.dbmaintain.script.impl;
 import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.script.ParsingState;
 import org.dbmaintain.script.ScriptParser;
-import org.dbmaintain.script.StatementFlags;
-import org.dbmaintain.script.parsingstate.InBlockCommentParsingState;
-import org.dbmaintain.script.parsingstate.InDoubleQuotesParsingState;
-import org.dbmaintain.script.parsingstate.InLineCommentParsingState;
-import org.dbmaintain.script.parsingstate.InSingleQuotesParsingState;
-import org.dbmaintain.script.parsingstate.NormalParsingState;
+import org.dbmaintain.script.StatementBuilder;
+import org.dbmaintain.script.parsingstate.*;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.BufferedReader;
@@ -55,7 +51,7 @@ public class DefaultScriptParser implements ScriptParser {
      * Whether backslash escaping is enabled
      */
     protected boolean backSlashEscapingEnabled;
-    
+
     /**
      * The starting state.
      */
@@ -74,6 +70,7 @@ public class DefaultScriptParser implements ScriptParser {
 
     /**
      * Constructor for DefaultScriptParser.
+     *
      * @param scriptReader
      * @param backSlashEscapingEnabled
      */
@@ -115,7 +112,7 @@ public class DefaultScriptParser implements ScriptParser {
      * Actual implementation of getNextStatement.
      *
      * @return the statements, null if no more statements
-     * @throws IOException 
+     * @throws IOException
      */
     protected String getNextStatementImpl() throws IOException {
         currentChar = scriptReader.read();
@@ -127,13 +124,12 @@ public class DefaultScriptParser implements ScriptParser {
         // set initial state
         char previousChar = 0;
         currentParsingState = initialParsingState;
-        StringBuilder statementStringBuilder = new StringBuilder();
-        StatementFlags flags = new DefaultStatementFlags();
+        StatementBuilder statementBuilder = new StatementBuilder();
 
         // parse script
         while (currentChar != -1) {
             // skip leading whitespace (NOTE String.trim uses <= ' ' for whitespace)
-            if (statementStringBuilder.length() == 0 && currentChar <= ' ') {
+            if (statementBuilder.getLength() == 0 && currentChar <= ' ') {
                 currentChar = scriptReader.read();
                 continue;
             }
@@ -148,18 +144,18 @@ public class DefaultScriptParser implements ScriptParser {
             }
 
             // handle character
-            currentParsingState = currentParsingState.handleNextChar(previousChar, (char) currentChar, nextChar, statementStringBuilder, flags);
+            currentParsingState = currentParsingState.handleNextChar(previousChar, (char) currentChar, nextChar, statementBuilder);
             previousChar = (char) currentChar;
             currentChar = nextCharInt;
 
             // if parsing state null, a statement end is found
             if (currentParsingState == null) {
-                String statement = createStatement(statementStringBuilder);
+                String statement = createStatement(statementBuilder);
 
                 // reset initial state
                 previousChar = 0;
-                statementStringBuilder.setLength(0);
-                flags.setExecutable(false);
+                statementBuilder.clear();
+                statementBuilder.setExecutable(false);
                 currentParsingState = initialParsingState;
 
                 if (statement != null) {
@@ -170,8 +166,8 @@ public class DefaultScriptParser implements ScriptParser {
 
         // check whether there was still an executable statement in the script
         // or only whitespace was left
-        if (flags.isExecutable()) {
-            String finalStatement = createStatement(statementStringBuilder);
+        if (statementBuilder.isExecutable()) {
+            String finalStatement = createStatement(statementBuilder);
             if (finalStatement != null) {
                 throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(getTrailingSeparatorCharsToRemove()));
             }
@@ -184,12 +180,12 @@ public class DefaultScriptParser implements ScriptParser {
      * Creates the resulting statement out of the given characters.
      * This will trim the statement and remove any trailing separtors if needed.
      *
-     * @param statement The characters, not null
+     * @param statementBuilder The statement builder, not null
      * @return The resulting statement, null if no statement is left
      */
-    protected String createStatement(StringBuilder statement) {
+    protected String createStatement(StatementBuilder statementBuilder) {
         // get built statement to return
-        String trimmedStatement = statement.toString().trim();
+        String trimmedStatement = statementBuilder.getStatement().trim();
 
         // ignore empty statements
         if (StringUtils.isEmpty(trimmedStatement)) {

@@ -16,7 +16,7 @@
 package org.dbmaintain.script.parsingstate;
 
 import org.dbmaintain.script.ParsingState;
-import org.dbmaintain.script.StatementFlags;
+import org.dbmaintain.script.StatementBuilder;
 
 /**
  * The default initial parsing state that is able to recognize the beginning of line comments, block comments,
@@ -80,15 +80,14 @@ public class NormalParsingState extends BaseParsingState {
      * Determines the next state. This will look for the beginning of a line comment, a block comment, a single qoute
      * literal and a double quote literal. A semi-colon indicates the end of the statement.
      *
-     * @param previousChar The previous char, 0 if none
-     * @param currentChar  The current char
-     * @param nextChar     The next char, 0 if none
-     * @param statement    The statement that is built, not null
-     * @param flags        The statement flags
+     * @param previousChar     The previous char, 0 if none
+     * @param currentChar      The current char
+     * @param nextChar         The next char, 0 if none
+     * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
     @Override
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StringBuilder statement, StatementFlags flags) {
+    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         // check ending of statement
         if (currentChar == ';') {
             return null;
@@ -96,13 +95,13 @@ public class NormalParsingState extends BaseParsingState {
         // escape current character
         if (escaping) {
             escaping = false;
-            flags.setExecutable(true);
+            statementBuilder.setExecutable(true);
             return this;
         }
         // check escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
             escaping = true;
-            flags.setExecutable(true);
+            statementBuilder.setExecutable(true);
             return this;
         }
         // check line comment
@@ -121,8 +120,9 @@ public class NormalParsingState extends BaseParsingState {
         if (currentChar == '"') {
             return inDoubleQuotesParsingState;
         }
+        // flag the statement executable from the second character
         if (previousChar != 0) {
-            flags.setExecutable(true);
+            statementBuilder.setExecutable(true);
         }
         return this;
     }
