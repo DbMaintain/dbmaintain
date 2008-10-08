@@ -68,6 +68,8 @@ public class DefaultScriptParserTest {
      */
     @After
     public void tearDown() throws Exception {
+        IOUtils.closeQuietly(testSQLEndingWithCommentScriptReader);
+        IOUtils.closeQuietly(testSQLMissingSemiColonScriptReader);
         IOUtils.closeQuietly(testSQLScriptReader);
         IOUtils.closeQuietly(emptyScriptReader);
     }
