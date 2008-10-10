@@ -15,78 +15,122 @@
  */
 package org.dbmaintain.script;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-
+import static junit.framework.Assert.*;
 import org.dbmaintain.version.Version;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
 
 /**
+ * todo javadoc
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
- *
  */
 public class ScriptTest {
 
-	@Before
-	public void setUp() throws Exception {
-		
-	}
 
-	@Test
-	public void testNoTargetDatabase() {
-		Script script = new Script("01_scripts/incremental/02_sprint2/03_addUser.sql", 10L, "xxx", "@");
-		assertNull(script.getTargetDatabaseName());
-		assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
-	}
+    /**
+     * Tests for a script name with a 'fix' in the name.
+     */
+    @Test
+    public void testIsFixScript() {
+        Script script = new Script("01_scripts/incremental/02_sprint2/03fix_addUser.sql", 10L, "xxx", "fix", "@");
+        assertTrue(script.isFixScript());
+    }
 
-	@Test
-	public void testTargetDatabaseNameInFileName() {
-		Script script = new Script("01_scripts/incremental/02_sprint2/03_@otherdb_addUser.sql", 10L, "xxx", "@");
-		assertEquals("otherdb", script.getTargetDatabaseName());
-		assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
-	}
-	
-	
-	@Test
-	public void testGetTargetDatabaseName_inDirName() {
-		Script script = new Script("01_scripts/incremental/02_@otherdb_sprint2/03_addUser.sql", 10L, "xxx", "@");
-		assertEquals("otherdb", script.getTargetDatabaseName());
-		assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
-	}
-	
-	
-	@Test
-	public void testGetTargetDatabaseName_inDirAndFileName() {
-		Script script = new Script("01_scripts/incremental/02_@otherdb_sprint2/03_@thisdb_addUser.sql", 10L, "xxx", "@");
-		assertEquals("thisdb", script.getTargetDatabaseName());
-		assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
-	}
 
-	@Test
-	public void testIsScriptContentEqualTo() {
-		Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "@", false);
-		
-		Script sameScriptWithoutContent = new Script("fileName", 0L, script.getCheckSum(), "@");
-		assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, true));
-		assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, false));
-		
-		Script scriptWithDifferentModificationDate = new Script("fileName", 1L, script.getCheckSum(), "@");
-		assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, true));
-		assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, false));
-		
-		Script scriptWithDifferentChecksum = new Script("fileName", 0L, "xxx", "@");
-		assertTrue(script.isScriptContentEqualTo(scriptWithDifferentChecksum, true));
-		assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksum, false));
-		
-		Script scriptWithDifferentChecksumAndModificationDate = new Script("fileName", 1L, "xxx", "@");
-		assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, true));
-		assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, false));
-	}
+    /**
+     * Tests for a script name with a 'fix' in the folder name.
+     */
+    @Test
+    public void testIsFixScript_fixInFolderName() {
+        Script script = new Script("01_scripts/incremental/02fix_sprint2/03_addUser.sql", 10L, "xxx", "fix", "@");
+        assertTrue(script.isFixScript());
+    }
+
+
+    /**
+     * Tests for a script name with a 'fix' in the name but no index.
+     */
+    @Test
+    public void testIsFixScript_fixWithoutIndex() {
+        Script script = new Script("01_scripts/fix_incremental/02_sprint2/03_addUser.sql", 10L, "xxx", "fix", "@");
+        assertTrue(script.isFixScript());
+    }
+
+
+    /**
+     * Tests for a script name with no 'fix' in the name.
+     */
+    @Test
+    public void testIsFixScript_noFix() {
+        Script script = new Script("01_scripts/incremental/02_sprint2/03_addUser.sql", 10L, "xxx", "fix", "@");
+        assertFalse(script.isFixScript());
+    }
+
+
+    /**
+     * The fix indicator should be case-insensitive.
+     */
+    @Test
+    public void testIsFixScript_caseInsensitive() {
+        Script script = new Script("01_scripts/incremental/02_sprint2/03FiX_addUser.sql", 10L, "xxx", "fix", "@");
+        assertTrue(script.isFixScript());
+    }
+
+
+    @Test
+    public void testNoTargetDatabase() {
+        Script script = new Script("01_scripts/incremental/02_sprint2/03_addUser.sql", 10L, "xxx", "fix", "@");
+        assertNull(script.getTargetDatabaseName());
+        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+    }
+
+
+    @Test
+    public void testTargetDatabaseNameInFileName() {
+        Script script = new Script("01_scripts/incremental/02_sprint2/03_@otherdb_addUser.sql", 10L, "xxx", "fix", "@");
+        assertEquals("otherdb", script.getTargetDatabaseName());
+        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+    }
+
+
+    @Test
+    public void testGetTargetDatabaseName_inDirName() {
+        Script script = new Script("01_scripts/incremental/02_@otherdb_sprint2/03_addUser.sql", 10L, "xxx", "fix", "@");
+        assertEquals("otherdb", script.getTargetDatabaseName());
+        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+    }
+
+
+    @Test
+    public void testGetTargetDatabaseName_inDirAndFileName() {
+        Script script = new Script("01_scripts/incremental/02_@otherdb_sprint2/03_@thisdb_addUser.sql", 10L, "xxx", "fix", "@");
+        assertEquals("thisdb", script.getTargetDatabaseName());
+        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+    }
+
+
+    @Test
+    public void testIsScriptContentEqualTo() {
+        Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "fix", "@", false);
+
+        Script sameScriptWithoutContent = new Script("fileName", 0L, script.getCheckSum(), "fix", "@");
+        assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, true));
+        assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, false));
+
+        Script scriptWithDifferentModificationDate = new Script("fileName", 1L, script.getCheckSum(), "fix", "@");
+        assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, true));
+        assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, false));
+
+        Script scriptWithDifferentChecksum = new Script("fileName", 0L, "xxx", "fix", "@");
+        assertTrue(script.isScriptContentEqualTo(scriptWithDifferentChecksum, true));
+        assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksum, false));
+
+        Script scriptWithDifferentChecksumAndModificationDate = new Script("fileName", 1L, "xxx", "fix", "@");
+        assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, true));
+        assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, false));
+    }
 
 }

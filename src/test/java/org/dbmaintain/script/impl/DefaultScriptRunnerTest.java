@@ -16,12 +16,13 @@
 package org.dbmaintain.script.impl;
 
 import static junit.framework.Assert.assertTrue;
-
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
 import org.dbmaintain.util.SQLTestUtils;
-import org.dbmaintain.util.TestUtils;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
+import static org.dbmaintain.util.TestUtils.getDbSupport;
+import static org.dbmaintain.util.TestUtils.getDefaultScriptRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,12 +56,12 @@ public class DefaultScriptRunnerTest {
      */
     @Before
     public void setUp() throws Exception {
-        DbSupport dbSupport = TestUtils.getDbSupport();
+        DbSupport dbSupport = getDbSupport();
         dataSource = dbSupport.getDataSource();
-        defaultScriptRunner = TestUtils.getDefaultScriptRunner(dbSupport);
+        defaultScriptRunner = getDefaultScriptRunner(dbSupport);
 
-        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", false);
-        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", false);
+        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "fix", "@", false);
+        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "fix", "@", false);
 
         cleanupTestDatabase();
     }
@@ -94,9 +95,9 @@ public class DefaultScriptRunnerTest {
      * Drops the test tables
      */
     private void cleanupTestDatabase() {
-        SQLTestUtils.executeUpdateQuietly("drop table table1", dataSource);
-        SQLTestUtils.executeUpdateQuietly("drop table table2", dataSource);
-        SQLTestUtils.executeUpdateQuietly("drop table table3", dataSource);
+        executeUpdateQuietly("drop table table1", dataSource);
+        executeUpdateQuietly("drop table table2", dataSource);
+        executeUpdateQuietly("drop table table3", dataSource);
     }
 
 }

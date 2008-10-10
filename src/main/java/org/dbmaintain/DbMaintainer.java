@@ -16,6 +16,8 @@
 package org.dbmaintain;
 
 /**
+ * todo javadoc
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
@@ -24,7 +26,7 @@ public interface DbMaintainer {
     void updateDatabase();
 
     void markDatabaseAsUptodate();
-    
+
     void clearDatabase();
 
 }

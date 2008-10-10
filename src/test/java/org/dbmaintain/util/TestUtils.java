@@ -24,47 +24,39 @@ import org.dbmaintain.dbsupport.HsqldbDbSupport;
 import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.ScriptParser;
 import org.dbmaintain.script.ScriptParserFactory;
-import org.dbmaintain.script.impl.DefaultScriptParser;
-import org.dbmaintain.script.impl.DefaultScriptParserFactory;
-import org.dbmaintain.script.impl.DefaultScriptRunner;
-import org.dbmaintain.script.impl.DefaultScriptSource;
-import org.dbmaintain.script.impl.FileScriptContainer;
+import org.dbmaintain.script.impl.*;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource;
 
 import javax.sql.DataSource;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * todo javadoc
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
- *
  */
 abstract public class TestUtils {
 
-	public static DbSupport getDbSupport() {
-	    return getDbSupport("PUBLIC");
-	}
 
-
-	public static DbSupport getDbSupport(String... schemaNames) {
-        DataSource dataSource = getDataSource();
-		DbSupport dbSupport = new HsqldbDbSupport(null, dataSource, schemaNames[0], 
-		        CollectionUtils.asSet(schemaNames), new DefaultSQLHandler(), null, null);
-		return dbSupport;
+    public static DbSupport getDbSupport() {
+        return getDbSupport("PUBLIC");
     }
-	
-	
-	protected static DataSource getDataSource() {
-	    BasicDataSource dataSource = new BasicDataSource();
+
+
+    public static DbSupport getDbSupport(String... schemaNames) {
+        DataSource dataSource = getDataSource();
+        return new HsqldbDbSupport(null, dataSource, schemaNames[0], asSet(schemaNames), new DefaultSQLHandler(), null, null);
+    }
+
+
+    protected static DataSource getDataSource() {
+        BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
         dataSource.setUrl("jdbc:hsqldb:mem:unitils");
         dataSource.setUsername("sa");
@@ -74,78 +66,73 @@ abstract public class TestUtils {
 
 
     public static DefaultDBClearer getDefaultDBClearer(DbSupport dbSupport) {
-        return new DefaultDBClearer(getNameDbSupportMap(dbSupport), Collections.<DbItemIdentifier>emptySet(), 
-                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), 
-                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), 
+        return new DefaultDBClearer(getNameDbSupportMap(dbSupport), Collections.<DbItemIdentifier>emptySet(),
+                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(),
+                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(),
                 Collections.<DbItemIdentifier>emptySet());
-	}
-	
-	
-	public static DefaultDBCleaner getDefaultDBCleaner(DbSupport dbSupport) {
-		DefaultDBCleaner defaultDbCleaner = new DefaultDBCleaner(getNameDbSupportMap(dbSupport), 
-		        Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), new DefaultSQLHandler());
-		return defaultDbCleaner;
-	}
-	
-	
-	public static DefaultScriptSource getDefaultScriptSource(String scriptLocation, boolean useScriptFileLastModificationDates) {
-	    Set<String> scriptFileExtensions = CollectionUtils.asSet("sql");
-        ScriptContainer scriptContainer = new FileScriptContainer(new File(scriptLocation), 
-	            scriptFileExtensions, "@", "postprocessing", "ISO-8859-1");
-        DefaultScriptSource defaultScriptSource = new DefaultScriptSource(
-                CollectionUtils.asSet(scriptContainer), useScriptFileLastModificationDates, scriptFileExtensions);
-        return defaultScriptSource;
     }
-	
-	
-	public static DefaultScriptRunner getDefaultScriptRunner(DbSupport dbSupport) {
-	    Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap = new HashMap<String, Class<? extends ScriptParser>>();
-	    databaseDialectScriptParserClassMap.put("hsqldb", DefaultScriptParser.class);
-	    ScriptParserFactory scriptParserFactory = new DefaultScriptParserFactory(databaseDialectScriptParserClassMap, false);
-		DefaultScriptRunner defaultScriptRunner = new DefaultScriptRunner(scriptParserFactory, dbSupport, getNameDbSupportMap(dbSupport), new DefaultSQLHandler());
-		return defaultScriptRunner;
-	}
-	
-	public static DefaultConstraintsDisabler getDefaultConstraintsDisabler(DbSupport dbSupport) {
-		DefaultConstraintsDisabler defaultConstraintsDisabler = new DefaultConstraintsDisabler(CollectionUtils.asSet(dbSupport));
-		return defaultConstraintsDisabler;
-	}
-	
-	
-	public static DefaultSequenceUpdater getDefaultSequenceUpdater(DbSupport dbSupport) {
-		DefaultSequenceUpdater defaultSequenceUpdater = new DefaultSequenceUpdater(1000L, CollectionUtils.asSet(dbSupport));
-		return defaultSequenceUpdater;
-	}
-	
-	
-	public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable) {
-		DefaultExecutedScriptInfoSource defaultExecutedScriptInfoSource = new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
-		        "db_executed_scripts", "script_file_name", 100, "version", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
-		        new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@"); 
-		return defaultExecutedScriptInfoSource;
-	}
-	
 
-	public static Map<String, DbSupport> getNameDbSupportMap(DbSupport dbSupport) {
-		Map<String, DbSupport> dbNameDbSupportMap = new HashMap<String, DbSupport>();
-		dbNameDbSupportMap.put(null, dbSupport);
-		return dbNameDbSupportMap;
-	}
-	
-	public static Set<DbItemIdentifier> toDbItemIdentifiers(Set<String> itemsAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
-	    Set<DbItemIdentifier> itemIdentifiers = new HashSet<DbItemIdentifier>();
-	    for (String itemAsString : itemsAsString) {
-	        itemIdentifiers.add(DbItemIdentifier.parseItemIdentifier(itemAsString, defaultDbSupport, nameDbSupportMap));
-	    }
-	    return itemIdentifiers;
-	}
-	
-	public static Set<DbItemIdentifier> toDbSchemaIdentifiers(Set<String> schemasAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
+
+    public static DefaultDBCleaner getDefaultDBCleaner(DbSupport dbSupport) {
+        return new DefaultDBCleaner(getNameDbSupportMap(dbSupport),
+                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), new DefaultSQLHandler());
+    }
+
+
+    public static DefaultScriptSource getDefaultScriptSource(String scriptLocation, boolean useScriptFileLastModificationDates) {
+        Set<String> scriptFileExtensions = asSet("sql");
+        ScriptContainer scriptContainer = new FileScriptContainer(new File(scriptLocation), scriptFileExtensions, "@", "postprocessing", "fix", "ISO-8859-1");
+        return new DefaultScriptSource(asSet(scriptContainer), useScriptFileLastModificationDates, scriptFileExtensions, false);
+    }
+
+
+    public static DefaultScriptRunner getDefaultScriptRunner(DbSupport dbSupport) {
+        Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap = new HashMap<String, Class<? extends ScriptParser>>();
+        databaseDialectScriptParserClassMap.put("hsqldb", DefaultScriptParser.class);
+        ScriptParserFactory scriptParserFactory = new DefaultScriptParserFactory(databaseDialectScriptParserClassMap, false);
+        return new DefaultScriptRunner(scriptParserFactory, dbSupport, getNameDbSupportMap(dbSupport), new DefaultSQLHandler());
+    }
+
+
+    public static DefaultConstraintsDisabler getDefaultConstraintsDisabler(DbSupport dbSupport) {
+        return new DefaultConstraintsDisabler(asSet(dbSupport));
+    }
+
+
+    public static DefaultSequenceUpdater getDefaultSequenceUpdater(DbSupport dbSupport) {
+        return new DefaultSequenceUpdater(1000L, asSet(dbSupport));
+    }
+
+
+    public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable) {
+        return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
+                "db_executed_scripts", "script_file_name", 100, "version", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
+                new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "fix", "@");
+    }
+
+
+    public static Map<String, DbSupport> getNameDbSupportMap(DbSupport dbSupport) {
+        Map<String, DbSupport> dbNameDbSupportMap = new HashMap<String, DbSupport>();
+        dbNameDbSupportMap.put(null, dbSupport);
+        return dbNameDbSupportMap;
+    }
+
+
+    public static Set<DbItemIdentifier> toDbItemIdentifiers(Set<String> itemsAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
+        Set<DbItemIdentifier> itemIdentifiers = new HashSet<DbItemIdentifier>();
+        for (String itemAsString : itemsAsString) {
+            itemIdentifiers.add(DbItemIdentifier.parseItemIdentifier(itemAsString, defaultDbSupport, nameDbSupportMap));
+        }
+        return itemIdentifiers;
+    }
+
+
+    public static Set<DbItemIdentifier> toDbSchemaIdentifiers(Set<String> schemasAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
         Set<DbItemIdentifier> schemaIdentifiers = new HashSet<DbItemIdentifier>();
         for (String schemaAsString : schemasAsString) {
             schemaIdentifiers.add(DbItemIdentifier.parseSchemaIdentifier(schemaAsString, defaultDbSupport, nameDbSupportMap));
         }
         return schemaIdentifiers;
     }
-    
+
 }

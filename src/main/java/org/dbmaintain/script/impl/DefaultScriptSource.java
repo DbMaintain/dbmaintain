@@ -24,12 +24,7 @@ import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.version.Version;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of {@link ScriptSource} that reads script files from the filesystem. <p/> Script
@@ -47,25 +42,30 @@ public class DefaultScriptSource implements ScriptSource {
     private static final Log logger = LogFactory.getLog(DefaultScriptSource.class);
 
     protected boolean useScriptFileLastModificationDates;
-    
+
+    protected boolean fixScriptOutOfSequenceExecutionAllowed;
+
     protected Set<ScriptContainer> scriptContainers;
-    
+
     protected Set<String> scriptFileExtensions;
-    
+
     protected List<Script> allUpdateScripts, allPostProcessingScripts;
 
 
     /**
      * Constructor for DefaultScriptSource.
-     * @param scriptContainers 
+     *
+     * @param scriptContainers
      * @param useScriptFileLastModificationDates
-     * @param scriptFileExtensions 
+     *
+     * @param scriptFileExtensions
      */
     public DefaultScriptSource(Set<ScriptContainer> scriptContainers, boolean useScriptFileLastModificationDates,
-            Set<String> scriptFileExtensions) {
+                               Set<String> scriptFileExtensions, boolean fixScriptOutOfSequenceExecutionAllowed) {
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.scriptContainers = scriptContainers;
         this.scriptFileExtensions = scriptFileExtensions;
+        this.fixScriptOutOfSequenceExecutionAllowed = fixScriptOutOfSequenceExecutionAllowed;
         assertValidScriptExtensions();
     }
 
@@ -79,9 +79,9 @@ public class DefaultScriptSource implements ScriptSource {
      * @return all available database update scripts, not null
      */
     public List<Script> getAllUpdateScripts() {
-    	if (allUpdateScripts == null) {
-    		loadAndOrganizeAllScripts();
-    	}
+        if (allUpdateScripts == null) {
+            loadAndOrganizeAllScripts();
+        }
         return allUpdateScripts;
     }
 
@@ -90,57 +90,57 @@ public class DefaultScriptSource implements ScriptSource {
      * @return All scripts that are incremental, i.e. non-repeatable, i.e. whose file name starts with an index
      */
     protected List<Script> getIncrementalScripts() {
-    	List<Script> scripts = getAllUpdateScripts();
-    	List<Script> incrementalScripts = new ArrayList<Script>();
-    	for (Script script : scripts) {
-    		if (script.isIncremental()) {
-    			incrementalScripts.add(script);
-    		}
-    	}
-    	return incrementalScripts;
+        List<Script> scripts = getAllUpdateScripts();
+        List<Script> incrementalScripts = new ArrayList<Script>();
+        for (Script script : scripts) {
+            if (script.isIncremental()) {
+                incrementalScripts.add(script);
+            }
+        }
+        return incrementalScripts;
     }
 
 
     /**
      * Asserts that, in the given list of database update scripts, there are no two indexed scripts with the same version.
-     * 
+     *
      * @param scripts The list of scripts, must be sorted by version
      */
     protected void assertNoDuplicateIndexes(List<Script> scripts) {
-    	for (int i = 0; i < scripts.size() - 1; i++) {
-    		Script script1 = scripts.get(i);
-			Script script2 = scripts.get(i + 1);
-			if (script1.isIncremental() && script2.isIncremental() && script1.getVersion().equals(script2.getVersion())) {
-    			throw new DbMaintainException("Found 2 database scripts with the same version index: " 
-    					+ script1.getFileName() + " and " + script2.getFileName() + " both have version index " 
-    					+ script1.getVersion().getIndexesString());
-    		}
-    	}
+        for (int i = 0; i < scripts.size() - 1; i++) {
+            Script script1 = scripts.get(i);
+            Script script2 = scripts.get(i + 1);
+            if (script1.isIncremental() && script2.isIncremental() && script1.getVersion().equals(script2.getVersion())) {
+                throw new DbMaintainException("Found 2 database scripts with the same version index: "
+                        + script1.getFileName() + " and " + script2.getFileName() + " both have version index "
+                        + script1.getVersion().getIndexesString());
+            }
+        }
     }
 
 
-	/**
+    /**
      * Returns a list of scripts with a higher version or whose contents were changed.
      * <p/>
      * The scripts are returned in the order in which they should be executed.
-	 * @param currentVersion The start version, not null
      *
+     * @param currentVersion The start version, not null
      * @return The scripts that have a higher index of timestamp than the start version, not null.
      */
     public List<Script> getNewScripts(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
         Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
-    	
-    	List<Script> result = new ArrayList<Script>();
+
+        List<Script> result = new ArrayList<Script>();
 
         List<Script> allScripts = getAllUpdateScripts();
         for (Script script : allScripts) {
-        	Script alreadyExecutedScript = alreadyExecutedScriptMap.get(script.getFileName());
-        	
+            Script alreadyExecutedScript = alreadyExecutedScriptMap.get(script.getFileName());
+
             // If the script is indexed and the version is higher than the highest one currently applied to the database,
             // add it to the list.
             if (script.isIncremental() && script.getVersion().compareTo(currentVersion) > 0) {
-				result.add(script);
-				continue;
+                result.add(script);
+                continue;
             }
             // Add the script if it's not indexed and if it wasn't yet executed
             if (!script.isIncremental() && alreadyExecutedScript == null) {
@@ -149,9 +149,9 @@ public class DefaultScriptSource implements ScriptSource {
             }
             // Add the script if it's not indexed and if it's contents have changed
             if (!script.isIncremental() && !alreadyExecutedScript.isScriptContentEqualTo(script, useScriptFileLastModificationDates)) {
-            	logger.info("Contents of script " + script.getFileName() + " have changed since the last database update: "
-            		 + script.getCheckSum());
-            	result.add(script);
+                logger.info("Contents of script " + script.getFileName() + " have changed since the last database update: "
+                        + script.getCheckSum());
+                result.add(script);
             }
         }
         return result;
@@ -167,34 +167,43 @@ public class DefaultScriptSource implements ScriptSource {
      * @return True if an existing script has been modified, false otherwise
      */
     public boolean isIncrementalScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
-    	Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
-    	List<Script> incrementalScripts = getIncrementalScripts();
-    	// Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
-    	for (ExecutedScript alreadyExecutedScript : alreadyExecutedScripts) {
-    		if (alreadyExecutedScript.getScript().isIncremental() && Collections.binarySearch(incrementalScripts, alreadyExecutedScript.getScript()) < 0) {
-    			logger.warn("Existing indexed script found that was executed, which has been removed: " + alreadyExecutedScript.getScript().getFileName());
-    			return true;
-    		}
-    	}
-    	
-    	// Search for indexed scripts whose version < the current version, which are new or whose contents have changed
+        Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
+        List<Script> incrementalScripts = getIncrementalScripts();
+        // Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
+        for (ExecutedScript alreadyExecutedScript : alreadyExecutedScripts) {
+            if (alreadyExecutedScript.getScript().isIncremental() && Collections.binarySearch(incrementalScripts, alreadyExecutedScript.getScript()) < 0) {
+                logger.warn("Existing indexed script found that was executed, which has been removed: " + alreadyExecutedScript.getScript().getFileName());
+                return true;
+            }
+        }
+
+        // Search for indexed scripts whose version < the current version, which are new or whose contents have changed
         for (Script indexedScript : incrementalScripts) {
             if (indexedScript.getVersion().compareTo(currentVersion) <= 0) {
-            	Script alreadyExecutedScript = alreadyExecutedScriptMap.get(indexedScript.getFileName());
+                Script alreadyExecutedScript = alreadyExecutedScriptMap.get(indexedScript.getFileName());
                 if (alreadyExecutedScript == null) {
-                	logger.warn("New index script has been added, with at least one already executed script having an higher index." + indexedScript.getFileName());
-                	return true;
+                    if (indexedScript.isFixScript()) {
+                        if (!fixScriptOutOfSequenceExecutionAllowed) {
+                            logger.warn("Found a new hoftix script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
+                            return true;
+                        }
+                        logger.info("Found a new hoftix script that has a lower index than a script that has already been executed. Allowing the hotfix script to be executed out of sequence: " + indexedScript.getFileName());
+                        return false;
+                    }
+
+                    logger.warn("Found a new script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
+                    return true;
                 }
                 if (!alreadyExecutedScript.isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates)) {
-                	logger.warn("Script found of which the contents have changed: " + indexedScript.getFileName());
-                	return true;
+                    logger.warn("Script found of which the contents have changed: " + indexedScript.getFileName());
+                    return true;
                 }
             }
         }
         return false;
     }
-    
-    
+
+
     /**
      * Gets the configured post-processing script files and verifies that they on the file system. If one of them
      * doesn't exist or is not a file, an exception is thrown.
@@ -202,37 +211,37 @@ public class DefaultScriptSource implements ScriptSource {
      * @return All the postprocessing scripts, not null
      */
     public List<Script> getPostProcessingScripts() {
-    	if (allPostProcessingScripts == null) {
-    		loadAndOrganizeAllScripts();
-    	}
+        if (allPostProcessingScripts == null) {
+            loadAndOrganizeAllScripts();
+        }
         return allPostProcessingScripts;
     }
-    
-    
+
+
     /**
      * Loads all scripts and organizes them: Splits them into update and postprocessing scripts, sorts
-     * them in their execution order, and makes sure there are no 2 update or postprocessing scripts with 
+     * them in their execution order, and makes sure there are no 2 update or postprocessing scripts with
      * the same index.
      */
     protected void loadAndOrganizeAllScripts() {
-    	List<Script> allScripts = loadAllScripts();
-    	allUpdateScripts = new ArrayList<Script>();
-    	allPostProcessingScripts = new ArrayList<Script>();
-    	for (Script script : allScripts) {
-    	    if (!isConfiguredExtension(script)) {
-    	        continue;
-    	    }
-    		if (script.isPostProcessingScript()) {
-    			allPostProcessingScripts.add(script);
-    		} else {
-    			allUpdateScripts.add(script);
-    		}
-    	}
-		Collections.sort(allUpdateScripts);
-		assertNoDuplicateIndexes(allUpdateScripts);
-		Collections.sort(allPostProcessingScripts);
-		assertNoDuplicateIndexes(allPostProcessingScripts);
-    	
+        List<Script> allScripts = loadAllScripts();
+        allUpdateScripts = new ArrayList<Script>();
+        allPostProcessingScripts = new ArrayList<Script>();
+        for (Script script : allScripts) {
+            if (!isConfiguredExtension(script)) {
+                continue;
+            }
+            if (script.isPostProcessingScript()) {
+                allPostProcessingScripts.add(script);
+            } else {
+                allUpdateScripts.add(script);
+            }
+        }
+        Collections.sort(allUpdateScripts);
+        assertNoDuplicateIndexes(allUpdateScripts);
+        Collections.sort(allPostProcessingScripts);
+        assertNoDuplicateIndexes(allPostProcessingScripts);
+
     }
 
 
@@ -253,23 +262,23 @@ public class DefaultScriptSource implements ScriptSource {
     /**
      * @return A List containing all scripts in the given script locations, not null
      */
-	protected List<Script> loadAllScripts() {
-		List<Script> scripts = new ArrayList<Script>();
-		for (ScriptContainer scriptContainer : scriptContainers) {
-		    scripts.addAll(scriptContainer.getScripts());
-		}
-		return scripts;
-	}
-
-    
-    protected Map<String, Script> convertToScriptNameScriptMap(Set<ExecutedScript> executedScripts) {
-		Map<String, Script> scriptMap = new HashMap<String, Script>();
-        for (ExecutedScript executedScript : executedScripts) {
-    		scriptMap.put(executedScript.getScript().getFileName(), executedScript.getScript());
+    protected List<Script> loadAllScripts() {
+        List<Script> scripts = new ArrayList<Script>();
+        for (ScriptContainer scriptContainer : scriptContainers) {
+            scripts.addAll(scriptContainer.getScripts());
         }
-		return scriptMap;
-	}
-    
+        return scripts;
+    }
+
+
+    protected Map<String, Script> convertToScriptNameScriptMap(Set<ExecutedScript> executedScripts) {
+        Map<String, Script> scriptMap = new HashMap<String, Script>();
+        for (ExecutedScript executedScript : executedScripts) {
+            scriptMap.put(executedScript.getScript().getFileName(), executedScript.getScript());
+        }
+        return scriptMap;
+    }
+
     protected void assertValidScriptExtensions() {
         // check whether an extension is configured
         if (scriptFileExtensions.isEmpty()) {

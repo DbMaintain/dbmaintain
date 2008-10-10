@@ -31,52 +31,55 @@ import java.util.Properties;
 import java.util.Set;
 
 
-
 /**
+ * todo javadoc
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class FileScriptContainer extends BaseScriptContainer {
 
     protected File scriptLocation;
-    
+
     protected Set<String> scriptFileExtensions;
+
 
     /**
      * Constructor for FileScriptContainer.
-     * 
+     *
      * @param scriptLocation
-     * @param defaultScriptFileExtensions 
-     * @param defaultTargetDatabasePrefix 
-     * @param defaultPostProcessingScriptDirName 
-     * @param defaultScriptEncoding 
+     * @param defaultScriptFileExtensions
+     * @param targetDatabasePrefix
+     * @param defaultPostProcessingScriptDirName
+     *
+     * @param defaultFixSuffix
+     * @param defaultScriptEncoding
      */
-    public FileScriptContainer(File scriptLocation, Set<String> defaultScriptFileExtensions, 
-            String defaultTargetDatabasePrefix, String defaultPostProcessingScriptDirName, String defaultScriptEncoding) {
+    public FileScriptContainer(File scriptLocation, Set<String> defaultScriptFileExtensions,
+                               String targetDatabasePrefix, String defaultPostProcessingScriptDirName, String defaultFixSuffix, String defaultScriptEncoding) {
         this.scriptLocation = scriptLocation;
-        
-        initConfiguration(defaultScriptFileExtensions, defaultTargetDatabasePrefix,
-                defaultPostProcessingScriptDirName, defaultScriptEncoding);
+
+        initConfiguration(defaultScriptFileExtensions, targetDatabasePrefix, defaultPostProcessingScriptDirName, defaultFixSuffix, defaultScriptEncoding);
         initScripts();
     }
 
-    /**
-     * 
-     */
+
     protected void initScripts() {
         scripts = new ArrayList<Script>();
         getScriptsAt(scripts, scriptLocation.getAbsolutePath(), "");
     }
 
+
     /**
      * @param defaultScriptFileExtensions
      * @param defaultTargetDatabasePrefix
      * @param defaultPostProcessingScriptDirName
+     *
      * @param defaultScriptEncoding
      */
     private void initConfiguration(Set<String> defaultScriptFileExtensions,
-            String defaultTargetDatabasePrefix, String defaultPostProcessingScriptDirName,
-            String defaultScriptEncoding) {
+                                   String defaultTargetDatabasePrefix, String defaultPostProcessingScriptDirName,
+                                   String defaultFixSuffix, String defaultScriptEncoding) {
         Properties properties = getLocationCustomProperties();
         if (properties != null) {
             initConfigurationFromProperties(properties);
@@ -84,15 +87,14 @@ public class FileScriptContainer extends BaseScriptContainer {
             this.scriptFileExtensions = defaultScriptFileExtensions;
             this.targetDatabasePrefix = defaultTargetDatabasePrefix;
             this.postProcessingScriptDirName = defaultPostProcessingScriptDirName;
+            this.fixScriptSuffix = defaultFixSuffix;
             this.scriptEncoding = defaultScriptEncoding;
         }
         assertValidScriptExtensions();
         assertValidScriptLocation();
     }
 
-    /**
-     * @return
-     */
+
     protected Properties getLocationCustomProperties() {
         File customPropertiesFileLocation = new File(scriptLocation + "/" + LOCATION_PROPERTIES_FILENAME);
         if (!customPropertiesFileLocation.exists()) {
@@ -110,14 +112,15 @@ public class FileScriptContainer extends BaseScriptContainer {
             IOUtils.closeQuietly(propertiesInputStream);
         }
     }
-    
-    
+
+
     /**
      * Adds all scripts available in the given directory or one of its subdirectories to the
      * given List of files
-     * @param scriptList 
-     * @param scriptRoot 
-     * @param relativeLocation 
+     *
+     * @param scriptList
+     * @param scriptRoot
+     * @param relativeLocation
      */
     protected void getScriptsAt(List<Script> scriptList, String scriptRoot, String relativeLocation) {
         File currentLocation = new File(scriptRoot + "/" + relativeLocation);
@@ -129,12 +132,13 @@ public class FileScriptContainer extends BaseScriptContainer {
         // recursively scan sub folders for script files
         if (currentLocation.isDirectory()) {
             for (File subLocation : currentLocation.listFiles()) {
-                getScriptsAt(scriptList, scriptRoot, 
+                getScriptsAt(scriptList, scriptRoot,
                         "".equals(relativeLocation) ? subLocation.getName() : relativeLocation + '/' + subLocation.getName());
             }
         }
     }
-    
+
+
     /**
      * Indicates if the given file is a database update script file
      *
@@ -150,27 +154,27 @@ public class FileScriptContainer extends BaseScriptContainer {
         }
         return false;
     }
-    
+
     /**
      * Creates a script object for the given script file
      *
-     * @param scriptFile The script file, not null
-     * @param relativePath 
+     * @param scriptFile             The script file, not null
+     * @param relativeScriptFileName The name of the script file relative to the root scripts dir, not null
      * @return The script, not null
      */
-    protected Script createScript(File scriptFile, String relativePath) {
-        return new Script(relativePath, scriptFile.lastModified(), 
-                new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), 
-                        scriptEncoding), targetDatabasePrefix, isPostProcessingScript(relativePath));
+    protected Script createScript(File scriptFile, String relativeScriptFileName) {
+        ScriptContentHandle scriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), scriptEncoding);
+        return new Script(relativeScriptFileName, scriptFile.lastModified(), scriptContentHandle, fixScriptSuffix, targetDatabasePrefix, isPostProcessingScript(relativeScriptFileName));
     }
-    
-    
+
+
     protected void assertValidScriptLocation() {
         if (!scriptLocation.exists()) {
             throw new DbMaintainException("Script file location " + scriptLocation + " doesn't exist");
         }
     }
-    
+
+
     protected void assertValidScriptExtensions() {
         // check whether an extension is configured
         if (scriptFileExtensions.isEmpty()) {
@@ -183,5 +187,5 @@ public class FileScriptContainer extends BaseScriptContainer {
             }
         }
     }
-    
+
 }

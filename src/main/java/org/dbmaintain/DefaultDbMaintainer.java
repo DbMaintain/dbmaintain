@@ -37,7 +37,7 @@ import java.util.Set;
  * A class for performing automatic maintenance of a database.<br>
  * This class must be configured with implementations of a {@link ExecutedScriptInfoSource},
  * {@link ScriptSource}, a {@link ScriptRunner}, {@link DBClearer}, {@link DBCleaner},
- * {@link ConstraintsDisabler}, {@link SequenceUpdater} and a {@link DataSetStructureGenerator}
+ * {@link ConstraintsDisabler} and a {@link SequenceUpdater}.
  * <p/> The {@link #updateDatabase()} method check what is the current version of the database, and
  * see if existing scripts have been modified. If yes, the database is cleared and all available
  * database scripts, are executed on the database. If no existing scripts have been modified, but
@@ -97,8 +97,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected SequenceUpdater sequenceUpdater;
 
+    // todo javadoc
     protected boolean cleanDbEnabled;
-    
+
     /**
      * Indicates whether updating the database from scratch is enabled. If true, the database is
      * cleared before updating if an already executed script is modified
@@ -116,14 +117,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected boolean updateSequencesEnabled;
 
-    /**
-     * Indicates whether a from scratch update should be performed when the previous update failed,
-     * but none of the scripts were modified since that last update. If true a new update will be
-     * tried only when changes were made to the script files
-     */
-//    protected boolean keepRetryingAfterError;
 
-    
     /**
      * Default constructor for testing.
      */
@@ -131,17 +125,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-    /**
-     * @param scriptRunner
-     * @param scriptSource
-     * @param executedScriptInfoSource
-     * @param fromScratchEnabled
-     * @param dbClearer 
-     * @param dbCleaner
-     */
-    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptSource scriptSource, ExecutedScriptInfoSource executedScriptInfoSource, 
-            boolean fromScratchEnabled, boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled,
-            DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
+    //todo javadoc
+    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptSource scriptSource, ExecutedScriptInfoSource executedScriptInfoSource,
+                               boolean fromScratchEnabled, boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled,
+                               DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
         this.scriptRunner = scriptRunner;
         this.scriptSource = scriptSource;
         this.executedScriptInfoSource = executedScriptInfoSource;
@@ -156,10 +143,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-
-    /* (non-Javadoc)
-     * @see org.dbmaintain.DbMaintainer#updateDatabase()
-     */
+    //todo javadoc
     public void updateDatabase() {
         Set<ExecutedScript> alreadyExecutedScripts = executedScriptInfoSource.getExecutedScripts();
         Version highestExecutedScriptVersion = getHighestExecutedScriptVersion(alreadyExecutedScripts);
@@ -183,31 +167,30 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-	protected Version getHighestExecutedScriptVersion(Set<ExecutedScript> executedScripts) {
-		Version highest = new Version("0");
-		for (ExecutedScript executedScript : executedScripts) {
-			if (executedScript.getScript().isIncremental()) {
-				if (executedScript.getScript().getVersion().compareTo(highest) > 0) {
-					highest = executedScript.getScript().getVersion();
-				}
-			}
-		}
-		return highest;
-	}
+    //todo javadoc
+    protected Version getHighestExecutedScriptVersion(Set<ExecutedScript> executedScripts) {
+        Version highest = new Version("0");
+        for (ExecutedScript executedScript : executedScripts) {
+            if (executedScript.getScript().isIncremental()) {
+                if (executedScript.getScript().getVersion().compareTo(highest) > 0) {
+                    highest = executedScript.getScript().getVersion();
+                }
+            }
+        }
+        return highest;
+    }
 
 
-	/* (non-Javadoc)
-     * @see org.dbmaintain.DbMaintainer#markDatabaseAsUptodate()
-     */
+    //todo javadoc
     public void markDatabaseAsUptodate() {
         executedScriptInfoSource.clearAllExecutedScripts();
-    	
-    	List<Script> allScripts = scriptSource.getAllUpdateScripts();
+
+        List<Script> allScripts = scriptSource.getAllUpdateScripts();
         for (Script script : allScripts) {
-        	executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
+            executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
         }
     }
-    
+
 
     public void clearDatabase() {
         dbClearer.clearSchemas();
@@ -218,7 +201,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     /**
      * Updates the state of the database using the given scripts.
      *
-     * @param scripts        The scripts, not null
+     * @param scripts The scripts, not null
      */
     protected void updateDatabase(List<Script> scripts) {
         if (scripts.isEmpty()) {
@@ -253,8 +236,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
     /**
      * Executes the given scripts and updates the database execution registry appropriately. After
-     * each successful script execution, the script execution is registered in the database and marked 
-     * as successful. If a script execution fails, the script execution is registered in the database 
+     * each successful script execution, the script execution is registered in the database and marked
+     * as successful. If a script execution fails, the script execution is registered in the database
      * and marked as unsuccessful.
      *
      * @param scripts The scripts to execute, not null
@@ -262,7 +245,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected void executeScripts(List<Script> scripts) {
         for (Script script : scripts) {
             logger.info("Executing script " + script.getFileName());
-            
+
             executeScript(script);
         }
     }
@@ -270,24 +253,24 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
     /**
      * Executes the given script and updates the database execution registry appropriately. If
-     * successfully, the script execution is registered in the database and marked as successful. 
-     * If an error occurred executing the script, the script execution is registered in the database 
+     * successfully, the script execution is registered in the database and marked as successful.
+     * If an error occurred executing the script, the script execution is registered in the database
      * and marked as unsuccessful.
      *
      * @param script The script to execute, not null
      */
     protected void executeScript(Script script) {
         try {
-        	// We register the script execution, but we indicate it to be unsuccessful. If anything goes wrong or if the update is
+            // We register the script execution, but we indicate it to be unsuccessful. If anything goes wrong or if the update is
             // interrupted before being completed, this will be the final state and the DbMaintainer will do a from-scratch update the next time
-        	ExecutedScript executedScript = new ExecutedScript(script, new Date(), false);
-        	executedScriptInfoSource.registerExecutedScript(executedScript);
-        	
-        	scriptRunner.execute(script);
+            ExecutedScript executedScript = new ExecutedScript(script, new Date(), false);
+            executedScriptInfoSource.registerExecutedScript(executedScript);
+
+            scriptRunner.execute(script);
             // We now register the previously registered script execution as being successful
             executedScript.setSuccessful(true);
             executedScriptInfoSource.updateExecutedScript(executedScript);
-            
+
         } catch (DbMaintainException e) {
             logger.error("Error while executing script " + script.getFileName(), e);
             throw e;
@@ -304,8 +287,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected void executePostProcessingScripts(List<Script> postProcessingScripts) {
         for (Script postProcessingScript : postProcessingScripts) {
             try {
-            	logger.info("Executing post processing script " + postProcessingScript.getFileName());
-            	
+                logger.info("Executing post processing script " + postProcessingScript.getFileName());
+
                 scriptRunner.execute(postProcessingScript);
 
             } catch (DbMaintainException e) {
@@ -317,22 +300,21 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     /**
+     * todo check javadoc
+     * <p/>
      * Checks whether the database should be updated from scratch or just incrementally. The
      * database needs to be rebuilt in following cases:
      * <ul>
      * <li>Some existing scripts were modified.</li>
      * <li>The last update of the database was unsuccessful.</li>
      * </ul>
-     * The database will only be rebuilt from scratch if {@link #PROPKEY_FROM_SCRATCH_ENABLED} is
-     * set to true. If the {@link #PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED} is set to false, the
-     * database will only be rebuilt again after an unsuccessful build when changes were made to the
-     * script files.
      *
-     * @param currentVersion The current database version, not null
+     * @param currentVersion         The current database version, not null
+     * @param alreadyExecutedScripts The current set of executed scripts, not null
      * @return True if a from scratch rebuild is needed, false otherwise
      */
     protected boolean shouldUpdateDatabaseFromScratch(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
-    	// check whether the last run was successful
+        // check whether the last run was successful
         /*if (errorInIndexedScriptDuringLastUpdate(alreadyExecutedScripts)) {
         	if (fromScratchEnabled) {
         		if (!keepRetryingAfterError) {
@@ -352,15 +334,16 @@ public class DefaultDbMaintainer implements DbMaintainer {
         	}
         }*/
 
-    	
+
         // check whether an existing script was updated
         if (scriptSource.isIncrementalScriptModified(currentVersion, alreadyExecutedScripts)) {
-            if (!fromScratchEnabled) {
-                throw new DbMaintainException("One or more existing incremental database update scripts have been modified, but updating from scratch is disabled. " +
-                		"You should revert to the original version of the modified script and add an new incremental script that performs the desired update");
+            if (fromScratchEnabled) {
+                logger.info("One or more existing database update scripts have been modified. Database will be cleared and rebuilt from scratch.");
+                return true;
+
             }
-            logger.info("One or more existing database update scripts have been modified. Database will be cleared and rebuilt from scratch.");
-            return true;
+            throw new DbMaintainException("One or more existing incremental database update scripts have been modified, but updating from scratch is disabled. " +
+                    "You should revert to the original version of the modified script and add an new incremental script that performs the desired update");
         }
 
         // from scratch is not needed
@@ -368,13 +351,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-	protected boolean errorInIndexedScriptDuringLastUpdate(Set<ExecutedScript> alreadyExecutedScripts) {
-		for (ExecutedScript script : alreadyExecutedScripts) {
-			if (!script.isSucceeded() && script.getScript().isIncremental()) {
-				return true;
-			}
-		}
-		return false;
-	}
+    //todo javadoc
+    protected boolean errorInIndexedScriptDuringLastUpdate(Set<ExecutedScript> alreadyExecutedScripts) {
+        for (ExecutedScript script : alreadyExecutedScripts) {
+            if (!script.isSucceeded() && script.getScript().isIncremental()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

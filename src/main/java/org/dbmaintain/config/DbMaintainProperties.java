@@ -18,7 +18,6 @@ package org.dbmaintain.config;
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
- *
  */
 public interface DbMaintainProperties {
 
@@ -34,10 +33,14 @@ public interface DbMaintainProperties {
 
     public static final String PROPERTY_ENABLED_END = "enabled";
 
-    /** Property key of the SQL dialect of the underlying DBMS implementation */
+    /**
+     * Property key of the SQL dialect of the underlying DBMS implementation
+     */
     public static final String PROPERTY_DIALECT_END = "dialect";
 
-    /** Property key for the database schema names */
+    /**
+     * Property key for the database schema names
+     */
     public static final String PROPERTY_SCHEMA_NAMES_END = "schemaNames";
 
     /**
@@ -51,7 +54,7 @@ public interface DbMaintainProperties {
      * supported, auto)
      */
     public static final String PROPKEY_IDENTIFIER_QUOTE_STRING = "database.identifierQuoteString";
-    
+
     /**
      * Property indicating if deleting all data from all tables before updating is enabled
      */
@@ -135,10 +138,10 @@ public interface DbMaintainProperties {
      * Property key for the tables that should not be cleaned
      */
     public static final String PROPKEY_PRESERVE_DATA_TABLES = "dbMaintainer.preserveDataOnly.tables";
-    
+
     /* The key of the property that specifies the database table in which the DB version is stored */
     public static final String PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME = "dbMaintainer.executedScriptsTableName";
-    
+
     /* The key of the property that specifies the column in which the script filenames are stored */
     public static final String PROPERTY_FILE_NAME_COLUMN_NAME = "dbMaintainer.fileNameColumnName";
     public static final String PROPERTY_FILE_NAME_COLUMN_SIZE = "dbMaintainer.fileNameColumnSize";
@@ -149,15 +152,15 @@ public interface DbMaintainProperties {
 
     /* The key of the property that specifies the column in which the last modification timestamp is stored */
     public static final String PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME = "dbMaintainer.fileLastModifiedAtColumnName";
-    
+
     /* The key of the property that specifies the column in which the last modification timestamp is stored */
     public static final String PROPERTY_CHECKSUM_COLUMN_NAME = "dbMaintainer.checksumColumnName";
     public static final String PROPERTY_CHECKSUM_COLUMN_SIZE = "dbMaintainer.checksumColumnSize";
-    
+
     /* The key of the property that specifies the column in which is stored whether the last update succeeded. */
     public static final String PROPERTY_EXECUTED_AT_COLUMN_NAME = "dbMaintainer.executedAtColumnName";
     public static final String PROPERTY_EXECUTED_AT_COLUMN_SIZE = "dbMaintainer.executedAtColumnSize";
-    
+
     /* The key of the property that specifies the column in which is stored whether the last update succeeded. */
     public static final String PROPERTY_SUCCEEDED_COLUMN_NAME = "dbMaintainer.succeededColumnName";
 
@@ -165,7 +168,7 @@ public interface DbMaintainProperties {
     public static final String PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE = "dbMaintainer.autoCreateExecutedScriptsTable";
 
     public static final String PROPERTY_TIMESTAMP_FORMAT = "dbMaintainer.timestampFormat";
-    
+
     /**
      * Property key for the directory in which the script files are located
      */
@@ -181,15 +184,25 @@ public interface DbMaintainProperties {
      */
     public static final String PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
 
+    /**
+     * Property key for the fix indicator. I.e. part of the filename that indicates that the script is a fix script.
+     */
+    public static final String PROPKEY_SCRIPT_FIX_SUFFIX = "dbMaintainer.script.fix.suffix";
+
+    /**
+     * The key for the property that specifies that fix scripts may be executed out of sequence
+     */
+    public static final String PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED = "dbMaintainer.script.fix.outOfSequenceExecutionAllowed";
+
     public static final String PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates.enabled";
-    
-    public static final String PROPKEY_SCRIPTS_ENCODING = "dbMaintainer.script.encoding";
-    
-    public static final String PROPKEY_SCRIPTS_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
-    
+
+    public static final String PROPKEY_SCRIPT_ENCODING = "dbMaintainer.script.encoding";
+
+    public static final String PROPKEY_SCRIPT_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
+
     public static final String PROPKEY_BACKSLASH_ESCAPING_ENABLED = "org.dbmaintain.script.ScriptParser.backSlashEscapingEnabled";
 
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
-    
+
     public static final String DB_MAINTAINER_SCRIPT_JAR = "dbMaintainer.script.jar";
 }

@@ -15,12 +15,7 @@
  */
 package org.dbmaintain.script.impl;
 
-import static java.util.Arrays.asList;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-
+import static junit.framework.Assert.*;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils;
@@ -34,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import static java.util.Arrays.asList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -51,36 +47,37 @@ public class DefaultScriptSourceTest {
 
     String scriptsDirName;
 
-	List<ExecutedScript> alreadyExecutedScripts;
+    List<ExecutedScript> alreadyExecutedScripts;
 
-	Date executionDate;
+    Date executionDate;
 
     /**
      * Cleans test directory and copies test files to it. Initializes test objects
-     * @throws IOException 
-     * @throws URISyntaxException 
+     *
+     * @throws IOException
+     * @throws URISyntaxException
      */
     @Before
     public void setUp() throws IOException, URISyntaxException {
-    	executionDate = new Date();
-		alreadyExecutedScripts = new ArrayList<ExecutedScript>(asList(
-			new ExecutedScript(new Script("1_scripts/001_scriptA.sql", 0L, "9a6c61ba036ac10baa6d8229ddc61607", "@"), executionDate, true),
-			new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "d28d9d6b03f7be2f6a51061360b00c9e", "@"), executionDate, true),
-			new ExecutedScript(new Script("2_scripts/002_scriptE.sql", 0L, "2e02a907691a4f20a19ae363d5942e84", "@"), executionDate, true),
-			new ExecutedScript(new Script("2_scripts/scriptF.sql", 0L, "77a703ac3381db7be6273a6e8899c772", "@"), executionDate, true),
-			new ExecutedScript(new Script("2_scripts/subfolder/001_scriptG.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", "@"), executionDate, true),
-			new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "b653b6f1b6522083efe6012479898958", "@"), executionDate, true),
-			new ExecutedScript(new Script("scripts/001_scriptI.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", "@"), executionDate, true),
-			new ExecutedScript(new Script("scripts/scriptJ.sql", 0L, "b653b6f1b6522083efe6012479898958", "@"),  executionDate, true)
-    	));
-    	
+        executionDate = new Date();
+        alreadyExecutedScripts = new ArrayList<ExecutedScript>(asList(
+                new ExecutedScript(new Script("1_scripts/001_scriptA.sql", 0L, "9a6c61ba036ac10baa6d8229ddc61607", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "d28d9d6b03f7be2f6a51061360b00c9e", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/002_scriptE.sql", 0L, "2e02a907691a4f20a19ae363d5942e84", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/scriptF.sql", 0L, "77a703ac3381db7be6273a6e8899c772", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/subfolder/001_scriptG.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "b653b6f1b6522083efe6012479898958", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("scripts/001_scriptI.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", "fix", "@"), executionDate, true),
+                new ExecutedScript(new Script("scripts/scriptJ.sql", 0L, "b653b6f1b6522083efe6012479898958", "fix", "@"), executionDate, true)
+        ));
+
         // Create test directories
         scriptsDirName = System.getProperty("java.io.tmpdir") + "DefaultScriptSourceTest";
         FileUtils.forceDeleteOnExit(new File(scriptsDirName));
 
         // Copy test files
         FileUtils.copyDirectory(new File(getClass().getResource("DefaultScriptSourceTest").toURI()), new File(scriptsDirName));
-        
+
         // Initialize FileScriptSource object
         String scriptsLocation = scriptsDirName + "/test_scripts";
         scriptSource = TestUtils.getDefaultScriptSource(scriptsLocation, false);
@@ -105,27 +102,27 @@ public class DefaultScriptSourceTest {
         assertEquals("scripts/001_scriptI.sql", scripts.get(7).getFileName());   // x.x.1
         assertEquals("scripts/scriptJ.sql", scripts.get(8).getFileName());       // x.x.x
     }
-    
+
     @Test
     public void testDuplicateIndex() throws Exception {
-    	File duplicateIndexScript = null;
-    	try {
-			String scriptsLocation = scriptsDirName + "/test_scripts";
+        File duplicateIndexScript = null;
+        try {
+            String scriptsLocation = scriptsDirName + "/test_scripts";
             File scriptA = new File(scriptsLocation + "/1_scripts/001_scriptA.sql");
-			duplicateIndexScript = new File(scriptsDirName
-					+ "/test_scripts/1_scripts/001_duplicateIndexScript.sql");
-			FileUtils.copyFile(scriptA, duplicateIndexScript);
-			scriptSource = TestUtils.getDefaultScriptSource(scriptsLocation, false);
-			try {
-				scriptSource.getAllUpdateScripts();
-				fail("Expected a DbMaintainException because of a duplicate script");
-			} catch (DbMaintainException e) {
-				// expected
-			}
+            duplicateIndexScript = new File(scriptsDirName
+                    + "/test_scripts/1_scripts/001_duplicateIndexScript.sql");
+            FileUtils.copyFile(scriptA, duplicateIndexScript);
+            scriptSource = TestUtils.getDefaultScriptSource(scriptsLocation, false);
+            try {
+                scriptSource.getAllUpdateScripts();
+                fail("Expected a DbMaintainException because of a duplicate script");
+            } catch (DbMaintainException e) {
+                // expected
+            }
         } finally {
             try {
                 duplicateIndexScript.delete();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // Safely ignore NPE or any IOException...
             }
         }
@@ -138,13 +135,13 @@ public class DefaultScriptSourceTest {
      */
     @Test
     public void testGetNewScripts() {
-    	alreadyExecutedScripts.set(5, new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "xxx", "@"), executionDate, true));
-    	
-		List<Script> scripts = scriptSource.getNewScripts(new Version("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
+        alreadyExecutedScripts.set(5, new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "xxx", "fix", "@"), executionDate, true));
 
-        assertEquals("1_scripts/scriptD.sql", scripts.get(0).getFileName());       			// 1.x 		was added
+        List<Script> scripts = scriptSource.getNewScripts(new Version("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
+
+        assertEquals("1_scripts/scriptD.sql", scripts.get(0).getFileName());                   // 1.x 		was added
         assertEquals("2_scripts/subfolder/scriptH.sql", scripts.get(1).getFileName());      // 2.x.x	was changed
-        assertEquals("scripts/001_scriptI.sql", scripts.get(2).getFileName());   			// x.1		higher version
+        assertEquals("scripts/001_scriptI.sql", scripts.get(2).getFileName());               // x.1		higher version
     }
 
 
@@ -152,44 +149,44 @@ public class DefaultScriptSourceTest {
     public void testIsExistingScriptsModfied_noModifications() {
         assertFalse(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
-    
-    
+
+
     @Test
     public void testIsExistingScriptsModfied_modifiedScript() {
-    	alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "@"), executionDate, true));
-    	
+        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
-    
-    
+
+
     @Test
     public void testIsExistingScriptsModfied_scriptAdded() {
-    	alreadyExecutedScripts.remove(1);
-    	
+        alreadyExecutedScripts.remove(1);
+
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
-    
-    
+
+
     @Test
     public void testIsExistingScriptsModfied_scriptRemoved() {
-    	alreadyExecutedScripts.add(new ExecutedScript(new Script("1_scripts/003_scriptB.sql", 0L, "xxx", "@"), executionDate, true));
-    	
+        alreadyExecutedScripts.add(new ExecutedScript(new Script("1_scripts/003_scriptB.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
-    
-    
+
+
     @Test
     public void testIsExistingScriptsModfied_newScript() {
-    	alreadyExecutedScripts.remove(1);
-    	
+        alreadyExecutedScripts.remove(1);
+
         assertFalse(scriptSource.isIncrementalScriptModified(new Version("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
-    
-    
+
+
     @Test
     public void testIsExistingScriptsModfied_higherIndexScriptModified() {
-    	alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "@"), executionDate, true));
-    	
+        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+
         assertFalse(scriptSource.isIncrementalScriptModified(new Version("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("1.2"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }

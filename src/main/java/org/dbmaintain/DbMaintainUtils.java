@@ -27,54 +27,66 @@ import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import java.util.Properties;
 
 /**
- * 
+ * todo javadoc
  */
 public class DbMaintainUtils {
+
 
     public static void updateDatabase() {
         getDbMaintainer().updateDatabase();
     }
 
+
     public static void markDatabaseAsUptodate() {
         getDbMaintainer().markDatabaseAsUptodate();
     }
-    
+
+
     public static void clearDatabase() {
         getDbClearer().clearSchemas();
     }
+
 
     public static void cleanDatabase() {
         getDbCleaner().cleanSchemas();
     }
 
+
     public static void disableConstraints() {
         getConstraintsDisabler().disableConstraints();
     }
 
+
     public static void updateSequences() {
         getSequenceUpdater().updateSequences();
     }
-    
+
+
     private static DbMaintainer getDbMaintainer() {
         return getDbMaintainConfigurer().createDbMaintainer();
     }
-    
+
+
     private static DBClearer getDbClearer() {
         return getDbMaintainConfigurer().createDbClearer();
     }
-    
+
+
     private static DBCleaner getDbCleaner() {
         return getDbMaintainConfigurer().createDbCleaner();
     }
-    
+
+
     private static ConstraintsDisabler getConstraintsDisabler() {
         return getDbMaintainConfigurer().createConstraintsDisabler();
     }
-    
+
+
     private static SequenceUpdater getSequenceUpdater() {
         return getDbMaintainConfigurer().createSequenceUpdater();
     }
-    
+
+
     public static PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
         Properties configuration = new DbMaintainConfigurationLoader().getDefaultConfiguration();
         SQLHandler sqlHandler = new DefaultSQLHandler();

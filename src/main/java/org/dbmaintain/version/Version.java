@@ -25,8 +25,7 @@ import java.util.List;
 /**
  * Class representing the version of a database or the version of a script.
  * <p/>
- * A version is represented by a modification timestamp and a list of version indexes.
- * The indexes should be defined as follows:
+ * A version is represented by a list of version indexes and should be defined as follows:
  * <p/>
  * 01_folder/01_subfolder/1_script  ==> 1,1,1<br>
  * 01_folder/02_subfolder/1_script  ==> 1,2,1<br>
@@ -48,8 +47,7 @@ public class Version implements Comparable<Version> {
     /**
      * Creates a new version.
      *
-     * @param indexes   The script indexes, not null
-     * @param timeStamp The script timestamp
+     * @param indexes The script indexes, not null
      */
     public Version(List<Long> indexes) {
         this.indexes = indexes;
@@ -199,41 +197,50 @@ public class Version implements Comparable<Version> {
             }
         }
         if (!thisIterator.hasNext() && !otherIterator.hasNext()) {
-        	return 0;
+            return 0;
         }
         if (thisIterator.hasNext()) {
-        	return 1;
+            return 1;
         } else {
-        	return -1;
+            return -1;
         }
     }
 
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((indexes == null) ? 0 : indexes.hashCode());
-		return result;
-	}
+    /**
+     * @return A computed hashcode value dependent on the indexes
+     */
+    @Override
+    public int hashCode() {
+        return 31 + ((indexes == null) ? 0 : indexes.hashCode());
+    }
 
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final Version other = (Version) obj;
-		if (indexes == null) {
-			if (other.indexes != null)
-				return false;
-		} else if (!indexes.equals(other.indexes))
-			return false;
-		return true;
-	}
-    
-    
+    /**
+     * @param object The object to compare with
+     * @return True if the given object has the same indexes
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
+        Version other = (Version) object;
+        if (indexes == null) {
+            if (other.indexes != null) {
+                return false;
+            }
+        } else if (!indexes.equals(other.indexes)) {
+            return false;
+        }
+        return true;
+    }
+
+
 }

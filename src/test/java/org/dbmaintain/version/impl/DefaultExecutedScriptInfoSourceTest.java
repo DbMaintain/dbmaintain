@@ -16,8 +16,7 @@
 package org.dbmaintain.version.impl;
 
 import static junit.framework.Assert.assertEquals;
-
-import org.apache.commons.lang.time.DateUtils;
+import static org.apache.commons.lang.time.DateUtils.parseDate;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
@@ -29,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
@@ -54,9 +52,9 @@ public class DefaultExecutedScriptInfoSourceTest {
 
     /* The db support instance for the default schema */
     DbSupport dbSupport;
-    
+
     ExecutedScript executedScript1, executedScript2;
-    
+
 
     /**
      * Initialize test fixture and creates a test version table.
@@ -72,13 +70,11 @@ public class DefaultExecutedScriptInfoSourceTest {
         dropExecutedScriptsTable();
         createExecutedScriptsTable();
     }
-    
+
     @Before
     public void initTestData() throws ParseException {
-    	executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@"), 
-    			DateUtils.parseDate("20/05/2008 10:20:00", new String[] {"dd/MM/yyyy hh:mm:ss"}), true);
-    	executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "@"), 
-    			DateUtils.parseDate("20/05/2008 10:25:00", new String[] {"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "fix", "@"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), true);
+        executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "fix", "@"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
 
@@ -87,7 +83,7 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @After
     public void tearDown() {
-    	dropExecutedScriptsTable();
+        dropExecutedScriptsTable();
     }
 
 
@@ -112,7 +108,7 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testRegisterExecutedScript_NoExecutedScriptsTable() {
-    	dropExecutedScriptsTable();
+        dropExecutedScriptsTable();
         dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
     }
 
@@ -122,28 +118,28 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @Test
     public void testGetDBVersion_noExecutedScriptsTableAutoCreate() {
-    	dropExecutedScriptsTable();
+        dropExecutedScriptsTable();
 
         dbExecutedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
         assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
 //        assertLenEquals(asList(executedScript1), dbVersionSource.getExecutedScripts());
     }
-    
+
     @Test
     public void testUpdateExecutedScript() {
-    	dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
-    	executedScript1 = new ExecutedScript(executedScript1.getScript(), new Date(), false);
-    	dbExecutedScriptInfoSource.updateExecutedScript(executedScript1);
-    	assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
+        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
+        executedScript1 = new ExecutedScript(executedScript1.getScript(), new Date(), false);
+        dbExecutedScriptInfoSource.updateExecutedScript(executedScript1);
+        assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
 //    	assertLenEquals(CollectionUtils.asSet(executedScript1), dbVersionSource.getExecutedScripts());
     }
-    
+
     @Test
     public void testClearAllRegisteredScripts() {
-    	dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
-    	dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
-    	dbExecutedScriptInfoSource.clearAllExecutedScripts();
-    	assertEquals(0, dbExecutedScriptInfoSource.getExecutedScripts().size());
+        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
+        dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
+        dbExecutedScriptInfoSource.clearAllExecutedScripts();
+        assertEquals(0, dbExecutedScriptInfoSource.getExecutedScripts().size());
     }
 
 
