@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script.parsingstate;
+package org.dbmaintain.script.parsingstate.impl;
 
-import org.dbmaintain.script.ParsingState;
-import org.dbmaintain.script.StatementBuilder;
+import org.dbmaintain.script.parsingstate.ParsingState;
+import org.dbmaintain.script.impl.StatementBuilder;
 
 /**
  * The initial state for Oracle. This parser adds PL/SQL statement recognition to the parser. In order for the

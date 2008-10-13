@@ -15,11 +15,9 @@
  */
 package org.dbmaintain.script.impl;
 
-import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.script.ParsingState;
 import org.dbmaintain.script.ScriptParser;
-import org.dbmaintain.script.StatementBuilder;
-import org.dbmaintain.script.parsingstate.*;
+import org.dbmaintain.script.parsingstate.ParsingState;
+import org.dbmaintain.script.parsingstate.impl.*;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.BufferedReader;
@@ -38,6 +36,7 @@ import java.util.Arrays;
  *
  * @author Tim Ducheyne
  * @author Filip Neven
+ * @author Stefan Bangels
  */
 public class DefaultScriptParser implements ScriptParser {
 
@@ -71,8 +70,8 @@ public class DefaultScriptParser implements ScriptParser {
     /**
      * Constructor for DefaultScriptParser.
      *
-     * @param scriptReader
-     * @param backSlashEscapingEnabled
+     * @param scriptReader             The reader that will provide the script content, not null
+     * @param backSlashEscapingEnabled True if backslash escaping is enabled
      */
     public DefaultScriptParser(Reader scriptReader, boolean backSlashEscapingEnabled) {
         this.scriptReader = scriptReader;
@@ -98,17 +97,6 @@ public class DefaultScriptParser implements ScriptParser {
 
 
     /**
-     * Returns the characters that should be removed from the statements. Semi-colons are not part of a statement and
-     * should therefore be removed from the statement.
-     *
-     * @return The separator characters to remove, not null
-     */
-    protected char[] getTrailingSeparatorCharsToRemove() {
-        return new char[]{';'};
-    }
-
-
-    /**
      * Actual implementation of getNextStatement.
      *
      * @return the statements, null if no more statements
@@ -124,7 +112,7 @@ public class DefaultScriptParser implements ScriptParser {
         // set initial state
         char previousChar = 0;
         currentParsingState = initialParsingState;
-        StatementBuilder statementBuilder = new StatementBuilder();
+        StatementBuilder statementBuilder = createStatementBuilder();
 
         // parse script
         while (currentChar != -1) {
@@ -150,7 +138,7 @@ public class DefaultScriptParser implements ScriptParser {
 
             // if parsing state null, a statement end is found
             if (currentParsingState == null) {
-                String statement = createStatement(statementBuilder);
+                String statement = statementBuilder.createStatement();
 
                 // reset initial state
                 previousChar = 0;
@@ -167,47 +155,12 @@ public class DefaultScriptParser implements ScriptParser {
         // check whether there was still an executable statement in the script
         // or only whitespace was left
         if (statementBuilder.isExecutable()) {
-            String finalStatement = createStatement(statementBuilder);
+            String finalStatement = statementBuilder.createStatement();
             if (finalStatement != null) {
-                throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(getTrailingSeparatorCharsToRemove()));
+                throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(statementBuilder.getTrailingSeparatorCharsToRemove()));
             }
         }
         return null;
-    }
-
-
-    /**
-     * Creates the resulting statement out of the given characters.
-     * This will trim the statement and remove any trailing separtors if needed.
-     *
-     * @param statementBuilder The statement builder, not null
-     * @return The resulting statement, null if no statement is left
-     */
-    protected String createStatement(StatementBuilder statementBuilder) {
-        // get built statement to return
-        String trimmedStatement = statementBuilder.getStatement().trim();
-
-        // ignore empty statements
-        if (StringUtils.isEmpty(trimmedStatement)) {
-            return null;
-        }
-
-        // remove trailing separator character (eg ;)
-        int lastIndex = trimmedStatement.length() - 1;
-        char lastChar = trimmedStatement.charAt(lastIndex);
-        for (char trailingChar : getTrailingSeparatorCharsToRemove()) {
-            if (lastChar == trailingChar) {
-                trimmedStatement = trimmedStatement.substring(0, lastIndex);
-                break;
-            }
-        }
-
-        // trim and see if anything is left after removing the trailing separator (eg ;)
-        trimmedStatement = trimmedStatement.trim();
-        if (StringUtils.isEmpty(trimmedStatement)) {
-            return null;
-        }
-        return trimmedStatement;
     }
 
 
@@ -235,6 +188,16 @@ public class DefaultScriptParser implements ScriptParser {
 
         // the normal state is the begin-state
         return normalParsingState;
+    }
+
+
+    /**
+     * Factory method for the statement builder.
+     *
+     * @return The statement builder, not null
+     */
+    protected StatementBuilder createStatementBuilder() {
+        return new StatementBuilder();
     }
 
 

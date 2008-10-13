@@ -20,12 +20,7 @@ import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.thirdparty.org.apache.commons.io.NullWriter;
 import org.dbmaintain.util.DbMaintainException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -33,19 +28,21 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * A handle for getting the script content as a stream.
- * 
+ *
+ * todo javadoc
+ *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
 public abstract class ScriptContentHandle {
 
-	protected MessageDigest scriptDigest;
-	
-	protected Reader scriptReader;
-	
-	protected String encoding;
-	
-	
+    protected MessageDigest scriptDigest;
+
+    protected Reader scriptReader;
+
+    protected String encoding;
+
+
     /**
      * @param encoding
      */
@@ -55,7 +52,7 @@ public abstract class ScriptContentHandle {
 
     /**
      * Opens a stream to the content of the script.
-     * 
+     *
      * NOTE: do not forget to close the stream after usage.
      *
      * @return The content stream, not null
@@ -67,48 +64,48 @@ public abstract class ScriptContentHandle {
         } catch (UnsupportedEncodingException e) {
             throw new DbMaintainException("Unsupported encoding " + encoding, e);
         }
-		return scriptReader;
+        return scriptReader;
     }
 
     protected MessageDigest getScriptDigest() {
-		try {
-			return MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			throw new DbMaintainException(e);
-		}
-	}
-
-	public String getCheckSum() {
-		try {
-			if (scriptDigest == null) {
-				readScript();
-			}
-			return getHexPresentation(scriptDigest.digest());
-		} catch (IOException e) {
-			throw new DbMaintainException(e);
-		}
+        try {
+            return MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new DbMaintainException(e);
+        }
     }
-	
-	
-	protected void readScript() throws IOException {
-		Reader scriptContentReader = openScriptContentReader();
-		IOUtils.copy(scriptContentReader, new NullWriter());
-		scriptContentReader.close();
-	}
 
-	
-	protected String getHexPresentation(byte[] byteArray) {
-		StringBuffer result = new StringBuffer();
-	    for (int i = 0; i < byteArray.length; i++) {
-	    	result.append(Integer.toString((byteArray[i] & 0xff) + 0x100, 16).substring(1));
-	    }
-	    return result.toString();
-	}
-    
+    public String getCheckSum() {
+        try {
+            if (scriptDigest == null) {
+                readScript();
+            }
+            return getHexPresentation(scriptDigest.digest());
+        } catch (IOException e) {
+            throw new DbMaintainException(e);
+        }
+    }
+
+
+    protected void readScript() throws IOException {
+        Reader scriptContentReader = openScriptContentReader();
+        IOUtils.copy(scriptContentReader, new NullWriter());
+        scriptContentReader.close();
+    }
+
+
+    protected String getHexPresentation(byte[] byteArray) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < byteArray.length; i++) {
+            result.append(Integer.toString((byteArray[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return result.toString();
+    }
+
 
     protected abstract InputStream getScriptInputStream();
 
-    
+
     /**
      * A handle for getting the script content as a stream.
      */
@@ -120,8 +117,8 @@ public abstract class ScriptContentHandle {
         /**
          * Creates a content handle.
          *
-         * @param url The url to the content, not null
-         * @param encoding 
+         * @param url      The url to the content, not null
+         * @param encoding
          */
         public UrlScriptContentHandle(URL url, String encoding) {
             super(encoding);
@@ -131,17 +128,17 @@ public abstract class ScriptContentHandle {
 
         /**
          * Opens a stream to the content of the script.
-         * 
+         *
          * @return The content stream, not null
          */
-		@Override
-		protected InputStream getScriptInputStream() {
-			try {
-				return url.openStream();
-			} catch (IOException e) {
+        @Override
+        protected InputStream getScriptInputStream() {
+            try {
+                return url.openStream();
+            } catch (IOException e) {
                 throw new DbMaintainException("Error while trying to create reader for url " + url, e);
             }
-		}
+        }
     }
 
 
@@ -157,7 +154,7 @@ public abstract class ScriptContentHandle {
          * Creates a content handle.
          *
          * @param scriptContent The content, not null
-         * @param encoding 
+         * @param encoding
          */
         public StringScriptContentHandle(String scriptContent, String encoding) {
             super(encoding);
@@ -170,9 +167,9 @@ public abstract class ScriptContentHandle {
          *
          * @return The content stream, not null
          */
-		@Override
-		protected InputStream getScriptInputStream() {
-			return new ReaderInputStream(new StringReader(scriptContent), encoding);
+        @Override
+        protected InputStream getScriptInputStream() {
+            return new ReaderInputStream(new StringReader(scriptContent), encoding);
 		}
         
         

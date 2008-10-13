@@ -24,13 +24,14 @@ import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Test class for {@link org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -93,13 +94,15 @@ public class DefaultExecutedScriptInfoSourceTest {
     @Test
     public void testRegisterAndRetrieveExecutedScript() {
         dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
-        assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
-//        assertLenEquals(asList(executedScript1), dbVersionSource.getExecutedScripts());
+        Set<ExecutedScript> executedScripts1 = dbExecutedScriptInfoSource.getExecutedScripts();
+        assertEquals(1, executedScripts1.size());
+        assertTrue(executedScripts1.contains(executedScript1));
+
         dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
-        Iterator<ExecutedScript> executedScriptsIterator = dbExecutedScriptInfoSource.getExecutedScripts().iterator();
-        assertEquals(executedScript2, executedScriptsIterator.next());
-        assertEquals(executedScript1, executedScriptsIterator.next());
-//        assertLenEquals(asList(executedScript1, executedScript2), dbVersionSource.getExecutedScripts());
+        Set<ExecutedScript> executedScripts2 = dbExecutedScriptInfoSource.getExecutedScripts();
+        assertEquals(2, executedScripts2.size());
+        assertTrue(executedScripts2.contains(executedScript1));
+        assertTrue(executedScripts2.contains(executedScript2));
     }
 
 

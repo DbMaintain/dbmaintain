@@ -15,9 +15,8 @@
  */
 package org.dbmaintain.script.impl;
 
-import org.dbmaintain.script.parsingstate.NormalParsingState;
-import org.dbmaintain.script.parsingstate.OracleNormalParsingState;
-import org.dbmaintain.script.StatementBuilder;
+import org.dbmaintain.script.parsingstate.impl.NormalParsingState;
+import org.dbmaintain.script.parsingstate.impl.OracleNormalParsingState;
 
 import java.io.Reader;
 
@@ -26,28 +25,19 @@ import java.io.Reader;
  *
  * @author Tim Ducheyne
  * @author Filip Neven
+ * @author Stefan Bangels
  */
 public class OracleScriptParser extends DefaultScriptParser {
 
-    
+
     /**
      * Constructor for OracleScriptParser.
-     * @param scriptReader
-     * @param backSlashEscapingEnabled
+     *
+     * @param scriptReader             The reader that will provide the script content, not null
+     * @param backSlashEscapingEnabled True if backslash escaping is enabled
      */
     public OracleScriptParser(Reader scriptReader, boolean backSlashEscapingEnabled) {
         super(scriptReader, backSlashEscapingEnabled);
-    }
-
-
-    /**
-     * Overridden to add a forward slash (/) as a separator.
-     *
-     * @return The trailing chars, not null
-     */
-    @Override
-    protected char[] getTrailingSeparatorCharsToRemove() {
-        return new char[]{';', '/'};
     }
 
 
@@ -61,19 +51,47 @@ public class OracleScriptParser extends DefaultScriptParser {
 
 
     /**
-     * Overridden to remove carriage returns from statements.
-     * Oracle does not handle these characters correctly.
+     * Factory method for the statement builder. Overridden to use the OracleStatementBuilder.
      *
-     * @param statementBuilder The statement builder, not null
-     * @return The statement, null if there is no statement (eg empty string)
+     * @return The statement builder, not null
      */
     @Override
-    protected String createStatement(StatementBuilder statementBuilder) {
-        String statement = super.createStatement(statementBuilder);
-        if (statement != null) {
-            statement = statement.replace("\r\n", "\n");
-            statement = statement.replace("\r", "\n");
-        }
-        return statement;
+    protected StatementBuilder createStatementBuilder() {
+        return new OracleStatementBuilder();
     }
+
+
+    /**
+     * A statement builder with special handling for Oracle
+     */
+    public static class OracleStatementBuilder extends StatementBuilder {
+
+        /**
+         * Overridden to add a forward slash (/) as a separator.
+         *
+         * @return The trailing chars, not null
+         */
+        @Override
+        public char[] getTrailingSeparatorCharsToRemove() {
+            return new char[]{';', '/'};
+        }
+
+
+        /**
+         * Overridden to remove carriage returns from statements.
+         * Oracle does not handle these characters correctly.
+         *
+         * @return The resulting statement, null if no statement is left
+         */
+        @Override
+        public String createStatement() {
+            String statement = super.createStatement();
+            if (statement != null) {
+                statement = statement.replace("\r\n", "\n");
+                statement = statement.replace("\r", "\n");
+            }
+            return statement;
+        }
+    }
+
 }

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script.parsingstate;
+package org.dbmaintain.script.parsingstate.impl;
 
-import org.dbmaintain.script.ParsingState;
-import org.dbmaintain.script.StatementBuilder;
+import org.dbmaintain.script.parsingstate.ParsingState;
+import org.dbmaintain.script.impl.StatementBuilder;
 
 /**
  * A state for parsing an in-block comment (/ * comment * /) part of a script.
