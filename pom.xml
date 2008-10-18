@@ -158,4 +158,18 @@
             <scope>test</scope>
         </dependency>
 	</dependencies>
+     <developers>
+        <developer>
+          <id>davidkarlsen</id>
+          <email>david@davidkarlsen.com</email>
+          <name>David J. M. Karlsen</name>
+          <organization>sourceforge.org</organization>
+          <organizationUrl>http://sf.net</organizationUrl>
+          <roles>
+            <role>developer</role>
+          </roles>
+          <timezone>1</timezone>
+          <url>http://www.davidakarlsen.com</url>
+        </developer>
+      </developers>
 </project>
