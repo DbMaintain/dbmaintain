@@ -62,7 +62,7 @@ public class DbMaintainIntegrationTest {
 
     @Before
     public void init() {
-        scriptsLocation = new File(System.getProperty("java.io.tmpdir") + "/dbmaintain-integrationtest/scripts");
+        scriptsLocation = new File(System.getProperty("java.io.tmpdir"), "dbmaintain-integrationtest/scripts");
         initConfiguration();
         clearScriptsDirectory();
         clearTestDatabase();
