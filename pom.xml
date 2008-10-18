@@ -21,7 +21,22 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+    <ciManagement>
+      <system>hudson</system>
+      <url>http://davidkarlsen.com/hudson/job/dbmaintain/</url>
+      <notifiers>
+        <notifier>
+          <type>email</type>
+          <sendOnError>true</sendOnError>
+          <sendOnFailure>true</sendOnFailure>
+          <sendOnSuccess>true</sendOnSuccess>
+          <sendOnWarning>true</sendOnWarning>
+          <configuration>
+            <address>david@davidkarlsen.com</address>
+          </configuration>
+        </notifier>
+      </notifiers>
+    </ciManagement>
     <!-- Environment Settings -->
     <issueManagement>
         <system>jira</system>
