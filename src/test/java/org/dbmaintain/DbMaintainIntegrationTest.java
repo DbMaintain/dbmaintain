@@ -40,6 +40,7 @@ import java.util.Set;
  *
  * @author Filip Neven
  * @author Tim Ducheyne
+ * @author David Karlsen
  */
 public class DbMaintainIntegrationTest {
 
