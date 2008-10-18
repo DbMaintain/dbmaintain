@@ -50,7 +50,12 @@
     <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</developerConnection>
     <url>http://dbmaintain.svn.sourceforge.net/viewvc/dbmaintain/</url>
   </scm>
-
+  <mailingLists>
+    <mailingList>
+      <name>User forum</name>
+      <archive>http://sourceforge.net/forum/forum.php?forum_id=868604</archive>
+    </mailingList>
+  </mailingLists>
   <!-- Remote repository -->
   <distributionManagement>
     <repository>
