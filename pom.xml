@@ -171,4 +171,35 @@
       <url>http://www.davidakarlsen.com</url>
     </developer>
   </developers>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changelog-plugin</artifactId>
+        <version>2.1</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-changes-plugin</artifactId>
+        <configuration>
+          <columnNames>Key,Summary,Status,Resolution,Assignee,Type,Version,FixVersion</columnNames>
+          <toAddresses>
+            <toAddress>dev@mojo.codehaus.org</toAddress>
+            <toAddress>user@mojo.codehaus.org</toAddress>
+            <toAddress>users@maven.apache.org</toAddress>
+          </toAddresses>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <configuration>
+          <threshold>Normal</threshold>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jdepend-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
