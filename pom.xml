@@ -9,7 +9,10 @@
   <!-- Project information -->
   <name>DbMaintain</name>
   <url>http://www.dbmaintain.org/</url>
-  <organization>sourceforge.net</organization>
+  <organization>
+    <name>sourceforge.net</name>
+    <url>http://sf.net</url>
+  </organization>
   <description>
         DbMaintain enables automatic roll-out of updates to a relational database. It brings database scripts into version control just like 
         regular source code and can be used to transparently deploy databases from development on to production.
