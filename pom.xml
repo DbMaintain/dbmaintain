@@ -28,9 +28,9 @@
         <url>http://sourceforge.net/tracker/?group_id=167201</url>
     </issueManagement>
     <scm>
-        <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases/dbmaintain-1.0-rc-1</connection>
-        <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases/dbmaintain-1.0-rc-1</developerConnection>
-        <url>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases/dbmaintain-1.0-rc-1</url>
+        <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</connection>
+        <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</developerConnection>
+        <url>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</url>
     </scm>
 
     <!-- Remote repository -->
