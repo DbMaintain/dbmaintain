@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author Filip Neven
  * @author Tim Ducheyne
- * @author David Karlsen
+ * @author David J. M. Karlsen
  */
 public class DbMaintainIntegrationTest {
 
@@ -62,7 +62,7 @@ public class DbMaintainIntegrationTest {
 
     @Before
     public void init() {
-        scriptsLocation = new File(System.getProperty("java.io.tmpdir"), "dbmaintain-integrationtest/scripts");
+        scriptsLocation = new File("target", "dbmaintain-integrationtest/scripts");
         initConfiguration();
         clearScriptsDirectory();
         clearTestDatabase();

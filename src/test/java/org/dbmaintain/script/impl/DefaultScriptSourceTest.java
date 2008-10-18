@@ -39,6 +39,7 @@ import java.util.List;
  *
  * @author Tim Ducheyne
  * @author Filip Neven
+ * @author David J. M. Karlsen
  */
 public class DefaultScriptSourceTest {
 
@@ -72,7 +73,7 @@ public class DefaultScriptSourceTest {
         ));
 
         // Create test directories
-        scriptsDir = new File( System.getProperty("java.io.tmpdir"), "DefaultScriptSourceTest" );
+        scriptsDir = new File( "target", "DefaultScriptSourceTest" );
         FileUtils.forceDeleteOnExit( scriptsDir );
 
         // Copy test files
