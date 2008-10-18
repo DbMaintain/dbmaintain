@@ -48,7 +48,7 @@
   <scm>
     <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</connection>
     <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</developerConnection>
-    <url>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</url>
+    <url>http://dbmaintain.svn.sourceforge.net/viewvc/dbmaintain/</url>
   </scm>
 
   <!-- Remote repository -->
