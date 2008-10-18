@@ -45,7 +45,7 @@ public class DefaultScriptSourceTest {
     /* Tested object */
     DefaultScriptSource scriptSource;
 
-    String scriptsDirName;
+    File scriptsDir;
 
     List<ExecutedScript> alreadyExecutedScripts;
 
@@ -72,14 +72,14 @@ public class DefaultScriptSourceTest {
         ));
 
         // Create test directories
-        scriptsDirName = System.getProperty("java.io.tmpdir") + "DefaultScriptSourceTest";
-        FileUtils.forceDeleteOnExit(new File(scriptsDirName));
+        scriptsDir = new File( System.getProperty("java.io.tmpdir"), "DefaultScriptSourceTest" );
+        FileUtils.forceDeleteOnExit( scriptsDir );
 
         // Copy test files
-        FileUtils.copyDirectory(new File(getClass().getResource("DefaultScriptSourceTest").toURI()), new File(scriptsDirName));
+        FileUtils.copyDirectory(new File(getClass().getResource("DefaultScriptSourceTest").toURI()), scriptsDir);
 
         // Initialize FileScriptSource object
-        String scriptsLocation = scriptsDirName + "/test_scripts";
+        String scriptsLocation = scriptsDir.getAbsolutePath() + "/test_scripts";
         scriptSource = TestUtils.getDefaultScriptSource(scriptsLocation, false);
     }
 
@@ -107,10 +107,9 @@ public class DefaultScriptSourceTest {
     public void testDuplicateIndex() throws Exception {
         File duplicateIndexScript = null;
         try {
-            String scriptsLocation = scriptsDirName + "/test_scripts";
+            String scriptsLocation = scriptsDir.getAbsolutePath() + "/test_scripts";
             File scriptA = new File(scriptsLocation + "/1_scripts/001_scriptA.sql");
-            duplicateIndexScript = new File(scriptsDirName
-                    + "/test_scripts/1_scripts/001_duplicateIndexScript.sql");
+            duplicateIndexScript = new File(scriptsDir, "/test_scripts/1_scripts/001_duplicateIndexScript.sql");
             FileUtils.copyFile(scriptA, duplicateIndexScript);
             scriptSource = TestUtils.getDefaultScriptSource(scriptsLocation, false);
             try {
