@@ -24,8 +24,8 @@
     
     <!-- Environment Settings -->
     <issueManagement>
-        <system>Sourceforge Tracker</system>
-        <url>http://sourceforge.net/tracker/?group_id=167201</url>
+        <system>jira</system>
+        <url>http://jira.unitils.org/browse/DBM</url>
     </issueManagement>
     <scm>
         <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</connection>
