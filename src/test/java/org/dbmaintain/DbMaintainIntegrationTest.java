@@ -17,23 +17,28 @@ package org.dbmaintain;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import org.dbmaintain.config.DbMaintainProperties;
 import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED;
+import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
+import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.Properties;
+import java.util.Set;
+
+import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DefaultSQLHandler;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
-import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.*;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * todo javadoc
