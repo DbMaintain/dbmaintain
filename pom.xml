@@ -12,6 +12,9 @@
     <name>sourceforge.net</name>
     <url>http://sf.net</url>
   </organization>
+  <properties>
+    <jdk.level>1.5</jdk.level>
+  </properties>
   <description>
         DbMaintain enables automatic roll-out of updates to a relational database. It brings database scripts into version control just like 
         regular source code and can be used to transparently deploy databases from development on to production.
@@ -79,8 +82,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>${jdk.level}</source>
+          <target>${jdk.level}</target>
         </configuration>
       </plugin>
       <plugin>
@@ -199,11 +202,39 @@
         </configuration>
       </plugin>
       <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <targetJdk>${jdk.level}</targetJdk>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <source>${jdk.level}</source>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jdepend-maven-plugin</artifactId>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>javancss-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
         <artifactId>maven-jxr-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>taglist-maven-plugin</artifactId>
+        <configuration>
+          <tags>
+            <tag>TODO</tag>
+            <tag>FIXME</tag>
+            <tag>todo</tag>
+            <tag>fixme</tag>
+          </tags>
+        </configuration>
       </plugin>
     </plugins>
   </reporting>
