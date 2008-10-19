@@ -5,7 +5,6 @@
   <artifactId>dbmaintain</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-
   <!-- Project information -->
   <name>DbMaintain</name>
   <url>http://www.dbmaintain.org/</url>
@@ -63,7 +62,6 @@
       <url>sftp://shell.sourceforge.net/home/groups/d/db/dbmaintain/htdocs/m2-repo</url>
     </repository>
   </distributionManagement>
-
   <!-- Build Settings -->
   <build>
     <testResources>
@@ -107,8 +105,6 @@
       </plugin>
     </plugins>
   </build>
-
-
   <dependencies>
     <dependency>
       <groupId>commons-logging</groupId>
@@ -205,6 +201,9 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jdepend-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jxr-plugin</artifactId>
       </plugin>
     </plugins>
   </reporting>
