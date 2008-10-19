@@ -50,7 +50,7 @@ import java.util.*;
 public class PropertiesDbMaintainConfigurer {
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(PropertiesDbMaintainConfigurer.class);
+    private static final Log logger = LogFactory.getLog(PropertiesDbMaintainConfigurer.class);
 
 
     protected Properties configuration;
@@ -120,8 +120,6 @@ public class PropertiesDbMaintainConfigurer {
                 new Object[]{scriptParserFactory, getDefaultDbSupport(), getNameDbSupportMap(), sqlHandler});
     }
 
-
-    @SuppressWarnings("unchecked")
     public ScriptParserFactory createScriptParserFactory() {
         Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap = new HashMap<String, Class<? extends ScriptParser>>();
         for (String databaseDialect : getDatabaseDialects()) {
