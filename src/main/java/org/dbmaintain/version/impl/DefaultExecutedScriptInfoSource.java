@@ -294,7 +294,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 executedAtColumnName + ", " + succeededColumnName + ") values ('" + executedScript.getScript().getFileName() +
                 "', '" + executedScript.getScript().getVersion().getIndexesString() + "', " + executedScript.getScript().getFileLastModifiedAt() + ", '" +
                 executedScript.getScript().getCheckSum() + "', '" + executedAt + "', " + (executedScript.isSucceeded() ? "1" : "0") + ")";
-        sqlHandler.executeUpdate(insertSql, defaultDbSupport.getDataSource());
+        sqlHandler.executeUpdateAndCommit(insertSql, defaultDbSupport.getDataSource());
     }
 
 
@@ -314,7 +314,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 executedAtColumnName + " = '" + executedAt + "', " +
                 succeededColumnName + " = " + (executedScript.isSucceeded() ? "1" : "0") +
                 " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
-        sqlHandler.executeUpdate(updateSql, defaultDbSupport.getDataSource());
+        sqlHandler.executeUpdateAndCommit(updateSql, defaultDbSupport.getDataSource());
     }
 
 
@@ -344,7 +344,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         executedScripts = new HashSet<ExecutedScript>();
 
         String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName);
-        sqlHandler.executeUpdate(deleteSql, defaultDbSupport.getDataSource());
+        sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
     }
 
 
@@ -411,7 +411,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         }
 
         // Create db version table
-        sqlHandler.executeUpdate(getCreateVersionTableStatement(), defaultDbSupport.getDataSource());
+        sqlHandler.executeUpdateAndCommit(getCreateVersionTableStatement(), defaultDbSupport.getDataSource());
     }
 
 

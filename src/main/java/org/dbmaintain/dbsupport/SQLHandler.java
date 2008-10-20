@@ -16,6 +16,15 @@ public interface SQLHandler {
 	 * @return The nr of updates
 	 */
 	int executeUpdate(String sql, DataSource dataSource);
+	
+	/**
+     * Executes the given statement and commits the changes to the database
+     *
+     * @param sql The sql string for retrieving the items
+     * @param dataSource 
+     * @return The nr of updates
+     */
+    int executeUpdateAndCommit(String sql, DataSource dataSource);
 
 	/**
 	 * Returns the long extracted from the result of the given query. If no value is found, a {@link DbMaintainException}

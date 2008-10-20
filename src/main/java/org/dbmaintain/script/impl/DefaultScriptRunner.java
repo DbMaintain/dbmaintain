@@ -94,7 +94,7 @@ public class DefaultScriptRunner implements ScriptRunner {
             // parse and execute the statements
             String statement;
             while ((statement = scriptParser.getNextStatement()) != null) {
-                sqlHandler.executeUpdate(statement, targetDbSupport.getDataSource());
+                sqlHandler.executeUpdateAndCommit(statement, targetDbSupport.getDataSource());
             }
         } finally {
             IOUtils.closeQuietly(scriptContentReader);

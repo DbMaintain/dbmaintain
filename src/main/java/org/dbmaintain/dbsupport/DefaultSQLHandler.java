@@ -93,6 +93,35 @@ public class DefaultSQLHandler implements SQLHandler {
 
 
     /* (non-Javadoc)
+     * @see org.dbmaintain.dbsupport.SQLHandler#executeUpdateAndCommit(java.lang.String)
+     */
+    public int executeUpdateAndCommit(String sql, DataSource dataSource) {
+        logger.debug(sql);
+
+        if (!doExecuteUpdates) {
+            // skip update
+            return 0;
+        }
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            int nbChanges = statement.executeUpdate(sql);
+            if (!connection.getAutoCommit()) {
+                connection.commit();
+            }
+            return nbChanges;
+
+        } catch (Exception e) {
+            throw new DbMaintainException("Error while performing database update: " + sql, e);
+        } finally {
+            DbUtils.closeQuietly(connection, statement, null);
+        }
+    }
+
+
+    /* (non-Javadoc)
 	 * @see org.dbmaintain.dbsupport.SQLHandler#executeCodeUpdate(java.lang.String)
 	 */
     public int executeCodeUpdate(String sql, DataSource dataSource) {
