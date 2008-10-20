@@ -94,8 +94,8 @@
         <configuration>
           <outputDirectory>${project.build.directory}/dist</outputDirectory>
           <descriptors>
-            <descriptor>tools/maven/assembly-dbmaintain.xml</descriptor>
-            <descriptor>tools/maven/assembly-dbmaintain-with-dependencies.xml</descriptor>
+            <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
+            <descriptor>assembly-descriptors/assembly-dbmaintain-with-dependencies.xml</descriptor>
           </descriptors>
         </configuration>
       </plugin>
