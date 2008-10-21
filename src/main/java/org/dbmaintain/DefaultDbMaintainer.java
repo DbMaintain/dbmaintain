@@ -145,11 +145,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
     //todo javadoc
     public void updateDatabase() {
+        // Check if the executed scripts info source recommends a from-scratch update
+        boolean fromScratchUpdateRecommended = executedScriptInfoSource.isFromScratchUpdateRecommended();
+        
         Set<ExecutedScript> alreadyExecutedScripts = executedScriptInfoSource.getExecutedScripts();
         Version highestExecutedScriptVersion = getHighestExecutedScriptVersion(alreadyExecutedScripts);
 
         // check whether an incremental update can be performed
-        if (!shouldUpdateDatabaseFromScratch(highestExecutedScriptVersion, alreadyExecutedScripts)) {
+        if (!(fromScratchUpdateRecommended && fromScratchEnabled) && !shouldUpdateDatabaseFromScratch(highestExecutedScriptVersion, alreadyExecutedScripts)) {
             // update database with new scripts
             updateDatabase(scriptSource.getNewScripts(highestExecutedScriptVersion, alreadyExecutedScripts));
             return;

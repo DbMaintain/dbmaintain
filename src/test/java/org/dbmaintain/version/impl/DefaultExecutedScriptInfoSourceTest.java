@@ -16,7 +16,17 @@
 package org.dbmaintain.version.impl;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.lang.time.DateUtils.parseDate;
+
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Set;
+
+import javax.sql.DataSource;
+
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
@@ -24,14 +34,8 @@ import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.sql.DataSource;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Set;
 
 /**
  * Test class for {@link org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -143,6 +147,18 @@ public class DefaultExecutedScriptInfoSourceTest {
         dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
         dbExecutedScriptInfoSource.clearAllExecutedScripts();
         assertEquals(0, dbExecutedScriptInfoSource.getExecutedScripts().size());
+    }
+    
+    
+    @Test
+    public void testIsFromScratchUpdateRecommended() throws SQLException {
+        assertFalse(dbExecutedScriptInfoSource.isFromScratchUpdateRecommended());
+        assertFalse(dbExecutedScriptInfoSourceAutoCreate.isFromScratchUpdateRecommended());
+        
+        dropExecutedScriptsTable();
+        
+        assertFalse(dbExecutedScriptInfoSource.isFromScratchUpdateRecommended());
+        assertTrue(dbExecutedScriptInfoSourceAutoCreate.isFromScratchUpdateRecommended());
     }
 
 

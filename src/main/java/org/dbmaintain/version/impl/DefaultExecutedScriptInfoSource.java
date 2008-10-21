@@ -159,6 +159,21 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         this.fixScriptSuffix = fixScriptSuffix;
         this.targetDatabasePrefix = targetDatabasePrefix;
     }
+    
+    
+    /**
+     * This method returns whether a from scratch update is recommended: It will return true
+     * if the database is in it's initial state (i.e. the dbmaintain_scripts table doesn't exist yet 
+     * or is invalid) and the autoCreateExecutedScriptsTable property is set to true.
+     * <p/>
+     * The reasoning behind this is that before executing the first script, it's a good idea to 
+     * clear the database in order to start with a clean situation.
+     * 
+     * @return True if a from-scratch update is recommended
+     */
+    public boolean isFromScratchUpdateRecommended() {
+        return !isExecutedScriptsTableValid() && autoCreateExecutedScriptsTable;
+    }
 
 
     /**
@@ -356,7 +371,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      */
     protected boolean checkVersionTable() {
         // check valid
-        if (isVersionTableValid()) {
+        if (isExecutedScriptsTableValid()) {
             return true;
         }
 
@@ -382,7 +397,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      *
      * @return False if the version table was not ok and therefore re-created
      */
-    protected boolean isVersionTableValid() {
+    protected boolean isExecutedScriptsTableValid() {
         // Check existence of version table
         Set<String> tableNames = defaultDbSupport.getTableNames(defaultDbSupport.getDefaultSchemaName());
         if (tableNames.contains(executedScriptsTableName)) {
