@@ -18,8 +18,11 @@ package org.dbmaintain.clean.impl;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.Map;
+import java.util.Set;
+
+import javax.sql.DataSource;
+
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.util.CollectionUtils;
 import org.dbmaintain.util.DbItemIdentifier;
@@ -28,11 +31,6 @@ import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.sql.DataSource;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Test class for the DBCleaner with multiple schemas with configuration to preserve all tables. <p/> Currently this is
