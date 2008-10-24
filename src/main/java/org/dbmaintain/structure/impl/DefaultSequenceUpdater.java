@@ -16,16 +16,13 @@
 package org.dbmaintain.structure.impl;
 
 import java.util.Collection;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.structure.SequenceUpdater;
-import org.dbmaintain.util.BaseDatabaseAccessor;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.PropertyUtils;
 
 /**
  * Implementation of {@link SequenceUpdater}. All sequences and identity columns that have a value lower than the value
