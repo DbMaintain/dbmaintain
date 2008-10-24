@@ -174,10 +174,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected Version getHighestExecutedScriptVersion(Set<ExecutedScript> executedScripts) {
         Version highest = new Version("0");
         for (ExecutedScript executedScript : executedScripts) {
-            if (executedScript.getScript().isIncremental()) {
-                if (executedScript.getScript().getVersion().compareTo(highest) > 0) {
-                    highest = executedScript.getScript().getVersion();
-                }
+        	Script script = executedScript.getScript();
+            if (script.isIncremental() && script.getVersion().compareTo(highest) > 0) {
+            	highest = executedScript.getScript().getVersion();
             }
         }
         return highest;
