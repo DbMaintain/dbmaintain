@@ -748,7 +748,7 @@ public class FileUtils {
      * @throws UnsupportedEncodingException if the encoding is not supported by the VM
      * @since Commons IO 1.1
      */
-    public static List readLines(File file, String encoding) throws IOException {
+    public static List<String> readLines(File file, String encoding) throws IOException {
         InputStream in = null;
         try {
             in = new FileInputStream(file);
