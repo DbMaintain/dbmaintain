@@ -49,7 +49,7 @@ public class JarScriptContainerTest {
         Script script1 = new Script("folder1/script1.sql", 1222632047999L, new ScriptContentHandle.StringScriptContentHandle("Script 1 content", "ISO-8859-1"), "fix", "@", false);
         Script script2 = new Script("folder1/script2.sql", 1222632047407L, new ScriptContentHandle.StringScriptContentHandle("Script 2 content", "ISO-8859-1"), "fix", "@", false);
         scripts = asList(script1, script2);
-        jarFile = createTempFile("scriptjar", "jar");
+        jarFile = createTempFile("scriptjar", ".jar", new File("target"));
     }
 
 
