@@ -396,7 +396,7 @@ public class DbMaintainIntegrationTest {
     private void createScript(String relativePath, String scriptContent) {
         Writer fileWriter = null;
         try {
-            File scriptFile = new File(scriptsLocation.getAbsolutePath() + "/" + relativePath);
+            File scriptFile = new File(scriptsLocation.getAbsolutePath(), relativePath);
             scriptFile.getParentFile().mkdirs();
             fileWriter = new FileWriter(scriptFile);
             IOUtils.copy(new StringReader(scriptContent), fileWriter);
@@ -408,7 +408,7 @@ public class DbMaintainIntegrationTest {
     }
 
     private void removeScript(String relativePath) {
-        File scriptFile = new File(scriptsLocation.getAbsolutePath() + "/" + relativePath);
+        File scriptFile = new File(scriptsLocation.getAbsolutePath(), relativePath);
         scriptFile.delete();
     }
 
