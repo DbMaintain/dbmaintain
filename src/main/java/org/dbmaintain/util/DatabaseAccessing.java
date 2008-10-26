@@ -17,7 +17,6 @@ package org.dbmaintain.util;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
