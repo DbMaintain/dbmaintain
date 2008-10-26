@@ -71,22 +71,24 @@
   </distributionManagement>
   <!-- Build Settings -->
   <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>${jdk.level}</source>
-          <target>${jdk.level}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <configuration>
-          <goals>assembly:assembly,deploy</goals>
-          <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
-        </configuration>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <source>${jdk.level}</source>
+            <target>${jdk.level}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <goals>assembly:assembly,deploy</goals>
+            <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
   <developers>
     <developer>
