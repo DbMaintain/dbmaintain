@@ -379,7 +379,7 @@ public class FileUtils {
         if (destFile == null) {
             throw new NullPointerException("Destination must not be null");
         }
-        if (srcFile.exists() == false) {
+        if ( !srcFile.exists() ) {
             throw new FileNotFoundException("Source '" + srcFile + "' does not exist");
         }
         if (srcFile.isDirectory()) {
@@ -388,12 +388,10 @@ public class FileUtils {
         if (srcFile.getCanonicalPath().equals(destFile.getCanonicalPath())) {
             throw new IOException("Source '" + srcFile + "' and destination '" + destFile + "' are the same");
         }
-        if (destFile.getParentFile() != null && destFile.getParentFile().exists() == false) {
-            if (destFile.getParentFile().mkdirs() == false) {
-                throw new IOException("Destination '" + destFile + "' directory cannot be created");
-            }
+        if (destFile.getParentFile() != null && !destFile.getParentFile().exists() && !destFile.getParentFile().mkdirs()) {
+            throw new IOException("Destination '" + destFile + "' directory cannot be created");
         }
-        if (destFile.exists() && destFile.canWrite() == false) {
+        if (destFile.exists() && !destFile.canWrite() ) {
             throw new IOException("Destination '" + destFile + "' exists but is read-only");
         }
         doCopyFile(srcFile, destFile, preserveFileDate);
