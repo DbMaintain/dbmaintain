@@ -1,0 +1,11 @@
+<project>
+  <typedef resource="dbmaintain-anttasks.xml" />
+  
+  <target name="cleardatabase">
+    <clearDatabase />
+  </target>
+  
+  <target name="updatedatabase">
+    <updateDatabase />
+  </target>
+</project>
