@@ -99,7 +99,7 @@ public class CreateScriptJarTask extends Task {
     }
 
     protected Properties getDefaultConfiguration() {
-        return new DbMaintainConfigurationLoader().getDefaultConfiguration();
+        return new DbMaintainConfigurationLoader().loadDefaultConfiguration();
     }
 
     public void setJarFileName(String jarFileName) {

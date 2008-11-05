@@ -25,7 +25,7 @@ import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ClearDatabaseTask extends BaseDbMaintainTask {
+public class ClearDatabaseTask extends BaseDatabaseTask {
 
     @Override
     public void execute() throws BuildException {

@@ -28,7 +28,7 @@ import java.util.Properties;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class MarkDatabaseAsUpToDateTask extends BaseDbMaintainTask {
+public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
     private String scriptLocations;
     private String extensions;

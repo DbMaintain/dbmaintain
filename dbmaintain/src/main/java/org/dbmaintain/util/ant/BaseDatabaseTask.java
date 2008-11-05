@@ -20,15 +20,24 @@ import java.util.Properties;
 
 
 /**
+ * Base class for ant tasks that perform operations on a database.
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class BaseDbMaintainTask extends Task {
+public class BaseDatabaseTask extends Task {
 
     protected DbSupport defaultDbSupport;
     protected Map<String, DbSupport> nameDbSupportMap;
     protected List<Database> databases = new ArrayList<Database>();
 
+    /**
+     * Create an instance of {@link DbSupport} that will act as a gateway to the database with the
+     * given configuration.
+     * 
+     * @param database The configuration of the database
+     * @return The {@link DbSupport} instance for the database with the given configuration
+     */
     protected DbSupport createDbSupport(Database database) {
         DataSource dataSource = getDbMaintainConfigurer().createDataSource(database.getDriverClassName(), 
                 database.getUrl(), database.getUserName(), database.getPassword());
@@ -37,20 +46,30 @@ public class BaseDbMaintainTask extends Task {
                 database.getDefaultSchemaName(), database.getSchemaNames());
     }
 
+    /**
+     * @return The {@link PropertiesDbMaintainConfigurer} that can create instances of DbMaintain services
+     * using the configuration defined by this task.
+     */
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
         return new PropertiesDbMaintainConfigurer(getDefaultConfiguration(), getSQLHandler());
     }
 
+    /**
+     * @return The {@link SQLHandler} that handles all database statements
+     */
     protected SQLHandler getSQLHandler() {
         return new DefaultSQLHandler();
     }
 
+    /**
+     * @return Properties object that defines the default values for all properties
+     */
     protected Properties getDefaultConfiguration() {
-        return new DbMaintainConfigurationLoader().getDefaultConfiguration();
+        return new DbMaintainConfigurationLoader().loadDefaultConfiguration();
     }
 
     /**
-     * 
+     * Initializes the {@link DbSupport} objects that will act as gateway to all databases
      */
     protected void initDbSupports() {
         if (databases != null) {
@@ -68,6 +87,11 @@ public class BaseDbMaintainTask extends Task {
         }
     }
 
+    /**
+     * Registers a target database on which a task (e.g. update) can be executed.
+     * 
+     * @param database The configuration of the database
+     */
     public void addDatabase(Database database) {
         if (databases == null) {
             databases = new ArrayList<Database>();
