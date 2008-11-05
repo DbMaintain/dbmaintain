@@ -1,7 +1,7 @@
 /*
  * Copyright 2008 De Post, N.V. - La Poste, S.A. All rights reserved
  */
-package org.dbmaintain.util.ant;
+package org.dbmaintain.launch.ant;
 
 import org.apache.tools.ant.Task;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;

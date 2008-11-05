@@ -15,7 +15,7 @@
  *
  * $Id$
  */
-package org.dbmaintain.util.ant;
+package org.dbmaintain.launch.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;

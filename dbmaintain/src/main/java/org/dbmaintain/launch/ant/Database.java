@@ -15,7 +15,7 @@
  *
  * $Id$
  */
-package org.dbmaintain.util.ant;
+package org.dbmaintain.launch.ant;
 
 import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.util.CollectionUtils;
