@@ -435,14 +435,14 @@ public class DbMaintainIntegrationTest {
 
 
     private void initConfiguration() {
-        configuration = new DbMaintainConfigurationLoader().getDefaultConfiguration();
+        configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         configuration.put("database.dialect", "hsqldb");
         configuration.put("database.driverClassName", "org.hsqldb.jdbcDriver");
         configuration.put("database.url", "jdbc:hsqldb:mem:dbmaintain");
         configuration.put("database.userName", "sa");
         configuration.put("database.password", "");
         configuration.put("database.schemaNames", "PUBLIC");
-        configuration.put("dbMaintainer.autoCreateExecutedScriptsTable", "true");
+        configuration.put("dbMaintainer.autoCreateDbMaintainScriptsTable", "true");
         configuration.put("dbMaintainer.script.locations", scriptsLocation.getAbsolutePath());
         configuration.put("dbMaintainer.fromScratch.enabled", "false");
 

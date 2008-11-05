@@ -165,7 +165,7 @@ public interface DbMaintainProperties {
     public static final String PROPERTY_SUCCEEDED_COLUMN_NAME = "dbMaintainer.succeededColumnName";
 
     /* The key of the property that specifies whether the executed scripts table should be created automatically. */
-    public static final String PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE = "dbMaintainer.autoCreateExecutedScriptsTable";
+    public static final String PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE = "dbMaintainer.autoCreateDbMaintainScriptsTable";
 
     public static final String PROPERTY_TIMESTAMP_FORMAT = "dbMaintainer.timestampFormat";
 

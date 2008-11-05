@@ -88,7 +88,7 @@ public class DbMaintainUtils {
 
 
     public static PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        Properties configuration = new DbMaintainConfigurationLoader().getDefaultConfiguration();
+        Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         SQLHandler sqlHandler = new DefaultSQLHandler();
         return new PropertiesDbMaintainConfigurer(configuration, sqlHandler);
     }

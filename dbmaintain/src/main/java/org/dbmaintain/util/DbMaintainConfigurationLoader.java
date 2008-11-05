@@ -15,18 +15,15 @@
  */
 package org.dbmaintain.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
+
 
 /**
- * Utility that loads the configuration of unitils.
+ * Utility that loads the configuration of DbMaintain.
  * <p/>
  * Unitils settings can be defined in 3 files:<ul>
  * <li><b>unitils-default.properties</b> - a fixed file packaged in the unitils jar that contains all predefined defaults.
@@ -62,9 +59,6 @@ public class DbMaintainConfigurationLoader {
      */
     public static final String PROPKEY_CUSTOM_CONFIGURATION = "dbmaintain.configuration.customFileName";
 
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DbMaintainConfigurationLoader.class);
-
     
     /**
      * Creates and loads all configuration settings.
@@ -84,26 +78,16 @@ public class DbMaintainConfigurationLoader {
      *
      * @return the settings, not null
      */
-    public Properties loadConfiguration(String customConfigurationFileName) {
+    public Properties loadConfiguration(InputStream customConfigurationInputStream) {
     	Properties properties = new Properties();
     	
     	// Load the default properties file, that is distributed with unitils (unitils-default.properties)
-    	Properties defaultProperties = loadPropertiesFileFromClasspath(DEFAULT_PROPERTIES_FILE_NAME);
-    	if (defaultProperties == null) {
-    		throw new DbMaintainException("Configuration file: " + DEFAULT_PROPERTIES_FILE_NAME + " not found in classpath.");
-    	}
-    	properties.putAll(defaultProperties);
+    	properties.putAll(loadDefaultConfiguration());
     	
     	// Load the custom project level configuration file (unitils.properties)
-    	if (customConfigurationFileName == null) {
-    		customConfigurationFileName = PropertyUtils.getString(PROPKEY_CUSTOM_CONFIGURATION, properties);
+    	if (customConfigurationInputStream != null) {
+    		properties.putAll(loadPropertiesFromStream(customConfigurationInputStream));
     	}
-    	Properties customProperties = loadPropertiesFileFromClasspath(customConfigurationFileName);
-    	if (customProperties == null) {
-    		logger.warn("No custom configuration file " + customConfigurationFileName + " found.");
-        } else {
-        	properties.putAll(customProperties);
-        }
         
         return properties;
     }
@@ -115,49 +99,40 @@ public class DbMaintainConfigurationLoader {
      * @return the defaults, not null
      * @throws RuntimeException if the file cannot be found or loaded
      */
-    public Properties getDefaultConfiguration() {
-        return loadPropertiesFileFromClasspath(DEFAULT_PROPERTIES_FILE_NAME);
+    public Properties loadDefaultConfiguration() {
+        Properties defaultConfiguration = loadPropertiesFileFromClasspath(DEFAULT_PROPERTIES_FILE_NAME);
+        if (defaultConfiguration == null) {
+            throw new DbMaintainException("Configuration file: " + DEFAULT_PROPERTIES_FILE_NAME + " not found in classpath.");
+        }
+        return defaultConfiguration;
     }
 
 
 	protected Properties loadPropertiesFileFromClasspath(String propertiesFileName) {
 		InputStream inputStream = null;
         try {
-            Properties properties = new Properties();
             inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName);
             if (inputStream == null) {
                 return null;
             }
-            properties.load(inputStream);
-            return properties;
+            return loadPropertiesFromStream(inputStream);
 
-        } catch (Exception e) {
+        } catch (DbMaintainException e) {
             throw new DbMaintainException("Unable to load configuration file: " + propertiesFileName, e);
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
 	}
-	
-	
-	protected Properties loadPropertiesFileFromUserHome(String propertiesFileName) {
-		InputStream inputStream = null;
+
+
+    protected Properties loadPropertiesFromStream(InputStream inputStream) {
         try {
             Properties properties = new Properties();
-            String userHomeDir = System.getProperty("user.home");
-            File localPropertiesFile = new File(userHomeDir, propertiesFileName);
-            if (!localPropertiesFile.exists()) {
-            	return null;
-            }
-            inputStream = new FileInputStream(localPropertiesFile);
             properties.load(inputStream);
-            logger.info("Loaded configuration file " + propertiesFileName + " from user home");
             return properties;
-
-        } catch (Exception e) {
-            throw new DbMaintainException("Unable to load configuration file: " + propertiesFileName + " from user home", e);
-        } finally {
-            IOUtils.closeQuietly(inputStream);
+        } catch (IOException e) {
+            throw new DbMaintainException("Error while loading properties", e);
         }
-	}
-
+    }
+	
 }

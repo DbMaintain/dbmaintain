@@ -384,7 +384,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
         // throw an exception that shows how to create the version table
         String message = "Executed scripts table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " doesn't exist yet or is invalid.\n";
-        message += "Please create it manually or let Unitils create it automatically by setting the autoCreateExecutedScriptsTable property to true.\n";
+        message += "Please create it manually or let Unitils create it automatically by setting the dbMaintainer.autoCreateDbMaintainScriptsTable property to true.\n";
         message += "The table can be created manually by executing following statement:\n";
         message += getCreateVersionTableStatement();
         throw new DbMaintainException(message);
