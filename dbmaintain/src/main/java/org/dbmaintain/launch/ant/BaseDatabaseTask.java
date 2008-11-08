@@ -25,7 +25,7 @@ import java.util.Properties;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class BaseDatabaseTask extends Task {
+abstract public class BaseDatabaseTask extends Task {
 
     protected DbSupport defaultDbSupport;
     protected Map<String, DbSupport> nameDbSupportMap;

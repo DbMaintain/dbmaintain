@@ -57,6 +57,8 @@ public class FileUtils {
      */
     public static URL getUrl(File file) {
         try {
+            // The file is first converted to an URI and then to an URL, since this way characters
+            // that are illegal in an URL are automatically escaped.
             return file.toURI().toURL();
         } catch (MalformedURLException e) {
             throw new DbMaintainException("Unable to create URL for file " + file.getName(), e);
