@@ -78,7 +78,7 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
             configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, String.valueOf(fromScratchEnabled));
         }
         if (autoCreateDbMaintainScriptsTable != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, String.valueOf(autoCreateDbMaintainScriptsTable));
+            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateDbMaintainScriptsTable));
         }
         if (cleanDb != null) {
             configuration.put(DbMaintainProperties.PROPKEY_CLEANDB_ENABLED, String.valueOf(cleanDb));

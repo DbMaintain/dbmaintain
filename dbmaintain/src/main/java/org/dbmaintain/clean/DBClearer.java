@@ -30,6 +30,6 @@ public interface DBClearer {
     /**
      * Clears the database schemas.
      */
-    void clearSchemas();
+    void clearDatabase();
 
 }

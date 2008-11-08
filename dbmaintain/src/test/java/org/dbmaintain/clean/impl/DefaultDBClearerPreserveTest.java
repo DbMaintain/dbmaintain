@@ -106,7 +106,7 @@ public class DefaultDBClearerPreserveTest {
     @Test
     public void testClearDatabase_tables() throws Exception {
         assertEquals(2, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size());
-        defaultDbClearer.clearSchemas();
+        defaultDbClearer.clearDatabase();
         assertEquals(2, dbSupport.getTableNames(dbSupport.getDefaultSchemaName()).size());
     }
 
@@ -117,7 +117,7 @@ public class DefaultDBClearerPreserveTest {
     @Test
     public void testClearDatabase_views() throws Exception {
         assertEquals(2, dbSupport.getViewNames(dbSupport.getDefaultSchemaName()).size());
-        defaultDbClearer.clearSchemas();
+        defaultDbClearer.clearDatabase();
         assertEquals(2, dbSupport.getViewNames(dbSupport.getDefaultSchemaName()).size());
     }
 
@@ -132,7 +132,7 @@ public class DefaultDBClearerPreserveTest {
             return;
         }
         assertEquals(2, dbSupport.getMaterializedViewNames(dbSupport.getDefaultSchemaName()).size());
-        defaultDbClearer.clearSchemas();
+        defaultDbClearer.clearDatabase();
         assertEquals(2, dbSupport.getMaterializedViewNames(dbSupport.getDefaultSchemaName()).size());
     }
 
@@ -147,7 +147,7 @@ public class DefaultDBClearerPreserveTest {
             return;
         }
         assertEquals(2, dbSupport.getSynonymNames(dbSupport.getDefaultSchemaName()).size());
-        defaultDbClearer.clearSchemas();
+        defaultDbClearer.clearDatabase();
         assertEquals(2, dbSupport.getSynonymNames(dbSupport.getDefaultSchemaName()).size());
     }
 
@@ -162,7 +162,7 @@ public class DefaultDBClearerPreserveTest {
             return;
         }
         assertEquals(2, dbSupport.getSequenceNames(dbSupport.getDefaultSchemaName()).size());
-        defaultDbClearer.clearSchemas();
+        defaultDbClearer.clearDatabase();
         assertEquals(2, dbSupport.getSequenceNames(dbSupport.getDefaultSchemaName()).size());
     }
 

@@ -120,7 +120,7 @@ public class DefaultDBClearer implements DBClearer {
      * so that the database schema is empty. The database items that are configured as items to preserve, are left
      * untouched.
      */
-    public void clearSchemas() {
+    public void clearDatabase() {
         assertAllItemsToPreserveExist();
         
         for (DbSupport dbSupport : nameDbSupportMap.values()) {
@@ -131,7 +131,7 @@ public class DefaultDBClearer implements DBClearer {
     	            if (schemasToPreserve.contains(DbItemIdentifier.getSchemaIdentifier(schemaName, dbSupport))) {
     	                continue;
     	            }
-    	            logger.info("Clearing (dropping) database schema " + schemaName);
+    	            logger.info("Clearing database schema " + schemaName);
     	            dropSynonyms(dbSupport, schemaName);
     	            dropViews(dbSupport, schemaName);
     	            dropMaterializedViews(dbSupport, schemaName);
@@ -353,7 +353,7 @@ public class DefaultDBClearer implements DBClearer {
         	DbSupport dbSupport = nameDbSupportMap.get(schemaToPreserve.getDatabaseName());
 			if (!dbSupport.getSchemaNames().contains(schemaToPreserve.getSchemaName())) {
         		throw new DbMaintainException("Schema to preserve does not exist: " + schemaToPreserve.getSchemaName() + 
-        				".\nUnitils cannot determine which schemas need to be preserved. To assure nothing is dropped by mistake, no schemas will be dropped.");
+        				".\nDbMaintain cannot determine which schemas need to be preserved. To assure nothing is dropped by mistake, no schemas will be dropped.");
         	}
         }
     }
@@ -371,7 +371,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!tableNames.contains(tableToPreserve)) {
                 throw new DbMaintainException("Table to preserve does not exist: " + tableToPreserve.getItemName() + " in schema: " + tableToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which tables need to be preserved. To assure nothing is dropped by mistake, no tables will be dropped.");
+                		".\nDbMaintain cannot determine which tables need to be preserved. To assure nothing is dropped by mistake, no tables will be dropped.");
             }
         }
     }
@@ -388,7 +388,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!viewNames.contains(viewToPreserve)) {
                 throw new DbMaintainException("View to preserve does not exist: " + viewToPreserve.getItemName() + " in schema: " + viewToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which views need to be preserved. To assure nothing is dropped by mistake, no views will be dropped.");
+                		".\nDbMaintain cannot determine which views need to be preserved. To assure nothing is dropped by mistake, no views will be dropped.");
             }
         }
     }
@@ -409,7 +409,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!materializedViewNames.contains(materializedViewToPreserve)) {
                 throw new DbMaintainException("Materialized view to preserve does not exist: " + materializedViewToPreserve.getItemName() + " in schema: " + materializedViewToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which materialized views need to be preserved. To assure nothing is dropped by mistake, no materialized views will be dropped.");
+                		".\nDbMaintain cannot determine which materialized views need to be preserved. To assure nothing is dropped by mistake, no materialized views will be dropped.");
             }
         }
     }
@@ -430,7 +430,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!sequenceNames.contains(sequenceToPreserve)) {
                 throw new DbMaintainException("Sequence to preserve does not exist: " + sequenceToPreserve.getItemName() + " in schema: " + sequenceToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which sequences need to be preserved. To assure nothing is dropped by mistake, no sequences will be dropped.");
+                		".\nDbMaintain cannot determine which sequences need to be preserved. To assure nothing is dropped by mistake, no sequences will be dropped.");
             }
         }
     }
@@ -451,7 +451,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!synonymNames.contains(synonymToPreserve)) {
                 throw new DbMaintainException("Synonym to preserve does not exist: " + synonymToPreserve.getItemName() + " in schema: " + synonymToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which synonyms need to be preserved. To assure nothing is dropped by mistake, no synonyms will be dropped.");
+                		".\nDbMaintain cannot determine which synonyms need to be preserved. To assure nothing is dropped by mistake, no synonyms will be dropped.");
             }
         }
     }
@@ -472,7 +472,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!triggerNames.contains(triggerToPreserve)) {
                 throw new DbMaintainException("Trigger to preserve does not exist: " + triggerToPreserve.getItemName() + " in schema: " + triggerToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which triggers need to be preserved. To assure nothing is dropped by mistake, no triggers will be dropped.");
+                		".\nDbMaintain cannot determine which triggers need to be preserved. To assure nothing is dropped by mistake, no triggers will be dropped.");
             }
         }
     }
@@ -493,7 +493,7 @@ public class DefaultDBClearer implements DBClearer {
         	
             if (!typeNames.contains(typeToPreserve)) {
                 throw new DbMaintainException("Type to preserve does not exist: " + typeToPreserve.getItemName() + " in schema: " + typeToPreserve.getSchemaName() + 
-                		".\nUnitils cannot determine which types need to be preserved. To assure nothing is dropped by mistake, no types will be dropped.");
+                		".\nDbMaintain cannot determine which types need to be preserved. To assure nothing is dropped by mistake, no types will be dropped.");
             }
         }
     }

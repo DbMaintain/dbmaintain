@@ -162,7 +162,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         // constraints are removed before clearing the database, to be sure there will be no
         // conflicts when dropping tables
         constraintsDisabler.disableConstraints();
-        dbClearer.clearSchemas();
+        dbClearer.clearDatabase();
         // reset the database version
         executedScriptInfoSource.clearAllExecutedScripts();
         // update database with all scripts
@@ -195,7 +195,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     public void clearDatabase() {
-        dbClearer.clearSchemas();
+        dbClearer.clearDatabase();
         executedScriptInfoSource.clearAllExecutedScripts();
     }
 
@@ -216,7 +216,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         // Remove data from the database, that could cause errors when executing scripts. Such
         // as for example when added a not null column.
         if (cleanDbEnabled) {
-            dbCleaner.cleanSchemas();
+            dbCleaner.cleanDatabase();
         }
 
         // Execute all of the scripts

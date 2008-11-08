@@ -89,7 +89,7 @@ public class DefaultDBCleanerTest {
     public void testCleanDatabase() throws Exception {
         assertFalse(SQLTestUtils.isEmpty("TEST_TABLE", dataSource));
         assertFalse(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table"), dataSource));
-        defaultDbCleaner.cleanSchemas();
+        defaultDbCleaner.cleanDatabase();
         assertTrue(SQLTestUtils.isEmpty("TEST_TABLE", dataSource));
         assertTrue(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table"), dataSource));
     }
@@ -102,7 +102,7 @@ public class DefaultDBCleanerTest {
     public void testCleanDatabase_preserveTablesToPreserve() throws Exception {
         assertFalse(SQLTestUtils.isEmpty("TEST_TABLE_PRESERVE", dataSource));
         assertFalse(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
-        defaultDbCleaner.cleanSchemas();
+        defaultDbCleaner.cleanDatabase();
         assertFalse(SQLTestUtils.isEmpty("TEST_TABLE_PRESERVE", dataSource));
         assertFalse(SQLTestUtils.isEmpty(dbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
     }

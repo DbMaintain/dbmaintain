@@ -76,7 +76,7 @@ public class DefaultDBCleanerMultiSchemaTest {
         assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));
-        defaultDbCleaner.cleanSchemas();
+        defaultDbCleaner.cleanDatabase();
         assertTrue(SQLTestUtils.isEmpty("TEST", dataSource));
         assertTrue(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertTrue(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));

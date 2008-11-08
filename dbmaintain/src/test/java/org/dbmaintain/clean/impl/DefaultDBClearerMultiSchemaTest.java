@@ -84,7 +84,7 @@ public class DefaultDBClearerMultiSchemaTest {
 		assertEquals(1, dbSupport.getTableNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getTableNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getTableNames("SCHEMA_B").size());
-		defaultDbClearer.clearSchemas();
+		defaultDbClearer.clearDatabase();
 		assertTrue(dbSupport.getTableNames("PUBLIC").isEmpty());
 		assertTrue(dbSupport.getTableNames("SCHEMA_A").isEmpty());
 		assertTrue(dbSupport.getTableNames("SCHEMA_B").isEmpty());
@@ -99,7 +99,7 @@ public class DefaultDBClearerMultiSchemaTest {
 		assertEquals(1, dbSupport.getViewNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getViewNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getViewNames("SCHEMA_B").size());
-		defaultDbClearer.clearSchemas();
+		defaultDbClearer.clearDatabase();
 		assertTrue(dbSupport.getViewNames("PUBLIC").isEmpty());
 		assertTrue(dbSupport.getViewNames("SCHEMA_A").isEmpty());
 		assertTrue(dbSupport.getViewNames("SCHEMA_B").isEmpty());
@@ -114,7 +114,7 @@ public class DefaultDBClearerMultiSchemaTest {
 		assertEquals(1, dbSupport.getSequenceNames("PUBLIC").size());
 		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_A").size());
 		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_B").size());
-		defaultDbClearer.clearSchemas();
+		defaultDbClearer.clearDatabase();
 		assertTrue(dbSupport.getSequenceNames("PUBLIC").isEmpty());
 		assertTrue(dbSupport.getSequenceNames("SCHEMA_A").isEmpty());
 		assertTrue(dbSupport.getSequenceNames("SCHEMA_B").isEmpty());

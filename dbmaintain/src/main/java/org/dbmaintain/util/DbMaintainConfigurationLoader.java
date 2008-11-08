@@ -17,6 +17,7 @@ package org.dbmaintain.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
@@ -78,15 +79,14 @@ public class DbMaintainConfigurationLoader {
      *
      * @return the settings, not null
      */
-    public Properties loadConfiguration(InputStream customConfigurationInputStream) {
+    public Properties loadConfiguration(URL customConfiguration) {
     	Properties properties = new Properties();
     	
-    	// Load the default properties file, that is distributed with unitils (unitils-default.properties)
+    	// Load the default properties file, that is distributed with DbMaintain (dbmaintain-default.properties)
     	properties.putAll(loadDefaultConfiguration());
     	
-    	// Load the custom project level configuration file (unitils.properties)
-    	if (customConfigurationInputStream != null) {
-    		properties.putAll(loadPropertiesFromStream(customConfigurationInputStream));
+    	if (customConfiguration != null) {
+    		properties.putAll(loadPropertiesFromURL(customConfiguration));
     	}
         
         return properties;
@@ -100,15 +100,15 @@ public class DbMaintainConfigurationLoader {
      * @throws RuntimeException if the file cannot be found or loaded
      */
     public Properties loadDefaultConfiguration() {
-        Properties defaultConfiguration = loadPropertiesFileFromClasspath(DEFAULT_PROPERTIES_FILE_NAME);
+        Properties defaultConfiguration = loadPropertiesFromClasspath(DEFAULT_PROPERTIES_FILE_NAME);
         if (defaultConfiguration == null) {
             throw new DbMaintainException("Configuration file: " + DEFAULT_PROPERTIES_FILE_NAME + " not found in classpath.");
         }
         return defaultConfiguration;
     }
 
-
-	protected Properties loadPropertiesFileFromClasspath(String propertiesFileName) {
+    
+	protected Properties loadPropertiesFromClasspath(String propertiesFileName) {
 		InputStream inputStream = null;
         try {
             inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName);
@@ -117,7 +117,7 @@ public class DbMaintainConfigurationLoader {
             }
             return loadPropertiesFromStream(inputStream);
 
-        } catch (DbMaintainException e) {
+        } catch (IOException e) {
             throw new DbMaintainException("Unable to load configuration file: " + propertiesFileName, e);
         } finally {
             IOUtils.closeQuietly(inputStream);
@@ -125,14 +125,23 @@ public class DbMaintainConfigurationLoader {
 	}
 
 
-    protected Properties loadPropertiesFromStream(InputStream inputStream) {
-        try {
-            Properties properties = new Properties();
-            properties.load(inputStream);
-            return properties;
-        } catch (IOException e) {
-            throw new DbMaintainException("Error while loading properties", e);
-        }
+    protected Properties loadPropertiesFromURL(URL propertiesFileUrl) {
+	    InputStream urlStream = null;
+	    try {
+	        urlStream = propertiesFileUrl.openStream();
+	        return loadPropertiesFromStream(urlStream);
+	    } catch (IOException e) {
+	        throw new DbMaintainException("Unable to load configuration file", e);
+	    } finally {
+	        IOUtils.closeQuietly(urlStream);
+	    }
+	}
+
+    
+    protected Properties loadPropertiesFromStream(InputStream inputStream) throws IOException {
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        return properties;
     }
 	
 }

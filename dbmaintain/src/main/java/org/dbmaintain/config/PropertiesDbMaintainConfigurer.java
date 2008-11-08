@@ -196,7 +196,7 @@ public class PropertiesDbMaintainConfigurer {
      */
     public ExecutedScriptInfoSource createExecutedScriptInfoSource() {
 
-        boolean autoCreateVersionTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, configuration);
+        boolean autoCreateVersionTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, configuration);
         String executedScriptsTableName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration));
         String fileNameColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_NAME_COLUMN_NAME, configuration));
         int fileNameColumnSize = PropertyUtils.getInt(PROPERTY_FILE_NAME_COLUMN_SIZE, configuration);

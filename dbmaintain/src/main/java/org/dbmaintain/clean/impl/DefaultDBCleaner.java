@@ -78,7 +78,7 @@ public class DefaultDBCleaner implements DBCleaner {
      * Deletes all data from the database, except for the tables that have been
      * configured as <i>tablesToPreserve</i> , and the table in which the database version is stored
      */
-    public void cleanSchemas() {
+    public void cleanDatabase() {
         for (DbSupport dbSupport : nameDbSupportMap.values()) {
 			for (String schemaName : dbSupport.getSchemaNames()) {
 	            // check whether schema needs to be preserved

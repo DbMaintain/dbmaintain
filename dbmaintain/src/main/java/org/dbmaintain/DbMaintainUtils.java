@@ -43,12 +43,12 @@ public class DbMaintainUtils {
 
 
     public static void clearDatabase() {
-        getDbClearer().clearSchemas();
+        getDbClearer().clearDatabase();
     }
 
 
     public static void cleanDatabase() {
-        getDbCleaner().cleanSchemas();
+        getDbCleaner().cleanDatabase();
     }
 
 

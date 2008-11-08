@@ -61,7 +61,7 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
             configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS, extensions);
         }
         if (autoCreateExecutedScriptsTable != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_EXECUTED_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
+            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
         }
         
         return configuration;
