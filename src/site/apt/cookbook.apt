@@ -1,0 +1,43 @@
+ --------
+ Cookbook
+ --------
+ --------
+
+Cookbook
+~~~~~~~~
+    This page gets you started with DbMaintain in a few minutes. It demonstrates only a small subset of the features, for a more complete introduction, read the {{{tutorial.html}tutorial}}.
+	
+	DbMaintain requires that scripts are available that create the database from scratch. These scripts have to be organized in a folder structure, with the sequence of subfolders and scripts indicated by indexes, like in following example:
+	
++----+
+scripts/01_v1.0/01_products_and_orders.sql
+                02_users.sql
+		02_v1.1/01_add_barcode_column.sql
+		        02_drop_itemcode_column.sql
++----+
+
+    This quick start guide shows how to launch DbMaintain from the command line. Read the {{{tutorial.html}tutorial}} for instructions on how to do the same using {{{http://ant.apache.org}ant}}.
+	
+	Create a properties file dbmaintain.properties that configures the location of your scripts and the target database, for example:
+	
++-----+
+# This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb' and 'postgresql'.
+# The value of this property defines which vendor specific implementations of DbSupport and ConstraintsDisabler are chosen.
+database.dialect=hsqldb
+database.driverClassName=org.hsqldb.jdbcDriver
+database.url=jdbc:hsqldb:mem:testdb
+database.userName=sa
+database.password=
+
+# Comma-separated list of all database schemas used.
+database.schemaNames=PUBLIC
++-----+
+
+    Then execute following command (Replace .sh by .bat if you're using windows)
+	
++-----+
+/path-to-dbmaintain/dbmaintain.sh update path/to/scripts
++-----+
+
+    To use a different config file than dbmaintain.properties, add the parameter -f followed by the config file name.
+	

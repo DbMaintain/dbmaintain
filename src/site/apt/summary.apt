@@ -1,0 +1,30 @@
+ -----
+ Summary
+ -----
+ -----
+
+Summary
+~~~~~~~
+    DbMaintain enables automatic roll-out of updates to a relational database. It brings database scripts into version control just like regular source code and can be used to transparently deploy databases from development to production. DbMaintain automates the part of the deployment which is most difficult to automate, opening the door for fully automated deployments in all stages of development.
+	
+	DbMaintain enables agile development and continuous integration to the full extent: Customers or testers can deploy the application at any time to test the latest newly developed features. The build server can deploy the application and execute functional tests after every commit.
+	
+	You no longer have to keep track of which database updates have been deployed on which database - DbMaintain does this for you. The database itself keeps track of the scripts that have been applied. A checksum is stored for each script that to ensure nothing has changed to the scripts that were already applied.
+	
+	Updates are performed incrementally: Only what has been changed since the last deployment is applied. Features such as repeatable scripts, postprocessing scripts, multi-database / database user support and support for patches turn DbMaintain into a complete solution for the enterprise.
+	
+	DbMaintain integrates seamlessly with {{{http://www.unitils.org}Unitils}}, an open source library for writing automated tests. With unitils you can easily test your application's database integration layer while you develop it, relying on DbMaintain for managing the test database.
+	
+Where to start
+~~~~~~~~~~~~~~
+    To get started with DbMaintain quickly, read the {{{cookbook.html}cookbook}}. For a complete overview of all features, read the {{{tutorial.html}tutorial}}.
+    
+Origin of the project
+~~~~~~~~~~~~~~~~~~~~~
+
+    The project started in september 2008, when we decided to split off the DbMaintainer feature of {{{http://www.unitils.org}Unitils}}. The DbMaintainer was initially written as a utility for maintaining the databases used for automated tests, but has grown to be a complete solution for managing the database.
+	
+News
+~~~~
+    * <<2008-11-12 - Release of DbMaintain 1.0>> 
+	

@@ -1,0 +1,116 @@
+ --------
+ Tutorial
+ --------
+ --------
+
+Tutorial
+~~~~~~~~
+    This page describes all features of DbMaintain, and is organized into following parts:
+	
+	* {{{#Script_organization}Script organization}}
+	
+	  * {{{#Repeatable_scripts}Repeatable scripts}}
+	  
+	  * {{{#Postprocessing_scripts}Postprocessing cripts}}
+	  
+	  * {{{#Multi-database__user_support}Multi-database / user support}}
+	  
+	  * {{{#Patches}Patches}}
+	  
+	* {{{#Configure_and_run_DbMaintain}Configure and run DbMaintain}}
+	  
+	  * {{{#From_the_command line}From the command line}}
+	  
+	  * {{{#Using_ant}Using ant}}
+	  
+	  * {{{#From_Java_code}From Java code}}
+	  
+	* {{{#Other_DbMaintain_operations}Other DbMaintain operations}}
+	
+* {Script organization}
+~~~~~~~~~~~~~~~~~~~~~~~~
+    Database scripts have to be organized in a folder structure, like demonstrated in following example:
+	
++----+
+scripts/01_v1.0/01_products_and_orders.sql
+                02_users.sql
+		02_v1.1/01_add_barcode_column.sql
+		        02_drop_itemcode_column.sql
++----+
+    Folder and script names must start with an index number followed by an underscore and a description. The index indicates the sequence of the scripts or script folders.
+
+    Suppose you add a new script called <03_add_productid_sequence.sql>. The next time you call the <update-db> action, the database is updated incrementally by executing this new script. Unless you use the option <dbMaintainer.fromScratch.enabled>, updating an already executed incremental script is not allowed: the update action will fail if you try to do so. If <dbMaintainer.fromScratch.enabled> is set to true and an existing incremental script is changed, the database is cleared and all scripts are executed again.
+	
+** {Repeatable scripts}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    The database scripts from the example above are incremental: each script contains a <delta>, and must be executed only once in the proper sequence. But DbMaintain also supports repeatable scripts: A repeatable script is written in such a way that it can be executed multiple times. For example, function or stored procedure defitions and views can be organized as repeatable scripts. The advantage of a repeatable script is that it can be modified: The script is simply executed again when changed. 
+	
+	You can recognize repeatable scripts from the file name: it has no index number. The directories that contain repeatable scripts also cannot have an index number. If you put a non-indexed script inside an indexed one, dbmaintain will give an error.
+	
+	If your database project contains repeatable scripts, it's a good idea to clearly separate them from the incremental scripts, like in following example:
+	
++----+
+scripts/incremental/01_v1.0/01_products_and_orders.sql
+                            02_users.sql
+		            02_v1.1/01_add_barcode_column.sql
+		                    02_drop_itemcode_column.sql
+		repeatable/proc_purge_old_orders.sql
+		           proc_refresh_materialized_views.sql
++----+
+
+	
+** {Postprocessing scripts}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Some projects have scripts that need to be executed each time something changed, like for example a script that compiles all stored procedures. Post processing scripts can be defined for this purpose. Post processing scripts have to be stored in the directory postprocessing, located directly in the root of the configured scripts folder. For example:
+	
++----+
+scripts/incremental/01_v1.0/01_products_and_orders.sql
+                            02_users.sql
+		            02_v1.1/01_add_barcode_column.sql
+		                    02_drop_itemcode_column.sql
+		repeatable/proc_purge_old_orders.sql
+		           proc_disactivate_inactive_users.sql
+		postprocessing/01_compile_all.sql
+		               02_grant_select_to_read_user.sql
++----+
+
+** {Multi-database / user support}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    On some projects, database scripts need to be executed using different database connections. For instance, if your database consists of multiple schemas and you need to log in with a different user in order to perform modifications in another schema. 
+	
+	You can configure multiple databases, each of them identified with a different logical name. This logical is added to the script name after the script index, seperated from it with an underscore. If the script name doesn't indicate a target database, it will be executed on the default database.
+	
+	For example, suppose we have a second schema called <USERS>, and we have to login with a different user to be to create or alter tables. We have configured a second database connection identified by the logical name <users>. The scripts 02_users.sql and proc_disactivate_inactive_users.sql have to be executed with this other user:
+	
++----+
+scripts/incremental/01_v1.0/01_products_and_orders.sql
+                            02_@users_users.sql
+		            02_v1.1/01_add_barcode_column.sql
+		                    02_drop_itemcode_column.sql
+		repeatable/proc_purge_old_orders.sql
+		           @users_proc_disactivate_inactive_users.sql
+		postprocessing/01_compile_all.sql
+		               02_grant_select_to_read_user.sql
++----+
+
+** {Patches}
+~~~~~~~~~~~~
+    Because of the incremental nature of database updates, newly added scripts always have to come last: If a script is added with an lower index number than one that has already been executed, DbMaintain will give an error (or recreate the database from scratch if this option is enabled). 
+	
+	However it sometimes occurs that, while a new version of an application is being developed, an existing release of the application has to be patched, and this patch involves an incremental database change. In this case, a new incremental script must be created that precedes the scripts from the current development version. 
+	
+	For example: Suppose that our current production version is v1.0, and we're developing version 1.1. A fix must be applied in production that involves a database change: for this we created the script 03_add_product_status.sql. This fix is also merged into our current development branch, which leads us to the following sequence of scripts:
+	
++----+
+scripts/incremental/01_v1.0/01_products_and_orders.sql
+                            02_@users_users.sql
+							03_add_product_status.sql
+		            02_v1.1/01_add_barcode_column.sql
+		                    02_drop_itemcode_column.sql
++----+
+
+    When we try to deploy this on a test database, DbMaintain will give an error. If the <fromScratch> option is enabled, the database will automatically be recreated from scratch. This will cause all data to be lost, which is in most cases not desirable: the database may be used by the customer to test the newly developed features.
+	
+	To be able cope with such situations, we offer the notion of a <patch>. A script or a folder containing scripts can be marked as being a <patch>, by adding the PATCH keyword in the file or folder name immediately after the index number. A patch has to be written in such way that it can be executed on both the current production version and the latest development version.
+	
+	DbMaintain offers an option called <allowPatchesOutOfSequence>. If set to <true>, DbMaintain will start with executing all patch scripts that weren't executed yet, before executing the other scripts. Note that you should never enable this option when deploying the production database!
