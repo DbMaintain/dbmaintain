@@ -185,14 +185,14 @@ public interface DbMaintainProperties {
     public static final String PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
 
     /**
-     * Property key for the fix indicator. I.e. part of the filename that indicates that the script is a fix script.
+     * Property key for the patch indicator. I.e. the keyword to use in the filename to indicate that the script is a patch script.
      */
-    public static final String PROPKEY_SCRIPT_FIX_SUFFIX = "dbMaintainer.script.fix.suffix";
+    public static final String PROPKEY_SCRIPT_PATCH_SUFFIX = "dbMaintainer.script.patch.suffix";
 
     /**
-     * The key for the property that specifies that fix scripts may be executed out of sequence
+     * The key for the property that specifies that patch scripts can be executed out of sequence
      */
-    public static final String PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED = "dbMaintainer.script.fix.outOfSequenceExecutionAllowed";
+    public static final String PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED = "dbMaintainer.patch.outOfSequenceExecutionAllowed";
 
     public static final String PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates.enabled";
 

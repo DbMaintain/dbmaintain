@@ -17,7 +17,7 @@ package org.dbmaintain;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED;
 import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
 import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
@@ -184,12 +184,12 @@ public class DbMaintainIntegrationTest {
      * not allowed so the update should have failed.
      */
     @Test(expected = DbMaintainException.class)
-    public void addHotfixScript_outOfSequenceNotAllowed() {
+    public void addPatchScript_outOfSequenceNotAllowed() {
         createInitialScripts();
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
 
-        createNewScript("02_latest/02fix_a_hotfix_script.sql", NEW_INCREMENTAL_2);
+        createNewScript("02_latest/02patch_a_patch_script.sql", NEW_INCREMENTAL_2);
         updateDatabase();
     }
 
@@ -199,13 +199,13 @@ public class DbMaintainIntegrationTest {
      * allowed, the hotfix script should have been executed (with a warning)
      */
     @Test
-    public void addHotfixScript_outOfSequenceAllowed() {
-        configuration.put(PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED, "true");
+    public void addPatchScript_outOfSequenceAllowed() {
+        configuration.put(PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED, "true");
         createInitialScripts();
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
 
-        createNewScript("02_latest/02fix_a_hotfix_script.sql", NEW_INCREMENTAL_2);
+        createNewScript("02_latest/02patch_a_patch_script.sql", NEW_INCREMENTAL_2);
         updateDatabase();
     }
 
@@ -215,13 +215,13 @@ public class DbMaintainIntegrationTest {
      * allowed, but the hotfix has a sequence nr that was already used. This should fail.
      */
     @Test(expected = DbMaintainException.class)
-    public void addHotfixScript_identicalSequenceNr() {
-        configuration.put(PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED, "true");
+    public void addPatchScript_identicalSequenceNr() {
+        configuration.put(PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED, "true");
         createInitialScripts();
         createNewScript("02_latest/02_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
 
-        createNewScript("02_latest/02fix_a_hotfix_script.sql", NEW_INCREMENTAL_2);
+        createNewScript("02_latest/02patch_a_patch_script.sql", NEW_INCREMENTAL_2);
         updateDatabase();
     }
 

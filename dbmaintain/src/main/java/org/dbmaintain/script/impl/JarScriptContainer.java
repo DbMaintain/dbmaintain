@@ -103,7 +103,7 @@ public class JarScriptContainer extends BaseScriptContainer {
 
     protected Properties getJarProperties() {
         Properties configuration = new Properties();
-        configuration.put(PROPKEY_SCRIPT_FIX_SUFFIX, fixScriptSuffix);
+        configuration.put(PROPKEY_SCRIPT_PATCH_SUFFIX, fixScriptSuffix);
         configuration.put(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
         configuration.put(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptDirName);
         configuration.put(PROPKEY_SCRIPT_ENCODING, scriptEncoding);

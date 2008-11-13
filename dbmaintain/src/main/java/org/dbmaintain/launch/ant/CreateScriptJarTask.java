@@ -53,7 +53,7 @@ public class CreateScriptJarTask extends Task {
     private String extensions;
     private String postProcessingDirName;
     private String encoding;
-    private String fixScriptSuffix;
+    private String patchScriptSuffix;
     private String targetDatabasePrefix;
 
     @Override
@@ -88,8 +88,8 @@ public class CreateScriptJarTask extends Task {
         if (encoding != null) {
             configuration.put(PROPKEY_SCRIPT_ENCODING, encoding);
         }
-        if (fixScriptSuffix != null) {
-            configuration.put(PROPKEY_SCRIPT_FIX_SUFFIX, fixScriptSuffix);
+        if (patchScriptSuffix != null) {
+            configuration.put(PROPKEY_SCRIPT_PATCH_SUFFIX, patchScriptSuffix);
         }
         if (targetDatabasePrefix != null) {
             configuration.put(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
@@ -123,7 +123,7 @@ public class CreateScriptJarTask extends Task {
     }
 
     public void setFixScriptSuffix(String fixScriptSuffix) {
-        this.fixScriptSuffix = fixScriptSuffix;
+        this.patchScriptSuffix = fixScriptSuffix;
     }
 
     public void setTargetDatabasePrefix(String targetDatabasePrefix) {

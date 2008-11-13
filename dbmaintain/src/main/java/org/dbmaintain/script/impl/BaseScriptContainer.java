@@ -54,7 +54,7 @@ abstract public class BaseScriptContainer implements ScriptContainer {
 
 
     protected void initConfigurationFromProperties(Properties configuration) {
-        this.fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_FIX_SUFFIX, configuration);
+        this.fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
         this.targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         this.postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
         this.scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);

@@ -153,7 +153,7 @@ public class PropertiesDbMaintainConfigurer {
      */
     public ScriptSource createScriptSource() {
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
-        boolean fixScriptOutOfSequenceExecutionAllowed = PropertyUtils.getBoolean(PROPKEY_SCRIPT_FIX_OUTOFSEQUENCEEXECUTIONALLOWED, configuration);
+        boolean fixScriptOutOfSequenceExecutionAllowed = PropertyUtils.getBoolean(PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED, configuration);
         Set<String> scriptLocations = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_LOCATIONS, configuration));
         Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
 
@@ -169,7 +169,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public JarScriptContainer createJarScriptContainer(List<Script> scripts) {
-        String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_FIX_SUFFIX, configuration);
+        String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
         String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
         String scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
@@ -182,7 +182,7 @@ public class PropertiesDbMaintainConfigurer {
             return new JarScriptContainer(new File(scriptLocation));
         } else {
             Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
-            String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_FIX_SUFFIX, configuration);
+            String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
             String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
             String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
             String scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
@@ -209,7 +209,7 @@ public class PropertiesDbMaintainConfigurer {
         int executedAtColumnSize = PropertyUtils.getInt(PROPERTY_EXECUTED_AT_COLUMN_SIZE, configuration);
         String succeededColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SUCCEEDED_COLUMN_NAME, configuration));
         DateFormat timestampFormat = new SimpleDateFormat(PropertyUtils.getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
-        String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_FIX_SUFFIX, configuration);
+        String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
         String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
