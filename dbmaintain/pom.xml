@@ -107,9 +107,9 @@
                       <mainClass>org.dbmaintain.launch.commandline.CommandLine</mainClass>
                       <name>dbmaintain</name>
                     </program>
-                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                    <repositoryLayout>flat</repositoryLayout>
                   </programs>
+                  <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                  <repositoryLayout>flat</repositoryLayout>
                 </configuration>
               </execution>
             </executions>
