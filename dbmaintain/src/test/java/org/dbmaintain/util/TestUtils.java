@@ -81,7 +81,7 @@ abstract public class TestUtils {
 
     public static DefaultScriptSource getDefaultScriptSource(String scriptLocation, boolean useScriptFileLastModificationDates) {
         Set<String> scriptFileExtensions = asSet("sql");
-        ScriptContainer scriptContainer = new FileScriptContainer(new File(scriptLocation), scriptFileExtensions, "@", "postprocessing", "fix", "ISO-8859-1");
+        ScriptContainer scriptContainer = new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, "@", "#", asSet("PATCH"), "postprocessing", "ISO-8859-1");
         return new DefaultScriptSource(asSet(scriptContainer), useScriptFileLastModificationDates, scriptFileExtensions, false);
     }
 
@@ -107,7 +107,7 @@ abstract public class TestUtils {
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable) {
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
                 "db_executed_scripts", "script_file_name", 100, "version", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
-                new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "fix", "@");
+                new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@", "#", asSet("PATCH"), "postprocessing");
     }
 
 

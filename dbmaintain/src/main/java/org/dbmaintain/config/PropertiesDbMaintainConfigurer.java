@@ -25,7 +25,7 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.*;
-import org.dbmaintain.script.impl.FileScriptContainer;
+import org.dbmaintain.script.impl.FileSystemScriptContainer;
 import org.dbmaintain.script.impl.JarScriptContainer;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
@@ -34,6 +34,7 @@ import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
 import org.dbmaintain.util.*;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 import org.dbmaintain.version.ExecutedScriptInfoSource;
+import org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -169,11 +170,13 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public JarScriptContainer createJarScriptContainer(List<Script> scripts) {
-        String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
+        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
         String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        String qualifierPefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
         String scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
-        return new JarScriptContainer(scripts, targetDatabasePrefix, postProcessingScriptDirName, fixScriptSuffix, scriptEncoding);
+        return new JarScriptContainer(scripts, scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
     }
 
 
@@ -182,11 +185,12 @@ public class PropertiesDbMaintainConfigurer {
             return new JarScriptContainer(new File(scriptLocation));
         } else {
             Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
-            String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
             String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+            String qualifierPefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
+            Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
             String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
             String scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
-            return new FileScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, postProcessingScriptDirName, fixScriptSuffix, scriptEncoding);
+            return new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
         }
     }
 
@@ -209,15 +213,20 @@ public class PropertiesDbMaintainConfigurer {
         int executedAtColumnSize = PropertyUtils.getInt(PROPERTY_EXECUTED_AT_COLUMN_SIZE, configuration);
         String succeededColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SUCCEEDED_COLUMN_NAME, configuration));
         DateFormat timestampFormat = new SimpleDateFormat(PropertyUtils.getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
-        String fixScriptSuffix = PropertyUtils.getString(PROPKEY_SCRIPT_PATCH_SUFFIX, configuration);
         String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        String qualifierPrefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String postProcessingScriptsDirname = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, int.class, String.class, String.class, int.class, String.class, int.class, String.class, DateFormat.class, DbSupport.class, SQLHandler.class, String.class, String.class},
+        return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, int.class, String.class, String.class, 
+                int.class, String.class, int.class, String.class, DateFormat.class, DbSupport.class, SQLHandler.class, String.class, String.class,
+                Set.class, String.class},
+                
                 new Object[]{autoCreateVersionTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
                         versionColumnName, versionColumnSize, fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
                         executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, getDefaultDbSupport(),
-                        sqlHandler, fixScriptSuffix, targetDatabasePrefix});
+                        sqlHandler, targetDatabasePrefix, qualifierPrefix, patchQualifiers, postProcessingScriptsDirname});
     }
 
 

@@ -89,7 +89,7 @@ public class CreateScriptJarTask extends Task {
             configuration.put(PROPKEY_SCRIPT_ENCODING, encoding);
         }
         if (patchScriptSuffix != null) {
-            configuration.put(PROPKEY_SCRIPT_PATCH_SUFFIX, patchScriptSuffix);
+            configuration.put(PROPKEY_SCRIPT_PATCH_QUALIFIERS, patchScriptSuffix);
         }
         if (targetDatabasePrefix != null) {
             configuration.put(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);

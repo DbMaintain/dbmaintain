@@ -22,6 +22,7 @@ import static org.apache.commons.lang.time.DateUtils.parseDate;
 
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
@@ -78,8 +79,8 @@ public class DefaultExecutedScriptInfoSourceTest {
 
     @Before
     public void initTestData() throws ParseException {
-        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "fix", "@"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), true);
-        executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "fix", "@"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), true);
+        executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", Collections.singleton("PATCH"), "@", "#", "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
 

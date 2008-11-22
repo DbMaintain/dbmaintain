@@ -189,7 +189,7 @@ public class DbMaintainIntegrationTest {
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
 
-        createNewScript("02_latest/02patch_a_patch_script.sql", NEW_INCREMENTAL_2);
+        createNewScript("02_latest/02_#patch_a_patch_script.sql", NEW_INCREMENTAL_2);
         updateDatabase();
     }
 
@@ -205,14 +205,14 @@ public class DbMaintainIntegrationTest {
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
 
-        createNewScript("02_latest/02patch_a_patch_script.sql", NEW_INCREMENTAL_2);
+        createNewScript("02_latest/02_#PATCH_a_patch_script.sql", NEW_INCREMENTAL_2);
         updateDatabase();
     }
 
 
     /**
-     * Test for adding a hotfix script that has an index smaller than an existing index. Out of sequence is
-     * allowed, but the hotfix has a sequence nr that was already used. This should fail.
+     * Test for adding a patch script that has an index smaller than an existing index. Out of sequence is
+     * allowed, but the patch has a sequence nr that was already used. This should fail.
      */
     @Test(expected = DbMaintainException.class)
     public void addPatchScript_identicalSequenceNr() {
@@ -221,7 +221,7 @@ public class DbMaintainIntegrationTest {
         createNewScript("02_latest/02_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
 
-        createNewScript("02_latest/02patch_a_patch_script.sql", NEW_INCREMENTAL_2);
+        createNewScript("02_latest/02_#patch_a_patch_script.sql", NEW_INCREMENTAL_2);
         updateDatabase();
     }
 

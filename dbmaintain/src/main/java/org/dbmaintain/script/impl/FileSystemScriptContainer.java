@@ -37,7 +37,7 @@ import java.util.Set;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class FileScriptContainer extends BaseScriptContainer {
+public class FileSystemScriptContainer extends BaseScriptContainer {
 
     protected File scriptLocation;
 
@@ -49,17 +49,20 @@ public class FileScriptContainer extends BaseScriptContainer {
      *
      * @param scriptLocation
      * @param defaultScriptFileExtensions
-     * @param targetDatabasePrefix
+     * @param defaultTargetDatabasePrefix
+     * @param defaultQualifierPefix 
+     * @param defaultPatchQualifiers 
      * @param defaultPostProcessingScriptDirName
      *
      * @param defaultFixSuffix
      * @param defaultScriptEncoding
      */
-    public FileScriptContainer(File scriptLocation, Set<String> defaultScriptFileExtensions,
-                               String targetDatabasePrefix, String defaultPostProcessingScriptDirName, String defaultFixSuffix, String defaultScriptEncoding) {
+    public FileSystemScriptContainer(File scriptLocation, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix, 
+            String defaultQualifierPefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName, 
+            String defaultScriptEncoding) {
         this.scriptLocation = scriptLocation;
-
-        initConfiguration(defaultScriptFileExtensions, targetDatabasePrefix, defaultPostProcessingScriptDirName, defaultFixSuffix, defaultScriptEncoding);
+        initConfiguration(defaultScriptFileExtensions, defaultTargetDatabasePrefix, defaultQualifierPefix, defaultPatchQualifiers,
+                defaultPostProcessingScriptDirName, defaultScriptEncoding);
         initScripts();
     }
 
@@ -77,17 +80,18 @@ public class FileScriptContainer extends BaseScriptContainer {
      *
      * @param defaultScriptEncoding
      */
-    private void initConfiguration(Set<String> defaultScriptFileExtensions,
-                                   String defaultTargetDatabasePrefix, String defaultPostProcessingScriptDirName,
-                                   String defaultFixSuffix, String defaultScriptEncoding) {
+    private void initConfiguration(Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix, 
+            String defaultQualifierPrefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName,
+            String defaultScriptEncoding) {
         Properties properties = getLocationCustomProperties();
         if (properties != null) {
             initConfigurationFromProperties(properties);
         } else {
             this.scriptFileExtensions = defaultScriptFileExtensions;
             this.targetDatabasePrefix = defaultTargetDatabasePrefix;
+            this.qualifierPrefix = defaultQualifierPrefix;
+            this.patchQualifiers = defaultPatchQualifiers;
             this.postProcessingScriptDirName = defaultPostProcessingScriptDirName;
-            this.fixScriptSuffix = defaultFixSuffix;
             this.scriptEncoding = defaultScriptEncoding;
         }
         assertValidScriptExtensions();
@@ -164,7 +168,8 @@ public class FileScriptContainer extends BaseScriptContainer {
      */
     protected Script createScript(File scriptFile, String relativeScriptFileName) {
         ScriptContentHandle scriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), scriptEncoding);
-        return new Script(relativeScriptFileName, scriptFile.lastModified(), scriptContentHandle, fixScriptSuffix, targetDatabasePrefix, isPostProcessingScript(relativeScriptFileName));
+        return new Script(relativeScriptFileName, scriptFile.lastModified(), scriptContentHandle, targetDatabasePrefix, qualifierPrefix, 
+                patchQualifiers, postProcessingScriptDirName);
     }
 
 

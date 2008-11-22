@@ -187,7 +187,7 @@ public interface DbMaintainProperties {
     /**
      * Property key for the patch indicator. I.e. the keyword to use in the filename to indicate that the script is a patch script.
      */
-    public static final String PROPKEY_SCRIPT_PATCH_SUFFIX = "dbMaintainer.script.patch.suffix";
+    public static final String PROPKEY_SCRIPT_PATCH_QUALIFIERS = "dbMaintainer.script.patch.qualifiers";
 
     /**
      * The key for the property that specifies that patch scripts can be executed out of sequence
@@ -199,6 +199,8 @@ public interface DbMaintainProperties {
     public static final String PROPKEY_SCRIPT_ENCODING = "dbMaintainer.script.encoding";
 
     public static final String PROPKEY_SCRIPT_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
+    
+    public static final String PROPKEY_SCRIPT_QUALIFIER_PREFIX = "dbMaintainer.script.qualifier.prefix";
 
     public static final String PROPKEY_BACKSLASH_ESCAPING_ENABLED = "org.dbmaintain.script.ScriptParser.backSlashEscapingEnabled";
 

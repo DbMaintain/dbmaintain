@@ -101,45 +101,33 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      */
     protected DateFormat timestampFormat;
 
-    /**
-     * The suffix for indicating that a script is a fix script, not null
-     */
-    protected String fixScriptSuffix;
 
     /**
      * The prefix to use for locating the target database part in the filename, not null
      */
     protected String targetDatabasePrefix;
-
+    
+    /**
+     * The prefix that can be used in the filename to identify qualifiers 
+     */
+    protected String qualifierPefix;
 
     /**
-     * Constructor for DefaultExecutedScriptInfoSource.
-     * <p/>
-     * todo javadoc
-     *
-     * @param autoCreateExecutedScriptsTable
-     * @param executedScriptsTableName
-     * @param fileNameColumnName
-     * @param fileNameColumnSize
-     * @param versionColumnName
-     * @param versionColumnSize
-     * @param fileLastModifiedAtColumnName
-     * @param checksumColumnName
-     * @param checksumColumnSize
-     * @param executedAtColumnName
-     * @param executedAtColumnSize
-     * @param succeededColumnName
-     * @param timestampFormat
-     * @param defaultSupport
-     * @param sqlHandler
-     * @param fixScriptSuffix                The suffix for indicating that a script is a fix script, not null
-     * @param targetDatabasePrefix           The prefix to use for locating the target database part in the filename, not null
+     * The qualifiers that identify a script as a patch script, not null
      */
+    protected Set<String> patchQualifiers;
+    
+    /**
+     * The name of the post processing dir
+     */
+    protected String postProcessingDirName;
+
+
     public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName,
-                                           int fileNameColumnSize, String versionColumnName, int versionColumnSize, String fileLastModifiedAtColumnName,
-                                           String checksumColumnName, int checksumColumnSize, String executedAtColumnName, int executedAtColumnSize,
-                                           String succeededColumnName, DateFormat timestampFormat, DbSupport defaultSupport, SQLHandler sqlHandler,
-                                           String fixScriptSuffix, String targetDatabasePrefix) {
+            int fileNameColumnSize, String versionColumnName, int versionColumnSize, String fileLastModifiedAtColumnName,
+            String checksumColumnName, int checksumColumnSize, String executedAtColumnName, int executedAtColumnSize,
+            String succeededColumnName, DateFormat timestampFormat, DbSupport defaultSupport, SQLHandler sqlHandler,
+            String targetDatabasePrefix, String qualifierPrefix, Set<String> patchQualifiers, String postProcessingDirName) {
 
         this.defaultDbSupport = defaultSupport;
         this.sqlHandler = sqlHandler;
@@ -156,8 +144,10 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         this.executedAtColumnSize = executedAtColumnSize;
         this.succeededColumnName = defaultDbSupport.toCorrectCaseIdentifier(succeededColumnName);
         this.timestampFormat = timestampFormat;
-        this.fixScriptSuffix = fixScriptSuffix;
         this.targetDatabasePrefix = targetDatabasePrefix;
+        this.qualifierPefix = qualifierPrefix;
+        this.patchQualifiers = patchQualifiers;
+        this.postProcessingDirName = postProcessingDirName;
     }
     
     
@@ -227,7 +217,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, fixScriptSuffix, targetDatabasePrefix), executedAt, succeeded);
+                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, patchQualifiers, targetDatabasePrefix, qualifierPefix, postProcessingDirName), executedAt, succeeded);
                 executedScripts.add(executedScript);
             }
 

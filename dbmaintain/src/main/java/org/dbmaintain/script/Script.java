@@ -17,10 +17,14 @@ package org.dbmaintain.script;
 
 import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringUtils.*;
+
+import org.dbmaintain.util.CollectionUtils;
 import org.dbmaintain.version.Version;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A class representing a script file and it's content.
@@ -52,7 +56,10 @@ public class Script implements Comparable<Script> {
     private boolean postProcessingScript;
 
     /* True if this script is a fix script */
-    private boolean fixScript;
+    private boolean patchScript;
+
+    /* Set of qualifiers for this script */
+    private Set<String> qualifiers;
 
 
     /**
@@ -61,18 +68,15 @@ public class Script implements Comparable<Script> {
      * @param fileName             The name of the script file, not null
      * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
      * @param scriptContentHandle  Handle providing access to the contents of the script, not null
-     * @param fixScriptSuffix      The suffix for indicating that a script is a fix script, not null
-     * @param targetDatabasePrefix The prefix to use for locating the target database part in the filename, not null
-     * @param postProcessingScript True if this script is a postprocessing script
+     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
+     * @param qualifierPrefix      The prefix that identifies a qualifier in the filename, not null
+     * @param patchQualifiers      The qualifiers that indicate that this script is a patch script, not null
+     * @param postProcessingScriptDirName Name of the post processing script dir
      */
-    public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String fixScriptSuffix, String targetDatabasePrefix, boolean postProcessingScript) {
-        this.fileName = fileName;
-        this.version = createVersion(fileName, fixScriptSuffix);
-        this.fixScript = checkIsFixScript(fileName, fixScriptSuffix);
-        this.targetDatabaseName = getTargetDatabaseNameFromPath(fileName, targetDatabasePrefix, fixScriptSuffix);
-        this.fileLastModifiedAt = fileLastModifiedAt;
+    public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String targetDatabasePrefix, 
+            String qualifierPrefix, Set<String> patchQualifiers, String postProcessingScriptDirName) {
+        this(fileName, fileLastModifiedAt, patchQualifiers, targetDatabasePrefix, qualifierPrefix, postProcessingScriptDirName);
         this.scriptContentHandle = scriptContentHandle;
-        this.postProcessingScript = postProcessingScript;
     }
 
 
@@ -84,17 +88,43 @@ public class Script implements Comparable<Script> {
      * are equal to another script objects whose contents are provided.
      *
      * @param fileName             The name of the script file, not null
-     * @param fileLastModifiedAt
-     * @param checkSum             Checksum calculated for the content of the script
-     * @param targetDatabasePrefix
+     * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
+     * @param checkSum             Checksum calculated for the contents of the file
+     * @param scriptContentHandle  Handle providing access to the contents of the script, not null
+     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
+     * @param qualifierPrefix      The prefix that identifies a qualifier in the filename, not null
+     * @param patchQualifiers      The qualifiers that indicate that this script is a patch script, not null
+     * @param postProcessingScriptDirName Name of the post processing script dir 
      */
-    public Script(String fileName, Long fileLastModifiedAt, String checkSum, String fixScriptSuffix, String targetDatabasePrefix) {
-        this.fileName = fileName;
-        this.version = createVersion(fileName, fixScriptSuffix);
-        this.fixScript = checkIsFixScript(fileName, fixScriptSuffix);
-        this.targetDatabaseName = getTargetDatabaseNameFromPath(fileName, targetDatabasePrefix, fixScriptSuffix);
-        this.fileLastModifiedAt = fileLastModifiedAt;
+    public Script(String fileName, Long fileLastModifiedAt, String checkSum, Set<String> patchQualifiers, String targetDatabasePrefix, 
+            String qualifierPrefix, String postProcessingScriptDirName) {
+        this(fileName, fileLastModifiedAt, patchQualifiers, targetDatabasePrefix, qualifierPrefix, postProcessingScriptDirName);
         this.checkSum = checkSum;
+    }
+
+
+    /**
+     * Private constructor that only partly initializes.
+     * 
+     * @param fileName             The name of the script file, not null
+     * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
+     * @param checkSum             Checksum calculated for the contents of the file
+     * @param scriptContentHandle  Handle providing access to the contents of the script, not null
+     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
+     * @param qualifierPrefix      The prefix that identifies a qualifier in the filename, not null
+     * @param patchQualifiers      The qualifiers that indicate that this script is a patch script, not null
+     * @param postProcessingScriptDirName Name of the post processing script dir
+     */
+    private Script(String fileName, Long fileLastModifiedAt, Set<String> patchQualifiers, String targetDatabasePrefix, String qualifierPrefix,
+            String postProcessingScriptDirName) {
+        this.fileName = fileName;
+        this.version = createVersion(fileName);
+        List<String> allTokens = getTokensFromPath(CollectionUtils.asSet(qualifierPrefix, targetDatabasePrefix));
+        this.targetDatabaseName = getTargetDatabaseName(allTokens, targetDatabasePrefix);
+        this.qualifiers = selectQualifiersFromTokens(allTokens, qualifierPrefix);
+        this.patchScript = checkIsPatchScript(patchQualifiers);
+        this.fileLastModifiedAt = fileLastModifiedAt;
+        this.postProcessingScript = isPostProcessingScript(postProcessingScriptDirName);
     }
 
 
@@ -203,7 +233,7 @@ public class Script implements Comparable<Script> {
      * @return True if this script is a fix script
      */
     public boolean isFixScript() {
-        return fixScript;
+        return patchScript;
     }
 
 
@@ -223,16 +253,32 @@ public class Script implements Comparable<Script> {
      * Creates a version by extracting the indexes from the the given script file name.
      *
      * @param fileName        The name op the script file relative to the script root, not null
-     * @param fixScriptSuffix The suffix for indicating that a script is a fix script, not null
      * @return The version of the script file, not null
      */
-    protected Version createVersion(String fileName, String fixScriptSuffix) {
+    protected Version createVersion(String fileName) {
         String[] pathParts = StringUtils.split(fileName, '/');
         List<Long> versionIndexes = new ArrayList<Long>();
         for (String pathPart : pathParts) {
-            versionIndexes.add(extractIndex(pathPart, fixScriptSuffix));
+            versionIndexes.add(extractIndex(pathPart));
         }
         return new Version(versionIndexes);
+    }
+    
+    
+    protected List<String> getTokensFromPath(Set<String> tokenPrefixes) {
+        List<String> tokens = new ArrayList<String>();
+        String[] pathParts = StringUtils.split(fileName, '/');
+        for (String pathPart : pathParts) {
+            String[] words = StringUtils.split(pathPart, '_');
+            for (String word : words) {
+                for (String tokenPrefix : tokenPrefixes) {
+                    if (word.startsWith(tokenPrefix)) {
+                        tokens.add(word);
+                    }
+                }
+            }
+        }
+        return tokens;
     }
 
 
@@ -240,12 +286,10 @@ public class Script implements Comparable<Script> {
      * Extracts the index out of a given file name.
      *
      * @param pathPart        The simple (only one part of path) directory or file name, not null
-     * @param fixScriptSuffix The suffix for indicating that a script is a fix script, not null
      * @return The index, null if there is no index
      */
-    protected Long extractIndex(String pathPart, String fixScriptSuffix) {
-        String indexPart = substringBefore(pathPart, "_");
-        String indexString = substringBefore(indexPart, fixScriptSuffix);
+    protected Long extractIndex(String pathPart) {
+        String indexString = substringBefore(pathPart, "_");
         if (isEmpty(indexString)) {
             return null;
         }
@@ -257,24 +301,32 @@ public class Script implements Comparable<Script> {
             return null;
         }
     }
+    
+    
+    protected Set<String> selectQualifiersFromTokens(List<String> tokens, String qualifierPrefix) {
+        Set<String> qualifiers = new HashSet<String>();
+        for (String token : tokens) {
+            if (token.startsWith(qualifierPrefix)) {
+                qualifiers.add(StringUtils.lowerCase(StringUtils.substringAfter(token, qualifierPrefix)));
+            }
+        }
+        return qualifiers;
+    }
 
 
     /**
-     * Checks whether the fix script suffix is used in the file name. The suffix should
-     * be located directly after the index or the first thing if there is no index.
+     * Checks whether this script is a patch script, by checking if the script has a qualifier that
+     * identifies it as such.
      * <p/>
-     * E.g. 01fix_myscript.sql
+     * E.g. 01_#patch_myscript.sql
      * <p/>
      *
-     * @param fileName        The file name to check, not null
-     * @param fixScriptSuffix The suffix to look for, not null
-     * @return True if the script suffix was found
+     * @param patchQualifiers The patch qualifiers
+     * @return true if the script is a patch script
      */
-    protected boolean checkIsFixScript(String fileName, String fixScriptSuffix) {
-        String[] pathParts = StringUtils.split(fileName, '/');
-        for (int i = pathParts.length - 1; i >= 0; i--) {
-            String indexPart = substringBefore(pathParts[i], "_");
-            if (!isEmpty(indexPart) && indexPart.toUpperCase().endsWith(fixScriptSuffix.toUpperCase())) {
+    protected boolean checkIsPatchScript(Set<String> patchQualifiers) {
+        for (String patchQualifier : patchQualifiers) {
+            if (qualifiers.contains(patchQualifier.toLowerCase())) {
                 return true;
             }
         }
@@ -283,28 +335,26 @@ public class Script implements Comparable<Script> {
 
 
     /**
-     * Gets the target database from the file name. The target database should be be located after the index
-     * if there is any and should begin with the target database prefix.
+     * Resolves the target database name from the given list of tokens 
      * <p/>
-     * E.g. 01_-databaseA_myscript.sql
+     * E.g. 01_@databaseA_myscript.sql
      * <p/>
      * If the file name consists out of multiple path-parts, the last found target database is used
      * <p/>
-     * E.g. 01_-database1/01_-database2_myscript.sql
+     * E.g. 01_@database1/01_@database2_myscript.sql
      * <p/>
      * will return database2
      *
-     * @param fileName             The file name to check, not null
-     * @param targetDatabasePrefix The prefix to look for, not null
-     * @param fixScriptSuffix      The suffix to look for, not null
+     * @param tokens All tokens extracted from the path, not null
+     * @param targetDatabasePrefix The prefix that indicates the target database, not null
+     *
      * @return The target database name, null if none found
      */
-    protected String getTargetDatabaseNameFromPath(String fileName, String targetDatabasePrefix, String fixScriptSuffix) {
-        String[] pathParts = StringUtils.split(fileName, '/');
-        for (int i = pathParts.length - 1; i >= 0; i--) {
-            String targetDatabase = extractTargetDatabase(pathParts[i], targetDatabasePrefix, fixScriptSuffix);
-            if (targetDatabase != null) {
-                return targetDatabase;
+    protected String getTargetDatabaseName(List<String> tokens, String targetDatabasePrefix) {
+        for (int i = tokens.size() - 1; i >= 0; i--) {
+            String token = tokens.get(i);
+            if (token.startsWith(targetDatabasePrefix)) {
+                return StringUtils.substringAfter(token, targetDatabasePrefix);
             }
         }
         return null;
@@ -320,7 +370,7 @@ public class Script implements Comparable<Script> {
      * @return The target database name, null if none found
      */
     protected String extractTargetDatabase(String pathPart, String targetDatabasePrefix, String fixScriptSuffix) {
-        Long index = extractIndex(pathPart, fixScriptSuffix);
+        Long index = extractIndex(pathPart);
         String pathPartAfterIndex;
         if (index == null) {
             pathPartAfterIndex = pathPart;
@@ -331,6 +381,19 @@ public class Script implements Comparable<Script> {
             return substringBefore(pathPartAfterIndex, "_").substring(1);
         }
         return null;
+    }
+    
+    
+    /**
+     * @param postProcessingScriptDirName Name of the post processing script dir
+     * 
+     * @return True if the given script is a post processing script according to the script source configuration
+     */
+    protected boolean isPostProcessingScript(String postProcessingScriptDirName) {
+        if (isEmpty(postProcessingScriptDirName)) {
+            return false;
+        }
+        return fileName.startsWith(postProcessingScriptDirName + '/') || fileName.startsWith(postProcessingScriptDirName + '\\');
     }
 
 

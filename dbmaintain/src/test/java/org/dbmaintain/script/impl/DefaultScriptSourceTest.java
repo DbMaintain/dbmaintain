@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import static java.util.Arrays.asList;
+
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -62,14 +64,14 @@ public class DefaultScriptSourceTest {
     public void setUp() throws IOException, URISyntaxException {
         executionDate = new Date();
         alreadyExecutedScripts = new ArrayList<ExecutedScript>(asList(
-                new ExecutedScript(new Script("1_scripts/001_scriptA.sql", 0L, "9a6c61ba036ac10baa6d8229ddc61607", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "d28d9d6b03f7be2f6a51061360b00c9e", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("2_scripts/002_scriptE.sql", 0L, "2e02a907691a4f20a19ae363d5942e84", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("2_scripts/scriptF.sql", 0L, "77a703ac3381db7be6273a6e8899c772", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("2_scripts/subfolder/001_scriptG.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "b653b6f1b6522083efe6012479898958", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("scripts/001_scriptI.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", "fix", "@"), executionDate, true),
-                new ExecutedScript(new Script("scripts/scriptJ.sql", 0L, "b653b6f1b6522083efe6012479898958", "fix", "@"), executionDate, true)
+                new ExecutedScript(new Script("1_scripts/001_scriptA.sql", 0L, "9a6c61ba036ac10baa6d8229ddc61607", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "d28d9d6b03f7be2f6a51061360b00c9e", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/002_scriptE.sql", 0L, "2e02a907691a4f20a19ae363d5942e84", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/scriptF.sql", 0L, "77a703ac3381db7be6273a6e8899c772", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/subfolder/001_scriptG.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "b653b6f1b6522083efe6012479898958", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("scripts/001_scriptI.sql", 0L, "1efbb7e68fb36681e047feb47fb57054", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true),
+                new ExecutedScript(new Script("scripts/scriptJ.sql", 0L, "b653b6f1b6522083efe6012479898958", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true)
         ));
 
         // Create test directories
@@ -135,7 +137,7 @@ public class DefaultScriptSourceTest {
      */
     @Test
     public void testGetNewScripts() {
-        alreadyExecutedScripts.set(5, new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+        alreadyExecutedScripts.set(5, new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
         List<Script> scripts = scriptSource.getNewScripts(new Version("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
 
@@ -153,7 +155,7 @@ public class DefaultScriptSourceTest {
 
     @Test
     public void testIsExistingScriptsModfied_modifiedScript() {
-        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
@@ -169,7 +171,7 @@ public class DefaultScriptSourceTest {
 
     @Test
     public void testIsExistingScriptsModfied_scriptRemoved() {
-        alreadyExecutedScripts.add(new ExecutedScript(new Script("1_scripts/003_scriptB.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+        alreadyExecutedScripts.add(new ExecutedScript(new Script("1_scripts/003_scriptB.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
@@ -185,7 +187,7 @@ public class DefaultScriptSourceTest {
 
     @Test
     public void testIsExistingScriptsModfied_higherIndexScriptModified() {
-        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "fix", "@"), executionDate, true));
+        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
         assertFalse(scriptSource.isIncrementalScriptModified(new Version("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
         assertTrue(scriptSource.isIncrementalScriptModified(new Version("1.2"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));

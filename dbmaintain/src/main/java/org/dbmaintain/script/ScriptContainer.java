@@ -18,6 +18,8 @@ package org.dbmaintain.script;
 import java.util.List;
 
 /**
+ * Defines the contract for a container for database scripts
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */

@@ -16,6 +16,8 @@
 package org.dbmaintain.script.impl;
 
 import static org.dbmaintain.config.DbMaintainProperties.*;
+
+import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
 import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
@@ -28,42 +30,64 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
 /**
- * todo javadoc
+ * Script container that reads all scripts from a jar file
  *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class JarScriptContainer extends BaseScriptContainer {
 
+    /* The jar file containing the scripts */
     protected JarFile jar;
 
 
     /**
-     * @param scripts
-     * @param targetDatabasePrefix
-     * @param postProcessingScriptDirName
-     * @param scriptEncoding
+     * Creates a new instance of the {@link JarScriptContainer}, while there is no jar file available yet. 
+     * This constructor can be used to initialize the container while the scripts are still on the file system,
+     * and to write the jar file afterwards.
+     * 
+     * @param scripts The scripts contained in the container, not null
+     * @param scriptFileExtensions 
+     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
+     * @param qualifierPrefix The prefix that identifies a qualifier in the filename, not null
+     * @param patchQualifiers The qualifiers that indicate that this script is a patch script, not null
+     * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
+     * @param scriptEncoding Encoding used to read the contents of the script, not null
      */
-    public JarScriptContainer(List<Script> scripts, String targetDatabasePrefix, String postProcessingScriptDirName, String fixSuffix, String scriptEncoding) {
+    public JarScriptContainer(List<Script> scripts, Set<String> scriptFileExtensions, String targetDatabasePrefix, String qualifierPrefix, 
+            Set<String> patchQualifiers, String postProcessingScriptDirName, String scriptEncoding) {
         this.scripts = scripts;
+        this.scriptFileExtensions = scriptFileExtensions;
         this.targetDatabasePrefix = targetDatabasePrefix;
+        this.qualifierPrefix = qualifierPrefix;
+        this.patchQualifiers = patchQualifiers;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
-        this.fixScriptSuffix = fixSuffix;
         this.scriptEncoding = scriptEncoding;
     }
 
 
+    /**
+     * Creates a new instance based on the contents of the given jar file
+     * 
+     * @param jarFile Script jar file, not null
+     */
     public JarScriptContainer(File jarFile) {
         initFromJarFile(jarFile);
     }
 
 
+    /**
+     * Initializes this object using the contents of the given jar file
+     * 
+     * @param jarFile Script jar file, not null
+     */
     protected void initFromJarFile(File jarFile) {
         try {
             jar = new JarFile(jarFile);
@@ -75,6 +99,11 @@ public class JarScriptContainer extends BaseScriptContainer {
     }
 
 
+    /**
+     * Initializes the scripts from the given jar file
+     * 
+     * @param jarFile Script jar file, not null
+     */
     protected void initScriptsFromJar(final JarFile jarFile) {
         scripts = new ArrayList<Script>();
 
@@ -94,7 +123,7 @@ public class JarScriptContainer extends BaseScriptContainer {
                     }
                 };
                 String scriptName = jarEntry.getName();
-                Script script = new Script(scriptName, jarEntry.getTime(), scriptContentHandle, fixScriptSuffix, targetDatabasePrefix, isPostProcessingScript(scriptName));
+                Script script = new Script(scriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix, qualifierPrefix, patchQualifiers, postProcessingScriptDirName);
                 scripts.add(script);
             }
         }
@@ -103,8 +132,10 @@ public class JarScriptContainer extends BaseScriptContainer {
 
     protected Properties getJarProperties() {
         Properties configuration = new Properties();
-        configuration.put(PROPKEY_SCRIPT_PATCH_SUFFIX, fixScriptSuffix);
+        configuration.put(PROPKEY_SCRIPT_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
         configuration.put(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
+        configuration.put(PROPKEY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
+        configuration.put(PROPKEY_SCRIPT_PATCH_QUALIFIERS, StringUtils.join(patchQualifiers, ","));
         configuration.put(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptDirName);
         configuration.put(PROPKEY_SCRIPT_ENCODING, scriptEncoding);
         return configuration;
