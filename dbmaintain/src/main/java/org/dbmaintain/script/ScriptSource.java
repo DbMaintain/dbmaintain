@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.version.ScriptIndexes;
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 
 import java.util.List;
 import java.util.Set;

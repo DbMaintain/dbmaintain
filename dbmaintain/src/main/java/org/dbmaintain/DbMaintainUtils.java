@@ -16,13 +16,13 @@
 package org.dbmaintain;
 
 import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clean.DBClearer;
+import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.SQLHandler;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 
 import java.util.Properties;
 

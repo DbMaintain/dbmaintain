@@ -18,6 +18,7 @@ package org.dbmaintain.script.impl;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.dbmaintain.scriptparser.impl.OracleScriptParser;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;

@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContainer;
-import org.dbmaintain.util.PropertyUtils;
 
 /**
  * Base class for a container for database scripts

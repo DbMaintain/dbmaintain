@@ -17,6 +17,7 @@ package org.dbmaintain.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.StoredIdentifierCase;
 
 import java.util.Map;
 

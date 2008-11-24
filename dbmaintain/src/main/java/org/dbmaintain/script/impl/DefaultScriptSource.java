@@ -17,12 +17,12 @@ package org.dbmaintain.script.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.version.ScriptIndexes;
 
 import java.util.*;
 

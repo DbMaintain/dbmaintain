@@ -18,10 +18,10 @@ package org.dbmaintain.launch.api;
 import java.net.URL;
 import java.util.Properties;
 
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 
 /**

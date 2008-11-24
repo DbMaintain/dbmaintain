@@ -19,6 +19,7 @@ import static junit.framework.Assert.assertEquals;
 
 import java.util.Arrays;
 
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.junit.Test;
 
 /**

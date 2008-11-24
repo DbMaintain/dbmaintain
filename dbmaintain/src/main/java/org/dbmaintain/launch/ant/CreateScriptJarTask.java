@@ -20,11 +20,12 @@ package org.dbmaintain.launch.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import static org.dbmaintain.config.DbMaintainProperties.*;
+
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.script.impl.JarScriptContainer;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 
 import java.io.File;
 import java.util.List;

@@ -20,21 +20,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clean.DBClearer;
+import org.dbmaintain.clear.DBClearer;
+
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
+import org.dbmaintain.dbsupport.StoredIdentifierCase;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.FileSystemScriptContainer;
 import org.dbmaintain.script.impl.JarScriptContainer;
+import org.dbmaintain.scriptparser.ScriptParser;
+import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
 import org.dbmaintain.util.*;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
-import org.dbmaintain.version.ExecutedScriptInfoSource;
-import org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource;
 
 import javax.sql.DataSource;
 import java.io.File;

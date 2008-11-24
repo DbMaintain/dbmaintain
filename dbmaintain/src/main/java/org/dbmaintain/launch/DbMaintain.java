@@ -20,14 +20,14 @@ import java.util.List;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clean.DBClearer;
+import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.script.impl.JarScriptContainer;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
-import org.dbmaintain.version.ExecutedScriptInfoSource;
 
 /**
  * Class that exposes all available DbMaintain operations.

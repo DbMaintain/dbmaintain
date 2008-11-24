@@ -18,9 +18,9 @@ package org.dbmaintain.script;
 import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringUtils.*;
 
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.CollectionUtils;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.version.ScriptIndexes;
 
 import java.util.ArrayList;
 import java.util.HashSet;

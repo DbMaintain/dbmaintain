@@ -19,11 +19,11 @@ import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
 

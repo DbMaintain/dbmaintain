@@ -17,18 +17,20 @@ package org.dbmaintain.util;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.dbmaintain.clean.impl.DefaultDBCleaner;
-import org.dbmaintain.clean.impl.DefaultDBClearer;
+import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
-import org.dbmaintain.dbsupport.HsqldbDbSupport;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
+import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.script.ScriptContainer;
-import org.dbmaintain.script.ScriptParser;
-import org.dbmaintain.script.ScriptParserFactory;
 import org.dbmaintain.script.impl.*;
+import org.dbmaintain.scriptparser.ScriptParser;
+import org.dbmaintain.scriptparser.ScriptParserFactory;
+import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
+import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import org.dbmaintain.version.impl.DefaultExecutedScriptInfoSource;
 
 import javax.sql.DataSource;
 import java.io.File;

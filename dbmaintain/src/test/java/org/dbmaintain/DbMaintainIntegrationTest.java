@@ -30,19 +30,20 @@ import java.io.Writer;
 import java.util.Properties;
 import java.util.Set;
 
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * todo javadoc
+ * Integration test for the dbmaintainer: verifies the typical usage scenario's in an integrated way: The dbmaintainer is
+ * setup using properties, a real database is used and scripts are created on the file system. 
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -303,19 +304,19 @@ public class DbMaintainIntegrationTest {
     }
 
     private void errorInInitialScript() {
-        createScript("02_latest/01_" + INITIAL_INCREMENTAL_2 + ".sql", "this is an error;");
+        createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "this is an error;");
     }
 
     private void fixErrorInInitialScript() {
-        createScript("02_latest/01_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
+        createScript("02_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
     }
 
     private void removeIncrementalScript() {
-        removeScript("01_base/01_" + INITIAL_INCREMENTAL_1 + ".sql");
+        removeScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql");
     }
 
     private void addIncrementalScriptWithLowerIndex() {
-        createScript("01_base/03_" + NEW_INCREMENTAL_LOWER_INDEX + ".sql", "create table " + NEW_INCREMENTAL_LOWER_INDEX + " (test varchar(10));");
+        createScript("01_initial/03_" + NEW_INCREMENTAL_LOWER_INDEX + ".sql", "create table " + NEW_INCREMENTAL_LOWER_INDEX + " (test varchar(10));");
     }
 
     private void assertMessageContains(String message, String... subStrings) {
@@ -336,12 +337,12 @@ public class DbMaintainIntegrationTest {
 
 
     private void updateIncrementalScript() {
-        createScript("01_base/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + UPDATED_INCREMENTAL_1 + "(test varchar(10));");
+        createScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + UPDATED_INCREMENTAL_1 + "(test varchar(10));");
     }
 
 
     private void updateRepeatableScript() {
-        createScript("01_base/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\n" +
+        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\n" +
                 "drop table " + UPDATED_REPEATABLE + " if exists;\n" +
                 "create table " + UPDATED_REPEATABLE + "(test varchar(10));");
     }
@@ -353,15 +354,15 @@ public class DbMaintainIntegrationTest {
 
 
     private void newRepeatableScript() {
-        createScript("02_latest/" + NEW_REPEATABLE + ".sql", "drop table " + NEW_REPEATABLE + " if exists;\n" +
+        createScript("repeatable/" + NEW_REPEATABLE + ".sql", "drop table " + NEW_REPEATABLE + " if exists;\n" +
                 "create table " + NEW_REPEATABLE + " (test varchar(10));");
     }
 
 
     private void createInitialScripts() {
-        createScript("01_base/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + INITIAL_INCREMENTAL_1 + "(test varchar(10));");
-        createScript("01_base/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\ncreate table " + INITIAL_REPEATABLE + "(test varchar(10));");
-        createScript("02_latest/01_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
+        createScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + INITIAL_INCREMENTAL_1 + "(test varchar(10));");
+        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\ncreate table " + INITIAL_REPEATABLE + "(test varchar(10));");
+        createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
     }
 
 

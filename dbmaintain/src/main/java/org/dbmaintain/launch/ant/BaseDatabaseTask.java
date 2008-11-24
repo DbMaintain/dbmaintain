@@ -4,11 +4,11 @@
 package org.dbmaintain.launch.ant;
 
 import org.apache.tools.ant.Task;
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 
 import javax.sql.DataSource;
 

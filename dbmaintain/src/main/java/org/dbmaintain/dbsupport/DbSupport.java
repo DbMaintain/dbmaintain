@@ -17,7 +17,6 @@ package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.StoredIdentifierCase;
 
 import javax.sql.DataSource;
 

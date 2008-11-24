@@ -30,24 +30,6 @@ import java.net.URL;
 // todo javadoc
 public class FileUtils {
 
-    public static void copyClassPathResource(String classPathResourceName, String fileSystemDirectoryName) {
-        InputStream resourceInputStream = null;
-        OutputStream fileOutputStream = null;
-        try {
-            resourceInputStream = FileUtils.class.getResourceAsStream(classPathResourceName);
-            String fileName = StringUtils.substringAfterLast(classPathResourceName, "/");
-            File fileSystemDirectory = new File(fileSystemDirectoryName);
-            fileSystemDirectory.mkdirs();
-            fileOutputStream = new FileOutputStream(fileSystemDirectoryName + "/" + fileName);
-            IOUtils.copy(resourceInputStream, fileOutputStream);
-        } catch (IOException e) {
-            throw new DbMaintainException(e);
-        } finally {
-            IOUtils.closeQuietly(resourceInputStream);
-            IOUtils.closeQuietly(fileOutputStream);
-        }
-    }
-
 
     /**
      * Creates an URL that points to the given file.

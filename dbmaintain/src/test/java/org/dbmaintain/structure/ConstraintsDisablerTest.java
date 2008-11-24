@@ -17,8 +17,8 @@ package org.dbmaintain.structure;
 
 import static org.junit.Assert.fail;
 
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.DbMaintainConfigurationLoader;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;

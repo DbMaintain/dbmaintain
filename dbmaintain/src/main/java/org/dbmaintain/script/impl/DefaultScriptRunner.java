@@ -20,9 +20,9 @@ import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptParser;
-import org.dbmaintain.script.ScriptParserFactory;
 import org.dbmaintain.script.ScriptRunner;
+import org.dbmaintain.scriptparser.ScriptParser;
+import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.DbMaintainException;
 

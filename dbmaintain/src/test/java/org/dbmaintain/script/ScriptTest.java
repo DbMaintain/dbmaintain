@@ -17,8 +17,8 @@ package org.dbmaintain.script;
 
 import static junit.framework.Assert.*;
 
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.version.ScriptIndexes;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -44,8 +44,11 @@ public class ScriptTest {
         assertFalse(script.isIncremental());
     }
     
+    /**
+     * Verifies that an exception is thrown when a repeatable script is located inside an indexed folder. 
+     */
     @Test(expected = DbMaintainException.class)
-    public void testIsIncremental_mixed() {
+    public void testIsIncremental_repeatableScriptInsideIndexedFolder() {
         createScript("incremental/02_script1/repeatableScript.sql");
     }
 

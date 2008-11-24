@@ -16,12 +16,13 @@
 package org.dbmaintain.script.impl;
 
 import static junit.framework.Assert.*;
+
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
-import org.dbmaintain.version.ScriptIndexes;
 import org.junit.Before;
 import org.junit.Test;
 
