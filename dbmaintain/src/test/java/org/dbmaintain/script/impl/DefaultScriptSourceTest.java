@@ -21,7 +21,7 @@ import org.dbmaintain.script.Script;
 import org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
-import org.dbmaintain.version.Version;
+import org.dbmaintain.version.ScriptIndexes;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -139,7 +139,7 @@ public class DefaultScriptSourceTest {
     public void testGetNewScripts() {
         alreadyExecutedScripts.set(5, new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
-        List<Script> scripts = scriptSource.getNewScripts(new Version("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
+        List<Script> scripts = scriptSource.getNewScripts(new ScriptIndexes("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
 
         assertEquals("1_scripts/scriptD.sql", scripts.get(0).getFileName());                   // 1.x 		was added
         assertEquals("2_scripts/subfolder/scriptH.sql", scripts.get(1).getFileName());      // 2.x.x	was changed
@@ -149,7 +149,7 @@ public class DefaultScriptSourceTest {
 
     @Test
     public void testIsExistingScriptsModfied_noModifications() {
-        assertFalse(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertFalse(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
 
 
@@ -157,7 +157,7 @@ public class DefaultScriptSourceTest {
     public void testIsExistingScriptsModfied_modifiedScript() {
         alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
-        assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
 
 
@@ -165,7 +165,7 @@ public class DefaultScriptSourceTest {
     public void testIsExistingScriptsModfied_scriptAdded() {
         alreadyExecutedScripts.remove(1);
 
-        assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
 
 
@@ -173,7 +173,7 @@ public class DefaultScriptSourceTest {
     public void testIsExistingScriptsModfied_scriptRemoved() {
         alreadyExecutedScripts.add(new ExecutedScript(new Script("1_scripts/003_scriptB.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
-        assertTrue(scriptSource.isIncrementalScriptModified(new Version("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
 
 
@@ -181,7 +181,7 @@ public class DefaultScriptSourceTest {
     public void testIsExistingScriptsModfied_newScript() {
         alreadyExecutedScripts.remove(1);
 
-        assertFalse(scriptSource.isIncrementalScriptModified(new Version("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertFalse(scriptSource.isIncrementalScriptModified(new ScriptIndexes("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
 
 
@@ -189,8 +189,8 @@ public class DefaultScriptSourceTest {
     public void testIsExistingScriptsModfied_higherIndexScriptModified() {
         alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing"), executionDate, true));
 
-        assertFalse(scriptSource.isIncrementalScriptModified(new Version("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-        assertTrue(scriptSource.isIncrementalScriptModified(new Version("1.2"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertFalse(scriptSource.isIncrementalScriptModified(new ScriptIndexes("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
+        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("1.2"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
     }
 
 
@@ -199,7 +199,7 @@ public class DefaultScriptSourceTest {
      */
     @Test
     public void testIsExistingScriptsModfied_noLowerIndex() {
-        boolean result = scriptSource.isIncrementalScriptModified(new Version("0"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
+        boolean result = scriptSource.isIncrementalScriptModified(new ScriptIndexes("0"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
         assertFalse(result);
     }
 

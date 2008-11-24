@@ -19,7 +19,8 @@ import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringUtils.*;
 
 import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.version.Version;
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.version.ScriptIndexes;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,8 +38,8 @@ public class Script implements Comparable<Script> {
     /* The name of the script */
     private String fileName;
 
-    /* The version of the script */
-    private Version version;
+    /* The script indexes */
+    private ScriptIndexes scriptIndexes;
 
     /* The logical name of the target database for this script (extracted from the filename) */
     private String targetDatabaseName;
@@ -118,7 +119,7 @@ public class Script implements Comparable<Script> {
     private Script(String fileName, Long fileLastModifiedAt, Set<String> patchQualifiers, String targetDatabasePrefix, String qualifierPrefix,
             String postProcessingScriptDirName) {
         this.fileName = fileName;
-        this.version = createVersion(fileName);
+        this.scriptIndexes = createScriptIndexes(fileName);
         List<String> allTokens = getTokensFromPath(CollectionUtils.asSet(qualifierPrefix, targetDatabasePrefix));
         this.targetDatabaseName = getTargetDatabaseName(allTokens, targetDatabasePrefix);
         this.qualifiers = selectQualifiersFromTokens(allTokens, qualifierPrefix);
@@ -139,8 +140,8 @@ public class Script implements Comparable<Script> {
     /**
      * @return The version, not null
      */
-    public Version getVersion() {
-        return version;
+    public ScriptIndexes getVersion() {
+        return scriptIndexes;
     }
 
 
@@ -217,7 +218,12 @@ public class Script implements Comparable<Script> {
      *         or an error must be reported.
      */
     public boolean isIncremental() {
-        return version.getScriptIndex() != null;
+        return scriptIndexes.isIncrementalScript();
+    }
+    
+    
+    public boolean isRepeatable() {
+        return scriptIndexes.isRepeatableScript();
     }
 
 
@@ -230,9 +236,9 @@ public class Script implements Comparable<Script> {
 
 
     /**
-     * @return True if this script is a fix script
+     * @return True if this script is a patch script
      */
-    public boolean isFixScript() {
+    public boolean isPatchScript() {
         return patchScript;
     }
 
@@ -245,7 +251,7 @@ public class Script implements Comparable<Script> {
      * @return -1 when this script has a smaller version, 0 if equal, 1 when larger
      */
     public int compareTo(Script script) {
-        return version.compareTo(script.getVersion());
+        return scriptIndexes.compareTo(script.getVersion());
     }
 
 
@@ -255,13 +261,17 @@ public class Script implements Comparable<Script> {
      * @param fileName        The name op the script file relative to the script root, not null
      * @return The version of the script file, not null
      */
-    protected Version createVersion(String fileName) {
+    protected ScriptIndexes createScriptIndexes(String fileName) {
         String[] pathParts = StringUtils.split(fileName, '/');
         List<Long> versionIndexes = new ArrayList<Long>();
         for (String pathPart : pathParts) {
             versionIndexes.add(extractIndex(pathPart));
         }
-        return new Version(versionIndexes);
+        try {
+            return new ScriptIndexes(versionIndexes);
+        } catch (DbMaintainException e) {
+            throw new DbMaintainException("Error in script " + fileName + ": " + e.getMessage(), e);
+        }
     }
     
     

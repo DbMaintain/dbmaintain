@@ -27,7 +27,7 @@ import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.version.ExecutedScriptInfoSource;
-import org.dbmaintain.version.Version;
+import org.dbmaintain.version.ScriptIndexes;
 
 import java.util.Date;
 import java.util.List;
@@ -149,7 +149,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         boolean fromScratchUpdateRecommended = executedScriptInfoSource.isFromScratchUpdateRecommended();
         
         Set<ExecutedScript> alreadyExecutedScripts = executedScriptInfoSource.getExecutedScripts();
-        Version highestExecutedScriptVersion = getHighestExecutedScriptVersion(alreadyExecutedScripts);
+        ScriptIndexes highestExecutedScriptVersion = getHighestExecutedScriptVersion(alreadyExecutedScripts);
 
         // check whether an incremental update can be performed
         if (!(fromScratchUpdateRecommended && fromScratchEnabled) && !shouldUpdateDatabaseFromScratch(highestExecutedScriptVersion, alreadyExecutedScripts)) {
@@ -171,8 +171,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     //todo javadoc
-    protected Version getHighestExecutedScriptVersion(Set<ExecutedScript> executedScripts) {
-        Version highest = new Version("0");
+    protected ScriptIndexes getHighestExecutedScriptVersion(Set<ExecutedScript> executedScripts) {
+        ScriptIndexes highest = new ScriptIndexes("0");
         for (ExecutedScript executedScript : executedScripts) {
         	Script script = executedScript.getScript();
             if (script.isIncremental() && script.getVersion().compareTo(highest) > 0) {
@@ -315,7 +315,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param alreadyExecutedScripts The current set of executed scripts, not null
      * @return True if a from scratch rebuild is needed, false otherwise
      */
-    protected boolean shouldUpdateDatabaseFromScratch(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
+    protected boolean shouldUpdateDatabaseFromScratch(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
         // check whether the last run was successful
         /*if (errorInIndexedScriptDuringLastUpdate(alreadyExecutedScripts)) {
         	if (fromScratchEnabled) {

@@ -32,17 +32,19 @@ import java.util.Set;
 
 
 /**
- * todo javadoc
+ * Script container that looks for scripts in a file system directory and its subdirectories. The 
+ * scripts directory can optionally contain config file {@link #LOCATION_PROPERTIES_FILENAME}, that
+ * defines all properties that are applicable to the script organization.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class FileSystemScriptContainer extends BaseScriptContainer {
 
+    /**
+     * The root directory where scripts are located
+     */
     protected File scriptLocation;
-
-    protected Set<String> scriptFileExtensions;
-
 
     /**
      * Constructor for FileScriptContainer.

@@ -22,7 +22,7 @@ import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.version.Version;
+import org.dbmaintain.version.ScriptIndexes;
 
 import java.util.*;
 
@@ -127,7 +127,7 @@ public class DefaultScriptSource implements ScriptSource {
      * @param currentVersion The start version, not null
      * @return The scripts that have a higher index of timestamp than the start version, not null.
      */
-    public List<Script> getNewScripts(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
+    public List<Script> getNewScripts(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
         Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
 
         List<Script> result = new ArrayList<Script>();
@@ -166,7 +166,7 @@ public class DefaultScriptSource implements ScriptSource {
      * @param currentVersion The current database version, not null
      * @return True if an existing script has been modified, false otherwise
      */
-    public boolean isIncrementalScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
+    public boolean isIncrementalScriptModified(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
         Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
         List<Script> incrementalScripts = getIncrementalScripts();
         // Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
@@ -182,7 +182,7 @@ public class DefaultScriptSource implements ScriptSource {
             if (indexedScript.getVersion().compareTo(currentVersion) <= 0) {
                 Script alreadyExecutedScript = alreadyExecutedScriptMap.get(indexedScript.getFileName());
                 if (alreadyExecutedScript == null) {
-                    if (indexedScript.isFixScript()) {
+                    if (indexedScript.isPatchScript()) {
                         if (!fixScriptOutOfSequenceExecutionAllowed) {
                             logger.warn("Found a new hoftix script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
                             return true;

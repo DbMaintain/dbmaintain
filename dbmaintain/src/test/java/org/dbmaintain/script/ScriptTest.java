@@ -16,7 +16,9 @@
 package org.dbmaintain.script;
 
 import static junit.framework.Assert.*;
-import org.dbmaintain.version.Version;
+
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.version.ScriptIndexes;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,15 +31,31 @@ import java.util.Collections;
  * @author Tim Ducheyne
  */
 public class ScriptTest {
-
+    
+    @Test
+    public void testIsIncremental_incremental() {
+        Script script = createScript("incremental/02_sprint1/01_incrementalScript.sql");
+        assertTrue(script.isIncremental());
+    }
+    
+    @Test
+    public void testIsIncremental_repeatable() {
+        Script script = createScript("repeatable/repeatableScript.sql");
+        assertFalse(script.isIncremental());
+    }
+    
+    @Test(expected = DbMaintainException.class)
+    public void testIsIncremental_mixed() {
+        createScript("incremental/02_script1/repeatableScript.sql");
+    }
 
     /**
      * Tests for a script name with a 'fix' in the name.
      */
     @Test
-    public void testIsFixScript_caseIgnored() {
-        Script script = new Script("01_scripts/incremental/02_sprint2/03_#patch_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
-        assertTrue(script.isFixScript());
+    public void testIsPatchScript_caseIgnored() {
+        Script script = createScript("incremental/02_sprint2/03_#patch_addUser.sql");
+        assertTrue(script.isPatchScript());
     }
 
 
@@ -45,9 +63,9 @@ public class ScriptTest {
      * Tests for a script name with a 'fix' in the folder name.
      */
     @Test
-    public void testIsFixScript_fixInFolderName() {
-        Script script = new Script("01_scripts/incremental/02_#patch_sprint2/03_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
-        assertTrue(script.isFixScript());
+    public void testIsPatchScript_patchInFolderName() {
+        Script script = createScript("incremental/02_#patch_sprint2/03_addUser.sql");
+        assertTrue(script.isPatchScript());
     }
 
 
@@ -55,64 +73,63 @@ public class ScriptTest {
      * Tests for a script name with a 'fix' in the name but no index.
      */
     @Test
-    public void testIsFixScript_fixWithoutIndex() {
-        Script script = new Script("01_scripts/#patch_incremental/02_sprint2/03_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
-        assertTrue(script.isFixScript());
+    public void testIsPatchScript_patchWithoutIndex() {
+        Script script = createScript("#patch_incremental/02_sprint2/03_addUser.sql");
+        assertTrue(script.isPatchScript());
     }
 
 
     /**
-     * Tests for a script name with no 'fix' in the name.
+     * Tests for a script name with no 'patch' in the name.
      */
     @Test
-    public void testIsFixScript_noFix() {
-        Script script = new Script("01_scripts/incremental/02_sprint2/03_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
-        assertFalse(script.isFixScript());
+    public void testIsPatchScript_noPatch() {
+        Script script = createScript("incremental/02_sprint2/03_addUser.sql");
+        assertFalse(script.isPatchScript());
     }
 
 
     /**
-     * The fix indicator should be case-insensitive.
+     * The patch indicator should be case-insensitive.
      */
     @Test
-    public void testIsFixScript_caseInsensitive() {
-        Script script = new Script("01_scripts/incremental/02_sprint2/03_#PaTcH_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
-        assertTrue(script.isFixScript());
+    public void testIsPatchScript_caseInsensitive() {
+        Script script = createScript("incremental/02_sprint2/03_#PaTcH_addUser.sql");
+        assertTrue(script.isPatchScript());
     }
 
 
     @Test
     public void testNoTargetDatabase() {
-        Script script = new Script("01_scripts/incremental/02_sprint2/03_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script script = createScript("incremental/02_sprint2/03_addUser.sql");
         assertNull(script.getTargetDatabaseName());
-        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
     }
 
 
     @Test
     public void testTargetDatabaseNameInFileName() {
-        Script script = new Script("01_scripts/incremental/02_sprint2/03_@otherdb_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script script = createScript("incremental/02_sprint2/03_@otherdb_addUser.sql");
         assertEquals("otherdb", script.getTargetDatabaseName());
-        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
     }
 
 
     @Test
     public void testGetTargetDatabaseName_inDirName() {
-        Script script = new Script("01_scripts/incremental/02_@otherdb_sprint2/03_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script script = createScript("incremental/02_@otherdb_sprint2/03_addUser.sql");
         assertEquals("otherdb", script.getTargetDatabaseName());
-        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
     }
 
 
     @Test
     public void testGetTargetDatabaseName_inDirAndFileName() {
-        Script script = new Script("01_scripts/incremental/02_@otherdb_sprint2/03_@thisdb_addUser.sql", 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script script = createScript("incremental/02_@otherdb_sprint2/03_@thisdb_addUser.sql");
         assertEquals("thisdb", script.getTargetDatabaseName());
-        assertEquals(new Version(Arrays.asList(1L, null, 2L, 3L)), script.getVersion());
+        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
     }
-
-
+    
     @Test
     public void testIsScriptContentEqualTo() {
         Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
@@ -132,6 +149,11 @@ public class ScriptTest {
         Script scriptWithDifferentChecksumAndModificationDate = new Script("fileName", 1L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
         assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, true));
         assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, false));
+    }
+    
+    private Script createScript(String fileName) {
+        Script script = new Script(fileName, 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        return script;
     }
 
 }

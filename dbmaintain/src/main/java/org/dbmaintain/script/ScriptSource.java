@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.version.Version;
+import org.dbmaintain.version.ScriptIndexes;
 
 import java.util.List;
 import java.util.Set;
@@ -48,7 +48,7 @@ public interface ScriptSource {
      * @param alreadyExecutedScripts The scripts which were already executed on the database
      * @return The new scripts.
      */
-    List<Script> getNewScripts(Version highestExecutedScriptVersion, Set<ExecutedScript> alreadyExecutedScripts);
+    List<Script> getNewScripts(ScriptIndexes highestExecutedScriptVersion, Set<ExecutedScript> alreadyExecutedScripts);
 
 
     /**
@@ -59,7 +59,7 @@ public interface ScriptSource {
      * @param alreadyExecutedScripts 
      * @return True if an existing script has been modified, false otherwise
      */
-    boolean isIncrementalScriptModified(Version currentVersion, Set<ExecutedScript> alreadyExecutedScripts);
+    boolean isIncrementalScriptModified(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts);
 
 
     /**
