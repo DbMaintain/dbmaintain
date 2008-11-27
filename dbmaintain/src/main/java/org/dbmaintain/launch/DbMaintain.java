@@ -53,7 +53,7 @@ public class DbMaintain {
      * 
      * @param jarFileName The name of the jar file to create
      */
-    public void createDbJar(String jarFileName) {
+    public void createJar(String jarFileName) {
         ScriptSource scriptSource = dbMaintainConfigurer.createScriptSource();
         List<Script> allScripts = scriptSource.getAllUpdateScripts();
         allScripts.addAll(scriptSource.getPostProcessingScripts());
@@ -75,11 +75,12 @@ public class DbMaintain {
      * Marks the database as up-to-date, without executing any script. You can use this operation to prepare 
      * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
      */
-    public void markDatabaseAsUptodate() {
+    public void markDatabaseAsUpToDate() {
         DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-        dbMaintainer.markDatabaseAsUptodate();
+        dbMaintainer.markDatabaseAsUpToDate();
     }
 
+    
     /**
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
@@ -90,6 +91,7 @@ public class DbMaintain {
         executedScriptInfoSource.clearAllExecutedScripts();
     }
 
+    
     /**
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
@@ -98,6 +100,7 @@ public class DbMaintain {
         dbCleaner.cleanDatabase();
     }
 
+    
     /**
      * Disables or drops all foreign key and not null constraints.
      */
@@ -106,6 +109,7 @@ public class DbMaintain {
         constraintsDisabler.disableConstraints();
     }
 
+    
     /**
      * Updates all sequences and identity columns to a minimum value.
      */

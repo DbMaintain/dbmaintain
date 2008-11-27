@@ -3,20 +3,19 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.apache.tools.ant.Task;
-import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
-
-import javax.sql.DataSource;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import org.apache.tools.ant.BuildException;
+import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.SQLHandler;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import org.dbmaintain.launch.DbMaintain;
 
 
 /**
@@ -25,49 +24,38 @@ import java.util.Properties;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-abstract public class BaseDatabaseTask extends Task {
+abstract public class BaseDatabaseTask extends BaseTask {
 
     protected DbSupport defaultDbSupport;
     protected Map<String, DbSupport> nameDbSupportMap;
     protected List<Database> databases = new ArrayList<Database>();
 
-    /**
-     * Create an instance of {@link DbSupport} that will act as a gateway to the database with the
-     * given configuration.
-     * 
-     * @param database The configuration of the database
-     * @return The {@link DbSupport} instance for the database with the given configuration
-     */
-    protected DbSupport createDbSupport(Database database) {
-        DataSource dataSource = getDbMaintainConfigurer().createDataSource(database.getDriverClassName(), 
-                database.getUrl(), database.getUserName(), database.getPassword());
     
-        return getDbMaintainConfigurer().createDbSupport(database.getName(), database.getDialect(), dataSource, 
-                database.getDefaultSchemaName(), database.getSchemaNames());
+    @Override
+    public void execute() throws BuildException {
+        try {
+            initDbSupports();
+            performTask(getDbMaintain());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BuildException(e);
+        }
     }
 
+    abstract protected void performTask(DbMaintain dbMaintain);
+
     /**
-     * @return The {@link PropertiesDbMaintainConfigurer} that can create instances of DbMaintain services
-     * using the configuration defined by this task.
+     * @return The {@link PropertiesDbMaintainConfigurer} for this task
      */
+    @Override
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        return new PropertiesDbMaintainConfigurer(getDefaultConfiguration(), getSQLHandler());
+        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
+                getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
+        return dbMaintainConfigurer;
     }
-
-    /**
-     * @return The {@link SQLHandler} that handles all database statements
-     */
-    protected SQLHandler getSQLHandler() {
-        return new DefaultSQLHandler();
-    }
-
-    /**
-     * @return Properties object that defines the default values for all properties
-     */
-    protected Properties getDefaultConfiguration() {
-        return new DbMaintainConfigurationLoader().loadDefaultConfiguration();
-    }
-
+    
+    
     /**
      * Initializes the {@link DbSupport} objects that will act as gateway to all databases
      */
@@ -86,6 +74,40 @@ abstract public class BaseDatabaseTask extends Task {
             }
         }
     }
+    
+    
+    /**
+     * Create an instance of {@link DbSupport} that will act as a gateway to the database with the
+     * given configuration.
+     * 
+     * @param database The configuration of the database
+     * @return The {@link DbSupport} instance for the database with the given configuration
+     */
+    protected DbSupport createDbSupport(Database database) {
+        DataSource dataSource = getDefaultDbMaintainConfigurer().createDataSource(database.getDriverClassName(), 
+                database.getUrl(), database.getUserName(), database.getPassword());
+    
+        return getDefaultDbMaintainConfigurer().createDbSupport(database.getName(), database.getDialect(), dataSource, 
+                database.getDefaultSchemaName(), database.getSchemaNames());
+    }
+
+
+    /**
+     * @return The {@link SQLHandler} that handles all database statements
+     */
+    protected SQLHandler getSQLHandler() {
+        return new DefaultSQLHandler();
+    }
+    
+    
+    /**
+     * @return The {@link PropertiesDbMaintainConfigurer} that can create instances of DbMaintain services
+     * using the configuration defined by this task.
+     */
+    private PropertiesDbMaintainConfigurer getDefaultDbMaintainConfigurer() {
+        return new PropertiesDbMaintainConfigurer(getDefaultConfiguration(), getSQLHandler());
+    }
+    
 
     /**
      * Registers a target database on which a task (e.g. update) can be executed.
@@ -96,8 +118,7 @@ abstract public class BaseDatabaseTask extends Task {
         if (databases == null) {
             databases = new ArrayList<Database>();
         }
-    	databases.add(database);
+        databases.add(database);
     }
 
-    
 }

@@ -1,6 +1,9 @@
 <antlib>
+    <taskdef name="createJar" classname="org.dbmaintain.launch.ant.CreateJarTask"/>
     <taskdef name="updateDatabase" classname="org.dbmaintain.launch.ant.UpdateDatabaseTask"/>
     <taskdef name="markDatabaseAsUpToDate" classname="org.dbmaintain.launch.ant.MarkDatabaseAsUpToDateTask"/>
-    <taskdef name="createScriptJar" classname="org.dbmaintain.launch.ant.CreateScriptJarTask"/>
     <taskdef name="clearDatabase" classname="org.dbmaintain.launch.ant.ClearDatabaseTask"/>
+    <taskdef name="cleanDatabase" classname="org.dbmaintain.launch.ant.CleanDatabaseTask"/>
+    <taskdef name="disableConstraints" classname="org.dbmaintain.launch.ant.DisableConstraintsTask"/>
+    <taskdef name="updateSequences" classname="org.dbmaintain.launch.ant.UpdateSequencesTask"/>
 </antlib>

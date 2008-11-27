@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain;
+package org.dbmaintain.launch.ant;
+
+import org.dbmaintain.launch.DbMaintain;
 
 /**
- * todo javadoc
- *
+ * Task that disables or drops all foreign key and not null constraints.
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DbMaintainer {
+public class DisableConstraintsTask extends BaseDatabaseTask {
 
-    void updateDatabase();
-
-    void markDatabaseAsUpToDate();
-
-    void clearDatabase();
+    protected void performTask(DbMaintain dbMaintain) {
+        dbMaintain.disableConstraints();
+    }
 
 }

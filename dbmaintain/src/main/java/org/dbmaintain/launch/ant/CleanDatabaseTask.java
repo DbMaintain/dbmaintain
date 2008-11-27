@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain;
+package org.dbmaintain.launch.ant;
+
+import org.dbmaintain.launch.DbMaintain;
 
 /**
- * todo javadoc
- *
+ * Task that removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DbMaintainer {
+public class CleanDatabaseTask extends BaseDatabaseTask {
 
-    void updateDatabase();
 
-    void markDatabaseAsUpToDate();
-
-    void clearDatabase();
+    protected void performTask(DbMaintain dbMaintain) {
+        dbMaintain.cleanDatabase();
+    }
 
 }

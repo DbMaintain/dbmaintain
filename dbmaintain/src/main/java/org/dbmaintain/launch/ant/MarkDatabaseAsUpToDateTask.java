@@ -17,43 +17,32 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.apache.tools.ant.BuildException;
-import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 
 import java.util.Properties;
 
+import org.dbmaintain.config.DbMaintainProperties;
+import org.dbmaintain.launch.DbMaintain;
+
 /**
+ * Task that arks the database as up-to-date, without executing any script. You can use this operation to prepare 
+ * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
-    private String scriptLocations;
-    private String extensions;
-    private Boolean autoCreateExecutedScriptsTable;
+    String scriptLocations;
+    String extensions;
+    Boolean autoCreateExecutedScriptsTable;
     
-    @Override
-    public void execute() throws BuildException {
-        try {
-            initDbSupports();
-            PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
-                    getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
-            DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-            dbMaintainer.markDatabaseAsUptodate();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BuildException(e);
-        }
+    protected void performTask(DbMaintain dbMaintain) {
+        dbMaintain.markDatabaseAsUpToDate();
     }
 
-    /**
-     * @return
-     */
-    protected Properties getConfiguration() {
-        Properties configuration = getDefaultConfiguration();
+
+    @Override
+    protected void addTaskConfiguration(Properties configuration) {
         if (scriptLocations != null) {
             configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
         }
@@ -63,9 +52,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         if (autoCreateExecutedScriptsTable != null) {
             configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
         }
-        
-        return configuration;
     }
+
 
     public void setScriptLocations(String scriptLocations) {
         this.scriptLocations = scriptLocations;

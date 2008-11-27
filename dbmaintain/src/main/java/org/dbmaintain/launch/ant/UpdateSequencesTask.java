@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain;
+package org.dbmaintain.launch.ant;
+
+import org.dbmaintain.launch.DbMaintain;
 
 /**
- * todo javadoc
- *
+ * Task that updates all sequences and identity columns to a minimum value.
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DbMaintainer {
+public class UpdateSequencesTask extends BaseDatabaseTask {
 
-    void updateDatabase();
-
-    void markDatabaseAsUpToDate();
-
-    void clearDatabase();
+    protected void performTask(DbMaintain dbMaintain) {
+        dbMaintain.updateSequences();
+    }
 
 }

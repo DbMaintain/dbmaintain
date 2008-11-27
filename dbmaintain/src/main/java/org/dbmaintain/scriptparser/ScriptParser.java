@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain;
+package org.dbmaintain.scriptparser;
+
 
 /**
- * todo javadoc
+ * An interface for a parser that can parse statements out of a script.
  *
- * @author Filip Neven
  * @author Tim Ducheyne
+ * @author Filip Neven
  */
-public interface DbMaintainer {
+public interface ScriptParser {
 
-    void updateDatabase();
 
-    void markDatabaseAsUpToDate();
-
-    void clearDatabase();
+    /**
+     * Gets the next statement out of the given script stream.
+     *
+     * @return the statements, null if no more statements
+     */
+    String getNextStatement();
 
 }

@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain;
+package org.dbmaintain.scriptparser;
+
+import java.io.Reader;
+
+
 
 /**
- * todo javadoc
- *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DbMaintainer {
+public interface ScriptParserFactory {
 
-    void updateDatabase();
-
-    void markDatabaseAsUpToDate();
-
-    void clearDatabase();
+    public ScriptParser createScriptParser(String databaseDialect, Reader scriptContentReader);
 
 }

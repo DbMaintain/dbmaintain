@@ -38,7 +38,7 @@ public class DbMaintainUtils {
 
 
     public static void markDatabaseAsUptodate() {
-        getDbMaintainer().markDatabaseAsUptodate();
+        getDbMaintainer().markDatabaseAsUpToDate();
     }
 
 

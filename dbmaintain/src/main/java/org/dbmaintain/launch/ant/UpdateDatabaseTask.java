@@ -17,15 +17,13 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.apache.tools.ant.BuildException;
-import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-
 import java.util.Properties;
 
+import org.dbmaintain.config.DbMaintainProperties;
+import org.dbmaintain.launch.DbMaintain;
+
 /**
- * Defines the ant task <i>updateDatabase</i> that can be used to bring a database to the latest version.
+ * Task that updates the database to the latest version.
  * 
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -41,30 +39,13 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     private Boolean disableConstraints;
     private Boolean updateSequences;
     
-    /**
-     * Brings the database to the latest version.
-     */
-    @Override
-    public void execute() throws BuildException {
-
-    	try {
-            initDbSupports();
-            PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
-                    getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
-            DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-			dbMaintainer.updateDatabase();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BuildException(e);
-		}
+    protected void performTask(DbMaintain dbMaintain) {
+        dbMaintain.updateDatabase();
     }
 
-    /**
-     * @return The configuration to be used to configure the {@link DbMaintainer}
-     */
-    protected Properties getConfiguration() {
-        Properties configuration = getDefaultConfiguration();
+    
+    @Override
+    protected void addTaskConfiguration(Properties configuration) {
         if (scriptLocations != null) {
             configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
         }
@@ -89,7 +70,6 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         if (updateSequences != null) {
             configuration.put(DbMaintainProperties.PROPKEY_UPDATE_SEQUENCES_ENABLED, updateSequences);
         }
-        return configuration;
     }
 
     /**

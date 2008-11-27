@@ -39,8 +39,8 @@ public class DbMaintainOperations {
      * 
      * @param jarFileName The name of the jar file to create
      */
-    public void createDbJar(String jarFileName) {
-        getDbMaintain().createDbJar(jarFileName);
+    public void createJar(String jarFileName) {
+        getDbMaintain().createJar(jarFileName);
     }
 
     
@@ -57,9 +57,10 @@ public class DbMaintainOperations {
      * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
      */
     public void markDatabaseAsUptodate() {
-        getDbMaintain().markDatabaseAsUptodate();
+        getDbMaintain().markDatabaseAsUpToDate();
     }
 
+    
     /**
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
@@ -67,6 +68,7 @@ public class DbMaintainOperations {
         getDbMaintain().clearDatabase();
     }
 
+    
     /**
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
@@ -74,6 +76,7 @@ public class DbMaintainOperations {
         getDbMaintain().cleanDatabase();
     }
 
+    
     /**
      * Disables or drops all foreign key and not null constraints.
      */
@@ -81,6 +84,7 @@ public class DbMaintainOperations {
         getDbMaintain().disableConstraints();
     }
 
+    
     /**
      * Updates all sequences and identity columns to a minimum value.
      */

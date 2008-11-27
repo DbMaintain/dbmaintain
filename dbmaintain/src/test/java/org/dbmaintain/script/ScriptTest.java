@@ -41,7 +41,7 @@ public class ScriptTest {
     @Test
     public void testIsIncremental_repeatable() {
         Script script = createScript("repeatable/repeatableScript.sql");
-        assertFalse(script.isIncremental());
+        assertTrue(script.isRepeatable());
     }
     
     /**

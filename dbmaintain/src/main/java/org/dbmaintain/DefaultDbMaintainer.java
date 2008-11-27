@@ -184,7 +184,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     //todo javadoc
-    public void markDatabaseAsUptodate() {
+    public void markDatabaseAsUpToDate() {
         executedScriptInfoSource.clearAllExecutedScripts();
 
         List<Script> allScripts = scriptSource.getAllUpdateScripts();

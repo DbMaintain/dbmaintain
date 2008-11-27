@@ -17,28 +17,17 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.apache.tools.ant.BuildException;
-import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import org.dbmaintain.launch.DbMaintain;
 
 /**
+ * Task that removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
+ * 
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class ClearDatabaseTask extends BaseDatabaseTask {
 
-    @Override
-    public void execute() throws BuildException {
-        try {
-            initDbSupports();
-            PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
-                    getDefaultConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
-            DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-            dbMaintainer.clearDatabase();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BuildException(e);
-        }
+    protected void performTask(DbMaintain dbMaintain) {
+        dbMaintain.clearDatabase();
     }
 }

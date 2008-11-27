@@ -35,14 +35,17 @@ import org.dbmaintain.util.FileUtils;
  */
 public class CommandLine {
 
+    public static final String DBMAINTAIN_PROPERTIES = "dbmaintain.properties";
+
+
     /**
      * Enum that defines all DbMaintain operations that can be invoked using this class.  
      */
     public enum DbMaintainOperation {
         
-        CREATE_DB_JAR("createJar"), 
+        CREATE_JAR("createJar"), 
         UPDATE_DATABASE("update"), 
-        MARK_DATABASE_AS_UPTODATE("markAsUptodate"), 
+        MARK_DATABASE_AS_UPTODATE("markAsUpToDate"), 
         CLEAR_DATABASE("clear"), 
         CLEAN_DATABASE("clean"),
         DISABLE_CONSTRAINTS("disableConstraints"), 
@@ -138,7 +141,7 @@ public class CommandLine {
      * @return The configuration as a <code>Properties</code> file
      */
     private static Properties loadConfiguration(CommandLineArguments commandLineArguments) {
-        String configFile = commandLineArguments.getConfigFile() == null ? "dbmaintain.properties" : commandLineArguments.getConfigFile();
+        String configFile = commandLineArguments.getConfigFile() == null ? DBMAINTAIN_PROPERTIES : commandLineArguments.getConfigFile();
         URL propertiesAsURL = getPropertiesAsURL(configFile);
         if (propertiesAsURL == null) {
             System.err.println("Could not find config file" + configFile);
@@ -153,17 +156,18 @@ public class CommandLine {
      * 
      * @param operation The operation that must be executed
      * @param configuration The dbMaintain configuration
+     * @param commandLineArguments The command line arguments
      * @param args The command line arguments
      */
     public static void executeOperation(DbMaintainOperation operation, Properties configuration, CommandLineArguments commandLineArguments) {
         switch (operation) {
-        case CREATE_DB_JAR:
+        case CREATE_JAR:
             if (commandLineArguments.getExtraArgument() == null) {
                 System.err.println("Jar file name must be specified as extra argument");
                 System.exit(1);
             }
             String jarFileName = commandLineArguments.getExtraArgument();
-            getDbMaintain(configuration).createDbJar(jarFileName);
+            getDbMaintain(configuration).createJar(jarFileName);
             break;
         case UPDATE_DATABASE:
             if (commandLineArguments.getExtraArgument() != null) {
@@ -175,7 +179,7 @@ public class CommandLine {
             if (commandLineArguments.getExtraArgument() != null) {
                 configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getExtraArgument());
             }
-            getDbMaintain(configuration).markDatabaseAsUptodate();
+            getDbMaintain(configuration).markDatabaseAsUpToDate();
             break;
         case CLEAR_DATABASE:
             getDbMaintain(configuration).clearDatabase();
@@ -226,10 +230,15 @@ public class CommandLine {
         System.out.println();
         System.out.println("Usage:");
         System.out.println();
-        System.out.println("java org.dbmaintain.launch.DbMaintain operation propertiesFile [jarFile]");
+        System.out.println("java org.dbmaintain.launch.DbMaintain <operation> [jarFile/scriptFolder] [-config propertiesFile]");
+        System.out.println();
+        System.out.println("The -config argument is optional. If omitted, the file " + DBMAINTAIN_PROPERTIES + " is expected to be available in the execution directory.");
+        System.out.println("The jarFile/scriptFolder argument is also optional, and only applicable to the operations " + 
+                DbMaintainOperation.CREATE_JAR.getOperationName() + ", " + DbMaintainOperation.UPDATE_DATABASE.getOperationName() + " and " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
+        System.out.println();
         System.out.println("Available operations are:");
         System.out.println();
-        System.out.println("- " + DbMaintainOperation.CREATE_DB_JAR.getOperationName());
+        System.out.println("- " + DbMaintainOperation.CREATE_JAR.getOperationName());
         System.out.println("     Creates a jar file containing all scripts in all configured script locations.");
         System.out.println("     Expects an extra argument indicating the jar file name.");
         System.out.println();
