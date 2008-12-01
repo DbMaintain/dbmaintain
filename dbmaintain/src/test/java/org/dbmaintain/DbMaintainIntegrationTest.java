@@ -17,33 +17,29 @@ package org.dbmaintain;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
-import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.Writer;
-import java.util.Properties;
-import java.util.Set;
-
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
+import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.*;
+import java.util.Properties;
+import java.util.Set;
+
 /**
  * Integration test for the dbmaintainer: verifies the typical usage scenario's in an integrated way: The dbmaintainer is
- * setup using properties, a real database is used and scripts are created on the file system. 
+ * setup using properties, a real database is used and scripts are created on the file system.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -228,28 +224,74 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void errorInIncrementalScript() {
+    public void errorInIncrementalScript_dontKeepRetrying() {
+        enableFromScratch();
+        configuration.put(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "false");
+
         createInitialScripts();
         errorInInitialScript();
+        newIncrementalScript();
+
+        // execute the scripts
+        // the second script will have an error
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            // expected
+            assertMessageContains(e.getMessage(), "Error while performing database update");
         }
+        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+
+        // try again
+        // No script should have been executed, an exception should have been raised that the script that
+        // caused the error, was not changed.
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "previous run", "error", INITIAL_INCREMENTAL_2 + ".sql");
+            assertMessageContains(e.getMessage(), "During a previous database update");
         }
+        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+
+        // change the script and try again
+        // the database should have been recreated from scratch and all the tables should have been re-created
         fixErrorInInitialScript();
+        updateDatabase();
+        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+    }
+
+
+    @Test
+    public void errorInIncrementalScript_keepRetrying() {
+        enableFromScratch();
+        configuration.put(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "true");
+
+        createInitialScripts();
+        errorInInitialScript();
+        newIncrementalScript();
+
+        // execute the scripts
+        // the second script will have an error
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "existing", "modified"/*, INITIAL_INCREMENTAL_2 + ".sql"*/);
+            assertMessageContains(e.getMessage(), "Error while performing database update");
         }
-        enableFromScratch();
+        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+
+        // try again
+        // The database should have been recreated from scratch and the second script should have caused the
+        // same error
+        try {
+            updateDatabase();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "Error while performing database update");
+        }
+        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+
+        // change the script and try again
+        // the database should have been recreated from scratch and all the tables should have been re-created
+        fixErrorInInitialScript();
         updateDatabase();
-        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
+        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
     }
 
     @Test
@@ -271,7 +313,7 @@ public class DbMaintainIntegrationTest {
         updateDatabase();
         assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
     }
-    
+
     /**
      * Verifies that, if the dbmaintain_scripts table doesn't exist yet, and the autoCreateExecutedScriptsInfoTable property is set to true,
      * we start with a from scratch update
@@ -284,7 +326,7 @@ public class DbMaintainIntegrationTest {
         updateDatabase();
         assertTablesDontExist(BEFORE_INITIAL_TABLE);
     }
-    
+
     /**
      * Verifies that, if the dbmaintain_scripts table doesn't exist yet, and the autoCreateExecutedScriptsInfoTable property is set to true,
      * we start with a from scratch update
@@ -329,8 +371,8 @@ public class DbMaintainIntegrationTest {
     private void enableFromScratch() {
         configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, "true");
     }
-    
-    
+
+
     private void disableFromScratch() {
         configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, "false");
     }
@@ -388,7 +430,7 @@ public class DbMaintainIntegrationTest {
 
 
     private void clearTestDatabase() {
-        dropTestTables(dbSupport, "dbmaintain_scripts", INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE, NEW_INCREMENTAL_1, 
+        dropTestTables(dbSupport, "dbmaintain_scripts", INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE, NEW_INCREMENTAL_1,
                 NEW_INCREMENTAL_2, NEW_INCREMENTAL_3, NEW_REPEATABLE, UPDATED_REPEATABLE, UPDATED_INCREMENTAL_1, NEW_INCREMENTAL_LOWER_INDEX,
                 BEFORE_INITIAL_TABLE);
     }
@@ -427,8 +469,8 @@ public class DbMaintainIntegrationTest {
     /**
      * Creates a script for creating a table with the given name.
      *
+     * @param fileName  The name of the script file to create, not null
      * @param tableName The table to create, not null
-     * @return The script content
      */
     private void createNewScript(String fileName, String tableName) {
         createScript(fileName, "create table " + tableName + " (test varchar(10));");

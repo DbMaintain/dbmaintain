@@ -66,6 +66,11 @@ public interface DbMaintainProperties {
     public static final String PROPKEY_FROM_SCRATCH_ENABLED = "dbMaintainer.fromScratch.enabled";
 
     /**
+     * Property indicating if an retry of an update should only be performed when changes to script files were made
+     */
+    public static final String PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED = "dbMaintainer.keepRetryingAfterError.enabled";
+
+    /**
      * Property indicating if database code should be cleared before installing a new version of
      * the code or when updating the database from scratch
      */
@@ -199,10 +204,10 @@ public interface DbMaintainProperties {
     public static final String PROPKEY_SCRIPT_ENCODING = "dbMaintainer.script.encoding";
 
     public static final String PROPKEY_SCRIPT_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
-    
+
     public static final String PROPKEY_SCRIPT_QUALIFIER_PREFIX = "dbMaintainer.script.qualifier.prefix";
 
-    public static final String PROPKEY_BACKSLASH_ESCAPING_ENABLED = "org.dbmaintain.script.ScriptParser.backSlashEscapingEnabled";
+    public static final String PROPKEY_BACKSLASH_ESCAPING_ENABLED = "org.dbmaintain.scriptparser.ScriptParser.backSlashEscapingEnabled";
 
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 

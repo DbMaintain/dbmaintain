@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.ExecutedScript;
@@ -107,6 +108,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected boolean fromScratchEnabled;
 
     /**
+     * Indicates whether a from scratch update should be performed when the previous update failed,
+     * but none of the scripts were modified since that last update. If true a new update will be
+     * tried only when changes were made to the script files
+     */
+    protected boolean keepRetryingAfterError;
+
+    /**
      * Indicates if foreign key and not null constraints should removed after updating the database
      * structure
      */
@@ -126,13 +134,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     //todo javadoc
-    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptSource scriptSource, ExecutedScriptInfoSource executedScriptInfoSource,
-                               boolean fromScratchEnabled, boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled,
-                               DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
+    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptSource scriptSource, ExecutedScriptInfoSource executedScriptInfoSource, boolean fromScratchEnabled, boolean keepRetryingAfterError,
+                               boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
         this.scriptRunner = scriptRunner;
         this.scriptSource = scriptSource;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.fromScratchEnabled = fromScratchEnabled;
+        this.keepRetryingAfterError = keepRetryingAfterError;
         this.cleanDbEnabled = cleanDbEnabled;
         this.disableConstraintsEnabled = disableConstraintsEnabled;
         this.updateSequencesEnabled = updateSequencesEnabled;
@@ -143,30 +151,36 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-    //todo javadoc
+    /**
+     * Checks if the new scripts are available to update the version of the database. If yes, these
+     * scripts are executed and the version number is increased. If an existing script has been
+     * modified, the database is cleared and completely rebuilt from scratch. If an error occurs
+     * with one of the scripts, a {@link DbMaintainException} is thrown.
+     */
     public void updateDatabase() {
         // Check if the executed scripts info source recommends a from-scratch update
         boolean fromScratchUpdateRecommended = executedScriptInfoSource.isFromScratchUpdateRecommended();
-        
+
         Set<ExecutedScript> alreadyExecutedScripts = executedScriptInfoSource.getExecutedScripts();
         ScriptIndexes highestExecutedScriptVersion = getHighestExecutedScriptVersion(alreadyExecutedScripts);
 
-        // check whether an incremental update can be performed
-        if (!(fromScratchUpdateRecommended && fromScratchEnabled) && !shouldUpdateDatabaseFromScratch(highestExecutedScriptVersion, alreadyExecutedScripts)) {
-            // update database with new scripts
-            updateDatabase(scriptSource.getNewScripts(highestExecutedScriptVersion, alreadyExecutedScripts));
+        // check whether an from scratch update should be performed
+        boolean shouldUpdateFromScratch = shouldUpdateDatabaseFromScratch(highestExecutedScriptVersion, alreadyExecutedScripts);
+        if (fromScratchEnabled && (fromScratchUpdateRecommended || shouldUpdateFromScratch)) {
+            // From scratch needed, clear the database and retrieve scripts
+            // constraints are removed before clearing the database, to be sure there will be no
+            // conflicts when dropping tables
+            constraintsDisabler.disableConstraints();
+            dbClearer.clearDatabase();
+            // reset the database version
+            executedScriptInfoSource.clearAllExecutedScripts();
+            // update database with all scripts
+            updateDatabase(scriptSource.getAllUpdateScripts());
             return;
         }
 
-        // From scratch needed, clear the database and retrieve scripts
-        // constraints are removed before clearing the database, to be sure there will be no
-        // conflicts when dropping tables
-        constraintsDisabler.disableConstraints();
-        dbClearer.clearDatabase();
-        // reset the database version
-        executedScriptInfoSource.clearAllExecutedScripts();
-        // update database with all scripts
-        updateDatabase(scriptSource.getAllUpdateScripts());
+        // perform an incremental update
+        updateDatabase(scriptSource.getNewScripts(highestExecutedScriptVersion, alreadyExecutedScripts));
     }
 
 
@@ -174,9 +188,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected ScriptIndexes getHighestExecutedScriptVersion(Set<ExecutedScript> executedScripts) {
         ScriptIndexes highest = new ScriptIndexes("0");
         for (ExecutedScript executedScript : executedScripts) {
-        	Script script = executedScript.getScript();
+            Script script = executedScript.getScript();
             if (script.isIncremental() && script.getVersion().compareTo(highest) > 0) {
-            	highest = executedScript.getScript().getVersion();
+                highest = executedScript.getScript().getVersion();
             }
         }
         return highest;
@@ -302,50 +316,49 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     /**
-     * todo check javadoc
-     * <p/>
      * Checks whether the database should be updated from scratch or just incrementally. The
      * database needs to be rebuilt in following cases:
      * <ul>
      * <li>Some existing scripts were modified.</li>
      * <li>The last update of the database was unsuccessful.</li>
      * </ul>
+     * The database will only be rebuilt from scratch if from scratch is enabled. If the keep retrying is set to false,
+     * the database will only be rebuilt again after an unsuccessful build when a change is made to the script files.
+     * Otherwise it will not attempt to rebuild the database.
      *
      * @param currentVersion         The current database version, not null
-     * @param alreadyExecutedScripts The current set of executed scripts, not null
+     * @param alreadyExecutedScripts The scripts that were already applied on the database, not null
      * @return True if a from scratch rebuild is needed, false otherwise
      */
     protected boolean shouldUpdateDatabaseFromScratch(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
-        // check whether the last run was successful
-        /*if (errorInIndexedScriptDuringLastUpdate(alreadyExecutedScripts)) {
-        	if (fromScratchEnabled) {
-        		if (!keepRetryingAfterError) {
-                    logger.warn("During a previous database update, the execution of an incremental script failed! Since " + 
-                		PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED + " is set to false, the database will not be rebuilt " +
-        				"from scratch, unless the failed (or another) incremental script is modified.");
-                    return false;
-                }
-        		logger.info("During a previous database update, the execution of a incremental script failed! " +
-        				"Database will be cleared and rebuilt from scratch.");
-                return true;
-        	} else {
-                logger.warn("During a previous database update, the execution of an incremental script failed! " +
-        			"Since from scratch updates are disabled, you should fix the erroneous script, solve the problem " +
-        			"manually on the database, and then reset the database state by invoking resetDatabaseState()");
-                return false;
-        	}
-        }*/
-
-
         // check whether an existing script was updated
         if (scriptSource.isIncrementalScriptModified(currentVersion, alreadyExecutedScripts)) {
-            if (fromScratchEnabled) {
-                logger.info("One or more existing database update scripts have been modified. Database will be cleared and rebuilt from scratch.");
-                return true;
-
+            if (!fromScratchEnabled) {
+                throw new DbMaintainException("One or more existing incremental database update scripts have been modified, but updating from scratch is disabled. " +
+                        "You should either revert to the original version of the modified script and add an new incremental script that performs the desired " +
+                        "update, or perform the update manually on the database and then reset the database state by invoking resetDatabaseState()");
             }
-            throw new DbMaintainException("One or more existing incremental database update scripts have been modified, but updating from scratch is disabled. " +
-                    "You should revert to the original version of the modified script and add an new incremental script that performs the desired update");
+            logger.info("One or more existing database update scripts have been modified. Database will be cleared and rebuilt from scratch.");
+            return true;
+        }
+
+        // check whether the last run was successful
+        if (errorInIndexedScriptDuringLastUpdate(alreadyExecutedScripts)) {
+            if (fromScratchEnabled) {
+                if (!keepRetryingAfterError) {
+                    throw new DbMaintainException("During a previous database update, the execution of an incremental script failed! Since " +
+                            PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED + " is set to false, the database will not be rebuilt " +
+                            "from scratch, unless the failed (or another) incremental script is modified.");
+                }
+                logger.info("During a previous database update, the execution of a incremental script failed! " +
+                        "Database will be cleared and rebuilt from scratch.");
+                return true;
+            } else {
+                logger.warn("During a previous database update, the execution of an incremental script failed! " +
+                        "Since from scratch updates are disabled, you should fix the erroneous script, solve the problem " +
+                        "manually on the database, and then reset the database state by invoking resetDatabaseState()");
+                return false;
+            }
         }
 
         // from scratch is not needed
