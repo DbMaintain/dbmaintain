@@ -21,14 +21,15 @@ import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
-
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
-import org.dbmaintain.script.*;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptContainer;
+import org.dbmaintain.script.ScriptRunner;
+import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.script.impl.FileSystemScriptContainer;
 import org.dbmaintain.script.impl.JarScriptContainer;
 import org.dbmaintain.scriptparser.ScriptParser;
@@ -37,7 +38,9 @@ import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
-import org.dbmaintain.util.*;
+import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.ReflectionUtils;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
 import javax.sql.DataSource;
@@ -223,10 +226,10 @@ public class PropertiesDbMaintainConfigurer {
         String postProcessingScriptsDirname = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, int.class, String.class, String.class, 
+        return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, int.class, String.class, String.class,
                 int.class, String.class, int.class, String.class, DateFormat.class, DbSupport.class, SQLHandler.class, String.class, String.class,
                 Set.class, String.class},
-                
+
                 new Object[]{autoCreateVersionTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
                         versionColumnName, versionColumnSize, fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
                         executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, getDefaultDbSupport(),
