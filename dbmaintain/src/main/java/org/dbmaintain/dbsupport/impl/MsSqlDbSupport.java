@@ -22,7 +22,6 @@ import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -39,23 +38,24 @@ import java.util.Set;
  */
 public class MsSqlDbSupport extends DbSupport {
 
-    
+
     /**
      * Creates support for a MsSql database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public MsSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    public MsSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
+                          Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, "mssql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
-    
+
     /**
      * Returns the names of all tables in the database.
      *
@@ -69,8 +69,8 @@ public class MsSqlDbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -125,8 +125,8 @@ public class MsSqlDbSupport extends DbSupport {
 
     /**
      * Gets the names of all identity columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the identity columns of the table with the given name
      */
     @Override
@@ -136,11 +136,21 @@ public class MsSqlDbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema name, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
+    public void disableReferentialConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableReferentialConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select f.name from sys.foreign_keys f, sys.tables t, sys.schemas s where f.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
@@ -150,11 +160,21 @@ public class MsSqlDbSupport extends DbSupport {
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema name, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
+    public void disableValueConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableValueConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
         // disable all unique constraints
@@ -177,6 +197,7 @@ public class MsSqlDbSupport extends DbSupport {
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value. If
      * there is no identity specified on the given primary key, the method silently finishes without effect.
+     *
      * @param tableName          The table with the identity column, not null
      * @param identityColumnName The column, not null
      * @param identityValue      The new value
@@ -236,8 +257,9 @@ public class MsSqlDbSupport extends DbSupport {
      * Disables not-null constraints on the given table.
      * <p/>
      * For primary keys, row-guid, identity and computed columns not-null constrains cannot be disabled in MS-Sql.
-     * @param schemaName 
-     * @param tableName The table, not null
+     *
+     * @param schemaName
+     * @param tableName  The table, not null
      */
     protected void disableNotNullConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();

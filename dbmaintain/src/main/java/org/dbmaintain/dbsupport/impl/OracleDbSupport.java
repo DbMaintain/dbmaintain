@@ -18,16 +18,11 @@ package org.dbmaintain.dbsupport.impl;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
+import static org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Set;
 
 /**
@@ -41,36 +36,38 @@ public class OracleDbSupport extends DbSupport {
     /* The major version number of the Oracle database */
     private Integer oracleMajorVersionNumber;
 
-    
+
     /**
      * Creates support for a Oracle database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public OracleDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    public OracleDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
+                           Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         this(databaseName, "oracle", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
-    
-    
+
+
     /**
      * Creates support for a Oracle database.
-     * @param databaseName 
-     * @param dialect 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dialect
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    protected OracleDbSupport(String databaseName, String dialect, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    protected OracleDbSupport(String databaseName, String dialect, DataSource dataSource, String defaultSchemaName,
+                              Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, dialect, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
@@ -90,8 +87,8 @@ public class OracleDbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -170,6 +167,7 @@ public class OracleDbSupport extends DbSupport {
     /**
      * Removes the table with the given name from the database.
      * Note: the table name is surrounded with quotes, making it case-sensitive.
+     *
      * @param tableName The table to drop (case-sensitive), not null
      */
     @Override
@@ -181,6 +179,7 @@ public class OracleDbSupport extends DbSupport {
     /**
      * Removes the view with the given name from the database
      * Note: the view name is surrounded with quotes, making it case-sensitive.
+     *
      * @param viewName The view to drop (case-sensitive), not null
      */
     @Override
@@ -192,6 +191,7 @@ public class OracleDbSupport extends DbSupport {
     /**
      * Removes the materialized view with the given name from the database
      * Note: the view name is surrounded with quotes, making it case-sensitive.
+     *
      * @param materializedViewName The view to drop (case-sensitive), not null
      */
     @Override
@@ -205,6 +205,7 @@ public class OracleDbSupport extends DbSupport {
      * Note: the type name is surrounded with quotes, making it case-sensitive.
      * <p/>
      * Overriden to add the force option. This will make sure that super-types can also be dropped.
+     *
      * @param typeName The type to drop (case-sensitive), not null
      */
     @Override
@@ -214,41 +215,74 @@ public class OracleDbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
-        SQLHandler sqlHandler = getSQLHandler();
-        // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
-        Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE = 'R' and TABLE_NAME = '" + tableName + "' and OWNER = '" + schemaName + "' and CONSTRAINT_NAME not like 'BIN$%'", getDataSource());
-        for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName), getDataSource());
+    public void disableReferentialConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
+
+            // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
+            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE = 'R' and OWNER = '" + schemaName + "' and CONSTRAINT_NAME not like 'BIN$%' and STATUS <> 'DISABLED'");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                String constraintName = resultSet.getString("CONSTRAINT_NAME");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName));
+            }
+        } catch (Exception e) {
+            throw new DbMaintainException("Error while disabling referential constraints on schema " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
         }
     }
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
-        SQLHandler sqlHandler = getSQLHandler();
-        // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
-        Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE in ('U', 'C', 'V', 'O') and TABLE_NAME = '" + tableName + "' and OWNER = '" + schemaName + "' and CONSTRAINT_NAME not like 'BIN$%'", getDataSource());
-        for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName), getDataSource());
+    public void disableValueConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
+
+            // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
+            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE in ('U', 'C', 'V', 'O') and OWNER = '" + schemaName + "' and CONSTRAINT_NAME not like 'BIN$%' and STATUS <> 'DISABLED'");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                String constraintName = resultSet.getString("CONSTRAINT_NAME");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName));
+            }
+        } catch (Exception e) {
+            throw new DbMaintainException("Error while disabling value constraints on schema " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
         }
     }
-
 
     /**
      * Returns the value of the sequence with the given name.
      * <p/>
      * Note: this can have the side-effect of increasing the sequence value.
-     * @param sequenceName The sequence, not null
      *
+     * @param sequenceName The sequence, not null
      * @return The value of the sequence with the given name
      */
     @Override
@@ -259,6 +293,7 @@ public class OracleDbSupport extends DbSupport {
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
+     *
      * @param sequenceName     The sequence, not null
      * @param newSequenceValue The value to set
      */
@@ -284,7 +319,7 @@ public class OracleDbSupport extends DbSupport {
         } catch (SQLException e) {
             throw new DbMaintainException("Error while incrementing sequence to value", e);
         } finally {
-            DbUtils.closeQuietly(connection, statement, resultSet);
+            closeQuietly(connection, statement, resultSet);
         }
     }
 
@@ -400,7 +435,7 @@ public class OracleDbSupport extends DbSupport {
             } catch (SQLException e) {
                 throw new DbMaintainException("Unable to determine database major version", e);
             } finally {
-                DbUtils.closeQuietly(connection);
+                closeQuietly(connection);
             }
         }
         return oracleMajorVersionNumber;

@@ -13,7 +13,6 @@ import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 
 import javax.sql.DataSource;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,19 +27,20 @@ public class PostgreSqlDbSupport extends DbSupport {
 
     /**
      * Creates support for a postgresql database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public PostgreSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    public PostgreSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
+                               Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, "postgresql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
-    
+
 
     /**
      * Returns the names of all tables in the database.
@@ -55,8 +55,8 @@ public class PostgreSqlDbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -123,6 +123,7 @@ public class PostgreSqlDbSupport extends DbSupport {
      * <p/>
      * The method is overriden to handle columns of type serial. For these columns, the sequence should be
      * dropped using cascade. Thanks to Peter Oxenham for reporting this issue (UNI-28).
+     *
      * @param sequenceName The sequence to drop (case-sensitive), not null
      */
     public void dropSequence(String schemaName, String sequenceName) {
@@ -138,6 +139,7 @@ public class PostgreSqlDbSupport extends DbSupport {
      * <p/>
      * To circumvent this, this method expects trigger names as follows:
      * 'trigger-name' ON 'table name'
+     *
      * @param triggerName The trigger to drop as 'trigger-name' ON 'table name', not null
      */
     @Override
@@ -158,11 +160,21 @@ public class PostgreSqlDbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
+    public void disableReferentialConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableReferentialConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints con where con.table_name = '" + tableName + "' and constraint_type = 'FOREIGN KEY' and constraint_schema = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
@@ -172,11 +184,21 @@ public class PostgreSqlDbSupport extends DbSupport {
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
+    public void disableValueConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableValueConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
         // disable all check and unique constraints
@@ -204,8 +226,8 @@ public class PostgreSqlDbSupport extends DbSupport {
     /**
      * Returns the value of the sequence with the given name. <p/> Note: this can have the
      * side-effect of increasing the sequence value.
-     * @param sequenceName The sequence, not null
      *
+     * @param sequenceName The sequence, not null
      * @return The value of the sequence with the given name
      */
     @Override
@@ -216,6 +238,7 @@ public class PostgreSqlDbSupport extends DbSupport {
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
+     *
      * @param sequenceName     The sequence, not null
      * @param newSequenceValue The value to set
      */

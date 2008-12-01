@@ -18,9 +18,13 @@ package org.dbmaintain.dbsupport.impl;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
+import static org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils.closeQuietly;
+import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
-
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Set;
 
 /**
@@ -33,16 +37,17 @@ public class HsqldbDbSupport extends DbSupport {
 
     /**
      * Creates support for a HsqlDb database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public HsqldbDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    public HsqldbDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
+                           Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, "hsqldb", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
@@ -60,8 +65,8 @@ public class HsqldbDbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -104,39 +109,106 @@ public class HsqldbDbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema name, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
-        SQLHandler sqlHandler = getSQLHandler();
-        Set<String> constraintNames = getSQLHandler().getItemsAsStringSet("select CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND TABLE_NAME = '" + tableName + "' AND CONSTRAINT_SCHEMA = '" + schemaName + "'", getDataSource());
-        for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+    public void disableReferentialConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
+
+            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                String constraintName = resultSet.getString("CONSTRAINT_NAME");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
+            }
+        } catch (Exception e) {
+            throw new DbMaintainException("Error while disabling not referential constraints on schema " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
         }
     }
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema name, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
-        SQLHandler sqlHandler = getSQLHandler();
-        Set<String> constraintNames = getSQLHandler().getItemsAsStringSet("select CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND TABLE_NAME = '" + tableName + "' AND CONSTRAINT_SCHEMA = '" + schemaName + "'", getDataSource());
-        for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
-        }
+    public void disableValueConstraints(String schemaName) {
+        disableCheckAndUniqueConstraints(schemaName);
+        disableNotNullConstraints(schemaName);
+    }
 
-        Set<String> notNullColumnNames = sqlHandler.getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS where IS_NULLABLE = 'NO' AND TABLE_NAME = '" + tableName + "' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
-        Set<String> primaryKeyColumnNames = sqlHandler.getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS where TABLE_NAME = '" + tableName + "' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
-        for (String notNullColumnName : notNullColumnNames) {
-            if (primaryKeyColumnNames.contains(notNullColumnName)) {
-                // Do not remove PK constraints
-                continue;
+
+    /**
+     * Disables all check and unique constraints on all tables in the schema
+     *
+     * @param schemaName The schema name, not null
+     */
+    protected void disableCheckAndUniqueConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
+
+            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                String constraintName = resultSet.getString("CONSTRAINT_NAME");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
             }
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(notNullColumnName) + " set null", getDataSource());
+        } catch (Exception e) {
+            throw new DbMaintainException("Error while disabling check and unique constraints on schema " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
+        }
+    }
+
+
+    /**
+     * Disables all not null constraints on all tables in the schema
+     *
+     * @param schemaName The schema name, not null
+     */
+    protected void disableNotNullConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
+
+            // Do not remove PK constraints
+            resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEM = '" + schemaName + "' " +
+                    "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("TABLE_NAME");
+                String columnName = resultSet.getString("COLUMN_NAME");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " set null");
+            }
+        } catch (Exception e) {
+            throw new DbMaintainException("Error while disabling not null constraints on schema " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
         }
     }
 
@@ -145,8 +217,8 @@ public class HsqldbDbSupport extends DbSupport {
      * Returns the value of the sequence with the given name.
      * <p/>
      * Note: this can have the side-effect of increasing the sequence value.
-     * @param sequenceName The sequence, not null
      *
+     * @param sequenceName The sequence, not null
      * @return The value of the sequence with the given name
      */
     @Override
@@ -157,6 +229,7 @@ public class HsqldbDbSupport extends DbSupport {
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
+     *
      * @param sequenceName     The sequence, not null
      * @param newSequenceValue The value to set
      */
@@ -170,8 +243,8 @@ public class HsqldbDbSupport extends DbSupport {
      * Gets the names of all identity columns of the given table.
      * <p/>
      * todo check, at this moment the PK columns are returned
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the identity columns of the table with the given name
      */
     @Override
@@ -182,6 +255,7 @@ public class HsqldbDbSupport extends DbSupport {
 
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value.
+     *
      * @param tableName          The table with the identity column, not null
      * @param identityColumnName The column, not null
      * @param identityValue      The new value

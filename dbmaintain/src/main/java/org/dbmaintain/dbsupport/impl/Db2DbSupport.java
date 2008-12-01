@@ -20,7 +20,6 @@ import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 
 import javax.sql.DataSource;
-
 import java.util.Set;
 
 /**
@@ -36,17 +35,18 @@ public class Db2DbSupport extends DbSupport {
 
     /**
      * Creates support for a Db2 database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public Db2DbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "db2", dataSource, defaultSchemaName, schemaNames, sqlHandler, 
+    public Db2DbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
+                        Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseName, "db2", dataSource, defaultSchemaName, schemaNames, sqlHandler,
                 customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
@@ -66,8 +66,8 @@ public class Db2DbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -122,11 +122,21 @@ public class Db2DbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
+    public void disableReferentialConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableReferentialConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select CONSTNAME from SYSCAT.TABCONST where TYPE = 'F' and TABNAME = '" + tableName + "' and TABSCHEMA = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
@@ -136,11 +146,21 @@ public class Db2DbSupport extends DbSupport {
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
+    public void disableValueConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableValueConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
         // disable all check and unique constraints
@@ -168,8 +188,8 @@ public class Db2DbSupport extends DbSupport {
     /**
      * Returns the value of the sequence with the given name. <p/> Note: this can have the side-effect of increasing the
      * sequence value.
-     * @param sequenceName The sequence, not null
      *
+     * @param sequenceName The sequence, not null
      * @return The value of the sequence with the given name
      */
     @Override
@@ -180,6 +200,7 @@ public class Db2DbSupport extends DbSupport {
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
+     *
      * @param sequenceName     The sequence, not null
      * @param newSequenceValue The value to set
      */
@@ -193,8 +214,8 @@ public class Db2DbSupport extends DbSupport {
      * Gets the names of all identity columns of the given table.
      * <p/>
      * todo check, at this moment the PK columns are returned
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the identity columns of the table with the given name
      */
     @Override
@@ -206,6 +227,7 @@ public class Db2DbSupport extends DbSupport {
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value. If
      * there is no identity specified on the given primary key, the method silently finishes without effect.
+     *
      * @param tableName          The table with the identity column, not null
      * @param identityColumnName The column, not null
      * @param identityValue      The new value

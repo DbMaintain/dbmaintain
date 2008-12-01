@@ -16,7 +16,6 @@
 package org.dbmaintain.structure;
 
 
-
 /**
  * A task for disabling all foreign key, check and not-null constraints on a database schema.
  * Primary key constraints will not be disabled.

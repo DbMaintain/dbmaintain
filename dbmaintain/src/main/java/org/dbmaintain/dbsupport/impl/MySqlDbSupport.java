@@ -20,7 +20,6 @@ import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 
 import javax.sql.DataSource;
-
 import java.util.Set;
 
 /**
@@ -42,19 +41,20 @@ public class MySqlDbSupport extends DbSupport {
 
     /**
      * Creates support for a mysql database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public MySqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    public MySqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
+                          Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, "mysql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
-    
+
 
     /**
      * Returns the names of all tables in the database.
@@ -69,8 +69,8 @@ public class MySqlDbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -102,11 +102,21 @@ public class MySqlDbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema name, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
+    public void disableReferentialConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableReferentialConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints where constraint_type = 'FOREIGN KEY' AND table_name = '" + tableName + "' and constraint_schema = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
@@ -116,11 +126,21 @@ public class MySqlDbSupport extends DbSupport {
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema name, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
+    public void disableValueConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableValueConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
         // disable all unique constraints (check constraints are not implemented)
@@ -141,8 +161,8 @@ public class MySqlDbSupport extends DbSupport {
 
     /**
      * Gets the names of all identity columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the identity columns of the table with the given name
      */
     @Override
@@ -154,6 +174,7 @@ public class MySqlDbSupport extends DbSupport {
 
     /**
      * Increments the identity value for the specified primary key on the specified table to the given value.
+     *
      * @param tableName            The table with the identity column, not null
      * @param identityValue        The new value
      * @param primaryKeyColumnName The column, not null

@@ -22,7 +22,6 @@ import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -42,19 +41,19 @@ import java.util.Set;
  */
 public class DerbyDbSupport extends DbSupport {
 
-    
+
     /**
      * Creates support for a Derby database.
-     * @param databaseName 
-     * @param dataSource 
-     * @param defaultSchemaName 
-     * @param schemaNames 
-     * @param sqlHandler 
-     * @param customIdentifierQuoteString 
-     * @param customStoredIdentifierCase 
+     *
+     * @param databaseName
+     * @param dataSource
+     * @param defaultSchemaName
+     * @param schemaNames
+     * @param sqlHandler
+     * @param customIdentifierQuoteString
+     * @param customStoredIdentifierCase
      */
-    public DerbyDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, 
-            Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    public DerbyDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, "derby", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
@@ -72,8 +71,8 @@ public class DerbyDbSupport extends DbSupport {
 
     /**
      * Gets the names of all columns of the given table.
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the columns of the table with the given name
      */
     @Override
@@ -118,8 +117,8 @@ public class DerbyDbSupport extends DbSupport {
      * Gets the names of all identity columns of the given table.
      * <p/>
      * todo check, at this moment the PK columns are returned
-     * @param tableName The table, not null
      *
+     * @param tableName The table, not null
      * @return The names of the identity columns of the table with the given name
      */
     @Override
@@ -130,6 +129,7 @@ public class DerbyDbSupport extends DbSupport {
 
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value.
+     *
      * @param tableName          The table with the identity column, not null
      * @param identityColumnName The column, not null
      * @param identityValue      The new value
@@ -141,11 +141,21 @@ public class DerbyDbSupport extends DbSupport {
 
 
     /**
-     * Removes all referential constraints (e.g. foreign keys) on the specified table
-     * @param tableName The table, not null
+     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeReferentialConstraints(String schemaName, String tableName) {
+    public void disableReferentialConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableReferentialConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select c.CONSTRAINTNAME from SYS.SYSCONSTRAINTS c, SYS.SYSTABLES t, SYS.SYSSCHEMAS s where c.TYPE = 'F' AND c.TABLEID = t.TABLEID  AND t.TABLENAME = '" + tableName + "' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
@@ -155,11 +165,21 @@ public class DerbyDbSupport extends DbSupport {
 
 
     /**
-     * Disables all value constraints (e.g. not null) on the specified table
-     * @param tableName The table, not null
+     * Disables all value constraints (e.g. not null) on all tables in the schema
+     *
+     * @param schemaName The schema, not null
      */
     @Override
-    public void removeValueConstraints(String schemaName, String tableName) {
+    public void disableValueConstraints(String schemaName) {
+        Set<String> tableNames = getTableNames(schemaName);
+        for (String tableName : tableNames) {
+            disableValueConstraints(schemaName, tableName);
+        }
+    }
+
+
+    // todo refactor (see oracle)
+    protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
         // disable all check and unique constraints
@@ -220,9 +240,9 @@ public class DerbyDbSupport extends DbSupport {
      * Gets the names of all primary columns of the given table.
      * <p/>
      * This info is not available in the Derby sys tables. The database meta data is used instead to retrieve it.
-     * @param schemaName 
-     * @param tableName The table, not null
      *
+     * @param schemaName
+     * @param tableName  The table, not null
      * @return The names of the primary key columns of the table with the given name
      */
     protected Set<String> getPrimaryKeyColumnNames(String schemaName, String tableName) {
@@ -249,9 +269,9 @@ public class DerbyDbSupport extends DbSupport {
      * Returns the names of all columns that have a 'not-null' constraint on them.
      * <p/>
      * This info is not available in the Derby sys tables. The database meta data is used instead to retrieve it.
-     * @param schemaName 
-     * @param tableName The table, not null
      *
+     * @param schemaName
+     * @param tableName  The table, not null
      * @return The set of column names, not null
      */
     protected Set<String> getNotNullColummnNames(String schemaName, String tableName) {
