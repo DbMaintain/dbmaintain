@@ -36,7 +36,7 @@ database.schemaNames=PUBLIC
     Then execute following command (Replace .sh by .bat if you're using windows)
 	
 +-----+
-/path-to-dbmaintain/dbmaintain.sh update path/to/scripts
+/path/to/dbmaintain/dbmaintain.sh update path/to/scriptFolderOrJarFile
 +-----+
 
     To use a different config file than dbmaintain.properties, add the parameter -f followed by the config file name.

@@ -25,7 +25,7 @@ Tutorial
 	  
 	  * {{{#From_Java_code}From Java code}}
 	  
-	* {{{#Other_DbMaintain_operations}Other DbMaintain operations}}
+	* {{{#DbMaintain_operations}DbMaintain operations}}
 	
 * {Script organization}
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,8 +109,84 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 		                    02_drop_itemcode_column.sql
 +----+
 
-    When we try to deploy this on a test database, DbMaintain will give an error. If the <fromScratch> option is enabled, the database will automatically be recreated from scratch. This will cause all data to be lost, which is in most cases not desirable: the database may be used by the customer to test the newly developed features.
+    When we try to deploy to a test database on which the scripts in folder 02_v1.1 were already rolled out, DbMaintain will give an error. If the <fromScratch> option is enabled, the database will automatically be recreated from scratch. This will cause all data to be lost, which is in most cases not desirable: the database may be used by the customer to test the newly developed features.
 	
-	To be able cope with such situations, we offer the notion of a <patch>. A script or a folder containing scripts can be marked as being a <patch>, by adding the PATCH keyword in the file or folder name immediately after the index number. A patch has to be written in such way that it can be executed on both the current production version and the latest development version.
+	To be able cope with such situations, we offer the notion of a <patch>. A script or a folder containing scripts can be marked as being a <patch>, by adding the #PATCH qualifier to the file or folder name. A patch has to be written in such way that it can be executed on both the current production version and the latest development version. This will lead to the following scripts:
 	
-	DbMaintain offers an option called <allowPatchesOutOfSequence>. If set to <true>, DbMaintain will start with executing all patch scripts that weren't executed yet, before executing the other scripts. Note that you should never enable this option when deploying the production database!
++----+
+scripts/incremental/01_v1.0/01_products_and_orders.sql
+                            02_@users_users.sql
+							03_#PATCH_add_product_status.sql
+		            02_v1.1/01_add_barcode_column.sql
+		                    02_drop_itemcode_column.sql
++----+
+	
+	DbMaintain offers an option called <dbMaintainer.patch.outOfSequenceExecutionAllowed>. If set to <true>, DbMaintain will start with executing all patch scripts that weren't executed yet, before executing the other scripts. Note that you should never enable this option when deploying the production database!
+	
+* Configure and run DbMaintain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     DbMaintain operations can be executed in various ways: from the command line, using ant or directly from Java code. In the 1.1 release, maven integration will be provided.
+	 
+** From the command line
+~~~~~~~~~~~~~~~~~~~~~~~~
+    Launch scripts are provided for Windows and *nix to perform operations from the command line. For instance, to create a jar file containing all scripts simply call (Replace .sh by .bat if you're using windows):
+
++-----+	 
+/path/to/dbmaintain/dbmaintain.sh createJar path/to/jarFile path/to/scriptFolder
++-----+
+	 
+	To bring a database up-to-date, execute following command:
+	 
++-----+	 
+/path/to/dbmaintain/dbmaintain.sh update path/to/scriptFolderOrJarFile
++-----+
+
+    If a file named dbmaintain.properties is available in the execution directory, this file is automatically loaded. To load another file, add -config path/to/configFile to the command.
+	 
+** Using ant
+~~~~~~~~~~~~
+    Ant tasks are provided for all DbMaintain operations. To be able to use these tasks, you have to declare them in your build file, e.g. as follows:
+	 
++-----+
+<taskdef resource="dbmaintain-anttasks.xml" classpathref="dbmaintain.lib"/>
+<path id="dbmaintain-lib"><fileset dir="${dbmaintain.home}/lib"><include name="*.jar"/></fileset></path>
++-----+
+
+    You can perform a database update with the following task.
+	 
++-----+
+<updateDatabase scriptLocations="${database.jarFile}">
+     <database userName="admin" password="pwd" url="jdbc:hsqldb:mem:mydb" schemaNames="PUBLIC" dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" />
+</updateDatabase>
++-----+
+
+    For an overview of all ant tasks with all their attributes, refer to the {{{ant-tasks.html}ant tasks}} page.
+
+** From java code
+~~~~~~~~~~~~~~~~~
+    To launch DbMaintain operations from Java code, first create an instance of <org.dbmaintain.launch.DbMaintain>:
+	
++-----+
+URL configurationUrl = new File("dbmaintain.properties").toURI().toURL();
+DbMaintain dbMaintain = new DbMaintain(configurationUrl);
++-----+
+
+    To perform a database update simply call:
+	
++-----+
+dbMaintain.updateDatabase();
++-----+
+	 
+** Configuration
+~~~~~~~~~~~~~~~~
+     If you use the command line, you have to create a properties file that configures the target database and a number of extra options. Go to the {{{configuration.html}configuration page}} for a listing of all configuration options.
+	 
+	 If you run DbMaintain from the command line, you have to use a properties file for configuration. If you use ant, the most common configuration can be performed using attributes from the ant tasks. To configure less common options, you can still refer to a properties file from within the ant task using the <configFile> attribute.
+	 
+* DbMaintain operations
+~~~~~~~~~~~~~~~~~~~~~~~
+    Whether you launch DbMaintain from the command line, using ant or directly from Java code, the same set of operations is exposed:
+	
+** Create a jar file
+~~~~~~~~~~~~~~~~~~~~
+    The simplest way to use DbMaintain is to simply configure it with a scripts folder. However, it's a good idea to package the scripts is a jar file to be able to publish it as an artifact, just as you typically publish your war or ear file as an artifact. You can configure ...
