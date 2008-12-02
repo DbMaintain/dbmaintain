@@ -152,10 +152,6 @@ public interface DbMaintainProperties {
     public static final String PROPERTY_FILE_NAME_COLUMN_SIZE = "dbMaintainer.fileNameColumnSize";
 
     /* The key of the property that specifies the column in which the last modification timestamp is stored */
-    public static final String PROPERTY_SCRIPT_VERSION_COLUMN_NAME = "dbMaintainer.versionColumnName";
-    public static final String PROPERTY_SCRIPT_VERSION_COLUMN_SIZE = "dbMaintainer.versionColumnSize";
-
-    /* The key of the property that specifies the column in which the last modification timestamp is stored */
     public static final String PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME = "dbMaintainer.fileLastModifiedAtColumnName";
 
     /* The key of the property that specifies the column in which the last modification timestamp is stored */

@@ -15,13 +15,73 @@
  */
 package org.dbmaintain.config;
 
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_CHECKSUM_COLUMN_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_CHECKSUM_COLUMN_SIZE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_DATABASE_NAMES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_DATABASE_START;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_DIALECT_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_DRIVERCLASSNAME_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_ENABLED_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXECUTED_AT_COLUMN_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXECUTED_AT_COLUMN_SIZE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FILE_NAME_COLUMN_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FILE_NAME_COLUMN_SIZE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PASSWORD_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCHEMA_NAMES_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SUCCEEDED_COLUMN_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_TIMESTAMP_FORMAT;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_URL_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_USERNAME_END;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_BACKSLASH_ESCAPING_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_CLEANDB_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_DISABLE_CONSTRAINTS_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_IDENTIFIER_QUOTE_STRING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_DATA_SCHEMAS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_DATA_TABLES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_MATERIALIZED_VIEWS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_SCHEMAS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_SEQUENCES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_SYNONYMS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_TABLES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_TRIGGERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_TYPES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PRESERVE_VIEWS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_ENCODING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_PATCH_QUALIFIERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_QUALIFIER_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_TARGETDATABASE_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_STORED_IDENTIFIER_CASE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_UPDATE_SEQUENCES_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES;
+import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
+
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.sql.DataSource;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
-import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
@@ -41,13 +101,6 @@ import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
 import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReflectionUtils;
-import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
-
-import javax.sql.DataSource;
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * todo javadoc
@@ -207,12 +260,10 @@ public class PropertiesDbMaintainConfigurer {
      */
     public ExecutedScriptInfoSource createExecutedScriptInfoSource() {
 
-        boolean autoCreateVersionTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, configuration);
+        boolean autoCreateExecutedScriptsTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, configuration);
         String executedScriptsTableName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration));
         String fileNameColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_NAME_COLUMN_NAME, configuration));
         int fileNameColumnSize = PropertyUtils.getInt(PROPERTY_FILE_NAME_COLUMN_SIZE, configuration);
-        String versionColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SCRIPT_VERSION_COLUMN_NAME, configuration));
-        int versionColumnSize = PropertyUtils.getInt(PROPERTY_SCRIPT_VERSION_COLUMN_SIZE, configuration);
         String fileLastModifiedAtColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME, configuration));
         String checksumColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_CHECKSUM_COLUMN_NAME, configuration));
         int checksumColumnSize = PropertyUtils.getInt(PROPERTY_CHECKSUM_COLUMN_SIZE, configuration);
@@ -226,12 +277,12 @@ public class PropertiesDbMaintainConfigurer {
         String postProcessingScriptsDirname = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, int.class, String.class, String.class,
+        return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, String.class, 
                 int.class, String.class, int.class, String.class, DateFormat.class, DbSupport.class, SQLHandler.class, String.class, String.class,
                 Set.class, String.class},
 
-                new Object[]{autoCreateVersionTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
-                        versionColumnName, versionColumnSize, fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
+                new Object[]{autoCreateExecutedScriptsTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
+                        fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
                         executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, getDefaultDbSupport(),
                         sqlHandler, targetDatabasePrefix, qualifierPrefix, patchQualifiers, postProcessingScriptsDirname});
     }
