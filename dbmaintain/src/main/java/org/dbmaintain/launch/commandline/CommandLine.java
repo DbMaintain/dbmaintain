@@ -19,6 +19,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
@@ -37,6 +39,8 @@ public class CommandLine {
 
     public static final String DBMAINTAIN_PROPERTIES = "dbmaintain.properties";
 
+    /* The logger instance for this class */
+    private static Log logger = LogFactory.getLog(CommandLine.class);
 
     /**
      * Enum that defines all DbMaintain operations that can be invoked using this class.  
@@ -133,22 +137,26 @@ public class CommandLine {
     }
 
     /**
-     * Loads the configuration from the config file: unless configured otherwise, configuration is loaded from
-     * dbmaintain.properties. If the config file cannot be found, an error message is printed, a help message is shown 
-     * and execution is ended.
+     * Loads the configuration from custom config file or, if no custom config file was configured, from
+     * {@link #DBMAINTAIN_PROPERTIES}, if this file exists. If a custom config file was configured and the config file 
+     * cannot be found, an error message is printed and execution is ended.
      * 
      * @param commandLineArguments The command line arguments
      * @return The configuration as a <code>Properties</code> file
      */
     private static Properties loadConfiguration(CommandLineArguments commandLineArguments) {
-        String configFile = commandLineArguments.getConfigFile() == null ? DBMAINTAIN_PROPERTIES : commandLineArguments.getConfigFile();
-        URL propertiesAsURL = getPropertiesAsURL(configFile);
-        if (propertiesAsURL == null) {
-            System.err.println("Could not find config file" + configFile);
-            System.exit(1);
+        URL propertiesAsURL = null;
+        String customConfigFile = commandLineArguments.getConfigFile();
+        if (customConfigFile == null) {
+            if (new File(DBMAINTAIN_PROPERTIES).exists()) {
+                propertiesAsURL = getPropertiesAsURL(DBMAINTAIN_PROPERTIES);
+                logger.info("Loaded configuration from file " + DBMAINTAIN_PROPERTIES);
+            }
+        } else {
+            propertiesAsURL = getPropertiesAsURL(customConfigFile);
+            logger.info("Loaded configuration from file " + customConfigFile);
         }
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration(propertiesAsURL);
-        return configuration;
+        return new DbMaintainConfigurationLoader().loadConfiguration(propertiesAsURL);
     }
 
     /**
@@ -162,22 +170,25 @@ public class CommandLine {
     public static void executeOperation(DbMaintainOperation operation, Properties configuration, CommandLineArguments commandLineArguments) {
         switch (operation) {
         case CREATE_JAR:
-            if (commandLineArguments.getExtraArgument() == null) {
+            if (commandLineArguments.getFirstExtraArgument() == null) {
                 System.err.println("Jar file name must be specified as extra argument");
                 System.exit(1);
             }
-            String jarFileName = commandLineArguments.getExtraArgument();
+            if (commandLineArguments.getSecondExtraArgument() != null) {
+                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
+            }
+            String jarFileName = commandLineArguments.getFirstExtraArgument();
             getDbMaintain(configuration).createJar(jarFileName);
             break;
         case UPDATE_DATABASE:
-            if (commandLineArguments.getExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getExtraArgument());
+            if (commandLineArguments.getFirstExtraArgument() != null) {
+                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
             }
             getDbMaintain(configuration).updateDatabase();
             break;
         case MARK_DATABASE_AS_UPTODATE:
-            if (commandLineArguments.getExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getExtraArgument());
+            if (commandLineArguments.getFirstExtraArgument() != null) {
+                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
             }
             getDbMaintain(configuration).markDatabaseAsUpToDate();
             break;
@@ -217,7 +228,8 @@ public class CommandLine {
     private static URL getPropertiesAsURL(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
-            return null;
+            System.err.println("Could not find config file" + DBMAINTAIN_PROPERTIES);
+            System.exit(1);
         }
         return FileUtils.getUrl(file);
     }
@@ -230,7 +242,7 @@ public class CommandLine {
         System.out.println();
         System.out.println("Usage:");
         System.out.println();
-        System.out.println("java org.dbmaintain.launch.DbMaintain <operation> [jarFile/scriptFolder] [-config propertiesFile]");
+        System.out.println("java org.dbmaintain.launch.DbMaintain <operation> [extra operation arguments] [-config propertiesFile]");
         System.out.println();
         System.out.println("The -config argument is optional. If omitted, the file " + DBMAINTAIN_PROPERTIES + " is expected to be available in the execution directory.");
         System.out.println("The jarFile/scriptFolder argument is also optional, and only applicable to the operations " + 
@@ -240,18 +252,20 @@ public class CommandLine {
         System.out.println();
         System.out.println("- " + DbMaintainOperation.CREATE_JAR.getOperationName());
         System.out.println("     Creates a jar file containing all scripts in all configured script locations.");
-        System.out.println("     Expects an extra argument indicating the jar file name.");
+        System.out.println("     Expects a second argument indicating the jar file name.");
+        System.out.println("     Optionally, a third argument may be added indicating the scripts jar file or root folder.");
+        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.UPDATE_DATABASE.getOperationName());
         System.out.println("     Updates the database to the latest version.");
-        System.out.println("     Optionally, a third argument may be added indicating the scripts jar file or root folder.");
+        System.out.println("     Optionally, an extra argument may be added indicating the scripts jar file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
         System.out.println("     Marks the database as up-to-date, without executing any script. ");
         System.out.println("     You can use this operation to prepare an existing database to be managed by DbMaintain, ");
         System.out.println("     or after fixing a problem manually.");
-        System.out.println("     Optionally, a third argument may be added indicating the scripts jar file or root folder.");
+        System.out.println("     Optionally, an extra argument may be added indicating the scripts jar file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS + ".");
         System.out.println("- " + DbMaintainOperation.CLEAR_DATABASE.getOperationName());
         System.out.println("     Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.");

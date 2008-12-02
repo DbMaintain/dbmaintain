@@ -27,9 +27,7 @@ import org.dbmaintain.util.DbMaintainException;
 public class CommandLineArguments {
     
     private String dbMaintainOperation;
-    
-    private String extraArgument;
-    
+    private String firstExtraArgument, secondExtraArgument;
     private String configFile;
     
     public CommandLineArguments(String[] commandLineArgs) {
@@ -54,7 +52,14 @@ public class CommandLineArguments {
                 dbMaintainOperation = commandLineArg;
                 continue;
             }
-            extraArgument = commandLineArg;
+            if (firstExtraArgument == null) {
+                firstExtraArgument = commandLineArg;
+                continue;
+            }
+            if (secondExtraArgument == null) {
+                secondExtraArgument = commandLineArg;
+                continue;
+            }
         }
         if (dbMaintainOperation == null) {
             throw new DbMaintainException("No operation was specified");
@@ -65,8 +70,12 @@ public class CommandLineArguments {
         return dbMaintainOperation;
     }
 
-    public String getExtraArgument() {
-        return extraArgument;
+    public String getFirstExtraArgument() {
+        return firstExtraArgument;
+    }
+
+    public String getSecondExtraArgument() {
+        return secondExtraArgument;
     }
 
     public String getConfigFile() {
