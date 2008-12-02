@@ -108,7 +108,7 @@ abstract public class TestUtils {
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable) {
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
-                "db_executed_scripts", "script_file_name", 100, "version", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
+                "db_executed_scripts", "script_file_name", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
                 new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@", "#", asSet("PATCH"), "postprocessing");
     }
 

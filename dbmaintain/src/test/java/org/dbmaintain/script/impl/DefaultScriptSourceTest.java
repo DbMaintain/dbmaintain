@@ -24,6 +24,7 @@ import org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -44,6 +45,7 @@ import java.util.List;
  * @author Filip Neven
  * @author David J. M. Karlsen
  */
+@Ignore
 public class DefaultScriptSourceTest {
 
     /* Tested object */
