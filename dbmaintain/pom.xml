@@ -8,7 +8,7 @@
   </parent>
   <artifactId>dbmaintain</artifactId>
   <!-- Project information -->
-  <name>DbMaintain</name>
+  <name>dbmaintain</name>
   <build>
     <testResources>
       <testResource>
