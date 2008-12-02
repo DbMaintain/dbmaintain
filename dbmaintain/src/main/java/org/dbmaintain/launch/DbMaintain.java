@@ -16,12 +16,16 @@
 package org.dbmaintain.launch;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptSource;
@@ -41,6 +45,18 @@ public class DbMaintain {
     private PropertiesDbMaintainConfigurer dbMaintainConfigurer;
     
     /**
+     * Creates a new instance of {@link DbMaintain} using the link to the given properties file URL for configuration.
+     * 
+     * @param propertiesURL The URL that links to a properties file containing DbMaintain configuration.
+     */
+    public DbMaintain(URL propertiesURL) {
+        Properties dbMaintainConfiguration = new DbMaintainConfigurationLoader().loadConfiguration(propertiesURL);
+        dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(dbMaintainConfiguration, new DefaultSQLHandler());
+    }
+    
+    /**
+     * Creates a new instance of {@link DbMaintain} that uses the given {@link PropertiesDbMaintainConfigurer} for configuration.
+     * 
      * @param dbMaintainConfigurer Configurer that will be used to configure all DbMaintain service objects
      */
     public DbMaintain(PropertiesDbMaintainConfigurer dbMaintainConfigurer) {
