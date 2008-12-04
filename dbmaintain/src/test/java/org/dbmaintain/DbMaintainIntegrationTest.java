@@ -350,7 +350,7 @@ public class DbMaintainIntegrationTest {
     }
 
     private void fixErrorInInitialScript() {
-        createScript("02_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
+        createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
     }
 
     private void removeIncrementalScript() {
