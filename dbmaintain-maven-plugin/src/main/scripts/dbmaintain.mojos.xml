@@ -13,6 +13,13 @@
       </description>
       <parameters>
         <parameter>
+          <name>configFile</name>
+          <property>configFile</property>
+          <required>false</required>
+          <type>java.lang.String</type>
+          <description>Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes.</description>
+        </parameter>
+        <parameter>
           <name>scriptLocations</name>
           <property>scriptLocations</property>
           <required>false</required>
@@ -45,10 +52,10 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>autoCreateExecutedScriptsTable</name>
+          <name>autoCreateDbMaintainScriptsTable</name>
           <property>autoCreateExecutedScriptsTable</property>
           <required>false</required>
-          <expression>dbmaintain.autoCreateExecutedScriptsTable</expression>
+          <expression>dbmaintain.autoCreateDbMaintainScriptsTable</expression>
           <type>java.lang.Boolean</type>
           <description></description>
         </parameter>
