@@ -130,7 +130,8 @@ public class PropertiesDbMaintainConfigurer {
 
         boolean cleanDbEnabled = PropertyUtils.getBoolean(PROPERTY_CLEANDB_ENABLED, configuration);
         boolean fromScratchEnabled = PropertyUtils.getBoolean(PROPERTY_FROM_SCRATCH_ENABLED, configuration);
-        boolean keepRetryingAfterError = PropertyUtils.getBoolean(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, configuration);
+        boolean keepRetryingAfterError = PropertyUtils.getBoolean(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, configuration);
+        boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS_ENABLED, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES_ENABLED, configuration);
 
         DBCleaner dbCleaner = createDbCleaner();

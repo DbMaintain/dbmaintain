@@ -17,7 +17,6 @@ package org.dbmaintain.script.impl;
 
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.After;
