@@ -30,21 +30,13 @@ import java.util.Set;
 public class Database {
 
 	private String name;
-	
 	private boolean enabled = true;
-	
 	private String dialect;
-	
 	private String driverClassName;
-	
 	private String url;
-	
 	private String userName;
-	
 	private String password;
-	
 	private String defaultSchemaName;
-	
 	private Set<String> schemaNames;
 
 	public Database() {

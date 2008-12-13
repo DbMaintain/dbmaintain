@@ -3,12 +3,12 @@
  */
 package org.dbmaintain.script.impl;
 
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_ENCODING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_PATCH_QUALIFIERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_QUALIFIER_PREFIX;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_TARGETDATABASE_PREFIX;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PATCH_QUALIFIERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFIER_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
 
 import java.util.HashSet;
 import java.util.List;
@@ -78,12 +78,12 @@ abstract public class BaseScriptContainer implements ScriptContainer {
 
 
     protected void initConfigurationFromProperties(Properties configuration) {
-        this.scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
-        this.targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        this.qualifierPrefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        this.patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        this.postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-        this.scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
+        this.scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        this.targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        this.qualifierPrefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        this.patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        this.postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        this.scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
     }
 
 

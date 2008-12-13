@@ -26,7 +26,7 @@ import org.dbmaintain.util.DbMaintainException;
 
 /**
  * Implementation of {@link SequenceUpdater}. All sequences and identity columns that have a value lower than the value
- * defined by {@link #PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE} are set to this value.
+ * defined by {@link #PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE} are set to this value.
  *
  * @author Filip Neven
  * @author Tim Ducheyne

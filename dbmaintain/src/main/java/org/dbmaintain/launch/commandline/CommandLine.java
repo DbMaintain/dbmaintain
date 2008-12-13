@@ -48,10 +48,10 @@ public class CommandLine {
     public enum DbMaintainOperation {
         
         CREATE_JAR("createJar"), 
-        UPDATE_DATABASE("update"), 
-        MARK_DATABASE_AS_UPTODATE("markAsUpToDate"), 
-        CLEAR_DATABASE("clear"), 
-        CLEAN_DATABASE("clean"),
+        UPDATE_DATABASE("updateDatabase"), 
+        MARK_DATABASE_AS_UPTODATE("markDatabaseAsUpToDate"), 
+        CLEAR_DATABASE("clearDatabase"), 
+        CLEAN_DATABASE("cleanDatabase"),
         DISABLE_CONSTRAINTS("disableConstraints"), 
         UPDATE_SEQUENCES("updateSequences");
         
@@ -175,20 +175,20 @@ public class CommandLine {
                 System.exit(1);
             }
             if (commandLineArguments.getSecondExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
+                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
             }
             String jarFileName = commandLineArguments.getFirstExtraArgument();
-            getDbMaintain(configuration).createJar(jarFileName);
+            getDbMaintain(configuration).createScriptJar(jarFileName);
             break;
         case UPDATE_DATABASE:
             if (commandLineArguments.getFirstExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
+                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
             }
             getDbMaintain(configuration).updateDatabase();
             break;
         case MARK_DATABASE_AS_UPTODATE:
             if (commandLineArguments.getFirstExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
+                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
             }
             getDbMaintain(configuration).markDatabaseAsUpToDate();
             break;
@@ -254,19 +254,19 @@ public class CommandLine {
         System.out.println("     Creates a jar file containing all scripts in all configured script locations.");
         System.out.println("     Expects a second argument indicating the jar file name.");
         System.out.println("     Optionally, a third argument may be added indicating the scripts jar file or root folder.");
-        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS + ".");
+        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.UPDATE_DATABASE.getOperationName());
         System.out.println("     Updates the database to the latest version.");
         System.out.println("     Optionally, an extra argument may be added indicating the scripts jar file or root folder.");
-        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS + ".");
+        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
         System.out.println("     Marks the database as up-to-date, without executing any script. ");
         System.out.println("     You can use this operation to prepare an existing database to be managed by DbMaintain, ");
         System.out.println("     or after fixing a problem manually.");
         System.out.println("     Optionally, an extra argument may be added indicating the scripts jar file or root folder.");
-        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS + ".");
+        System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println("- " + DbMaintainOperation.CLEAR_DATABASE.getOperationName());
         System.out.println("     Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.");
         System.out.println("- " + DbMaintainOperation.CLEAN_DATABASE.getOperationName());

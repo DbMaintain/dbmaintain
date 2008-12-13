@@ -16,9 +16,7 @@ scripts/01_v1.0/01_products_and_orders.sql
 		        02_drop_itemcode_column.sql
 +----+
 
-    This quick start guide shows how to launch DbMaintain from the command line. Read the {{{tutorial.html}tutorial}} for instructions on how to do the same using {{{http://ant.apache.org}ant}}.
-	
-	Create a properties file dbmaintain.properties that configures the location of your scripts and the target database, for example:
+    To launch DbMaintain from the command line, you have to create a properties file dbmaintain.properties that configures the location of your scripts and the target database, for example:
 	
 +-----+
 # This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb' and 'postgresql'.
@@ -41,3 +39,10 @@ database.schemaNames=PUBLIC
 
     To use a different config file than dbmaintain.properties, add the parameter -f followed by the config file name.
 	
+	To launch DbMaintain using ant, use following ant task:
+	
++-----+
+<updateDatabase scriptLocations="${database.jarFile}">
+     <database userName="admin" password="pwd" url="jdbc:hsqldb:mem:mydb" schemaNames="PUBLIC" dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" />
+</updateDatabase>
++-----+

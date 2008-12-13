@@ -31,13 +31,14 @@ import org.dbmaintain.launch.DbMaintain;
 public class UpdateDatabaseTask extends BaseDatabaseTask {
 
     private String scriptLocations;
-    private String extensions;
-    private Boolean useLastModificationDates;
     private Boolean fromScratchEnabled;
     private Boolean autoCreateDbMaintainScriptsTable;
+    private Boolean allowOutOfSequenceExecutionOfPatches;
     private Boolean cleanDb;
     private Boolean disableConstraints;
     private Boolean updateSequences;
+    private String extensions;
+    private Boolean useLastModificationDates;
     
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.updateDatabase();
@@ -47,62 +48,42 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     @Override
     protected void addTaskConfiguration(Properties configuration) {
         if (scriptLocations != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
-        }
-        if (extensions != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS, extensions);
-        }
-        if (useLastModificationDates != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES, String.valueOf(useLastModificationDates));
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
         if (fromScratchEnabled != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, String.valueOf(fromScratchEnabled));
+            configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, String.valueOf(fromScratchEnabled));
         }
         if (autoCreateDbMaintainScriptsTable != null) {
             configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateDbMaintainScriptsTable));
         }
+        if (allowOutOfSequenceExecutionOfPatches != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, String.valueOf(allowOutOfSequenceExecutionOfPatches));
+        }
         if (cleanDb != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_CLEANDB_ENABLED, String.valueOf(cleanDb));
+            configuration.put(DbMaintainProperties.PROPERTY_CLEANDB_ENABLED, String.valueOf(cleanDb));
         }
         if (disableConstraints != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_DISABLE_CONSTRAINTS_ENABLED, disableConstraints);
+            configuration.put(DbMaintainProperties.PROPERTY_DISABLE_CONSTRAINTS_ENABLED, disableConstraints);
         }
         if (updateSequences != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_UPDATE_SEQUENCES_ENABLED, updateSequences);
+            configuration.put(DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES_ENABLED, updateSequences);
+        }
+        if (extensions != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, extensions);
+        }
+        if (useLastModificationDates != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, String.valueOf(useLastModificationDates));
         }
     }
 
     /**
-     * Sets the scriptLocations property, that defines where the scripts can be found that must be executed on the database.
-     * A script location can be a folder or a jar file. This property is required.
+     * Defines where the scripts can be found that must be executed on the database. Multiple locations may be
+     * configured, separated by comma's. A script location can be a folder or a jar file. This property is required.
      * 
      * @param scriptLocations Comma separated list of script locations
      */
     public void setScriptLocations(String scriptLocations) {
         this.scriptLocations = scriptLocations;
-    }
-    
-    /**
-     * Sets the extensions property, that defines the extensions of the files that are regarded to be database scripts.
-     * The extensions should not start with a dot. The default is 'sql,ddl'.
-     * 
-     * @param extensions Comma separated list of file extensions.
-     */
-    public void setExtensions(String extensions) {
-        this.extensions = extensions;
-    }
-    
-    /**
-     * Defines whether the last modification dates of the scripts files can be used to determine whether the contents of a
-     * script has changed. If set to true, the dbmaintainer will not look at the contents of scripts that were already
-     * executed on the database, if the last modification date is still the same. If it did change, it will first calculate 
-     * the checksum of the file to verify that the content really changed. Setting this property to true improves performance: 
-     * if set to false the checksum of every script must be calculated for each run of the dbmaintainer. True by default.
-     *  
-     * @param useLastModificationDates True if script file last modification dates can be used.
-     */
-    public void setUseLastModificationDates(boolean useLastModificationDates) {
-        this.useLastModificationDates = useLastModificationDates;
     }
     
     /**
@@ -132,10 +113,21 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
     }
 
+    
     /**
-     * Indicates whether the database should be 'cleaned' before scripts are executed by the dbMaintainer. If true, the
-     * records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' are deleted before executing
-     * the first script. False by default.
+     * If this property is set to true, a patch script is allowed to be executed even if another script 
+     * with a higher index was already executed.
+     * @param allowOutOfSequenceExecutionOfPatches
+     */
+    public void setAllowOutOfSequenceExecutionOfPatches(Boolean allowOutOfSequenceExecutionOfPatches) {
+        this.allowOutOfSequenceExecutionOfPatches = allowOutOfSequenceExecutionOfPatches;
+    }
+
+
+    /**
+     * Indicates whether the database should be 'cleaned' before scripts are executed. If true, the
+     * records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' or 
+     * 'dbMaintain.preserveDataOnly.*' are deleted before executing the first script. False by default.
      * 
      * @param cleanDb True if the database must be 'cleaned' before executing scripts.
      */
@@ -154,13 +146,36 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     }
     
     /**
-     * If the property dbMaintainer.updateSequences.enabled is set to true, all sequences and identity columns having a lower value 
-     * than the one indicated by this property are increased. False by default.
+     * If set to true, all sequences and identity columns are set to a sufficiently high value, so that test data can be 
+     * inserted without having manually chosen test record IDs clashing with automatically generated keys.
      * 
      * @param updateSequences True if sequences and identity columns have to be updated.
      */
     public void setUpdateSequences(boolean updateSequences) {
         this.updateSequences = updateSequences;
+    }
+    
+    /**
+     * Sets the extensions property, that defines the extensions of the files that are regarded to be database scripts.
+     * The extensions should not start with a dot. The default is 'sql,ddl'.
+     * 
+     * @param extensions Comma separated list of file extensions.
+     */
+    public void setExtensions(String extensions) {
+        this.extensions = extensions;
+    }
+    
+    /**
+     * Defines whether the last modification dates of the scripts files can be used to determine whether the contents of a
+     * script has changed. If set to true, DbMaintain will not look at the contents of scripts that were already
+     * executed on the database, if the last modification date is still the same. If it did change, it will first calculate 
+     * the checksum of the file to verify that the content really changed. Setting this property to true improves performance: 
+     * if set to false the checksum of every script must be calculated for each run. True by default.
+     *  
+     * @param useLastModificationDates True if script file last modification dates can be used.
+     */
+    public void setUseLastModificationDates(boolean useLastModificationDates) {
+        this.useLastModificationDates = useLastModificationDates;
     }
 
 }

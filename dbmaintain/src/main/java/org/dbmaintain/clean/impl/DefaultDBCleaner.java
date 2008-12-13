@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Implementation of {@link DBCleaner}. This implementation will delete all data from a database, except for the tables
  * that are configured as tables to preserve. This includes the tables that are listed in the property
- * {@link #PROPKEY_PRESERVE_TABLES}, {@link #PROPKEY_PRESERVE_DATA_TABLES}. and the table that is configured as
+ * {@link #PROPERTY_PRESERVE_TABLES}, {@link #PROPERTY_PRESERVE_DATA_TABLES}. and the table that is configured as
  * version table using the property {@link #PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME}.
  *
  * @author Tim Ducheyne

@@ -19,8 +19,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
@@ -197,7 +197,7 @@ public class DbMaintainIntegrationTest {
      */
     @Test
     public void addPatchScript_outOfSequenceAllowed() {
-        configuration.put(PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED, "true");
+        configuration.put(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
         createInitialScripts();
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
@@ -213,7 +213,7 @@ public class DbMaintainIntegrationTest {
      */
     @Test(expected = DbMaintainException.class)
     public void addPatchScript_identicalSequenceNr() {
-        configuration.put(PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED, "true");
+        configuration.put(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
         createInitialScripts();
         createNewScript("02_latest/02_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
@@ -226,7 +226,7 @@ public class DbMaintainIntegrationTest {
     @Test
     public void errorInIncrementalScript_dontKeepRetrying() {
         enableFromScratch();
-        configuration.put(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "false");
+        configuration.put(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "false");
 
         createInitialScripts();
         errorInInitialScript();
@@ -262,7 +262,7 @@ public class DbMaintainIntegrationTest {
     @Test
     public void errorInIncrementalScript_keepRetrying() {
         enableFromScratch();
-        configuration.put(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "true");
+        configuration.put(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "true");
 
         createInitialScripts();
         errorInInitialScript();
@@ -369,12 +369,12 @@ public class DbMaintainIntegrationTest {
 
 
     private void enableFromScratch() {
-        configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, "true");
+        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "true");
     }
 
 
     private void disableFromScratch() {
-        configuration.put(DbMaintainProperties.PROPKEY_FROM_SCRATCH_ENABLED, "false");
+        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "false");
     }
 
 

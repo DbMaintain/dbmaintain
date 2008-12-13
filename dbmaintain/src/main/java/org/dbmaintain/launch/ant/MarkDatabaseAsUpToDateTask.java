@@ -24,7 +24,7 @@ import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.launch.DbMaintain;
 
 /**
- * Task that arks the database as up-to-date, without executing any script. You can use this operation to prepare 
+ * Task that marks the database as up-to-date, without executing any script. You can use this operation to prepare 
  * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
  * 
  * @author Filip Neven
@@ -44,10 +44,10 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
     @Override
     protected void addTaskConfiguration(Properties configuration) {
         if (scriptLocations != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
         if (extensions != null) {
-            configuration.put(DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS, extensions);
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, extensions);
         }
         if (autoCreateExecutedScriptsTable != null) {
             configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));

@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Implementation of {@link DBClearer}. This implementation individually drops every table, view, constraint, trigger
  * and sequence in the database. A list of tables, views, ... that should be preserved can be specified using the
- * property {@link #PROPKEY_PRESERVE_TABLES}. <p/> NOTE: FK constraints give problems in MySQL and Derby The cascade in
+ * property {@link #PROPERTY_PRESERVE_TABLES}. <p/> NOTE: FK constraints give problems in MySQL and Derby The cascade in
  * drop table A cascade; does not work in MySQL-5.0 The DBMaintainer will first remove all constraints before calling
  * the db clearer
  *

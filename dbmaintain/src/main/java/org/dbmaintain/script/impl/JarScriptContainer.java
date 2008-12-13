@@ -132,12 +132,12 @@ public class JarScriptContainer extends BaseScriptContainer {
 
     protected Properties getJarProperties() {
         Properties configuration = new Properties();
-        configuration.put(PROPKEY_SCRIPT_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
-        configuration.put(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
-        configuration.put(PROPKEY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
-        configuration.put(PROPKEY_SCRIPT_PATCH_QUALIFIERS, StringUtils.join(patchQualifiers, ","));
-        configuration.put(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptDirName);
-        configuration.put(PROPKEY_SCRIPT_ENCODING, scriptEncoding);
+        configuration.put(PROPERTY_SCRIPT_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
+        configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
+        configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
+        configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, StringUtils.join(patchQualifiers, ","));
+        configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptDirName);
+        configuration.put(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
         return configuration;
     }
 

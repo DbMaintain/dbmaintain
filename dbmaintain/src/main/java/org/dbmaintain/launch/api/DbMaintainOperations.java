@@ -39,8 +39,8 @@ public class DbMaintainOperations {
      * 
      * @param jarFileName The name of the jar file to create
      */
-    public void createJar(String jarFileName) {
-        getDbMaintain().createJar(jarFileName);
+    public void createScriptJar(String jarFileName) {
+        getDbMaintain().createScriptJar(jarFileName);
     }
 
     

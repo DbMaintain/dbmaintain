@@ -237,7 +237,7 @@ public class OracleDbSupport extends DbSupport {
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName));
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DbMaintainException("Error while disabling referential constraints on schema " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);
@@ -269,7 +269,7 @@ public class OracleDbSupport extends DbSupport {
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName));
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DbMaintainException("Error while disabling value constraints on schema " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);

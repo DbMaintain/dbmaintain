@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.ExecutedScript;
@@ -347,7 +347,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
             if (fromScratchEnabled) {
                 if (!keepRetryingAfterError) {
                     throw new DbMaintainException("During a previous database update, the execution of an incremental script failed! Since " +
-                            PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED + " is set to false, the database will not be rebuilt " +
+                            PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED + " is set to false, the database will not be rebuilt " +
                             "from scratch, unless the failed (or another) incremental script is modified.");
                 }
                 logger.info("During a previous database update, the execution of a incremental script failed! " +

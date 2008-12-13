@@ -17,12 +17,12 @@
  */
 package org.dbmaintain.launch.ant;
 
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_ENCODING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_EXTENSIONS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_LOCATIONS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_PATCH_QUALIFIERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPKEY_SCRIPT_TARGETDATABASE_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PATCH_QUALIFIERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
 
 import java.util.Properties;
 
@@ -40,7 +40,7 @@ import org.apache.tools.ant.BuildException;
  * @author Tim Ducheyne
  * @author Alexander Snaps <alex.snaps@gmail.com>
  */
-public class CreateJarTask extends BaseTask {
+public class CreateScriptJarTask extends BaseTask {
 
     private String jarFileName;
     private String scriptLocations;
@@ -53,7 +53,7 @@ public class CreateJarTask extends BaseTask {
     @Override
     public void execute() throws BuildException {
         try {
-            getDbMaintain().createJar(jarFileName);
+            getDbMaintain().createScriptJar(jarFileName);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BuildException("Error creating jar file " + jarFileName, e);
@@ -64,22 +64,22 @@ public class CreateJarTask extends BaseTask {
     @Override
     protected void addTaskConfiguration(Properties configuration) {
         if (scriptLocations != null) {
-            configuration.put(PROPKEY_SCRIPT_LOCATIONS, scriptLocations);
+            configuration.put(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
         if (extensions != null) {
-            configuration.put(PROPKEY_SCRIPT_EXTENSIONS, extensions);
+            configuration.put(PROPERTY_SCRIPT_EXTENSIONS, extensions);
         }
         if (postProcessingDirName != null) {
-            configuration.put(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingDirName);
+            configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingDirName);
         }
         if (encoding != null) {
-            configuration.put(PROPKEY_SCRIPT_ENCODING, encoding);
+            configuration.put(PROPERTY_SCRIPT_ENCODING, encoding);
         }
         if (patchScriptSuffix != null) {
-            configuration.put(PROPKEY_SCRIPT_PATCH_QUALIFIERS, patchScriptSuffix);
+            configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchScriptSuffix);
         }
         if (targetDatabasePrefix != null) {
-            configuration.put(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
+            configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
         }
     }
 

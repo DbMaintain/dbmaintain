@@ -69,7 +69,7 @@ public class DbMaintain {
      * 
      * @param jarFileName The name of the jar file to create
      */
-    public void createJar(String jarFileName) {
+    public void createScriptJar(String jarFileName) {
         ScriptSource scriptSource = dbMaintainConfigurer.createScriptSource();
         List<Script> allScripts = scriptSource.getAllUpdateScripts();
         allScripts.addAll(scriptSource.getPostProcessingScripts());

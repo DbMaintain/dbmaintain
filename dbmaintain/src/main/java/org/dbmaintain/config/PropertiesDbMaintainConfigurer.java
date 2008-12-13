@@ -15,6 +15,33 @@
  */
 package org.dbmaintain.config;
 
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_BACKSLASH_ESCAPING_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_CLEANDB_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_DISABLE_CONSTRAINTS_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_DATA_SCHEMAS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_DATA_TABLES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_MATERIALIZED_VIEWS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_SCHEMAS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_SEQUENCES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_SYNONYMS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_TABLES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_TRIGGERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_TYPES;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_VIEWS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PATCH_QUALIFIERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFIER_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -101,11 +128,10 @@ public class PropertiesDbMaintainConfigurer {
         ScriptSource scriptSource = createScriptSource();
         ExecutedScriptInfoSource executedScriptInfoSource = createExecutedScriptInfoSource();
 
-        boolean cleanDbEnabled = PropertyUtils.getBoolean(PROPKEY_CLEANDB_ENABLED, configuration);
-        boolean fromScratchEnabled = PropertyUtils.getBoolean(PROPKEY_FROM_SCRATCH_ENABLED, configuration);
+        boolean cleanDbEnabled = PropertyUtils.getBoolean(PROPERTY_CLEANDB_ENABLED, configuration);
+        boolean fromScratchEnabled = PropertyUtils.getBoolean(PROPERTY_FROM_SCRATCH_ENABLED, configuration);
         boolean keepRetryingAfterError = PropertyUtils.getBoolean(PROPKEY_KEEP_RETRYING_AFTER_ERROR_ENABLED, configuration);
-        boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPKEY_DISABLE_CONSTRAINTS_ENABLED, configuration);
-        boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPKEY_UPDATE_SEQUENCES_ENABLED, configuration);
+        boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES_ENABLED, configuration);
 
         DBCleaner dbCleaner = createDbCleaner();
         DBClearer dbClearer = createDbClearer();
@@ -136,7 +162,7 @@ public class PropertiesDbMaintainConfigurer {
             Class<? extends ScriptParser> scriptParserClass = ReflectionUtils.getClassWithName(scriptParserClassName);
             databaseDialectScriptParserClassMap.put(databaseDialect, scriptParserClass);
         }
-        boolean backSlashEscapingEnabled = PropertyUtils.getBoolean(PROPKEY_BACKSLASH_ESCAPING_ENABLED, configuration);
+        boolean backSlashEscapingEnabled = PropertyUtils.getBoolean(PROPERTY_BACKSLASH_ESCAPING_ENABLED, configuration);
 
         Class<ScriptParserFactory> clazz = ConfigUtils.getConfiguredClass(ScriptParserFactory.class, configuration);
 
@@ -161,10 +187,10 @@ public class PropertiesDbMaintainConfigurer {
      * @return
      */
     public ScriptSource createScriptSource() {
-        boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPKEY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
-        boolean fixScriptOutOfSequenceExecutionAllowed = PropertyUtils.getBoolean(PROPKEY_PATCH_OUTOFSEQUENCEEXECUTIONALLOWED, configuration);
-        Set<String> scriptLocations = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_LOCATIONS, configuration));
-        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
+        boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
+        boolean fixScriptOutOfSequenceExecutionAllowed = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
+        Set<String> scriptLocations = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
+        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
 
         Set<ScriptContainer> scriptContainers = new HashSet<ScriptContainer>();
         for (String scriptLocation : scriptLocations) {
@@ -178,12 +204,12 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public JarScriptContainer createJarScriptContainer(List<Script> scripts) {
-        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
-        String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        String qualifierPefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-        String scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
+        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
         return new JarScriptContainer(scripts, scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
     }
 
@@ -192,12 +218,12 @@ public class PropertiesDbMaintainConfigurer {
         if (scriptLocation.endsWith(".jar")) {
             return new JarScriptContainer(new File(scriptLocation));
         } else {
-            Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_EXTENSIONS, configuration));
-            String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-            String qualifierPefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
-            Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
-            String postProcessingScriptDirName = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-            String scriptEncoding = PropertyUtils.getString(PROPKEY_SCRIPT_ENCODING, configuration);
+            Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+            String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+            String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+            Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+            String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+            String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
             return new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
         }
     }
@@ -219,10 +245,10 @@ public class PropertiesDbMaintainConfigurer {
         int executedAtColumnSize = PropertyUtils.getInt(PROPERTY_EXECUTED_AT_COLUMN_SIZE, configuration);
         String succeededColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SUCCEEDED_COLUMN_NAME, configuration));
         DateFormat timestampFormat = new SimpleDateFormat(PropertyUtils.getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
-        String targetDatabasePrefix = PropertyUtils.getString(PROPKEY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        String qualifierPrefix = PropertyUtils.getString(PROPKEY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPKEY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        String postProcessingScriptsDirname = PropertyUtils.getString(PROPKEY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        String qualifierPrefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String postProcessingScriptsDirname = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
         return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, String.class,
@@ -237,11 +263,11 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public DBCleaner createDbCleaner() {
-        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPKEY_PRESERVE_SCHEMAS);
-        schemasToPreserve.addAll(getSchemasToPreserve(PROPKEY_PRESERVE_DATA_SCHEMAS));
+        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
+        schemasToPreserve.addAll(getSchemasToPreserve(PROPERTY_PRESERVE_DATA_SCHEMAS));
 
-        Set<DbItemIdentifier> tablesToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_TABLES);
-        tablesToPreserve.addAll(getItemsToPreserve(PROPKEY_PRESERVE_DATA_TABLES));
+        Set<DbItemIdentifier> tablesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TABLES);
+        tablesToPreserve.addAll(getItemsToPreserve(PROPERTY_PRESERVE_DATA_TABLES));
         String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
         tablesToPreserve.add(DbItemIdentifier.getItemIdentifier(getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
 
@@ -254,16 +280,16 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public DBClearer createDbClearer() {
-        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPKEY_PRESERVE_SCHEMAS);
-        Set<DbItemIdentifier> tablesToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_TABLES);
+        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
+        Set<DbItemIdentifier> tablesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TABLES);
         String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
         tablesToPreserve.add(DbItemIdentifier.getItemIdentifier(getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
-        Set<DbItemIdentifier> viewsToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_VIEWS);
-        Set<DbItemIdentifier> materializedViewsToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_MATERIALIZED_VIEWS);
-        Set<DbItemIdentifier> synonymsToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_SYNONYMS);
-        Set<DbItemIdentifier> sequencesToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_SEQUENCES);
-        Set<DbItemIdentifier> triggersToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_TRIGGERS);
-        Set<DbItemIdentifier> typesToPreserve = getItemsToPreserve(PROPKEY_PRESERVE_TYPES);
+        Set<DbItemIdentifier> viewsToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_VIEWS);
+        Set<DbItemIdentifier> materializedViewsToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_MATERIALIZED_VIEWS);
+        Set<DbItemIdentifier> synonymsToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_SYNONYMS);
+        Set<DbItemIdentifier> sequencesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_SEQUENCES);
+        Set<DbItemIdentifier> triggersToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TRIGGERS);
+        Set<DbItemIdentifier> typesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TYPES);
 
         Class<DBClearer> clazz = ConfigUtils.getConfiguredClass(DBClearer.class, configuration);
         return createInstanceOfType(clazz, false,
@@ -320,7 +346,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public SequenceUpdater createSequenceUpdater() {
-        long lowestAcceptableSequenceValue = PropertyUtils.getLong(PROPKEY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, configuration);
+        long lowestAcceptableSequenceValue = PropertyUtils.getLong(PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, configuration);
         return new DefaultSequenceUpdater(lowestAcceptableSequenceValue, getNameDbSupportMap().values());
     }
 
@@ -383,7 +409,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     protected StoredIdentifierCase getCustomStoredIdentifierCase(String databaseDialect) {
-        String storedIdentifierCasePropertyValue = PropertyUtils.getString(PROPKEY_STORED_IDENTIFIER_CASE + "." + databaseDialect, configuration);
+        String storedIdentifierCasePropertyValue = PropertyUtils.getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, configuration);
         if ("lower_case".equals(storedIdentifierCasePropertyValue)) {
             return StoredIdentifierCase.LOWER_CASE;
         } else if ("upper_case".equals(storedIdentifierCasePropertyValue)) {
@@ -393,13 +419,13 @@ public class PropertiesDbMaintainConfigurer {
         } else if ("auto".equals(storedIdentifierCasePropertyValue)) {
             return null;
         }
-        throw new DbMaintainException("Unknown value " + storedIdentifierCasePropertyValue + " for property " + PROPKEY_STORED_IDENTIFIER_CASE
+        throw new DbMaintainException("Unknown value " + storedIdentifierCasePropertyValue + " for property " + PROPERTY_STORED_IDENTIFIER_CASE
                 + ". It should be one of lower_case, upper_case, mixed_case or auto.");
     }
 
 
     protected String getCustomIdentifierQuoteString(String databaseDialect) {
-        String identifierQuoteStringPropertyValue = PropertyUtils.getString(PROPKEY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, configuration);
+        String identifierQuoteStringPropertyValue = PropertyUtils.getString(PROPERTY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, configuration);
         if ("none".equals(identifierQuoteStringPropertyValue)) {
             return "";
         }
