@@ -11,10 +11,20 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
             properties are configurable using task attributes.</description>
+        </parameter>
+        <parameter>
+          <name>database</name>
+          <property>database</property>
+          <type>org.dbmaintain.launch.ant.Database</type>
+          <required>true</required>
+          <description>
+            
+          </description>
         </parameter>
       </parameters>
     </mojo>
@@ -29,6 +39,7 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
@@ -37,7 +48,8 @@
       </parameters>
     </mojo>
     <mojo>
-      <goal>createjar</goal>
+      <goal>createscriptjar</goal>
+      <call>createScriptJar</call>
       <description>
 
       </description>
@@ -45,6 +57,7 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
@@ -52,6 +65,7 @@
         </parameter>
         <parameter>
           <name>jarFileName</name>
+          <property>jarFileName</property>
           <type>java.lang.String</type>
           <required>true</required>
           <description>Creates a jar file that packages all database update scripts. to apply changes on a target
@@ -65,6 +79,7 @@
         </parameter>
         <parameter>
           <name>scriptLocations</name>
+          <property>scriptLocations</property>
           <type>java.lang.String</type>
           <required>true</required>
           <description></description>
@@ -106,6 +121,7 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
@@ -188,6 +204,7 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
@@ -205,6 +222,7 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
@@ -224,6 +242,7 @@
         <parameter>
           <name>configFile</name>
           <property>configFile</property>
+          <expression>${dbmaintain.configFile}</expression>
           <required>false</required>
           <type>java.lang.String</type>
           <description>Optional custom configuration file. Is usually not needed, since all applicable
