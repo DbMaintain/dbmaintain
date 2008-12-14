@@ -14,9 +14,20 @@
         <version>testing</version>
         <executions>
           <execution>
+            <phase>integration-test</phase>
             <goals>
               <goal>cleardatabase</goal>
             </goals>
+            <configuration>
+              <database>
+                <driverClassName>org.hsqldb.jdbcDriver</driverClassName>
+                <url>jdbc:hsqldb:mem:test</url>
+                <userName>SA</userName>
+                <password></password>
+                <dialect>hsqldb</dialect>
+                <schemaNames></schemaNames>
+              </database>
+            </configuration>
           </execution>
         </executions>
       </plugin>
