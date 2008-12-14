@@ -2,10 +2,61 @@
   <typedef resource="dbmaintain-anttasks.xml" />
   
   <target name="cleardatabase">
-    <clearDatabase />
+    <clearDatabase configFile="${configFile}">
+     <database />
+    </clearDatabase>
   </target>
   
   <target name="updatedatabase">
-    <updateDatabase />
+    <updateDatabase 
+      configFile="${configFile}"
+      scriptLocations="${scriptLocations}"
+      fromScratchEnabled="${fromScratchEnabled}"
+      autoCreateDbMaintainScriptsTable="${autoCreateDbMaintainScriptsTable}"
+      allowOutOfSequenceExecutionOfPatches="${allowOutOfSequenceExecutionOfPatches}"
+      cleanDb="${cleanDb}"
+      disableConstraints="${disableConstraints}"
+      updateSequences="${updateSequences}"
+      extensions="${extensions}"
+      useLastModificationDates="${useLastModificationDates}" >
+    </updateDatabase>
   </target>
+  
+  <target name="cleandatabase">
+    <cleandatabase configFile="${configFile}">
+    </cleandatabase>
+  </target>
+  
+  <target name="createScriptJar" >
+    <createscriptjar 
+      configFile="${configFile}" 
+      jarFileName="${jarFileName}"
+      scriptLocations="${scriptLocations}"
+      extensions="${extensions}"
+      postProcessingDirName="${postProcessingDirName}"
+      encoding="${encoding}"
+      patchScriptSuffix="${patchScriptSuffix}"
+      targetDatabasePrefix="${targetDatabasePrefix}">
+    </createscriptjar>
+  </target>
+  
+  <target name="disableConstraints">
+    <disableConstraints configFile="${configFile}">
+    </disableConstraints>
+  </target>
+  
+  <target name="updateSequences">
+    <updateSequences configFile="${configFile}">
+    </updateSequences>
+  </target>
+  
+  <target name="markDatabaseAsUpToDate">
+    <markDatabaseAsUpToDate 
+      configFile="${configFile}"
+      scriptLocations="${scriptLocations}"
+      extensions="${extensions}"
+      autoCreateExecutedScriptsTable="${autoCreateExecutedScriptsTable}">
+    </markDatabaseAsUpToDate>
+  </target>
+  
 </project>
