@@ -32,9 +32,9 @@ import org.dbmaintain.launch.DbMaintain;
  */
 public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
-    String scriptLocations;
-    String extensions;
-    Boolean autoCreateExecutedScriptsTable;
+    private String scriptLocations;
+    private String extensions;
+    private Boolean autoCreateExecutedScriptsTable;
     
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.markDatabaseAsUpToDate();
