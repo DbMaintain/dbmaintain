@@ -32,6 +32,7 @@ import org.dbmaintain.util.SQLTestUtils;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.io.*;
 import java.util.Properties;
@@ -58,6 +59,11 @@ public class DbMaintainIntegrationTest {
     private static final String UPDATED_INCREMENTAL_1 = "updated_incremental_1";
     private static final String NEW_INCREMENTAL_LOWER_INDEX = "new_incremental_lower_index";
     private static final String BEFORE_INITIAL_TABLE = "before_initial";
+    private static final String POST_PROCESSING_INDEXED_1 = "postProcessing_indexed_1";
+    private static final String POST_PROCESSING_INDEXED_2 = "postProcessing_indexed_2";
+    private static final String POST_PROCESSING_NOTINDEXED = "postProcessing_notindexed";
+    public static final String UPDATED_POST_PROCESSING_NOTINDEXED = "updated_postProcessing_notindexed";
+    public static final String UPDATED_POST_PROCESSING_INDEXED_1 = "updated_postProcessing_indexed_1";
 
     private File scriptsLocation;
     private DbSupport dbSupport;
@@ -73,14 +79,14 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void initial() {
+    public void testInitial() {
         createInitialScripts();
         updateDatabase();
         assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
     }
 
     @Test
-    public void addIncremental() {
+    public void testAddIncremental() {
         createInitialScripts();
         updateDatabase();
         assertTablesDontExist(NEW_INCREMENTAL_1);
@@ -90,7 +96,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void addRepeatable() {
+    public void testAddRepeatable() {
         createInitialScripts();
         updateDatabase();
         assertTablesDontExist(NEW_REPEATABLE);
@@ -100,7 +106,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void updateRepeatable() {
+    public void testUpdateRepeatable() {
         createInitialScripts();
         updateDatabase();
         updateRepeatableScript();
@@ -109,7 +115,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void updateIncremental_fromScratchEnabled() {
+    public void testUpdateIncremental_fromScratchEnabled() {
         enableFromScratch();
         createInitialScripts();
         updateDatabase();
@@ -120,7 +126,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void updateIncremental_fromScratchDisabled() {
+    public void testUpdateIncremental_fromScratchDisabled() {
         createInitialScripts();
         updateDatabase();
         updateIncrementalScript();
@@ -133,7 +139,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void addIncrementalWithLowerIndex_fromScratchEnabled() {
+    public void testAddIncrementalWithLowerIndex_fromScratchEnabled() {
         enableFromScratch();
         createInitialScripts();
         updateDatabase();
@@ -143,7 +149,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void addIncrementalWithLowerIndex_fromScratchDisabled() {
+    public void testAddIncrementalWithLowerIndex_fromScratchDisabled() {
         createInitialScripts();
         updateDatabase();
         addIncrementalScriptWithLowerIndex();
@@ -156,7 +162,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void removeExistingIncremental_fromScratchEnabled() {
+    public void testRemoveExistingIncremental_fromScratchEnabled() {
         enableFromScratch();
         createInitialScripts();
         updateDatabase();
@@ -167,7 +173,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test(expected = DbMaintainException.class)
-    public void removeExistingIncremental_fromScratchDisabled() {
+    public void testRemoveExistingIncremental_fromScratchDisabled() {
         createInitialScripts();
         updateDatabase();
         removeIncrementalScript();
@@ -181,7 +187,7 @@ public class DbMaintainIntegrationTest {
      * not allowed so the update should have failed.
      */
     @Test(expected = DbMaintainException.class)
-    public void addPatchScript_outOfSequenceNotAllowed() {
+    public void testAddPatchScript_outOfSequenceNotAllowed() {
         createInitialScripts();
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
@@ -196,7 +202,7 @@ public class DbMaintainIntegrationTest {
      * allowed, the hotfix script should have been executed (with a warning)
      */
     @Test
-    public void addPatchScript_outOfSequenceAllowed() {
+    public void testAddPatchScript_outOfSequenceAllowed() {
         configuration.put(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
         createInitialScripts();
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
@@ -212,7 +218,7 @@ public class DbMaintainIntegrationTest {
      * allowed, but the patch has a sequence nr that was already used. This should fail.
      */
     @Test(expected = DbMaintainException.class)
-    public void addPatchScript_identicalSequenceNr() {
+    public void testAddPatchScript_identicalSequenceNr() {
         configuration.put(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
         createInitialScripts();
         createNewScript("02_latest/02_create_another_table.sql", NEW_INCREMENTAL_3);
@@ -224,7 +230,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void errorInIncrementalScript_dontKeepRetrying() {
+    public void testErrorInIncrementalScript_dontKeepRetrying() {
         enableFromScratch();
         configuration.put(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "false");
 
@@ -260,7 +266,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void errorInIncrementalScript_keepRetrying() {
+    public void testErrorInIncrementalScript_keepRetrying() {
         enableFromScratch();
         configuration.put(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "true");
 
@@ -295,7 +301,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void errorInRepeatableScript() {
+    public void testErrorInRepeatableScript() {
         createInitialScripts();
         //createErrorInRepeatableScript();
         try {
@@ -319,7 +325,7 @@ public class DbMaintainIntegrationTest {
      * we start with a from scratch update
      */
     @Test
-    public void initialFromScratchUpdate() {
+    public void testInitialFromScratchUpdate() {
         enableFromScratch();
         createTable(BEFORE_INITIAL_TABLE);
         createInitialScripts();
@@ -332,14 +338,57 @@ public class DbMaintainIntegrationTest {
      * we start with a from scratch update
      */
     @Test
-    public void noInitialFromScratchUpdateIfFromScratchDisabled() {
+    public void testNoInitialFromScratchUpdateIfFromScratchDisabled() {
         disableFromScratch();
         createTable(BEFORE_INITIAL_TABLE);
         createInitialScripts();
         updateDatabase();
         assertTablesExist(BEFORE_INITIAL_TABLE);
     }
+    
+    @Test
+    public void testExecutePostProcessingScriptsIfSomeScriptIsModified() {
+        disableFromScratch();
+        createInitialScripts();
+        createPostProcessingScripts();
+        
+        // Do an initial database setup and verify that the postprocessing scripts are executed
+        updateDatabase();
+        assertTablesExist(POST_PROCESSING_INDEXED_1);
 
+        // Verify that the postprocessing scripts are executed when a new incremental script is added
+        dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
+        newIncrementalScript();
+        updateDatabase();
+        assertTablesExist(POST_PROCESSING_INDEXED_1);
+
+        // Verify that the postprocessing scripts are executed when a repeatable script is updated
+        dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
+        updateRepeatableScript();
+        updateDatabase();
+        assertTablesExist(POST_PROCESSING_INDEXED_1);
+    }
+
+    @Test @Ignore
+    public void testReExecuteAllPostProcessingScriptsIfOneOfThemIsModified() {
+        disableFromScratch();
+        createInitialScripts();
+        createPostProcessingScripts();
+        updateDatabase();
+        assertTablesExist(POST_PROCESSING_INDEXED_1);
+
+        // Verify that all postprocessing scripts are re-executed if a not indexed postprocessing script is updated
+        dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
+        updateNotIndexedPostProcessingScript();
+        updateDatabase();
+        assertTablesExist(POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
+
+        // Verify that all postprocessing scripts are re-executed if an indexed postprocessing script is updated
+        dropTestTables(dbSupport, POST_PROCESSING_NOTINDEXED);
+        updateIndexedPostProcessingScript();
+        updateDatabase();
+        assertTablesExist(UPDATED_POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
+    }
 
     private void createTable(String tableName) {
         SQLTestUtils.executeUpdate("create table " + tableName + " (test varchar(10))", dbSupport.getDataSource());
@@ -405,6 +454,28 @@ public class DbMaintainIntegrationTest {
         createScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + INITIAL_INCREMENTAL_1 + "(test varchar(10));");
         createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\ncreate table " + INITIAL_REPEATABLE + "(test varchar(10));");
         createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
+    }
+
+
+    private void createPostProcessingScripts() {
+        createScript("postprocessing/01_" + POST_PROCESSING_INDEXED_1 + ".sql", "drop table " + POST_PROCESSING_INDEXED_1 +
+                " if exists; create table " + POST_PROCESSING_INDEXED_1 + "(test varchar(10));");
+        createScript("postprocessing/02_" + POST_PROCESSING_INDEXED_2 + ".sql", "drop table " + POST_PROCESSING_INDEXED_2 +
+                " if exists; create table " + POST_PROCESSING_INDEXED_2 + "(test varchar(10));");
+        createScript("postprocessing/" + POST_PROCESSING_NOTINDEXED + ".sql", "drop table " + POST_PROCESSING_NOTINDEXED +
+                " if exists; create table " + POST_PROCESSING_NOTINDEXED + "(test varchar(10));");
+    }
+
+    private void updateIndexedPostProcessingScript() {
+        createScript("postprocessing/01" + UPDATED_POST_PROCESSING_INDEXED_1 + ".sql", "drop table " + POST_PROCESSING_INDEXED_1 + " if exists; " + 
+                "drop table " + UPDATED_POST_PROCESSING_INDEXED_1 +
+                " if exists; create table " + UPDATED_POST_PROCESSING_INDEXED_1 + "(test varchar(10));");
+    }
+
+    private void updateNotIndexedPostProcessingScript() {
+        createScript("postprocessing/" + UPDATED_POST_PROCESSING_NOTINDEXED + ".sql", "drop table " + POST_PROCESSING_NOTINDEXED + " if exists; " + 
+                "drop table " + UPDATED_POST_PROCESSING_NOTINDEXED +
+                " if exists; create table " + UPDATED_POST_PROCESSING_NOTINDEXED + "(test varchar(10));");
     }
 
 
