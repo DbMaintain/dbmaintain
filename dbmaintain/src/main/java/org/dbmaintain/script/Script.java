@@ -91,14 +91,13 @@ public class Script implements Comparable<Script> {
      * @param fileName             The name of the script file, not null
      * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
      * @param checkSum             Checksum calculated for the contents of the file
-     * @param scriptContentHandle  Handle providing access to the contents of the script, not null
      * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
      * @param qualifierPrefix      The prefix that identifies a qualifier in the filename, not null
      * @param patchQualifiers      The qualifiers that indicate that this script is a patch script, not null
-     * @param postProcessingScriptDirName Name of the post processing script dir 
+     * @param postProcessingScriptDirName Name of the post processing script dir
      */
-    public Script(String fileName, Long fileLastModifiedAt, String checkSum, Set<String> patchQualifiers, String targetDatabasePrefix, 
-            String qualifierPrefix, String postProcessingScriptDirName) {
+    public Script(String fileName, Long fileLastModifiedAt, String checkSum, String targetDatabasePrefix, String qualifierPrefix,
+                  Set<String> patchQualifiers, String postProcessingScriptDirName) {
         this(fileName, fileLastModifiedAt, patchQualifiers, targetDatabasePrefix, qualifierPrefix, postProcessingScriptDirName);
         this.checkSum = checkSum;
     }
@@ -109,8 +108,6 @@ public class Script implements Comparable<Script> {
      * 
      * @param fileName             The name of the script file, not null
      * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
-     * @param checkSum             Checksum calculated for the contents of the file
-     * @param scriptContentHandle  Handle providing access to the contents of the script, not null
      * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
      * @param qualifierPrefix      The prefix that identifies a qualifier in the filename, not null
      * @param patchQualifiers      The qualifiers that indicate that this script is a patch script, not null
@@ -251,6 +248,12 @@ public class Script implements Comparable<Script> {
      * @return -1 when this script has a smaller version, 0 if equal, 1 when larger
      */
     public int compareTo(Script script) {
+        if (!isPostProcessingScript() && script.isPostProcessingScript()) {
+            return -1;
+        }
+        if (isPostProcessingScript() && !script.isPostProcessingScript()) {
+            return 1;
+        }
         return scriptIndexes.compareTo(script.getVersion());
     }
 

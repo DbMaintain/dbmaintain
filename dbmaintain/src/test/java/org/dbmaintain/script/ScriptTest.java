@@ -137,25 +137,46 @@ public class ScriptTest {
     public void testIsScriptContentEqualTo() {
         Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
 
-        Script sameScriptWithoutContent = new Script("fileName", 0L, script.getCheckSum(), Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script sameScriptWithoutContent = new Script("fileName", 0L, script.getCheckSum(), "@", "#", Collections.singleton("PATCH"), "postprocessing");
         assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, true));
         assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, false));
 
-        Script scriptWithDifferentModificationDate = new Script("fileName", 1L, script.getCheckSum(), Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script scriptWithDifferentModificationDate = new Script("fileName", 1L, script.getCheckSum(), "@", "#", Collections.singleton("PATCH"), "postprocessing");
         assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, true));
         assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, false));
 
-        Script scriptWithDifferentChecksum = new Script("fileName", 0L, "xxx",Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script scriptWithDifferentChecksum = new Script("fileName", 0L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
         assertTrue(script.isScriptContentEqualTo(scriptWithDifferentChecksum, true));
         assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksum, false));
 
-        Script scriptWithDifferentChecksumAndModificationDate = new Script("fileName", 1L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script scriptWithDifferentChecksumAndModificationDate = new Script("fileName", 1L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
         assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, true));
         assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, false));
     }
-    
+
+    @Test
+    public void testOrder() {
+        Script incremental1 = new Script("01_x/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script incremental2 = new Script("01_x/02_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script incremental3 = new Script("02_x/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script incremental4 = new Script("noindex/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script postprocessing1 = new Script("postprocessing/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script postprocessing2 = new Script("postprocessing/02_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script postprocessing3 = new Script("postprocessing/noindex.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+
+        assertSequence(incremental1, incremental2, incremental3, incremental4, postprocessing1, postprocessing2, postprocessing3);
+    }
+
+    private void assertSequence(Script... scripts) {
+        for (int i = 0; i < scripts.length - 1; i++) {
+            Script script1 = scripts[i];
+            Script script2 = scripts[i + 1];
+            assertEquals("Expected script " + script1 + " to come before " + script2 + " but it doesn't", -1, script1.compareTo(script2));
+        }
+    }
+
     private Script createScript(String fileName) {
-        Script script = new Script(fileName, 10L, "xxx", Collections.singleton("PATCH"), "@", "#", "postprocessing");
+        Script script = new Script(fileName, 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
         return script;
     }
 
