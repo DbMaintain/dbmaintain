@@ -18,6 +18,7 @@ import java.util.Set;
 import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContainer;
+import org.dbmaintain.util.DbMaintainException;
 
 /**
  * Base class for a container for database scripts
@@ -77,14 +78,44 @@ abstract public class BaseScriptContainer implements ScriptContainer {
     }
 
 
-    protected void initConfigurationFromProperties(Properties configuration) {
-        this.scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
-        this.targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        this.qualifierPrefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        this.patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        this.postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-        this.scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
+    /**
+     * @param customProperties
+     * @param defaultScriptFileExtensions
+     * @param defaultTargetDatabasePrefix
+     * @param defaultQualifierPrefix
+     * @param defaultPatchQualifiers
+     * @param defaultPostProcessingScriptDirName
+     * @param defaultScriptEncoding
+     */
+    protected void initConfiguration(Properties customProperties, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
+                                   String defaultQualifierPrefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName,
+                                   String defaultScriptEncoding) {
+        this.scriptFileExtensions = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_EXTENSIONS))
+                ? new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, customProperties)) : defaultScriptFileExtensions;
+        assertValidScriptExtensions();
+
+        this.targetDatabasePrefix = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX))
+                ? PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, customProperties) : defaultTargetDatabasePrefix;
+        this.qualifierPrefix = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_QUALIFIER_PREFIX))
+                ? PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, customProperties) : defaultQualifierPrefix;
+        this.patchQualifiers = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_PATCH_QUALIFIERS))
+                ? new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, customProperties)) : defaultPatchQualifiers;
+        this.postProcessingScriptDirName = (customProperties != null && customProperties.containsKey(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME))
+                ? PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, customProperties) : defaultPostProcessingScriptDirName;
+        this.scriptEncoding = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_ENCODING))
+                        ? PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, customProperties) : defaultScriptEncoding;
     }
 
-
+    protected void assertValidScriptExtensions() {
+        // check whether an extension is configured
+        if (scriptFileExtensions.isEmpty()) {
+            throw new DbMaintainException("No script file extensions specified!");
+        }
+        // Verify the correctness of the script extensions
+        for (String extension : scriptFileExtensions) {
+            if (extension.startsWith(".")) {
+                throw new DbMaintainException("Script file extension " + extension + " should not start with a '.'");
+            }
+        }
+    }
 }

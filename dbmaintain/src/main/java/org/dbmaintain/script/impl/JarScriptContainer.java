@@ -26,11 +26,7 @@ import org.dbmaintain.util.ReaderInputStream;
 import org.dbmaintain.util.WriterOutputStream;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -78,24 +74,21 @@ public class JarScriptContainer extends BaseScriptContainer {
      * 
      * @param jarFile Script jar file, not null
      */
-    public JarScriptContainer(File jarFile) {
-        initFromJarFile(jarFile);
-    }
+    public JarScriptContainer(File jarFile, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
+            String defaultQualifierPefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName,
+            String defaultScriptEncoding) {
 
-
-    /**
-     * Initializes this object using the contents of the given jar file
-     * 
-     * @param jarFile Script jar file, not null
-     */
-    protected void initFromJarFile(File jarFile) {
         try {
             jar = new JarFile(jarFile);
-            initConfigurationFromProperties(getPropertiesFromJar(jar));
-            initScriptsFromJar(jar);
         } catch (IOException e) {
             throw new DbMaintainException("Error opening jar file " + jarFile, e);
         }
+
+        Properties propertiesFromJar = getPropertiesFromJar(jar);
+        initConfiguration(propertiesFromJar, defaultScriptFileExtensions, defaultTargetDatabasePrefix, defaultQualifierPefix,
+                defaultPatchQualifiers, defaultPostProcessingScriptDirName, defaultScriptEncoding);
+
+        initScriptsFromJar(jar);
     }
 
 
@@ -127,6 +120,8 @@ public class JarScriptContainer extends BaseScriptContainer {
                 scripts.add(script);
             }
         }
+        
+        Collections.sort(scripts);
     }
 
 

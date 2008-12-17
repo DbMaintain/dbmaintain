@@ -210,7 +210,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, patchQualifiers, targetDatabasePrefix, qualifierPefix, postProcessingDirName), executedAt, succeeded);
+                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingDirName), executedAt, succeeded);
                 executedScripts.add(executedScript);
             }
 

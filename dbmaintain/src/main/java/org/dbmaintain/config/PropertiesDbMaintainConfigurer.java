@@ -216,15 +216,15 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public ScriptContainer createScriptContainer(String scriptLocation) {
+        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
         if (scriptLocation.endsWith(".jar")) {
-            return new JarScriptContainer(new File(scriptLocation));
+            return new JarScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
         } else {
-            Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
-            String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-            String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
-            Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
-            String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-            String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
             return new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
         }
     }

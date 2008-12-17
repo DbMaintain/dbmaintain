@@ -57,7 +57,8 @@ public class JarScriptContainerTest {
         JarScriptContainer originalScriptJar = new JarScriptContainer(scripts, CollectionUtils.asSet("sql", "ddl"), "@", "#", 
                 Collections.singleton("PATCH"), "postprocessing", "ISO-8859-1");
         originalScriptJar.writeToJarFile(jarFile);
-        BaseScriptContainer scriptJarFromFile = new JarScriptContainer(jarFile);
+        BaseScriptContainer scriptJarFromFile = new JarScriptContainer(jarFile, CollectionUtils.asSet("sql", "ddl"), "@", "#",
+                Collections.singleton("PATCH"), "postprocessing", "ISO-8859-1");
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
         assertEqualProperties(originalScriptJar, scriptJarFromFile);
