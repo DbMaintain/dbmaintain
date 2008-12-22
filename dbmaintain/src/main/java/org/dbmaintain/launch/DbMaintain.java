@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+import java.util.SortedSet;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
@@ -29,6 +30,7 @@ import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptSource;
+import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.impl.JarScriptContainer;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
@@ -70,9 +72,8 @@ public class DbMaintain {
      * @param jarFileName The name of the jar file to create
      */
     public void createScriptJar(String jarFileName) {
-        ScriptSource scriptSource = dbMaintainConfigurer.createScriptSource();
-        List<Script> allScripts = scriptSource.getAllUpdateScripts();
-        allScripts.addAll(scriptSource.getPostProcessingScripts());
+        ScriptContainer scriptContainer = dbMaintainConfigurer.createScriptContainer();
+        SortedSet<Script> allScripts = scriptContainer.getScripts();
         JarScriptContainer jarScriptContainer = dbMaintainConfigurer.createJarScriptContainer(allScripts);
         jarScriptContainer.writeToJarFile(new File(jarFileName));
     }

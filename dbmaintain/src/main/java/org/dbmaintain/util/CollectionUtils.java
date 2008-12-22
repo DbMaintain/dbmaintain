@@ -17,10 +17,7 @@ package org.dbmaintain.util;
 
 import static java.util.Arrays.asList;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class containing collection related utilities
@@ -59,6 +56,22 @@ public class CollectionUtils {
      */
     public static <T> Set<T> asSet(T... elements) {
         Set<T> result = new HashSet<T>();
+        if (elements == null) {
+            return result;
+        }
+        result.addAll(asList(elements));
+        return result;
+    }
+
+
+    /**
+     * Converts the given array of elements to a sortedset.
+     *
+     * @param elements The elements
+     * @return The elements as a set, empty if elements was null
+     */
+    public static <T> SortedSet<T> asSortedSet(T... elements) {
+        SortedSet<T> result = new TreeSet<T>();
         if (elements == null) {
             return result;
         }

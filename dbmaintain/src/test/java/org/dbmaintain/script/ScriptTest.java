@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * todo javadoc
+ * Tests for the script class
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -135,36 +135,38 @@ public class ScriptTest {
     
     @Test
     public void testIsScriptContentEqualTo() {
-        Script script = new Script("fileName", 0L, new ScriptContentHandle.StringScriptContentHandle("script content", "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script script = createScriptWithContent("fileName", "script content");
 
-        Script sameScriptWithoutContent = new Script("fileName", 0L, script.getCheckSum(), "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, true));
-        assertTrue(script.isScriptContentEqualTo(sameScriptWithoutContent, false));
+        Script sameScriptWithoutContent = createScriptWithCheckSum("fileName", script.getCheckSum());
+        assertEqualScriptContent(script, sameScriptWithoutContent, true);
+        assertEqualScriptContent(script, sameScriptWithoutContent, false);
 
-        Script scriptWithDifferentModificationDate = new Script("fileName", 1L, script.getCheckSum(), "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, true));
-        assertTrue(script.isScriptContentEqualTo(scriptWithDifferentModificationDate, false));
+        Script scriptWithDifferentModificationDate = createScriptWithModificationDateAndCheckSum("fileName", 1L, script.getCheckSum());
+        assertEqualScriptContent(script, scriptWithDifferentModificationDate, true);
+        assertEqualScriptContent(script, scriptWithDifferentModificationDate, false);
 
-        Script scriptWithDifferentChecksum = new Script("fileName", 0L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        assertTrue(script.isScriptContentEqualTo(scriptWithDifferentChecksum, true));
-        assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksum, false));
+        Script scriptWithDifferentChecksum = createScriptWithCheckSum("fileName", "xxx");
+        assertEqualScriptContent(script, scriptWithDifferentChecksum, true);
+        assertDifferentScriptContent(script, scriptWithDifferentChecksum, false);
 
-        Script scriptWithDifferentChecksumAndModificationDate = new Script("fileName", 1L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, true));
-        assertFalse(script.isScriptContentEqualTo(scriptWithDifferentChecksumAndModificationDate, false));
+        Script scriptWithDifferentChecksumAndModificationDate = createScriptWithModificationDateAndCheckSum("fileName", 1L, "xxx");
+        assertDifferentScriptContent(script, scriptWithDifferentChecksumAndModificationDate, true);
+        assertDifferentScriptContent(script, scriptWithDifferentChecksumAndModificationDate, false);
     }
 
     @Test
     public void testOrder() {
-        Script incremental1 = new Script("01_x/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        Script incremental2 = new Script("01_x/02_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        Script incremental3 = new Script("02_x/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        Script incremental4 = new Script("noindex/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        Script postprocessing1 = new Script("postprocessing/01_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        Script postprocessing2 = new Script("postprocessing/02_x.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        Script postprocessing3 = new Script("postprocessing/noindex.sql", 0L, (ScriptContentHandle) null, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        Script incremental1 = createScript("01_x/01_x.sql");
+        Script incremental2 = createScript("01_x/02_x.sql");
+        Script incremental3 = createScript("02_x/01_x.sql");
+        Script incremental4 = createScript("02_y/01_y.sql");
+        Script incremental5 = createScript("noindex/01_x.sql");
+        Script postprocessing1 = createScript("postprocessing/01_x.sql");
+        Script postprocessing2 = createScript("postprocessing/02_x.sql");
+        Script postprocessing3 = createScript("postprocessing/noindex.sql");
 
-        assertSequence(incremental1, incremental2, incremental3, incremental4, postprocessing1, postprocessing2, postprocessing3);
+        assertSequence(incremental1, incremental2, incremental3, incremental4, incremental5,
+                postprocessing1, postprocessing2, postprocessing3);
     }
 
     private void assertSequence(Script... scripts) {
@@ -175,9 +177,28 @@ public class ScriptTest {
         }
     }
 
+    private void assertEqualScriptContent(Script script1, Script script2, boolean useLastModificationDates) {
+        assertTrue(script1.isScriptContentEqualTo(script2, useLastModificationDates));
+    }
+
+    private void assertDifferentScriptContent(Script script1, Script script2, boolean useLastModificationDates) {
+        assertFalse(script1.isScriptContentEqualTo(script2, useLastModificationDates));
+    }
+
     private Script createScript(String fileName) {
-        Script script = new Script(fileName, 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        return script;
+        return new Script(fileName, 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
+    }
+
+    private Script createScriptWithContent(String fileName, String scriptContent) {
+        return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
+    }
+
+    private Script createScriptWithCheckSum(String fileName, String checkSum) {
+        return new Script(fileName, 0L, checkSum, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+    }
+
+    private Script createScriptWithModificationDateAndCheckSum(String fileName, long fileLastModifiedAt, String checkSum) {
+        return new Script(fileName, fileLastModifiedAt, checkSum, "@", "#", Collections.singleton("PATCH"), "postprocessing");
     }
 
 }

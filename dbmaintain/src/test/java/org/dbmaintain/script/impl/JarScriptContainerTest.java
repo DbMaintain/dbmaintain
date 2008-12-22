@@ -23,6 +23,7 @@ import org.dbmaintain.script.impl.BaseScriptContainer;
 import org.dbmaintain.script.impl.JarScriptContainer;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.CollectionUtils;
+import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +34,8 @@ import static java.util.Arrays.asList;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.Iterator;
 
 /**
  * @author Filip Neven
@@ -40,7 +43,7 @@ import java.util.List;
  */
 public class JarScriptContainerTest {
 
-    private List<Script> scripts;
+    private SortedSet<Script> scripts;
 
     private File jarFile;
 
@@ -48,7 +51,7 @@ public class JarScriptContainerTest {
     public void init() throws IOException {
         Script script1 = createScript("folder1/script1.sql", "Script 1 content");
         Script script2 = createScript("folder1/script2.sql", "Script 2 content");
-        scripts = asList(script1, script2);
+        scripts = asSortedSet(script1, script2);
         jarFile = createTempFile("scriptjar", ".jar", new File("target"));
     }
 
@@ -62,8 +65,14 @@ public class JarScriptContainerTest {
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
         assertEqualProperties(originalScriptJar, scriptJarFromFile);
-        assertEqualScripts(originalScriptJar.getScripts().get(0), scriptJarFromFile.getScripts().get(0));
-        assertEqualScripts(originalScriptJar.getScripts().get(1), scriptJarFromFile.getScripts().get(1));
+        assertEqualScripts(originalScriptJar.getScripts(), scriptJarFromFile.getScripts());
+    }
+
+    private void assertEqualScripts(SortedSet<Script> originalScripts, SortedSet<Script> scriptsFromFile) throws IOException {
+        Iterator<Script> scriptsFromFileIterator = scriptsFromFile.iterator();
+        for (Script originalScript : originalScripts) {
+            assertEqualScripts(originalScript, scriptsFromFileIterator.next());
+        }
     }
 
     private void assertEqualScripts(Script originalScript, Script scriptFromFile) throws IOException {

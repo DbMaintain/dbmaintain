@@ -99,9 +99,8 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
 
 
     protected void initScripts() {
-        scripts = new ArrayList<Script>();
+        scripts = new TreeSet<Script>();
         getScriptsAt(scripts, scriptLocation.getAbsolutePath(), "");
-        Collections.sort(scripts);
     }
 
 
@@ -113,7 +112,7 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
      * @param scriptRoot
      * @param relativeLocation
      */
-    protected void getScriptsAt(List<Script> scriptList, String scriptRoot, String relativeLocation) {
+    protected void getScriptsAt(SortedSet<Script> scriptList, String scriptRoot, String relativeLocation) {
         File currentLocation = new File(scriptRoot + "/" + relativeLocation);
         if (currentLocation.isFile() && isScriptFile(currentLocation)) {
             Script script = createScript(currentLocation, relativeLocation);

@@ -30,13 +30,9 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import static java.util.Arrays.asList;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Tests the DefaultScriptSource
@@ -95,18 +91,18 @@ public class DefaultScriptSourceTest {
      */
     @Test
     public void testGetAllUpdateScripts() {
-        List<Script> scripts = scriptSource.getAllUpdateScripts();
-        System.out.println(scripts);
+        SortedSet<Script> scripts = scriptSource.getAllUpdateScripts();
+        Iterator<Script> scriptIterator = scripts.iterator();
 
-        assertEquals("1_scripts/001_scriptA.sql", scripts.get(0).getFileName());   // x.1.1
-        assertEquals("1_scripts/002_scriptB.sql", scripts.get(1).getFileName());   // x.1.2
-        assertEquals("1_scripts/scriptD.sql", scripts.get(2).getFileName());       // x.1.x
-        assertEquals("2_scripts/002_scriptE.sql", scripts.get(3).getFileName());   // x.2.2
-        assertEquals("2_scripts/scriptF.sql", scripts.get(4).getFileName());       // x.2.x
-        assertEquals("2_scripts/subfolder/001_scriptG.sql", scripts.get(5).getFileName());   // x.2.x.1
-        assertEquals("2_scripts/subfolder/scriptH.sql", scripts.get(6).getFileName());       // x.2.x.x
-        assertEquals("scripts/001_scriptI.sql", scripts.get(7).getFileName());   // x.x.1
-        assertEquals("scripts/scriptJ.sql", scripts.get(8).getFileName());       // x.x.x
+        assertEquals("1_scripts/001_scriptA.sql", scriptIterator.next().getFileName());   // x.1.1
+        assertEquals("1_scripts/002_scriptB.sql", scriptIterator.next().getFileName());   // x.1.2
+        assertEquals("1_scripts/scriptD.sql", scriptIterator.next().getFileName());       // x.1.x
+        assertEquals("2_scripts/002_scriptE.sql", scriptIterator.next().getFileName());   // x.2.2
+        assertEquals("2_scripts/scriptF.sql", scriptIterator.next().getFileName());       // x.2.x
+        assertEquals("2_scripts/subfolder/001_scriptG.sql", scriptIterator.next().getFileName());   // x.2.x.1
+        assertEquals("2_scripts/subfolder/scriptH.sql", scriptIterator.next().getFileName());       // x.2.x.x
+        assertEquals("scripts/001_scriptI.sql", scriptIterator.next().getFileName());   // x.x.1
+        assertEquals("scripts/scriptJ.sql", scriptIterator.next().getFileName());       // x.x.x
     }
 
     @Test
@@ -142,78 +138,13 @@ public class DefaultScriptSourceTest {
     public void testGetNewScripts() {
         alreadyExecutedScripts.set(5, new ExecutedScript(new Script("2_scripts/subfolder/scriptH.sql", 0L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), executionDate, true));
 
-        List<Script> scripts = scriptSource.getNewScripts(new ScriptIndexes("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
+        SortedSet<Script> scripts = scriptSource.getNewScripts(new ScriptIndexes("2.x.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
+        Iterator<Script> scriptIterator = scripts.iterator();
 
-        assertEquals("1_scripts/scriptD.sql", scripts.get(0).getFileName());                   // 1.x 		was added
-        assertEquals("2_scripts/subfolder/scriptH.sql", scripts.get(1).getFileName());      // 2.x.x	was changed
-        assertEquals("scripts/001_scriptI.sql", scripts.get(2).getFileName());               // x.1		higher version
+        assertEquals("1_scripts/scriptD.sql", scriptIterator.next().getFileName());                   // 1.x 		was added
+        assertEquals("2_scripts/subfolder/scriptH.sql", scriptIterator.next().getFileName());      // 2.x.x	was changed
+        assertEquals("scripts/001_scriptI.sql", scriptIterator.next().getFileName());               // x.1		higher version
     }
 
 
-    @Test
-    public void testIsExistingScriptsModfied_noModifications() {
-        assertFalse(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-    }
-
-
-    @Test
-    public void testIsExistingScriptsModfied_modifiedScript() {
-        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), executionDate, true));
-
-        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-    }
-
-
-    @Test
-    public void testIsExistingScriptsModfied_scriptAdded() {
-        alreadyExecutedScripts.remove(1);
-
-        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-    }
-
-
-    @Test
-    public void testIsExistingScriptsModfied_scriptRemoved() {
-        alreadyExecutedScripts.add(new ExecutedScript(new Script("1_scripts/003_scriptB.sql", 0L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), executionDate, true));
-
-        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("x.x.x"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-    }
-
-
-    @Test
-    public void testIsExistingScriptsModfied_newScript() {
-        alreadyExecutedScripts.remove(1);
-
-        assertFalse(scriptSource.isIncrementalScriptModified(new ScriptIndexes("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-    }
-
-
-    @Test
-    public void testIsExistingScriptsModfied_higherIndexScriptModified() {
-        alreadyExecutedScripts.set(1, new ExecutedScript(new Script("1_scripts/002_scriptB.sql", 0L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), executionDate, true));
-
-        assertFalse(scriptSource.isIncrementalScriptModified(new ScriptIndexes("1.1"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-        assertTrue(scriptSource.isIncrementalScriptModified(new ScriptIndexes("1.2"), new HashSet<ExecutedScript>(alreadyExecutedScripts)));
-    }
-
-
-    /**
-     * Test whether an existing script was modified script but all scripts have a higher version than the current version.
-     */
-    @Test
-    public void testIsExistingScriptsModfied_noLowerIndex() {
-        boolean result = scriptSource.isIncrementalScriptModified(new ScriptIndexes("0"), new HashSet<ExecutedScript>(alreadyExecutedScripts));
-        assertFalse(result);
-    }
-
-
-    /**
-     * Test getting the post processing scripts.
-     */
-    @Test
-    public void testGetPostProcessingScripts() {
-        List<Script> scripts = scriptSource.getPostProcessingScripts();
-        assertEquals("postprocessing/post-scriptA.sql", scripts.get(0).getFileName());
-        assertEquals("postprocessing/post-scriptB.sql", scripts.get(1).getFileName());
-    }
 }

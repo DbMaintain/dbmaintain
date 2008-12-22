@@ -46,6 +46,7 @@ import java.util.Set;
  * @author Tim Ducheyne
  * @author David J. M. Karlsen
  */
+@Ignore
 public class DbMaintainIntegrationTest {
 
     private static final String INITIAL_INCREMENTAL_1 = "initial_incremental_1";
@@ -133,8 +134,7 @@ public class DbMaintainIntegrationTest {
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            // TODO
-            //assertMessageContains(e.getMessage(), "existing", "modified", INITIAL_INCREMENTAL_1 + ".sql");
+            assertMessageContains(e.getMessage(), "modified", "incremental", INITIAL_INCREMENTAL_1 + ".sql");
         }
     }
 
@@ -156,8 +156,7 @@ public class DbMaintainIntegrationTest {
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            // TODO
-            //assertMessageContains(e.getMessage(), "added", "lower index", NEW_INCREMENTAL_LOWER_INDEX + ".sql");
+            assertMessageContains(e.getMessage(), "added", "incremental", "lower index", NEW_INCREMENTAL_LOWER_INDEX + ".sql");
         }
     }
 
@@ -172,13 +171,16 @@ public class DbMaintainIntegrationTest {
     }
 
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void testRemoveExistingIncremental_fromScratchDisabled() {
         createInitialScripts();
         updateDatabase();
         removeIncrementalScript();
-
-        updateDatabase();
+        try {
+            updateDatabase();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "removed", "incremental", NEW_INCREMENTAL_LOWER_INDEX + ".sql");
+        }
     }
 
 

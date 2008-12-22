@@ -10,10 +10,7 @@ import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFI
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.script.Script;
@@ -34,7 +31,7 @@ abstract public class BaseScriptContainer implements ScriptContainer {
      */
     public static final String LOCATION_PROPERTIES_FILENAME = "META-INF/dbscripts.properties";
 
-    protected List<Script> scripts;
+    protected SortedSet<Script> scripts;
     protected Set<String> scriptFileExtensions;
     protected String targetDatabasePrefix;
     protected String qualifierPrefix;
@@ -43,7 +40,7 @@ abstract public class BaseScriptContainer implements ScriptContainer {
     protected String scriptEncoding;
     
 
-    public List<Script> getScripts() {
+    public SortedSet<Script> getScripts() {
         return scripts;
     }
 

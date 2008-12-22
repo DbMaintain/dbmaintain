@@ -133,6 +133,10 @@ public class Script implements Comparable<Script> {
         return fileName;
     }
 
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
 
     /**
      * @return The version, not null
@@ -215,7 +219,7 @@ public class Script implements Comparable<Script> {
      *         or an error must be reported.
      */
     public boolean isIncremental() {
-        return scriptIndexes.isIncrementalScript();
+        return !isPostProcessingScript() && scriptIndexes.isIncrementalScript();
     }
     
     
@@ -254,7 +258,11 @@ public class Script implements Comparable<Script> {
         if (isPostProcessingScript() && !script.isPostProcessingScript()) {
             return 1;
         }
-        return scriptIndexes.compareTo(script.getVersion());
+        int versionComparison = scriptIndexes.compareTo(script.getVersion());
+        if (versionComparison != 0) {
+            return versionComparison;
+        }
+        return fileName.compareTo(script.fileName);
     }
 
 

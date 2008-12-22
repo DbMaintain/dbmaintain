@@ -3,10 +3,7 @@ package org.dbmaintain.script.impl;
 import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.Script;
 
-import java.util.List;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * @author Filip Neven
@@ -15,21 +12,20 @@ import java.util.Collections;
  */
 public class CompositeScriptContainer implements ScriptContainer {
 
-    private List<Script> scripts;
+    private SortedSet<Script> scripts;
 
-    public CompositeScriptContainer(List<ScriptContainer> scriptContainers) {
+    public CompositeScriptContainer(Set<ScriptContainer> scriptContainers) {
         initScripts(scriptContainers);
     }
 
-    protected void initScripts(List<ScriptContainer> scriptContainers) {
-        scripts = new ArrayList<Script>();
+    protected void initScripts(Set<ScriptContainer> scriptContainers) {
+        scripts = new TreeSet<Script>();
         for (ScriptContainer scriptContainer : scriptContainers) {
             scripts.addAll(scriptContainer.getScripts());
         }
-        Collections.sort(scripts);
     }
 
-    public List<Script> getScripts() {
+    public SortedSet<Script> getScripts() {
         return scripts;
     }
 }

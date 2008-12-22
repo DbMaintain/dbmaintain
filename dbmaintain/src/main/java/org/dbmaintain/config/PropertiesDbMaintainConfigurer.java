@@ -59,6 +59,7 @@ import org.dbmaintain.script.ScriptRunner;
 import org.dbmaintain.script.ScriptSource;
 import org.dbmaintain.script.impl.FileSystemScriptContainer;
 import org.dbmaintain.script.impl.JarScriptContainer;
+import org.dbmaintain.script.impl.CompositeScriptContainer;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.structure.ConstraintsDisabler;
@@ -126,10 +127,13 @@ public class PropertiesDbMaintainConfigurer {
     public DbMaintainer createDbMaintainer() {
         ScriptRunner scriptRunner = createScriptRunner();
         ScriptSource scriptSource = createScriptSource();
+        ScriptContainer scriptContainer = createScriptContainer();
         ExecutedScriptInfoSource executedScriptInfoSource = createExecutedScriptInfoSource();
 
         boolean cleanDbEnabled = PropertyUtils.getBoolean(PROPERTY_CLEANDB_ENABLED, configuration);
         boolean fromScratchEnabled = PropertyUtils.getBoolean(PROPERTY_FROM_SCRATCH_ENABLED, configuration);
+        boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
+        boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
         boolean keepRetryingAfterError = PropertyUtils.getBoolean(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, configuration);
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS_ENABLED, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES_ENABLED, configuration);
@@ -141,10 +145,11 @@ public class PropertiesDbMaintainConfigurer {
 
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
-                new Class<?>[]{ScriptRunner.class, ScriptSource.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class,
-                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class},
-                new Object[]{scriptRunner, scriptSource, executedScriptInfoSource, fromScratchEnabled, keepRetryingAfterError, cleanDbEnabled,
-                        disableConstraintsEnabled, updateSequencesEnabled, dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater});
+                new Class<?>[]{ScriptRunner.class, ScriptSource.class, ScriptContainer.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class,
+                        boolean.class, boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class},
+                new Object[]{scriptRunner, scriptSource, scriptContainer, executedScriptInfoSource, fromScratchEnabled, useScriptFileLastModificationDates,
+                        allowOutOfSequenceExecutionOfPatchScripts, keepRetryingAfterError, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
+                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater});
     }
 
 
@@ -190,21 +195,27 @@ public class PropertiesDbMaintainConfigurer {
     public ScriptSource createScriptSource() {
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
         boolean fixScriptOutOfSequenceExecutionAllowed = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
-        Set<String> scriptLocations = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
         Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
 
+        ScriptContainer scriptContainer = createScriptContainer();
+
+        Class<ScriptSource> clazz = ConfigUtils.getConfiguredClass(ScriptSource.class, configuration);
+        return createInstanceOfType(clazz, false, new Class<?>[]{ScriptContainer.class, boolean.class, Set.class, boolean.class},
+                new Object[]{scriptContainer, useScriptFileLastModificationDates, scriptFileExtensions, fixScriptOutOfSequenceExecutionAllowed});
+    }
+
+    public ScriptContainer createScriptContainer() {
+        Set<String> scriptLocations = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
         Set<ScriptContainer> scriptContainers = new HashSet<ScriptContainer>();
         for (String scriptLocation : scriptLocations) {
             scriptContainers.add(createScriptContainer(scriptLocation));
         }
-
-        Class<ScriptSource> clazz = ConfigUtils.getConfiguredClass(ScriptSource.class, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{Set.class, boolean.class, Set.class, boolean.class},
-                new Object[]{scriptContainers, useScriptFileLastModificationDates, scriptFileExtensions, fixScriptOutOfSequenceExecutionAllowed});
+        ScriptContainer scriptContainer = new CompositeScriptContainer(scriptContainers);
+        return scriptContainer;
     }
 
 
-    public JarScriptContainer createJarScriptContainer(List<Script> scripts) {
+    public JarScriptContainer createJarScriptContainer(SortedSet<Script> scripts) {
         Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
         String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);

@@ -57,7 +57,7 @@ public class JarScriptContainer extends BaseScriptContainer {
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param scriptEncoding Encoding used to read the contents of the script, not null
      */
-    public JarScriptContainer(List<Script> scripts, Set<String> scriptFileExtensions, String targetDatabasePrefix, String qualifierPrefix, 
+    public JarScriptContainer(SortedSet<Script> scripts, Set<String> scriptFileExtensions, String targetDatabasePrefix, String qualifierPrefix,
             Set<String> patchQualifiers, String postProcessingScriptDirName, String scriptEncoding) {
         this.scripts = scripts;
         this.scriptFileExtensions = scriptFileExtensions;
@@ -98,7 +98,7 @@ public class JarScriptContainer extends BaseScriptContainer {
      * @param jarFile Script jar file, not null
      */
     protected void initScriptsFromJar(final JarFile jarFile) {
-        scripts = new ArrayList<Script>();
+        scripts = new TreeSet<Script>();
 
         JarEntry jarEntry;
         for (Enumeration<JarEntry> jarEntries = jarFile.entries(); jarEntries.hasMoreElements();) {
@@ -120,8 +120,6 @@ public class JarScriptContainer extends BaseScriptContainer {
                 scripts.add(script);
             }
         }
-        
-        Collections.sort(scripts);
     }
 
 

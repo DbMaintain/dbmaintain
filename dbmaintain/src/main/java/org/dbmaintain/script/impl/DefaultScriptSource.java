@@ -45,25 +45,25 @@ public class DefaultScriptSource implements ScriptSource {
 
     protected boolean fixScriptOutOfSequenceExecutionAllowed;
 
-    protected Set<ScriptContainer> scriptContainers;
+    protected ScriptContainer scriptContainer;
 
     protected Set<String> scriptFileExtensions;
 
-    protected List<Script> allUpdateScripts, allPostProcessingScripts;
+    protected SortedSet<Script> allUpdateScripts, allPostProcessingScripts;
 
 
     /**
      * Constructor for DefaultScriptSource.
      *
-     * @param scriptContainers
+     * @param scriptContainer
      * @param useScriptFileLastModificationDates
      *
      * @param scriptFileExtensions
      */
-    public DefaultScriptSource(Set<ScriptContainer> scriptContainers, boolean useScriptFileLastModificationDates,
+    public DefaultScriptSource(ScriptContainer scriptContainer, boolean useScriptFileLastModificationDates,
                                Set<String> scriptFileExtensions, boolean fixScriptOutOfSequenceExecutionAllowed) {
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
-        this.scriptContainers = scriptContainers;
+        this.scriptContainer = scriptContainer;
         this.scriptFileExtensions = scriptFileExtensions;
         this.fixScriptOutOfSequenceExecutionAllowed = fixScriptOutOfSequenceExecutionAllowed;
         assertValidScriptExtensions();
@@ -78,7 +78,7 @@ public class DefaultScriptSource implements ScriptSource {
      *
      * @return all available database update scripts, not null
      */
-    public List<Script> getAllUpdateScripts() {
+    public SortedSet<Script> getAllUpdateScripts() {
         if (allUpdateScripts == null) {
             loadAndOrganizeAllScripts();
         }
@@ -90,7 +90,7 @@ public class DefaultScriptSource implements ScriptSource {
      * @return All scripts that are incremental, i.e. non-repeatable, i.e. whose file name starts with an index
      */
     protected List<Script> getIncrementalScripts() {
-        List<Script> scripts = getAllUpdateScripts();
+        SortedSet<Script> scripts = getAllUpdateScripts();
         List<Script> incrementalScripts = new ArrayList<Script>();
         for (Script script : scripts) {
             if (script.isIncremental()) {
@@ -102,24 +102,6 @@ public class DefaultScriptSource implements ScriptSource {
 
 
     /**
-     * Asserts that, in the given list of database update scripts, there are no two indexed scripts with the same version.
-     *
-     * @param scripts The list of scripts, must be sorted by version
-     */
-    protected void assertNoDuplicateIndexes(List<Script> scripts) {
-        for (int i = 0; i < scripts.size() - 1; i++) {
-            Script script1 = scripts.get(i);
-            Script script2 = scripts.get(i + 1);
-            if (script1.isIncremental() && script2.isIncremental() && script1.getVersion().equals(script2.getVersion())) {
-                throw new DbMaintainException("Found 2 database scripts with the same version index: "
-                        + script1.getFileName() + " and " + script2.getFileName() + " both have version index "
-                        + script1.getVersion().getIndexesString());
-            }
-        }
-    }
-
-
-    /**
      * Returns a list of scripts with a higher version or whose contents were changed.
      * <p/>
      * The scripts are returned in the order in which they should be executed.
@@ -127,12 +109,12 @@ public class DefaultScriptSource implements ScriptSource {
      * @param currentVersion The start version, not null
      * @return The scripts that have a higher index of timestamp than the start version, not null.
      */
-    public List<Script> getNewScripts(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
+    public SortedSet<Script> getNewScripts(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
         Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
 
-        List<Script> result = new ArrayList<Script>();
+        SortedSet<Script> result = new TreeSet<Script>();
 
-        List<Script> allScripts = getAllUpdateScripts();
+        SortedSet<Script> allScripts = getAllUpdateScripts();
         for (Script script : allScripts) {
             Script alreadyExecutedScript = alreadyExecutedScriptMap.get(script.getFileName());
 
@@ -159,58 +141,12 @@ public class DefaultScriptSource implements ScriptSource {
 
 
     /**
-     * Returns true if one or more scripts that have a version index equal to or lower than
-     * the index specified by the given version object has been modified since the timestamp specified by
-     * the given version.
-     *
-     * @param currentVersion The current database version, not null
-     * @return True if an existing script has been modified, false otherwise
-     */
-    public boolean isIncrementalScriptModified(ScriptIndexes currentVersion, Set<ExecutedScript> alreadyExecutedScripts) {
-        Map<String, Script> alreadyExecutedScriptMap = convertToScriptNameScriptMap(alreadyExecutedScripts);
-        List<Script> incrementalScripts = getIncrementalScripts();
-        // Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
-        for (ExecutedScript alreadyExecutedScript : alreadyExecutedScripts) {
-            if (alreadyExecutedScript.getScript().isIncremental() && Collections.binarySearch(incrementalScripts, alreadyExecutedScript.getScript()) < 0) {
-                logger.warn("Existing indexed script found that was executed, which has been removed: " + alreadyExecutedScript.getScript().getFileName());
-                return true;
-            }
-        }
-
-        // Search for indexed scripts whose version < the current version, which are new or whose contents have changed
-        for (Script indexedScript : incrementalScripts) {
-            if (indexedScript.getVersion().compareTo(currentVersion) <= 0) {
-                Script alreadyExecutedScript = alreadyExecutedScriptMap.get(indexedScript.getFileName());
-                if (alreadyExecutedScript == null) {
-                    if (indexedScript.isPatchScript()) {
-                        if (!fixScriptOutOfSequenceExecutionAllowed) {
-                            logger.warn("Found a new hoftix script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
-                            return true;
-                        }
-                        logger.info("Found a new hoftix script that has a lower index than a script that has already been executed. Allowing the hotfix script to be executed out of sequence: " + indexedScript.getFileName());
-                        return false;
-                    }
-
-                    logger.warn("Found a new script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
-                    return true;
-                }
-                if (!alreadyExecutedScript.isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates)) {
-                    logger.warn("Script found of which the contents have changed: " + indexedScript.getFileName());
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-
-    /**
      * Gets the configured post-processing script files and verifies that they on the file system. If one of them
      * doesn't exist or is not a file, an exception is thrown.
      *
      * @return All the postprocessing scripts, not null
      */
-    public List<Script> getPostProcessingScripts() {
+    public SortedSet<Script> getPostProcessingScripts() {
         if (allPostProcessingScripts == null) {
             loadAndOrganizeAllScripts();
         }
@@ -224,9 +160,9 @@ public class DefaultScriptSource implements ScriptSource {
      * the same index.
      */
     protected void loadAndOrganizeAllScripts() {
-        List<Script> allScripts = loadAllScripts();
-        allUpdateScripts = new ArrayList<Script>();
-        allPostProcessingScripts = new ArrayList<Script>();
+        SortedSet<Script> allScripts = loadAllScripts();
+        allUpdateScripts = new TreeSet<Script>();
+        allPostProcessingScripts = new TreeSet<Script>();
         for (Script script : allScripts) {
             if (!isConfiguredExtension(script)) {
                 continue;
@@ -237,11 +173,6 @@ public class DefaultScriptSource implements ScriptSource {
                 allUpdateScripts.add(script);
             }
         }
-        Collections.sort(allUpdateScripts);
-        assertNoDuplicateIndexes(allUpdateScripts);
-        Collections.sort(allPostProcessingScripts);
-        assertNoDuplicateIndexes(allPostProcessingScripts);
-
     }
 
 
@@ -262,12 +193,8 @@ public class DefaultScriptSource implements ScriptSource {
     /**
      * @return A List containing all scripts in the given script locations, not null
      */
-    protected List<Script> loadAllScripts() {
-        List<Script> scripts = new ArrayList<Script>();
-        for (ScriptContainer scriptContainer : scriptContainers) {
-            scripts.addAll(scriptContainer.getScripts());
-        }
-        return scripts;
+    protected SortedSet<Script> loadAllScripts() {
+        return scriptContainer.getScripts();
     }
 
 

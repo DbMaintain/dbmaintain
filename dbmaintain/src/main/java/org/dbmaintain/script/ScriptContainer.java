@@ -16,6 +16,7 @@
 package org.dbmaintain.script;
 
 import java.util.List;
+import java.util.SortedSet;
 
 /**
  * Defines the contract for a container for database scripts
@@ -25,6 +26,6 @@ import java.util.List;
  */
 public interface ScriptContainer {
 
-    List<Script> getScripts();
+    SortedSet<Script> getScripts();
     
 }

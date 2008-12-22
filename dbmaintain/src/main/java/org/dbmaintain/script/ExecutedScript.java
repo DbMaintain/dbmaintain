@@ -21,7 +21,7 @@ import java.util.Date;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ExecutedScript {
+public class ExecutedScript implements Comparable<ExecutedScript> {
 
 	private Script script;
 	
@@ -58,10 +58,7 @@ public class ExecutedScript {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((script == null) ? 0 : script.hashCode());
-		return result;
+		return script.hashCode();
 	}
 
 
@@ -87,6 +84,9 @@ public class ExecutedScript {
     public String toString() {
         return script.getFileName();
     }
-	
 
+
+    public int compareTo(ExecutedScript other) {
+        return script.compareTo(other.getScript());
+    }
 }

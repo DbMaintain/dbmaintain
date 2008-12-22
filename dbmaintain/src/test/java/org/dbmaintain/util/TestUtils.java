@@ -84,7 +84,7 @@ abstract public class TestUtils {
     public static DefaultScriptSource getDefaultScriptSource(String scriptLocation, boolean useScriptFileLastModificationDates) {
         Set<String> scriptFileExtensions = asSet("sql");
         ScriptContainer scriptContainer = new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, "@", "#", asSet("PATCH"), "postprocessing", "ISO-8859-1");
-        return new DefaultScriptSource(asSet(scriptContainer), useScriptFileLastModificationDates, scriptFileExtensions, false);
+        return new DefaultScriptSource(scriptContainer, useScriptFileLastModificationDates, scriptFileExtensions, false);
     }
 
 
