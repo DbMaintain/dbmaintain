@@ -24,8 +24,9 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -70,8 +71,8 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
         defaultDbCleaner.setSchemasToPreserve(schemasToPreserve);
         
         Set<DbItemIdentifier> tablesToPreserve = CollectionUtils.asSet(
-                DbItemIdentifier.parseItemIdentifier("test", dbSupport, nameDbSupportMap),
-                DbItemIdentifier.parseItemIdentifier("\"SCHEMA_A\".\"TEST\"", dbSupport, nameDbSupportMap));
+                DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "test", dbSupport, nameDbSupportMap),
+                DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "\"SCHEMA_A\".\"TEST\"", dbSupport, nameDbSupportMap));
         defaultDbCleaner.setTablesToPreserve(tablesToPreserve);
 	}
 

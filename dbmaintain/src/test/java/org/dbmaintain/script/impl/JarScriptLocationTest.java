@@ -18,11 +18,10 @@ package org.dbmaintain.script.impl;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContentHandle;
-import org.dbmaintain.script.impl.BaseScriptContainer;
-import org.dbmaintain.script.impl.JarScriptContainer;
+import org.dbmaintain.script.impl.JarScriptLocation;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.CollectionUtils;
+import org.dbmaintain.util.TestUtils;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +29,8 @@ import org.junit.Test;
 import java.io.File;
 import static java.io.File.createTempFile;
 import java.io.IOException;
-import static java.util.Arrays.asList;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.Iterator;
 
@@ -41,7 +38,7 @@ import java.util.Iterator;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class JarScriptContainerTest {
+public class JarScriptLocationTest {
 
     private SortedSet<Script> scripts;
 
@@ -49,18 +46,18 @@ public class JarScriptContainerTest {
 
     @Before
     public void init() throws IOException {
-        Script script1 = createScript("folder1/script1.sql", "Script 1 content");
-        Script script2 = createScript("folder1/script2.sql", "Script 2 content");
+        Script script1 = TestUtils.createScript("folder1/script1.sql", "Script 1 content");
+        Script script2 = TestUtils.createScript("folder1/script2.sql", "Script 2 content");
         scripts = asSortedSet(script1, script2);
         jarFile = createTempFile("scriptjar", ".jar", new File("target"));
     }
 
     @Test
     public void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
-        JarScriptContainer originalScriptJar = new JarScriptContainer(scripts, CollectionUtils.asSet("sql", "ddl"), "@", "#", 
+        JarScriptLocation originalScriptJar = new JarScriptLocation(scripts, CollectionUtils.asSet("sql", "ddl"), "@", "#",
                 Collections.singleton("PATCH"), "postprocessing", "ISO-8859-1");
         originalScriptJar.writeToJarFile(jarFile);
-        BaseScriptContainer scriptJarFromFile = new JarScriptContainer(jarFile, CollectionUtils.asSet("sql", "ddl"), "@", "#",
+        JarScriptLocation scriptJarFromFile = new JarScriptLocation(jarFile, CollectionUtils.asSet("sql", "ddl"), "@", "#",
                 Collections.singleton("PATCH"), "postprocessing", "ISO-8859-1");
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
@@ -84,7 +81,7 @@ public class JarScriptContainerTest {
         assertTrue(originalScript.isScriptContentEqualTo(scriptFromFile, true));
     }
 
-    private void assertEqualProperties(BaseScriptContainer originalScriptJar, BaseScriptContainer scriptJarFromFile) {
+    private void assertEqualProperties(ScriptLocation originalScriptJar, ScriptLocation scriptJarFromFile) {
         assertEquals(originalScriptJar.getScriptFileExtensions(), scriptJarFromFile.getScriptFileExtensions());
         assertEquals(originalScriptJar.getTargetDatabasePrefix(), scriptJarFromFile.getTargetDatabasePrefix());
         assertEquals(originalScriptJar.getQualifierPrefix(), scriptJarFromFile.getQualifierPrefix());
@@ -93,11 +90,5 @@ public class JarScriptContainerTest {
         assertEquals(originalScriptJar.getScriptEncoding(), scriptJarFromFile.getScriptEncoding());
         
     }
-    
-    private Script createScript(String fileName, String content) {
-        Script script1 = new Script(fileName, 1222632047999L, 
-                new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1"), "@", "#", 
-                Collections.singleton("PATCH"), "postprocessing");
-        return script1;
-    }
+
 }

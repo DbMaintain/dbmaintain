@@ -19,10 +19,13 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.dbmaintain.clean.impl.DefaultDBCleaner;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
-import org.dbmaintain.script.ScriptContainer;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptContentHandle;
 import org.dbmaintain.script.impl.*;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
@@ -36,6 +39,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import static java.util.Collections.singleton;
 
 /**
  * todo javadoc
@@ -68,23 +72,14 @@ abstract public class TestUtils {
 
 
     public static DefaultDBClearer getDefaultDBClearer(DbSupport dbSupport) {
-        return new DefaultDBClearer(getNameDbSupportMap(dbSupport), Collections.<DbItemIdentifier>emptySet(),
-                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(),
-                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(),
-                Collections.<DbItemIdentifier>emptySet());
+        return new DefaultDBClearer(getNameDbSupportMap(dbSupport)
+        );
     }
 
 
     public static DefaultDBCleaner getDefaultDBCleaner(DbSupport dbSupport) {
         return new DefaultDBCleaner(getNameDbSupportMap(dbSupport),
                 Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), new DefaultSQLHandler());
-    }
-
-
-    public static DefaultScriptSource getDefaultScriptSource(String scriptLocation, boolean useScriptFileLastModificationDates) {
-        Set<String> scriptFileExtensions = asSet("sql");
-        ScriptContainer scriptContainer = new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, "@", "#", asSet("PATCH"), "postprocessing", "ISO-8859-1");
-        return new DefaultScriptSource(scriptContainer, useScriptFileLastModificationDates, scriptFileExtensions, false);
     }
 
 
@@ -120,10 +115,10 @@ abstract public class TestUtils {
     }
 
 
-    public static Set<DbItemIdentifier> toDbItemIdentifiers(Set<String> itemsAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
+    public static Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType dbItemType, Set<String> itemsAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
         Set<DbItemIdentifier> itemIdentifiers = new HashSet<DbItemIdentifier>();
         for (String itemAsString : itemsAsString) {
-            itemIdentifiers.add(DbItemIdentifier.parseItemIdentifier(itemAsString, defaultDbSupport, nameDbSupportMap));
+            itemIdentifiers.add(DbItemIdentifier.parseItemIdentifier(dbItemType, itemAsString, defaultDbSupport, nameDbSupportMap));
         }
         return itemIdentifiers;
     }
@@ -137,4 +132,15 @@ abstract public class TestUtils {
         return schemaIdentifiers;
     }
 
+    public static Script createScript(String fileName) {
+        return new Script(fileName, 1L, "xxxxx", "@", "#", asSet("PATCH"), "postprocessing");
+    }
+
+    public static Script createScript(String fileName, String content) {
+        return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1"), "@", "#", singleton("PATCH"), "postprocessing");
+    }
+
+    public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
+        return new FileSystemScriptLocation(scriptRootLocation, asSet("sql"), "@", "#", asSet("PATCH"), "postprocessing", "ISO-8859-1");
+    }
 }

@@ -18,6 +18,8 @@ package org.dbmaintain.util;
 import static junit.framework.Assert.assertEquals;
 
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,22 +45,22 @@ public final class DbItemIdentifierTest {
 	
 	@Test
 	public void parseItemIdentifier_itemOnly() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier("test", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier("public", "test", dbSupport);
+		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "test", dbSupport, dbNameDbSupportMap);
+		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, "public", "test", dbSupport);
 		assertEquals(identifier, parsedIdentifier);
 	}
 	
 	@Test
 	public void parseItemIdentifier_schemaAndItem() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier("myschema.test", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier("myschema", "test", dbSupport);
+		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "myschema.test", dbSupport, dbNameDbSupportMap);
+		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, "myschema", "test", dbSupport);
 		assertEquals(identifier, parsedIdentifier);
 	}
 	
 	@Test
 	public void parseItemIdentifier_databaseSchemaAndItem() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier("mydatabase.myschema.test", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier("myschema", "test", dbSupport);
+		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "mydatabase.myschema.test", dbSupport, dbNameDbSupportMap);
+		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, "myschema", "test", dbSupport);
 		assertEquals(identifier, parsedIdentifier);
 	}
 	

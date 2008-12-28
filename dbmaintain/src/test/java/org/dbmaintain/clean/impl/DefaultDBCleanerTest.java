@@ -25,7 +25,8 @@ import javax.sql.DataSource;
 
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -67,7 +68,7 @@ public class DefaultDBCleanerTest {
         
         // create cleaner instance
         defaultDbCleaner = TestUtils.getDefaultDBCleaner(dbSupport);
-        Set<DbItemIdentifier> tablesToPreserve = TestUtils.toDbItemIdentifiers(
+        Set<DbItemIdentifier> tablesToPreserve = TestUtils.toDbItemIdentifiers(DbItemType.TABLE,
                 CollectionUtils.asSet("Test_table_Preserve", "Test_CASE_Table_Preserve"), dbSupport, nameDbSupportMap);
         defaultDbCleaner.setTablesToPreserve(tablesToPreserve);
     }

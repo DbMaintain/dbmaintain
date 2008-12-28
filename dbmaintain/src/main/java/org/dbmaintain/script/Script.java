@@ -56,7 +56,7 @@ public class Script implements Comparable<Script> {
     /* True if this script is a postprocessing script */
     private boolean postProcessingScript;
 
-    /* True if this script is a fix script */
+    /* True if this script is a patch script */
     private boolean patchScript;
 
     /* Set of qualifiers for this script */
@@ -224,7 +224,7 @@ public class Script implements Comparable<Script> {
     
     
     public boolean isRepeatable() {
-        return scriptIndexes.isRepeatableScript();
+        return !isPostProcessingScript() && scriptIndexes.isRepeatableScript();
     }
 
 

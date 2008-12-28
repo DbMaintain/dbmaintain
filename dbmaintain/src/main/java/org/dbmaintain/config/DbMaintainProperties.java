@@ -66,11 +66,6 @@ public interface DbMaintainProperties {
     public static final String PROPERTY_FROM_SCRATCH_ENABLED = "dbMaintainer.fromScratch.enabled";
 
     /**
-     * Property indicating if an retry of an update should only be performed when changes to script files were made
-     */
-    public static final String PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED = "dbMaintainer.keepRetryingAfterError.enabled";
-
-    /**
      * Property indicating if database code should be cleared before installing a new version of
      * the code or when updating the database from scratch
      */

@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.util;
+package org.dbmaintain.dbsupport;
 
 import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
+import org.dbmaintain.util.DbMaintainException;
 
 import java.util.Map;
 
@@ -34,13 +35,16 @@ public class DbItemIdentifier {
 	private String itemName;
 	
 	private boolean caseSensitive;
+
+    private DbItemType type;
 	
-	private DbItemIdentifier(String databaseName, String schemaName, String itemName, boolean caseSensitive) {
+	private DbItemIdentifier(String databaseName, String schemaName, String itemName, boolean caseSensitive, DbItemType type) {
 		this.databaseName = databaseName;
 		this.schemaName = schemaName;
 		this.itemName = itemName;
 		this.caseSensitive = caseSensitive;
-	}
+        this.type = type;
+    }
 
 	public String getDatabaseName() {
 		return databaseName;
@@ -57,9 +61,13 @@ public class DbItemIdentifier {
 	public boolean isCaseSensitive() {
 		return caseSensitive;
 	}
-	
-	public DbItemIdentifier getSchema() {
-		return new DbItemIdentifier(databaseName, schemaName, null, caseSensitive);
+
+    public DbItemType getType() {
+        return type;
+    }
+
+    public DbItemIdentifier getSchema() {
+		return new DbItemIdentifier(databaseName, schemaName, null, caseSensitive, type);
 	}
 
 	@Override
@@ -69,6 +77,7 @@ public class DbItemIdentifier {
 		result = prime * result + ((databaseName == null) ? 0 : databaseName.hashCode());
 		result = prime * result + ((itemName == null) ? 0 : (caseSensitive ? itemName.hashCode() : itemName.toUpperCase().hashCode()));
 		result = prime * result + ((schemaName == null) ? 0 : (caseSensitive ? schemaName.hashCode() : schemaName.toUpperCase().hashCode()));
+        result = prime * result + ((type == null) ? 0 : (caseSensitive ? type.hashCode() : type.hashCode()));
 		return result;
 	}
 
@@ -100,7 +109,7 @@ public class DbItemIdentifier {
 	}
 	
 	
-	public static DbItemIdentifier parseItemIdentifier(String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
+	public static DbItemIdentifier parseItemIdentifier(DbItemType type, String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
 		String[] identifierParts = StringUtils.split(identifierAsString, '.');
     	String databaseName, schemaName, itemName;
     	DbSupport dbSupport;
@@ -126,11 +135,11 @@ public class DbItemIdentifier {
     		throw new DbMaintainException("Incorrectly formatted db item identifier " + identifierAsString);
     	}
     	
-    	return getItemIdentifier(schemaName, itemName, dbSupport);
+    	return getItemIdentifier(type, schemaName, itemName, dbSupport);
 	}
 	
 	
-	public static DbItemIdentifier getItemIdentifier(String schemaName, String itemName, DbSupport dbSupport) {
+	public static DbItemIdentifier getItemIdentifier(DbItemType type, String schemaName, String itemName, DbSupport dbSupport) {
 		boolean caseSenstve = dbSupport.getStoredIdentifierCase() != StoredIdentifierCase.MIXED_CASE;
 		if (!caseSenstve) {
     		schemaName = schemaName.toUpperCase();
@@ -140,7 +149,7 @@ public class DbItemIdentifier {
     		itemName = dbSupport.toCorrectCaseIdentifier(itemName);
     	}
     	return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName), 
-    			dbSupport.toCorrectCaseIdentifier(itemName), caseSenstve);
+    			dbSupport.toCorrectCaseIdentifier(itemName), caseSenstve, type);
 	}
 	
 	
@@ -172,6 +181,6 @@ public class DbItemIdentifier {
 		if (!caseSenstve) {
     		schemaName = schemaName.toUpperCase();
     	}
-    	return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName), null, caseSenstve);
+    	return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName), null, caseSenstve, DbItemType.SCHEMA);
 	}
 }

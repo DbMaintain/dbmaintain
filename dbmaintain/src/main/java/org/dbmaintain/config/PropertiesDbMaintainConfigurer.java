@@ -15,58 +15,28 @@
  */
 package org.dbmaintain.config;
 
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_BACKSLASH_ESCAPING_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_CLEANDB_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_DISABLE_CONSTRAINTS_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_DATA_SCHEMAS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_DATA_TABLES;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_MATERIALIZED_VIEWS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_SCHEMAS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_SEQUENCES;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_SYNONYMS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_TABLES;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_TRIGGERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_TYPES;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PRESERVE_VIEWS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PATCH_QUALIFIERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFIER_PREFIX;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.clear.impl.DefaultDBClearer;
 import static org.dbmaintain.config.DbMaintainProperties.*;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.dbsupport.StoredIdentifierCase;
+import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContainer;
 import org.dbmaintain.script.ScriptRunner;
-import org.dbmaintain.script.ScriptSource;
-import org.dbmaintain.script.impl.FileSystemScriptContainer;
-import org.dbmaintain.script.impl.JarScriptContainer;
-import org.dbmaintain.script.impl.CompositeScriptContainer;
+import org.dbmaintain.script.impl.FileSystemScriptLocation;
+import org.dbmaintain.script.impl.JarScriptLocation;
+import org.dbmaintain.script.impl.ScriptLocation;
+import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
-import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReflectionUtils;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
@@ -126,15 +96,14 @@ public class PropertiesDbMaintainConfigurer {
 
     public DbMaintainer createDbMaintainer() {
         ScriptRunner scriptRunner = createScriptRunner();
-        ScriptSource scriptSource = createScriptSource();
-        ScriptContainer scriptContainer = createScriptContainer();
+        ScriptRepository scriptRepository = createScriptRepository();
         ExecutedScriptInfoSource executedScriptInfoSource = createExecutedScriptInfoSource();
 
         boolean cleanDbEnabled = PropertyUtils.getBoolean(PROPERTY_CLEANDB_ENABLED, configuration);
         boolean fromScratchEnabled = PropertyUtils.getBoolean(PROPERTY_FROM_SCRATCH_ENABLED, configuration);
+        boolean hasItemsToPreserve = getItemsToPreserve().size() > 0 || getSchemasToPreserve().size() > 0;
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
-        boolean keepRetryingAfterError = PropertyUtils.getBoolean(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, configuration);
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS_ENABLED, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES_ENABLED, configuration);
 
@@ -145,10 +114,10 @@ public class PropertiesDbMaintainConfigurer {
 
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
-                new Class<?>[]{ScriptRunner.class, ScriptSource.class, ScriptContainer.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class,
-                        boolean.class, boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class},
-                new Object[]{scriptRunner, scriptSource, scriptContainer, executedScriptInfoSource, fromScratchEnabled, useScriptFileLastModificationDates,
-                        allowOutOfSequenceExecutionOfPatchScripts, keepRetryingAfterError, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
+                new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class, boolean.class,
+                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class},
+                new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
+                        allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
                         dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater});
     }
 
@@ -189,44 +158,28 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    /**
-     * @return
-     */
-    public ScriptSource createScriptSource() {
-        boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
-        boolean fixScriptOutOfSequenceExecutionAllowed = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
-        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
-
-        ScriptContainer scriptContainer = createScriptContainer();
-
-        Class<ScriptSource> clazz = ConfigUtils.getConfiguredClass(ScriptSource.class, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{ScriptContainer.class, boolean.class, Set.class, boolean.class},
-                new Object[]{scriptContainer, useScriptFileLastModificationDates, scriptFileExtensions, fixScriptOutOfSequenceExecutionAllowed});
-    }
-
-    public ScriptContainer createScriptContainer() {
-        Set<String> scriptLocations = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
-        Set<ScriptContainer> scriptContainers = new HashSet<ScriptContainer>();
-        for (String scriptLocation : scriptLocations) {
-            scriptContainers.add(createScriptContainer(scriptLocation));
+    public ScriptRepository createScriptRepository() {
+        Set<String> scriptLocationIndicators = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
+        Set<ScriptLocation> scriptLocations = new HashSet<ScriptLocation>();
+        for (String scriptLocationIndicator : scriptLocationIndicators) {
+            scriptLocations.add(createScriptLocation(scriptLocationIndicator));
         }
-        ScriptContainer scriptContainer = new CompositeScriptContainer(scriptContainers);
-        return scriptContainer;
+        return new ScriptRepository(scriptLocations);
     }
 
 
-    public JarScriptContainer createJarScriptContainer(SortedSet<Script> scripts) {
+    public JarScriptLocation createJarScriptLocation(SortedSet<Script> scripts) {
         Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
         String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
         String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
-        return new JarScriptContainer(scripts, scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
+        return new JarScriptLocation(scripts, scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
     }
 
 
-    public ScriptContainer createScriptContainer(String scriptLocation) {
+    public ScriptLocation createScriptLocation(String scriptLocation) {
         Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
         String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
@@ -234,9 +187,9 @@ public class PropertiesDbMaintainConfigurer {
         String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
         String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
         if (scriptLocation.endsWith(".jar")) {
-            return new JarScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
+            return new JarScriptLocation(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
         } else {
-            return new FileSystemScriptContainer(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
+            return new FileSystemScriptLocation(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
         }
     }
 
@@ -275,42 +228,62 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public DBCleaner createDbCleaner() {
-        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
-        schemasToPreserve.addAll(getSchemasToPreserve(PROPERTY_PRESERVE_DATA_SCHEMAS));
+        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve();
+        Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve();
 
-        Set<DbItemIdentifier> tablesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TABLES);
-        tablesToPreserve.addAll(getItemsToPreserve(PROPERTY_PRESERVE_DATA_TABLES));
         String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
-        tablesToPreserve.add(DbItemIdentifier.getItemIdentifier(getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
+        itemsToPreserve.add(DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
 
         Class<DBCleaner> clazz = ConfigUtils.getConfiguredClass(DBCleaner.class, configuration);
 
         return createInstanceOfType(clazz, false,
                 new Class<?>[]{Map.class, Set.class, Set.class, SQLHandler.class},
-                new Object[]{getNameDbSupportMap(), schemasToPreserve, tablesToPreserve, sqlHandler});
+                new Object[]{getNameDbSupportMap(), schemasToPreserve, itemsToPreserve, sqlHandler});
+    }
+
+
+    protected Set<DbItemIdentifier> getItemsToPreserve() {
+        Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve(DbItemType.TABLE, PROPERTY_PRESERVE_TABLES);
+        itemsToPreserve.addAll(getItemsToPreserve(DbItemType.TABLE, PROPERTY_PRESERVE_DATA_TABLES));
+        return itemsToPreserve;
+    }
+
+    protected Set<DbItemIdentifier> getSchemasToPreserve() {
+        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
+        schemasToPreserve.addAll(getSchemasToPreserve(PROPERTY_PRESERVE_DATA_SCHEMAS));
+        return schemasToPreserve;
     }
 
 
     public DBClearer createDbClearer() {
-        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
-        Set<DbItemIdentifier> tablesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TABLES);
-        String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
-        tablesToPreserve.add(DbItemIdentifier.getItemIdentifier(getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
-        Set<DbItemIdentifier> viewsToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_VIEWS);
-        Set<DbItemIdentifier> materializedViewsToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_MATERIALIZED_VIEWS);
-        Set<DbItemIdentifier> synonymsToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_SYNONYMS);
-        Set<DbItemIdentifier> sequencesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_SEQUENCES);
-        Set<DbItemIdentifier> triggersToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TRIGGERS);
-        Set<DbItemIdentifier> typesToPreserve = getItemsToPreserve(PROPERTY_PRESERVE_TYPES);
+        Class<DefaultDBClearer> clazz = ConfigUtils.getConfiguredClass(DefaultDBClearer.class, configuration);
+        DefaultDBClearer dbClearer = createInstanceOfType(clazz, false,
+                new Class<?>[]{Map.class},
+                new Object[]{getNameDbSupportMap()});
 
-        Class<DBClearer> clazz = ConfigUtils.getConfiguredClass(DBClearer.class, configuration);
-        return createInstanceOfType(clazz, false,
-                new Class<?>[]{Map.class, Set.class, Set.class,
-                        Set.class, Set.class, Set.class,
-                        Set.class, Set.class, Set.class},
-                new Object[]{getNameDbSupportMap(), schemasToPreserve, tablesToPreserve,
-                        viewsToPreserve, materializedViewsToPreserve, synonymsToPreserve,
-                        sequencesToPreserve, triggersToPreserve, typesToPreserve});
+        Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
+        for (DbItemIdentifier schemaToPreserve : schemasToPreserve) {
+            dbClearer.addItemToPreserve(schemaToPreserve, true);
+        }
+        String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
+        dbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, executedScriptsTableName, defaultDbSupport, nameDbSupportMap), false);
+        addItemsToPreserve(dbClearer, DbItemType.TABLE, PROPERTY_PRESERVE_TABLES);
+        addItemsToPreserve(dbClearer, DbItemType.VIEW, PROPERTY_PRESERVE_VIEWS);
+        addItemsToPreserve(dbClearer, DbItemType.MATERIALZED_VIEW, PROPERTY_PRESERVE_MATERIALIZED_VIEWS);
+        addItemsToPreserve(dbClearer, DbItemType.SYNONYM, PROPERTY_PRESERVE_SYNONYMS);
+        addItemsToPreserve(dbClearer, DbItemType.SEQUENCE, PROPERTY_PRESERVE_SEQUENCES);
+        addItemsToPreserve(dbClearer, DbItemType.TRIGGER, PROPERTY_PRESERVE_TRIGGERS);
+        addItemsToPreserve(dbClearer, DbItemType.TYPE, PROPERTY_PRESERVE_TYPES);
+
+        return dbClearer;
+    }
+
+    private void addItemsToPreserve(DefaultDBClearer defaultDbClearer, DbItemType dbItemType, String itemsToPreserveProperty) {
+        List<String> itemsToPreserve = PropertyUtils.getStringList(itemsToPreserveProperty, configuration);
+        for (String itemToPreserve : itemsToPreserve) {
+            DbItemIdentifier itemIdentifier = DbItemIdentifier.parseItemIdentifier(dbItemType, itemToPreserve, getDefaultDbSupport(), getNameDbSupportMap());
+            defaultDbClearer.addItemToPreserve(itemIdentifier, true);
+        }
     }
 
 
@@ -341,11 +314,11 @@ public class PropertiesDbMaintainConfigurer {
      * @param propertyName The name of the property that defines the items, not null
      * @return The set of items, not null
      */
-    protected Set<DbItemIdentifier> getItemsToPreserve(String propertyName) {
+    protected Set<DbItemIdentifier> getItemsToPreserve(DbItemType dbItemType, String propertyName) {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
         List<String> itemsToPreserve = PropertyUtils.getStringList(propertyName, configuration);
         for (String itemToPreserve : itemsToPreserve) {
-            DbItemIdentifier itemIdentifier = DbItemIdentifier.parseItemIdentifier(itemToPreserve, getDefaultDbSupport(), getNameDbSupportMap());
+            DbItemIdentifier itemIdentifier = DbItemIdentifier.parseItemIdentifier(dbItemType, itemToPreserve, getDefaultDbSupport(), getNameDbSupportMap());
             result.add(itemIdentifier);
         }
         return result;

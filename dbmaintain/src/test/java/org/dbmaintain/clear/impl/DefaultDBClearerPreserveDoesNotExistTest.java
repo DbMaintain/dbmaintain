@@ -23,8 +23,8 @@ import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
@@ -32,7 +32,6 @@ import org.junit.Test;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Test class for the {@link DBClearer} with preserve items configured, but some items do not exist.
@@ -77,10 +76,9 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_schemasToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> schemasToPreserve = CollectionUtils.asSet(
-                DbItemIdentifier.parseSchemaIdentifier("unexisting_schema1", dbSupport, nameDbSupportMap),
-                DbItemIdentifier.parseSchemaIdentifier("unexisting_schema2", dbSupport, nameDbSupportMap));
-        defaultDbClearer.setSchemasToPreserve(schemasToPreserve);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseSchemaIdentifier("unexisting_schema1", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseSchemaIdentifier("unexisting_schema2", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.clearDatabase();
     }
 
 
@@ -89,10 +87,9 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_tablesToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> tablesToPreserve = CollectionUtils.asSet(
-                DbItemIdentifier.parseItemIdentifier("unexisting_table1", dbSupport, nameDbSupportMap),
-                DbItemIdentifier.parseItemIdentifier("unexisting_table2", dbSupport, nameDbSupportMap));
-        defaultDbClearer.setTablesToPreserve(tablesToPreserve);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "unexisting_table1", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "unexisting_table2", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.clearDatabase();
     }
 
 
@@ -101,10 +98,9 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_viewsToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> viewsToPreserve = CollectionUtils.asSet(
-                DbItemIdentifier.parseItemIdentifier("unexisting_view1", dbSupport, nameDbSupportMap),
-                DbItemIdentifier.parseItemIdentifier("unexisting_view2", dbSupport, nameDbSupportMap));
-        defaultDbClearer.setViewsToPreserve(viewsToPreserve);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.VIEW, "unexisting_view1", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.VIEW, "unexisting_view2", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.clearDatabase();
     }
 
 
@@ -113,10 +109,9 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testClearSchemas_materializedViewsToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> materializedViewsToPreserve = CollectionUtils.asSet(
-                DbItemIdentifier.parseItemIdentifier("unexisting_materializedView1", dbSupport, nameDbSupportMap),
-                DbItemIdentifier.parseItemIdentifier("unexisting_materializedView1", dbSupport, nameDbSupportMap));
-        defaultDbClearer.setMaterializedViewsToPreserve(materializedViewsToPreserve);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.MATERIALZED_VIEW, "unexisting_materializedView1", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.MATERIALZED_VIEW, "unexisting_materializedView1", dbSupport, nameDbSupportMap), true);
+        defaultDbClearer.clearDatabase();
     }
 
 
@@ -130,10 +125,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             return;
         }
         try {
-            Set<DbItemIdentifier> sequencesToPreserve = CollectionUtils.asSet(
-                    DbItemIdentifier.parseItemIdentifier("unexisting_sequence1", dbSupport, nameDbSupportMap),
-                    DbItemIdentifier.parseItemIdentifier("unexisting_sequence2", dbSupport, nameDbSupportMap));
-            defaultDbClearer.setSequencesToPreserve(sequencesToPreserve);
+            defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.SEQUENCE, "unexisting_sequence1", dbSupport, nameDbSupportMap), true);
+            defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.SEQUENCE, "unexisting_sequence2", dbSupport, nameDbSupportMap), true);
+            defaultDbClearer.clearDatabase();
+            fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected
         }
@@ -150,10 +145,9 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             return;
         }
         try {
-            Set<DbItemIdentifier> synonymsToPreserve = CollectionUtils.asSet(
-                    DbItemIdentifier.parseItemIdentifier("unexisting_synonym1", dbSupport, nameDbSupportMap),
-                    DbItemIdentifier.parseItemIdentifier("unexisting_synonym2", dbSupport, nameDbSupportMap));
-            defaultDbClearer.setSynonymsToPreserve(synonymsToPreserve);
+            defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.SYNONYM, "unexisting_synonym1", dbSupport, nameDbSupportMap), true);
+            defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.SYNONYM, "unexisting_synonym2", dbSupport, nameDbSupportMap), true);
+            defaultDbClearer.clearDatabase();
             fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected

@@ -17,12 +17,13 @@ package org.dbmaintain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.*;
+import org.dbmaintain.script.impl.ScriptRepository;
+import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
@@ -34,7 +35,7 @@ import java.util.*;
  * <p/>
  * The {@link #updateDatabase()} operation can be used to bring the database to the latest version. The
  * {@link #markDatabaseAsUpToDate()} operation updates the state of the database to indicate that all scripts have been
- * executed, without actually executing them. {@link #clearDatabase()} will drop all tables and update the state to
+ * executed, without actually executing them. {@link DbMaintainer#clearDatabase()} will drop all tables and update the state to
  * indicate that no scripts have been executed yet on the database.
  * <p/>
  *
@@ -51,12 +52,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected ExecutedScriptInfoSource executedScriptInfoSource;
 
-    /**
-     * Provider of scripts for updating the database to a higher version
-     */
-    protected ScriptSource scriptSource;
 
-    protected ScriptContainer scriptContainer;
+    protected ScriptRepository scriptRepository;
 
     /**
      * Executer of the scripts
@@ -83,7 +80,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected SequenceUpdater sequenceUpdater;
 
-    // todo javadoc
+
     protected boolean cleanDbEnabled;
 
     /**
@@ -91,6 +88,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * cleared before updating if an already executed script is modified
      */
     protected boolean fromScratchEnabled;
+
+
+    protected boolean hasItemsToPreserve;
 
     /**
      * Defines whether script last modification dates can be used to decide whether an existing script has changed. If set
@@ -106,13 +106,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * was already executed.
       */
     protected boolean allowOutOfSequenceExecutionOfPatchScripts;
-
-    /**
-     * Indicates whether a from scratch update should be performed when the previous update failed,
-     * but none of the scripts were modified since that last update. If true a new update will be
-     * tried only when changes were made to the script files
-     */
-    protected boolean keepRetryingAfterError;
 
     /**
      * Indicates if foreign key and not null constraints should removed after updating the database
@@ -132,12 +125,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * Creates a new instance
      *
      * @param scriptRunner The runner that executes the database scripts
-     * @param scriptSource
-     * @param scriptContainer
+     * @param scriptRepository
      * @param executedScriptInfoSource Provides information about which scripts were already executed on the database
      * @param fromScratchEnabled If true, the database will be cleared and recreated from scratch if needed
-     * @param keepRetryingAfterError If true and fromScratchEnabled == true, an attempt to recreate the database will
-     * be performed if a script execution failed the last time, even if no changes were made to any script
+     * @param hasItemsToPreserve
+     * @param useScriptFileLastModificationDates
+     * @param allowOutOfSequenceExecutionOfPatchScripts
+     * @param allowOutOfSequenceExecutionOfPatchScripts
      * @param cleanDbEnabled If true, the data from all tables will be removed before performing any updates
      * @param disableConstraintsEnabled If true, all foreign key and not null constraints will be automatically disabled
      * or removed after each update
@@ -147,19 +141,18 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param constraintsDisabler Helper object that can disable or remove all foreign key or not null constraints
      * @param sequenceUpdater Helper object that can update all sequences to a minimal value
      */
-    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptSource scriptSource, ScriptContainer scriptContainer, ExecutedScriptInfoSource executedScriptInfoSource,
-               boolean fromScratchEnabled, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts, boolean keepRetryingAfterError,
+    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
+               boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
                boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled, DBClearer dbClearer,
                DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
 
         this.scriptRunner = scriptRunner;
-        this.scriptSource = scriptSource;
-        this.scriptContainer = scriptContainer;
+        this.scriptRepository = scriptRepository;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.fromScratchEnabled = fromScratchEnabled;
+        this.hasItemsToPreserve = hasItemsToPreserve;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
-        this.keepRetryingAfterError = keepRetryingAfterError;
         this.cleanDbEnabled = cleanDbEnabled;
         this.disableConstraintsEnabled = disableConstraintsEnabled;
         this.updateSequencesEnabled = updateSequencesEnabled;
@@ -167,8 +160,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.dbCleaner = dbCleaner;
         this.constraintsDisabler = constraintsDisabler;
         this.sequenceUpdater = sequenceUpdater;
-
-        assertNoDuplicateScriptIndexes();
     }
 
 
@@ -177,131 +168,169 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * applied to the database and executes the new scripts or the updated repeatable scripts. If an existing incremental
      * script was changed,  removed, or if a new incremental script has been added with a lower index than one that was
      * already executed, an error is given; unless the <fromScratch> option is enabled: in that case all database objects
-     * are removed and the database is rebuilt from scratch. If there are post-processing scripts, these are always executed
      * at the end.
      */
     public void updateDatabase() {
-        // check whether an from scratch update should be performed
-        if (fromScratchEnabled && (executedScriptInfoSource.isFromScratchUpdateRecommended() || shouldUpdateDatabaseFromScratch())) {
-            // From scratch needed, clear the database and retrieve scripts
-            clearDatabase();
-            // update database with all scripts
-            updateDatabase(getAllUpdateScripts());
+        ScriptUpdates scriptUpdates = new ScriptUpdates(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts);
+        
+        if (scriptUpdates.isEmpty()) {
+            if (!getScriptsThatFailedDuringLastUpdate().isEmpty()) {
+                logger.error("During the last update, the execution of a script failed " + getScriptsThatFailedDuringLastUpdate().first());
+            } else {
+                logger.info("Database is up to date");
+            }
+            // Interrupt execution to make sure nothing is performed on the database
             return;
         }
 
-        // perform an incremental update
-        updateDatabase(getNewScripts());
-    }
-
-
-    /**
-     * Asserts that, there are no two indexed scripts with the same version.
-     */
-    protected void assertNoDuplicateScriptIndexes() {
-        Script previous, current = null;
-        for (Script script : scriptContainer.getScripts()) {
-            previous = current;
-            current = script;
-            if (previous != null && previous.isIncremental() && current.isIncremental() && previous.getVersion().equals(current.getVersion())) {
-                throw new DbMaintainException("Found 2 database scripts with the same version index: "
-                        + previous.getFileName() + " and " + current.getFileName() + " both have version index "
-                        + previous.getVersion().getIndexesString());
+        boolean recreateFromScratch = false;
+        if (fromScratchEnabled && !hasItemsToPreserve && isInitialDatabaseUpdate()) {
+            logger.info("Since the database is updated for the first time, the database is cleared first to be sure we start with a clean database");
+            recreateFromScratch = true;
+        }
+        
+        if (scriptUpdates.hasIrregularScriptUpdates()) {
+            if (fromScratchEnabled) {
+                // Recreate the database from scratch
+                logger.info("The database is recreated from scratch, because one or more irregular script updates were detected:\n" +
+                        formatIrregularUpdates(scriptUpdates));
+                recreateFromScratch = true;
+            } else {
+                throw new DbMaintainException("Irregular script updates detected, but fromScratch updates are disabled. To solve this problem, you can do one of the following:\n" +
+                    "  1: Revert the changes and perform the desired changes using incremental scripts\n" +
+                    "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
+                    "  3: Fix the database manually and invoke the markDatabaseAsUpToDate operation (error prone)\n\n" +
+                    "Following irregular updates were performed:\n" + formatIrregularUpdates(scriptUpdates) + "\n");
             }
+        }
+
+        if (recreateFromScratch) {
+            // Clear the database and execute all scripts from-scratch
+            clearDatabase();
+            executeScripts(scriptRepository.getAllUpdateScripts());
+        } else {
+            logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + formatRegularUpdates(scriptUpdates));
+
+            // If cleandb is enabled, remove all data from the database.
+            if (cleanDbEnabled) {
+                dbCleaner.cleanDatabase();
+            }
+            // If there are incremental patch scripts with a lower index and the option allowOutOfSequenceExecutionOfPatches
+            // is enabled, execute them first
+            executeScriptUpdates(scriptUpdates.getRegularPatchScriptUpdates());
+            // Execute all new incremental and all new or modified repeatable scripts
+            executeScriptUpdates(scriptUpdates.getRegularScriptUpdates());
+        }
+        // Execute all post processing scripts
+        executeScripts(scriptRepository.getPostProcessingScripts());
+
+        // If the disable constraints option is enabled, disable all FK and not null constraints
+        if (disableConstraintsEnabled) {
+            constraintsDisabler.disableConstraints();
+        }
+        // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
+        if (updateSequencesEnabled) {
+            sequenceUpdater.updateSequences();
         }
     }
 
 
     /**
-     * Returns a list of scripts including the ones that:
-     * <ol><li>have a higher version than the given version</li>
-     * <li>are unversioned, and they weren't yet applied on the database</li>
-     * <li>are unversioned, and their contents differ from the one currently applied to the database</li>
-     * <p/>
-     * The scripts are returned in the order in which they should be executed.
-     *
-     * @return The new scripts.
+     * @return Whether we are running dbmaintain for the first time. If there are no scripts available yet, this method
+     * returns false.
      */
-    protected SortedSet<Script> getNewScripts() {
-        Map<String, Script> alreadyExecutedScriptMap = getScriptNameAlreadExecutedScriptMap();
-
-        SortedSet<Script> result = new TreeSet<Script>();
-
-        SortedSet<Script> allScripts = getAllUpdateScripts();
-        for (Script script : allScripts) {
-            Script alreadyExecutedScript = alreadyExecutedScriptMap.get(script.getFileName());
-
-            // If the script is indexed and the version is higher than the highest one currently applied to the database,
-            // add it to the list.
-            if (script.isIncremental() && script.getVersion().compareTo(getHighestExecutedScriptVersion()) > 0) {
-                result.add(script);
-                continue;
-            }
-            // Add the script if it's not indexed and if it wasn't yet executed
-            if (!script.isIncremental() && alreadyExecutedScript == null) {
-                result.add(script);
-                continue;
-            }
-            // Add the script if it's not indexed and if it's contents have changed
-            if (!script.isIncremental() && !alreadyExecutedScript.isScriptContentEqualTo(script, useScriptFileLastModificationDates)) {
-                logger.info("Contents of script " + script.getFileName() + " have changed since the last database update: "
-                        + script.getCheckSum());
-                result.add(script);
-            }
-        }
-        return result;
+    protected boolean isInitialDatabaseUpdate() {
+        return executedScriptInfoSource.getExecutedScripts().size() == 0 && scriptRepository.areScriptsAvailable();
     }
 
 
-    protected Map<String, Script> getScriptNameAlreadExecutedScriptMap() {
-        Map<String, Script> scriptNameAlreadExecutedScriptMap = new HashMap<String, Script>();
+    /**
+     * @param scriptUpdates The script updates, not null
+     * @return An printable overview of the regular script updates
+     */
+    protected String formatRegularUpdates(ScriptUpdates scriptUpdates) {
+        StringBuilder formattedUpdates = new StringBuilder();
+        int index = 0;
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getRegularScriptUpdates(HIGHER_INDEX_SCRIPT_ADDED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getRegularScriptUpdates(REPEATABLE_SCRIPT_ADDED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getRegularScriptUpdates(REPEATABLE_SCRIPT_UPDATED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        return formattedUpdates.toString();
+    }
+
+
+    /**
+     * @param scriptUpdates The script updates, not null
+     * @return An printable overview of the irregular script updates
+     */
+    protected String formatIrregularUpdates(ScriptUpdates scriptUpdates) {
+        StringBuilder formattedUpdates = new StringBuilder();
+        int index = 0;
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(INDEXED_SCRIPT_UPDATED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(INDEXED_SCRIPT_DELETED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(LOWER_INDEX_NON_PATCH_SCRIPT_ADDED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(LOWER_INDEX_PATCH_SCRIPT_ADDED)) {
+            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
+        }
+        return formattedUpdates.toString();
+    }
+
+
+    /**
+     * @param scriptUpdate The script update to format, not null
+     * @return A printable view of the given script update
+     */
+    protected String formatScriptUpdate(ScriptUpdate scriptUpdate) {
+        switch (scriptUpdate.getType()) {
+            case HIGHER_INDEX_SCRIPT_ADDED:
+                return "newly added indexed script: " + scriptUpdate.getScript().getFileName();
+            case REPEATABLE_SCRIPT_ADDED:
+                return "newly added repeatable script: " + scriptUpdate.getScript().getFileName();
+            case REPEATABLE_SCRIPT_UPDATED:
+                return "updated repeatable script: " + scriptUpdate.getScript().getFileName();
+            case REPEATABLE_SCRIPT_DELETED:
+                return "deleted repeatable script: " + scriptUpdate.getScript().getFileName();
+            case POSTPROCESSING_SCRIPT_ADDED:
+                return "newly added postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case POSTPROCESSING_SCRIPT_UPDATED:
+                return "updated postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case POSTPROCESSING_SCRIPT_DELETED:
+                return "deleted postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case INDEXED_SCRIPT_UPDATED:
+                return "updated indexed script: " + scriptUpdate.getScript().getFileName();
+            case INDEXED_SCRIPT_DELETED:
+                return "deleted indexed script: " + scriptUpdate.getScript().getFileName();
+            case LOWER_INDEX_NON_PATCH_SCRIPT_ADDED:
+                return "newly added script with a lower index: "
+                    + scriptUpdate.getScript().getFileName();
+            case LOWER_INDEX_PATCH_SCRIPT_ADDED:
+                return "newly added patch script with a lower index, with out-of-sequence execution of patch scripts disabled: "
+                    + scriptUpdate.getScript().getFileName();
+        }
+        throw new IllegalArgumentException("Invalid script update type " + scriptUpdate.getType());
+    }
+
+
+    /**
+     * @return The already executed scripts, as a map from Script => ExecutedScript
+     */
+    protected Map<Script, ExecutedScript> getAlreadyExecutedScripts() {
+        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<Script, ExecutedScript>();
         for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
-            scriptNameAlreadExecutedScriptMap.put(executedScript.getScript().getFileName(), executedScript.getScript());
+            alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
         }
-        return scriptNameAlreadExecutedScriptMap;
-    }
-
-
-    /**
-     * @return a list of all available update scripts, in the order in which they must be executed on the database.
-     * These scripts can be used to completely recreate the database from scratch. Not null
-     */
-    protected SortedSet<Script> getAllUpdateScripts() {
-        SortedSet<Script> updateScripts = new TreeSet<Script>();
-        for (Script script : scriptContainer.getScripts()) {
-            if (!script.isPostProcessingScript()) {
-                updateScripts.add(script);
-            }
-        }
-        return updateScripts;
-    }
-
-
-    /**
-     * @return All scripts that are incremental, i.e. non-repeatable, i.e. whose file name starts with an index
-     */
-    protected List<Script> getIncrementalScripts() {
-        SortedSet<Script> scripts = getAllUpdateScripts();
-        List<Script> incrementalScripts = new ArrayList<Script>();
-        for (Script script : scripts) {
-            if (script.isIncremental()) {
-                incrementalScripts.add(script);
-            }
-        }
-        return incrementalScripts;
-    }
-
-
-    //todo javadoc
-    protected ScriptIndexes getHighestExecutedScriptVersion() {
-        ScriptIndexes highest = new ScriptIndexes("0");
-        for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
-            Script script = executedScript.getScript();
-            if (script.isIncremental() && script.getVersion().compareTo(highest) > 0) {
-                highest = executedScript.getScript().getVersion();
-            }
-        }
-        return highest;
+        return alreadyExecutedScripts;
     }
 
 
@@ -313,7 +342,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     public void markDatabaseAsUpToDate() {
         executedScriptInfoSource.clearAllExecutedScripts();
 
-        SortedSet<Script> allScripts = getAllUpdateScripts();
+        SortedSet<Script> allScripts = scriptRepository.getAllScripts();
         for (Script script : allScripts) {
             executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
         }
@@ -326,10 +355,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * is also called when a from-scratch update is performed. The table dbmaintain_scripts is not dropped but all data in
      * it is removed. It's possible to exclude certain database objects to make sure they are not dropped, like described
      * in {@link org.dbmaintain.clear.DBClearer}
+     *
      */
     public void clearDatabase() {
-        // constraints are removed before clearing the database, to be sure there will be no
-        // conflicts when dropping tables
+        // Constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables
         constraintsDisabler.disableConstraints();
         dbClearer.clearDatabase();
         executedScriptInfoSource.clearAllExecutedScripts();
@@ -337,37 +366,17 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     /**
-     * Updates the state of the database using the given scripts.
+     * Executes the given scripts and updates the database execution registry appropriately. After
+     * each successful script execution, the script execution is registered in the database and marked
+     * as successful. If a script execution fails, the script execution is registered in the database
+     * and marked as unsuccessful.
      *
-     * @param scripts The scripts, not null
+     * @param scriptUpdates
      */
-    protected void updateDatabase(SortedSet<Script> scripts) {
-        if (scripts.isEmpty()) {
-            // nothing to do
-            logger.info("Database is up to date");
-            return;
-        }
-        logger.info("Database update scripts have been found and will be executed on the database.");
-
-        // Remove data from the database, that could cause errors when executing scripts. Such
-        // as for example when added a not null column.
-        if (cleanDbEnabled) {
-            dbCleaner.cleanDatabase();
-        }
-
-        // Execute all of the scripts
-        executeScripts(scripts);
-
-        // Execute postprocessing scripts, if any
-        executePostProcessingScripts(scriptSource.getPostProcessingScripts());
-
-        // Disable FK and not null constraints, if enabled
-        if (disableConstraintsEnabled) {
-            constraintsDisabler.disableConstraints();
-        }
-        // Update sequences to a sufficiently high value, if enabled
-        if (updateSequencesEnabled) {
-            sequenceUpdater.updateSequences();
+    protected void executeScriptUpdates(SortedSet<ScriptUpdate> scriptUpdates) {
+        for (ScriptUpdate scriptUpdate : scriptUpdates) {
+            logger.info("Executing " + formatScriptUpdate(scriptUpdate));
+            executeScript(scriptUpdate.getScript());
         }
     }
 
@@ -378,12 +387,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * as successful. If a script execution fails, the script execution is registered in the database
      * and marked as unsuccessful.
      *
-     * @param scripts The scripts to execute, not null
+     * @param scripts
      */
     protected void executeScripts(SortedSet<Script> scripts) {
         for (Script script : scripts) {
             logger.info("Executing script " + script.getFileName());
-
             executeScript(script);
         }
     }
@@ -410,60 +418,15 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executedScriptInfoSource.updateExecutedScript(executedScript);
 
         } catch (DbMaintainException e) {
-            logger.error("Error while executing script " + script.getFileName(), e);
-            throw e;
+            throw new DbMaintainException("Error while executing script " + script.getFileName() + ": " + e.getMessage(), e);
         }
     }
 
 
-    /**
-     * Executes the given post processing scripts on the database. If not successful, the scripts update
-     * is registered as not successful, so that an update from scratch will be triggered the next time.
-     *
-     * @param postProcessingScripts The scripts to execute, not null
-     */
-    protected void executePostProcessingScripts(SortedSet<Script> postProcessingScripts) {
-        for (Script postProcessingScript : postProcessingScripts) {
-            try {
-                logger.info("Executing post processing script " + postProcessingScript.getFileName());
-
-                scriptRunner.execute(postProcessingScript);
-
-            } catch (DbMaintainException e) {
-                logger.error("Error while executing post processing script " + postProcessingScript.getFileName(), e);
-                throw e;
-            }
-        }
-    }
-
-
-    /**
-     * Checks whether the database should be updated from scratch or just incrementally. The
-     * database needs to be rebuilt in following cases:
-     * <ul>
-     * <li>Some existing scripts were modified.</li>
-     * <li>The last update of the database was unsuccessful.</li>
-     * </ul>
-     * The database will only be rebuilt from scratch if from scratch is enabled. If the keep retrying is set to false,
-     * the database will only be rebuilt again after an unsuccessful build when a change is made to the script files.
-     * Otherwise it will not attempt to rebuild the database.
-     *
-     * @return True if a from scratch rebuild is needed, false otherwise
-     */
-    protected boolean shouldUpdateDatabaseFromScratch() {
+    /*protected boolean shouldUpdateDatabaseFromScratch() {
         // check whether an existing script was updated
-        if (isIncrementalScriptModified(executedScriptInfoSource.getExecutedScripts())) {
-            if (!fromScratchEnabled) {
-                throw new DbMaintainException("One or more existing incremental database update scripts have been modified, but updating from scratch is disabled. " +
-                        "You should either revert to the original version of the modified script and add an new incremental script that performs the desired " +
-                        "update, or perform the update manually on the database and then reset the database state by invoking resetDatabaseState()");
-            }
-            logger.info("One or more existing database update scripts have been modified. Database will be cleared and rebuilt from scratch.");
-            return true;
-        }
-
         // check whether the last run was successful
-        if (errorInIndexedScriptDuringLastUpdate(executedScriptInfoSource.getExecutedScripts())) {
+        if (errorInIndexedScriptDuringLastUpdate()) {
             if (fromScratchEnabled) {
                 if (!keepRetryingAfterError) {
                     throw new DbMaintainException("During a previous database update, the execution of an incremental script failed! Since " +
@@ -483,59 +446,23 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
         // from scratch is not needed
         return false;
+    } */
+
+
+    protected SortedSet<ExecutedScript> getScriptsThatFailedDuringLastUpdate() {
+        SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
+        for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
+            if (!script.isSucceeded()) {
+                failedExecutedScripts.add(script);
+            }
+        }
+        return failedExecutedScripts;
     }
 
 
-    /**
-     * Returns true if one or more scripts that have a version index equal to or lower than
-     * the index specified by the given version object has been modified since the timestamp specified by
-     * the given version.
-     *
-     * @param currentVersion The current database version, not null
-     * @return True if an existing script has been modified, false otherwise
-     */
-    protected boolean isIncrementalScriptModified(Set<ExecutedScript> alreadyExecutedScripts) {
-        Map<String, Script> alreadyExecutedScriptMap = getScriptNameAlreadExecutedScriptMap();
-        List<Script> incrementalScripts = getIncrementalScripts();
-        // Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
-        for (ExecutedScript alreadyExecutedScript : alreadyExecutedScripts) {
-            if (alreadyExecutedScript.getScript().isIncremental() && Collections.binarySearch(incrementalScripts, alreadyExecutedScript.getScript()) < 0) {
-                logger.warn("Existing indexed script found that was executed, which has been removed: " + alreadyExecutedScript.getScript().getFileName());
-                return true;
-            }
-        }
-
-        // Search for indexed scripts whose version < the current version, which are new or whose contents have changed
-        for (Script indexedScript : incrementalScripts) {
-            if (indexedScript.getVersion().compareTo(getHighestExecutedScriptVersion()) <= 0) {
-                Script alreadyExecutedScript = alreadyExecutedScriptMap.get(indexedScript.getFileName());
-                if (alreadyExecutedScript == null) {
-                    if (indexedScript.isPatchScript()) {
-                        if (!allowOutOfSequenceExecutionOfPatchScripts) {
-                            logger.warn("Found a new hoftix script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
-                            return true;
-                        }
-                        logger.info("Found a new hoftix script that has a lower index than a script that has already been executed. Allowing the hotfix script to be executed out of sequence: " + indexedScript.getFileName());
-                        return false;
-                    }
-
-                    logger.warn("Found a new script that has a lower index than a script that has already been executed: " + indexedScript.getFileName());
-                    return true;
-                }
-                if (!alreadyExecutedScript.isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates)) {
-                    logger.warn("Script found of which the contents have changed: " + indexedScript.getFileName());
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-
-    //todo javadoc
-    protected boolean errorInIndexedScriptDuringLastUpdate(Set<ExecutedScript> alreadyExecutedScripts) {
-        for (ExecutedScript script : alreadyExecutedScripts) {
-            if (!script.isSucceeded() && script.getScript().isIncremental()) {
+    protected boolean errorInIndexedScriptDuringLastUpdate() {
+        for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
+            if (script.getScript().isIncremental() && !script.isSucceeded()) {
                 return true;
             }
         }

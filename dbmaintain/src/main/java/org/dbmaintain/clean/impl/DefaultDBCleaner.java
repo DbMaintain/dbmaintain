@@ -20,7 +20,8 @@ import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.HashMap;
@@ -29,9 +30,7 @@ import java.util.Map;
 import java.util.Set;
 /**
  * Implementation of {@link DBCleaner}. This implementation will delete all data from a database, except for the tables
- * that are configured as tables to preserve. This includes the tables that are listed in the property
- * {@link #PROPERTY_PRESERVE_TABLES}, {@link #PROPERTY_PRESERVE_DATA_TABLES}. and the table that is configured as
- * version table using the property {@link #PROPKEY_EXECUTED_SCRIPTS_TABLE_NAME}.
+ * that are configured as tables to preserve.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -90,7 +89,7 @@ public class DefaultDBCleaner implements DBCleaner {
 	            Set<String> tableNames = dbSupport.getTableNames(schemaName);
 	            for (String tableName : tableNames) {
 	                // check whether table needs to be preserved
-	                if (tablesToPreserve.contains(DbItemIdentifier.getItemIdentifier(schemaName, tableName, dbSupport))) {
+	                if (tablesToPreserve.contains(DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, schemaName, tableName, dbSupport))) {
 	                    continue;
 	                }
 	                cleanTable(dbSupport, schemaName, tableName);
@@ -158,7 +157,7 @@ public class DefaultDBCleaner implements DBCleaner {
     protected Set<DbItemIdentifier> toDbItemIdentifiers(DbSupport dbSupport, String schemaName, Set<String> itemNames) {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
         for (String itemName : itemNames) {
-            result.add(DbItemIdentifier.getItemIdentifier(schemaName, itemName, dbSupport));
+            result.add(DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, schemaName, itemName, dbSupport));
         }
         return result;
     }

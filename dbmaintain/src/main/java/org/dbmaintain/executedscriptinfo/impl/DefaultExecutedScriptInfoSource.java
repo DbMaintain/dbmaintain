@@ -339,7 +339,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * Actual implementation of the {@link #clearAllExecutedScripts()} method.
      */
     protected void doClearAllExecutedScripts() {
-        executedScripts = new HashSet<ExecutedScript>();
+        executedScripts.clear();
 
         String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName);
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());

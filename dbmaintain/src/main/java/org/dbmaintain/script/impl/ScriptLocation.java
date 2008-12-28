@@ -3,47 +3,35 @@
  */
 package org.dbmaintain.script.impl;
 
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME;
+import org.dbmaintain.config.PropertyUtils;
+import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PATCH_QUALIFIERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFIER_PREFIX;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.script.Script;
 
 import java.util.*;
 
-import org.dbmaintain.config.PropertyUtils;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContainer;
-import org.dbmaintain.util.DbMaintainException;
-
 /**
- * Base class for a container for database scripts
- *
  * @author Filip Neven
  * @author Tim Ducheyne
+ * @since 24-dec-2008
  */
-abstract public class BaseScriptContainer implements ScriptContainer {
+abstract public class ScriptLocation {
 
-    /**
+/**
      * Name of the properties file that is packaged with the jar, that contains information about how
      * the scripts in the jar file are structured.
      */
     public static final String LOCATION_PROPERTIES_FILENAME = "META-INF/dbscripts.properties";
 
     protected SortedSet<Script> scripts;
+
     protected Set<String> scriptFileExtensions;
     protected String targetDatabasePrefix;
     protected String qualifierPrefix;
     protected Set<String> patchQualifiers;
     protected String postProcessingScriptDirName;
     protected String scriptEncoding;
-    
-
-    public SortedSet<Script> getScripts() {
-        return scripts;
-    }
-
 
     public Set<String> getScriptFileExtensions() {
         return scriptFileExtensions;
@@ -54,7 +42,7 @@ abstract public class BaseScriptContainer implements ScriptContainer {
         return targetDatabasePrefix;
     }
 
-    
+
     public String getQualifierPrefix() {
         return qualifierPrefix;
     }
@@ -72,6 +60,17 @@ abstract public class BaseScriptContainer implements ScriptContainer {
 
     public String getScriptEncoding() {
         return scriptEncoding;
+    }
+
+
+    /**
+     * @return the name of the location
+     */
+    abstract public String getLocationName();
+
+    
+    public SortedSet<Script> getScripts() {
+        return scripts;
     }
 
 

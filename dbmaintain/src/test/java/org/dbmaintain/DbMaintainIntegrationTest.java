@@ -19,7 +19,6 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
@@ -46,7 +45,6 @@ import java.util.Set;
  * @author Tim Ducheyne
  * @author David J. M. Karlsen
  */
-@Ignore
 public class DbMaintainIntegrationTest {
 
     private static final String INITIAL_INCREMENTAL_1 = "initial_incremental_1";
@@ -134,7 +132,7 @@ public class DbMaintainIntegrationTest {
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "modified", "incremental", INITIAL_INCREMENTAL_1 + ".sql");
+            assertMessageContains(e.getMessage(), "updated", "indexed", INITIAL_INCREMENTAL_1 + ".sql");
         }
     }
 
@@ -179,7 +177,7 @@ public class DbMaintainIntegrationTest {
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "removed", "incremental", NEW_INCREMENTAL_LOWER_INDEX + ".sql");
+            assertMessageContains(e.getMessage(), "deleted", "indexed", INITIAL_INCREMENTAL_1 + ".sql");
         }
     }
 
@@ -231,10 +229,9 @@ public class DbMaintainIntegrationTest {
     }
 
 
-    @Test
-    public void testErrorInIncrementalScript_dontKeepRetrying() {
+    @Test @Ignore
+    public void testErrorInIncrementalScript() {
         enableFromScratch();
-        configuration.put(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "false");
 
         createInitialScripts();
         errorInInitialScript();
@@ -266,41 +263,6 @@ public class DbMaintainIntegrationTest {
         assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
     }
 
-
-    @Test
-    public void testErrorInIncrementalScript_keepRetrying() {
-        enableFromScratch();
-        configuration.put(PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED, "true");
-
-        createInitialScripts();
-        errorInInitialScript();
-        newIncrementalScript();
-
-        // execute the scripts
-        // the second script will have an error
-        try {
-            updateDatabase();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "Error while performing database update");
-        }
-        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
-
-        // try again
-        // The database should have been recreated from scratch and the second script should have caused the
-        // same error
-        try {
-            updateDatabase();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "Error while performing database update");
-        }
-        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
-
-        // change the script and try again
-        // the database should have been recreated from scratch and all the tables should have been re-created
-        fixErrorInInitialScript();
-        updateDatabase();
-        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
-    }
 
     @Test
     public void testErrorInRepeatableScript() {
@@ -371,7 +333,7 @@ public class DbMaintainIntegrationTest {
         assertTablesExist(POST_PROCESSING_INDEXED_1);
     }
 
-    @Test @Ignore
+    @Test
     public void testReExecuteAllPostProcessingScriptsIfOneOfThemIsModified() {
         disableFromScratch();
         createInitialScripts();
@@ -386,10 +348,10 @@ public class DbMaintainIntegrationTest {
         assertTablesExist(POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if an indexed postprocessing script is updated
-        dropTestTables(dbSupport, POST_PROCESSING_NOTINDEXED);
+        dropTestTables(dbSupport, UPDATED_POST_PROCESSING_NOTINDEXED);
         updateIndexedPostProcessingScript();
         updateDatabase();
-        assertTablesExist(UPDATED_POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
+        assertTablesExist(UPDATED_POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
     }
 
     private void createTable(String tableName) {
@@ -414,7 +376,7 @@ public class DbMaintainIntegrationTest {
 
     private void assertMessageContains(String message, String... subStrings) {
         for (String subString : subStrings) {
-            assertTrue("Expected message to contain substring " + subString + ", but it doesn't.\nMessage was: " + message, message.contains(subString));
+            assertTrue("Expected message to contain substring " + subString + ", but it doesn't.\nMessage was: " + message, message.toLowerCase().contains(subString.toLowerCase()));
         }
     }
 
@@ -469,13 +431,13 @@ public class DbMaintainIntegrationTest {
     }
 
     private void updateIndexedPostProcessingScript() {
-        createScript("postprocessing/01" + UPDATED_POST_PROCESSING_INDEXED_1 + ".sql", "drop table " + POST_PROCESSING_INDEXED_1 + " if exists; " + 
+        createScript("postprocessing/01_" + POST_PROCESSING_INDEXED_1 + ".sql", "drop table " + POST_PROCESSING_INDEXED_1 + " if exists; " +
                 "drop table " + UPDATED_POST_PROCESSING_INDEXED_1 +
                 " if exists; create table " + UPDATED_POST_PROCESSING_INDEXED_1 + "(test varchar(10));");
     }
 
     private void updateNotIndexedPostProcessingScript() {
-        createScript("postprocessing/" + UPDATED_POST_PROCESSING_NOTINDEXED + ".sql", "drop table " + POST_PROCESSING_NOTINDEXED + " if exists; " + 
+        createScript("postprocessing/" + POST_PROCESSING_NOTINDEXED + ".sql", "drop table " + POST_PROCESSING_NOTINDEXED + " if exists; " +
                 "drop table " + UPDATED_POST_PROCESSING_NOTINDEXED +
                 " if exists; create table " + UPDATED_POST_PROCESSING_NOTINDEXED + "(test varchar(10));");
     }

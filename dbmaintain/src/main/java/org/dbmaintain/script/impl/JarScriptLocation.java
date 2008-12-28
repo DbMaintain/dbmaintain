@@ -38,14 +38,17 @@ import java.util.zip.ZipEntry;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class JarScriptContainer extends BaseScriptContainer {
+public class JarScriptLocation extends ScriptLocation {
+
+    /* The file that contains the jar file on the file system */
+    protected File jarFile;
 
     /* The jar file containing the scripts */
     protected JarFile jar;
 
 
     /**
-     * Creates a new instance of the {@link JarScriptContainer}, while there is no jar file available yet. 
+     * Creates a new instance of the {@link JarScriptLocation}, while there is no jar file available yet.
      * This constructor can be used to initialize the container while the scripts are still on the file system,
      * and to write the jar file afterwards.
      * 
@@ -57,15 +60,16 @@ public class JarScriptContainer extends BaseScriptContainer {
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param scriptEncoding Encoding used to read the contents of the script, not null
      */
-    public JarScriptContainer(SortedSet<Script> scripts, Set<String> scriptFileExtensions, String targetDatabasePrefix, String qualifierPrefix,
+    public JarScriptLocation(SortedSet<Script> scripts, Set<String> scriptFileExtensions, String targetDatabasePrefix, String qualifierPrefix,
             Set<String> patchQualifiers, String postProcessingScriptDirName, String scriptEncoding) {
-        this.scripts = scripts;
         this.scriptFileExtensions = scriptFileExtensions;
         this.targetDatabasePrefix = targetDatabasePrefix;
         this.qualifierPrefix = qualifierPrefix;
         this.patchQualifiers = patchQualifiers;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
         this.scriptEncoding = scriptEncoding;
+
+        this.scripts = scripts;
     }
 
 
@@ -74,11 +78,12 @@ public class JarScriptContainer extends BaseScriptContainer {
      * 
      * @param jarFile Script jar file, not null
      */
-    public JarScriptContainer(File jarFile, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
+    public JarScriptLocation(File jarFile, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
             String defaultQualifierPefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName,
             String defaultScriptEncoding) {
 
         try {
+            this.jarFile = jarFile;
             jar = new JarFile(jarFile);
         } catch (IOException e) {
             throw new DbMaintainException("Error opening jar file " + jarFile, e);
@@ -88,20 +93,20 @@ public class JarScriptContainer extends BaseScriptContainer {
         initConfiguration(propertiesFromJar, defaultScriptFileExtensions, defaultTargetDatabasePrefix, defaultQualifierPefix,
                 defaultPatchQualifiers, defaultPostProcessingScriptDirName, defaultScriptEncoding);
 
-        initScriptsFromJar(jar);
+        scripts = loadScriptsFromJar();
     }
 
 
     /**
      * Initializes the scripts from the given jar file
-     * 
-     * @param jarFile Script jar file, not null
+     *
+     * @return The scripts, as loaded from the jar
      */
-    protected void initScriptsFromJar(final JarFile jarFile) {
-        scripts = new TreeSet<Script>();
+    protected SortedSet<Script> loadScriptsFromJar() {
+        SortedSet<Script> scripts = new TreeSet<Script>();
 
         JarEntry jarEntry;
-        for (Enumeration<JarEntry> jarEntries = jarFile.entries(); jarEntries.hasMoreElements();) {
+        for (Enumeration<JarEntry> jarEntries = jar.entries(); jarEntries.hasMoreElements();) {
             jarEntry = jarEntries.nextElement();
             if (!LOCATION_PROPERTIES_FILENAME.equals(jarEntry.getName())) {
                 final JarEntry currentJarEntry = jarEntry;
@@ -109,7 +114,7 @@ public class JarScriptContainer extends BaseScriptContainer {
                     @Override
                     protected InputStream getScriptInputStream() {
                         try {
-                            return jarFile.getInputStream(currentJarEntry);
+                            return jar.getInputStream(currentJarEntry);
                         } catch (IOException e) {
                             throw new DbMaintainException("Error while reading jar entry " + currentJarEntry, e);
                         }
@@ -120,6 +125,7 @@ public class JarScriptContainer extends BaseScriptContainer {
                 scripts.add(script);
             }
         }
+        return scripts;
     }
 
 
@@ -171,7 +177,7 @@ public class JarScriptContainer extends BaseScriptContainer {
             Reader propertiesAsFile = getPropertiesAsFile(getJarProperties());
             writeJarEntry(jarOutputStream, LOCATION_PROPERTIES_FILENAME, System.currentTimeMillis(), propertiesAsFile);
             propertiesAsFile.close();
-            for (Script script : scripts) {
+            for (Script script : getScripts()) {
                 Reader scriptContentReader = null;
                 try {
                     scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
@@ -224,4 +230,12 @@ public class JarScriptContainer extends BaseScriptContainer {
         jarOutputStream.closeEntry();
     }
 
+    @Override
+    public String getLocationName() {
+        if (jarFile == null) {
+            return "<undefined>";
+        } else {
+            return jarFile.getAbsolutePath();
+        }
+    }
 }

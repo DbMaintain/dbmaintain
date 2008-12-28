@@ -20,9 +20,6 @@ import org.dbmaintain.script.ScriptContentHandle;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
-import org.dbmaintain.config.PropertyUtils;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
-import static org.dbmaintain.config.DbMaintainProperties.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +36,7 @@ import java.util.*;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class FileSystemScriptContainer extends BaseScriptContainer {
+public class FileSystemScriptLocation extends ScriptLocation {
 
     /**
      * The root directory where scripts are located
@@ -47,17 +44,17 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
     protected File scriptLocation;
 
     /**
-     * Constructor for FileScriptContainer.
+     * Constructor for FileSystemScriptLocation.
      * 
-     * @param scriptLocation
-     * @param defaultScriptFileExtensions
-     * @param defaultTargetDatabasePrefix
-     * @param defaultQualifierPefix
-     * @param defaultPatchQualifiers
-     * @param defaultPostProcessingScriptDirName
-     * @param defaultScriptEncoding
+     * @param scriptLocation The file system directory that is the root of this script location
+     * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultQualifierPefix The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPatchQualifiers The default qualfiers that indicate a patch file. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPostProcessingScriptDirName The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultScriptEncoding The default script encoding. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      */
-    public FileSystemScriptContainer(File scriptLocation, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
+    public FileSystemScriptLocation(File scriptLocation, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
             String defaultQualifierPefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName, 
             String defaultScriptEncoding) {
 
@@ -68,10 +65,13 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
         initConfiguration(customProperties, defaultScriptFileExtensions, defaultTargetDatabasePrefix, defaultQualifierPefix, defaultPatchQualifiers,
                 defaultPostProcessingScriptDirName, defaultScriptEncoding);
 
-        initScripts();
+        scripts = loadScriptsFromFileSystem();
     }
 
 
+    /**
+     * Asserts that the script root directory exists
+     */
     protected void assertValidScriptLocation() {
         if (!scriptLocation.exists()) {
             throw new DbMaintainException("Script file location " + scriptLocation + " doesn't exist");
@@ -79,6 +79,11 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
     }
 
 
+    /**
+     * @return if a location properties file {@link #LOCATION_PROPERTIES_FILENAME} is available, a <code>Properties</code>
+     * file with the properties from this file. Returns null if such a file is not available.
+     * @throws DbMaintainException if the properties file is invalid
+     */
     protected Properties getLocationCustomProperties() {
         File customPropertiesFileLocation = new File(scriptLocation + "/" + LOCATION_PROPERTIES_FILENAME);
         if (!customPropertiesFileLocation.exists()) {
@@ -98,41 +103,43 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
     }
 
 
-    protected void initScripts() {
-        scripts = new TreeSet<Script>();
+    /**
+     * @return all available scripts, loaded from the file system
+     */
+    protected SortedSet<Script> loadScriptsFromFileSystem() {
+        SortedSet<Script> scripts = new TreeSet<Script>();
         getScriptsAt(scripts, scriptLocation.getAbsolutePath(), "");
+        return scripts;
     }
 
 
     /**
-     * Adds all scripts available in the given directory or one of its subdirectories to the
-     * given List of files
+     * Adds all scripts available in the given directory or one of its subdirectories to the given set of files. Recursively
+     * invokes itself to handle subdirectories.
      *
-     * @param scriptList
-     * @param scriptRoot
-     * @param relativeLocation
+     * @param scripts aggregates the scripts found up until now during recursion.
+     * @param scriptRoot the root script directory
+     * @param relativeLocation the subdirectory in which we are now looking for scripts
      */
-    protected void getScriptsAt(SortedSet<Script> scriptList, String scriptRoot, String relativeLocation) {
+    protected void getScriptsAt(SortedSet<Script> scripts, String scriptRoot, String relativeLocation) {
         File currentLocation = new File(scriptRoot + "/" + relativeLocation);
         if (currentLocation.isFile() && isScriptFile(currentLocation)) {
             Script script = createScript(currentLocation, relativeLocation);
-            scriptList.add(script);
+            scripts.add(script);
             return;
         }
         // recursively scan sub folders for script files
         if (currentLocation.isDirectory()) {
             for (File subLocation : currentLocation.listFiles()) {
-                getScriptsAt(scriptList, scriptRoot,
+                getScriptsAt(scripts, scriptRoot,
                         "".equals(relativeLocation) ? subLocation.getName() : relativeLocation + '/' + subLocation.getName());
             }
         }
     }
 
     /**
-     * Indicates if the given file is a database update script file
-     *
      * @param file The file, not null
-     * @return True if the given file is a database update script file
+     * @return True if the given file is a database script, according to the configured script file extensions
      */
     protected boolean isScriptFile(File file) {
         String name = file.getName();
@@ -148,8 +155,8 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
     /**
      * Creates a script object for the given script file
      *
-     * @param scriptFile             The script file, not null
-     * @param relativeScriptFileName The name of the script file relative to the root scripts dir, not null
+     * @param scriptFile the script file, not null
+     * @param relativeScriptFileName the name of the script file relative to the root scripts dir, not null
      * @return The script, not null
      */
     protected Script createScript(File scriptFile, String relativeScriptFileName) {
@@ -159,4 +166,11 @@ public class FileSystemScriptContainer extends BaseScriptContainer {
     }
 
 
+    /**
+     * @return the root directory of the scripts location
+     */
+    @Override
+    public String getLocationName() {
+        return scriptLocation.getAbsolutePath();
+    }
 }

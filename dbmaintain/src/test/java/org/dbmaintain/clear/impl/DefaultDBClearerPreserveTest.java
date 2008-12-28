@@ -24,7 +24,8 @@ import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.util.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
@@ -77,17 +78,23 @@ public class DefaultDBClearerPreserveTest {
         defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
         
         // configure items to preserve
-        defaultDbClearer.setTablesToPreserve(toDbItemIdentifiers("Test_Table", dbSupport.quoted("Test_CASE_Table")));
-        defaultDbClearer.setViewsToPreserve(toDbItemIdentifiers("Test_View", dbSupport.quoted("Test_CASE_View")));
-        
+        addItemsToPreserve(DbItemType.TABLE, "Test_Table", dbSupport.quoted("Test_CASE_Table"));
+        addItemsToPreserve(DbItemType.VIEW, "Test_View", dbSupport.quoted("Test_CASE_View"));
+
         if (dbSupport.supportsMaterializedViews()) {
-            defaultDbClearer.setMaterializedViewsToPreserve(toDbItemIdentifiers("Test_MView", dbSupport.quoted("Test_CASE_MView")));
+            addItemsToPreserve(DbItemType.MATERIALZED_VIEW, "Test_MView", dbSupport.quoted("Test_CASE_MView"));
         }
         if (dbSupport.supportsSequences()) {
-            defaultDbClearer.setSequencesToPreserve(toDbItemIdentifiers("Test_Sequence", dbSupport.quoted("Test_CASE_Sequence")));
+            addItemsToPreserve(DbItemType.SEQUENCE, "Test_Sequence", dbSupport.quoted("Test_CASE_Sequence"));
         }
         if (dbSupport.supportsSynonyms()) {
-            defaultDbClearer.setSynonymsToPreserve(toDbItemIdentifiers("Test_Synonym", dbSupport.quoted("Test_CASE_Synonym")));
+            addItemsToPreserve(DbItemType.SYNONYM, "Test_Synonym", dbSupport.quoted("Test_CASE_Synonym"));
+        }
+    }
+
+    private void addItemsToPreserve(DbItemType dbItemType, String... dbObjectIdentifiers) {
+        for (String dbObjectIdentifier : dbObjectIdentifiers) {
+            defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(dbItemType, dbObjectIdentifier, dbSupport, nameDbSupportMap), true);
         }
     }
 
@@ -489,7 +496,7 @@ public class DefaultDBClearerPreserveTest {
         SQLTestUtils.dropTestTypes(dbSupport, "test_type", "\"Test_CASE_Type\"");
     }
     
-    private Set<DbItemIdentifier> toDbItemIdentifiers(String... itemIdentifiers) {
-        return TestUtils.toDbItemIdentifiers(CollectionUtils.asSet(itemIdentifiers), dbSupport, nameDbSupportMap);
+    private Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType dbItemType, String... itemIdentifiers) {
+        return TestUtils.toDbItemIdentifiers(dbItemType, CollectionUtils.asSet(itemIdentifiers), dbSupport, nameDbSupportMap);
     }
 }

@@ -30,19 +30,6 @@ public interface ExecutedScriptInfoSource {
 
     
     /**
-     * This method returns whether a from scratch update is recommended: It will return true
-     * if the database is in it's initial state (i.e. no scripts were executed yet) and the 
-     * autoCreateExecutedScriptsTable property is set to true.
-     * <p/>
-     * The reasoning behind this is that before executing the first script, it's a good idea to 
-     * clear the database in order to start with a clean situation.
-     * 
-     * @return True if a from-scratch update is recommended
-     */
-    boolean isFromScratchUpdateRecommended();
-
-    
-    /**
      * Registers the fact that the given script has been executed on the database
      * 
      * @param executedScript The script that was executed on the database

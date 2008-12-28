@@ -7,8 +7,9 @@ import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.util.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -60,11 +61,18 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
         
 		// configure items to preserve
-        defaultDbClearer.setSchemasToPreserve(toDbSchemaIdentifiers("schema_c"));
-        defaultDbClearer.setTablesToPreserve(toDbItemIdentifiers("test_table", dbSupport.quoted("SCHEMA_A") + "." + dbSupport.quoted("TEST_TABLE")));
-        defaultDbClearer.setViewsToPreserve(toDbItemIdentifiers("test_view", "schema_a." + dbSupport.quoted("TEST_VIEW")));
-        defaultDbClearer.setSequencesToPreserve(toDbItemIdentifiers("test_sequence", dbSupport.quoted("SCHEMA_A") + ".test_sequence"));
+        defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseSchemaIdentifier("schema_c", dbSupport, nameDbSupportMap), true);
+        addItemsToPreserve(DbItemType.TABLE, "test_table", dbSupport.quoted("SCHEMA_A") + "." + dbSupport.quoted("TEST_TABLE"));
+        addItemsToPreserve(DbItemType.VIEW, "test_view", "schema_a." + dbSupport.quoted("TEST_VIEW"));
+        addItemsToPreserve(DbItemType.SEQUENCE, "test_sequence", dbSupport.quoted("SCHEMA_A") + ".test_sequence");
 	}
+
+
+    private void addItemsToPreserve(DbItemType dbItemType, String... dbObjectIdentifiers) {
+        for (String dbObjectIdentifier : dbObjectIdentifiers) {
+            defaultDbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(dbItemType, dbObjectIdentifier, dbSupport, nameDbSupportMap), true);
+        }
+    }
 
 
 	/**
@@ -179,8 +187,8 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         return TestUtils.toDbSchemaIdentifiers(CollectionUtils.asSet(schemaIdentifiers), dbSupport, nameDbSupportMap);
     }
 	
-	private Set<DbItemIdentifier> toDbItemIdentifiers(String... itemIdentifiers) {
-        return TestUtils.toDbItemIdentifiers(CollectionUtils.asSet(itemIdentifiers), dbSupport, nameDbSupportMap);
+	private Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType dbItemType, String... itemIdentifiers) {
+        return TestUtils.toDbItemIdentifiers(dbItemType, CollectionUtils.asSet(itemIdentifiers), dbSupport, nameDbSupportMap);
     }
 
 }
