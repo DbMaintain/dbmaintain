@@ -173,13 +173,17 @@ public class DefaultDbMaintainer implements DbMaintainer {
     public void updateDatabase() {
         ScriptUpdates scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource,
                 useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
-        
-        if (scriptUpdates.isEmpty()) {
-            if (!getScriptsThatFailedDuringLastUpdate().isEmpty()) {
-                logger.error("During the last update, the execution of a script failed " + getScriptsThatFailedDuringLastUpdate().first());
-            } else {
-                logger.info("Database is up to date");
+
+        if (!getIndexedScriptsThatFailedDuringLastUpdate().isEmpty()) {
+            if (!scriptUpdates.hasIrregularScriptUpdates()) {
+                throw new DbMaintainException("During the latest update, the execution of the following script failed: " +
+                    getIndexedScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must " +
+                    "be fixed before any other updates can be performed.");
             }
+        }
+
+        if (scriptUpdates.isEmpty()) {
+            logger.info("Database is up to date");
             // Interrupt execution to make sure nothing is performed on the database
             return;
         }
@@ -450,10 +454,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
     } */
 
 
-    protected SortedSet<ExecutedScript> getScriptsThatFailedDuringLastUpdate() {
+    protected SortedSet<ExecutedScript> getIndexedScriptsThatFailedDuringLastUpdate() {
         SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
-            if (!script.isSucceeded()) {
+            if (!script.isSucceeded() && script.getScript().isIncremental()) {
                 failedExecutedScripts.add(script);
             }
         }

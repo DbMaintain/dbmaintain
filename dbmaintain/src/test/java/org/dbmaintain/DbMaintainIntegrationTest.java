@@ -229,7 +229,7 @@ public class DbMaintainIntegrationTest {
     }
 
 
-    @Test @Ignore
+    @Test
     public void testErrorInIncrementalScript() {
         enableFromScratch();
 
@@ -252,7 +252,7 @@ public class DbMaintainIntegrationTest {
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During a previous database update");
+            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_INCREMENTAL_2);
         }
         assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
 
