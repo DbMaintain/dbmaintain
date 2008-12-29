@@ -171,7 +171,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * at the end.
      */
     public void updateDatabase() {
-        ScriptUpdates scriptUpdates = new ScriptUpdates(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts);
+        ScriptUpdates scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource,
+                useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
         
         if (scriptUpdates.isEmpty()) {
             if (!getScriptsThatFailedDuringLastUpdate().isEmpty()) {

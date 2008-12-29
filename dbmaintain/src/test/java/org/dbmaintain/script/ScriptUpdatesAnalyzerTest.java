@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Ducheyne
  * @since 28-dec-2008
  */
-public class ScriptUpdatesTest {
+public class ScriptUpdatesAnalyzerTest {
 
     private static final String INDEXED_1 = "1_indexed1.sql";
     private static final String INDEXED_2 = "2_indexed2.sql";
@@ -192,7 +192,8 @@ public class ScriptUpdatesTest {
     private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
         ScriptRepository scriptRepository = TestUtils.getScriptRepository(createScripts());
         ExecutedScriptInfoSource executedScriptInfoSource = TestUtils.getExecutedScriptInfoSource(createExecutedScripts());
-        scriptUpdates = new ScriptUpdates(scriptRepository, executedScriptInfoSource, true, allowOutOfSequenceExecutionOfPatchScripts);
+        scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, true,
+                allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
     }
 
 

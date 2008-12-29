@@ -15,13 +15,9 @@
  */
 package org.dbmaintain.script;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import static org.dbmaintain.script.ScriptUpdateType.*;
-import org.dbmaintain.script.impl.ScriptRepository;
-
-import java.util.*;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * @author Filip Neven
@@ -29,9 +25,6 @@ import java.util.*;
  * @since 24-dec-2008
  */
 public class ScriptUpdates {
-
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(ScriptUpdates.class);
 
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates;
 
@@ -41,109 +34,13 @@ public class ScriptUpdates {
 
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates;
 
-    public ScriptUpdates(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource, boolean useScriptFileLastModificationDates,
-                         boolean allowOutOfSequenceExecutionOfPatchScripts) {
 
-        regularScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getRegularScriptUpdateTypes());
-        irregularScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getIrregularScriptUpdateTypes());
-        patchScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPatchScriptUpdateTypes());
-        postprocessingScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPostprocessingScriptUpdateTypes());
-
-        Map<Script, ExecutedScript> alreadyExecutedScripts = getAlreadyExecutedScripts(executedScriptInfoSource);
-        // Search for indexed scriptNames that have been executed but don't appear in the current indexed scriptNames anymore
-        SortedSet<Script> allScripts = scriptRepository.getAllScripts();
-        for (Script alreadyExecutedScript : alreadyExecutedScripts.keySet()) {
-            if (!allScripts.contains(alreadyExecutedScript)) {
-                if (alreadyExecutedScript.isIncremental()) {
-                    addIrregularScriptUpdate(INDEXED_SCRIPT_DELETED, alreadyExecutedScript);
-                } else if (alreadyExecutedScript.isRepeatable()) {
-                    logger.warn("A repeatable script has been deleted. Currently this is ignored by dbmaintain");
-                    // TODO Handle repeatable script updates
-                    //addRegularScriptUpdate(REPEATABLE_SCRIPT_DELETED, alreadyExecutedScript);
-                } else if (alreadyExecutedScript.isPostProcessingScript()) {
-                    addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, alreadyExecutedScript);
-                }
-            }
-        }
-
-        // Search for indexed scriptNames whose version < the current version, which are new or whose contents have changed
-        Script scriptWithHighestScriptIndex = getExecutedScriptWithHighestScriptIndex(executedScriptInfoSource.getExecutedScripts());
-        for (Script indexedScript : scriptRepository.getIndexedScripts()) {
-            if (!alreadyExecutedScripts.containsKey(indexedScript)) {
-                if (scriptWithHighestScriptIndex == null || indexedScript.compareTo(scriptWithHighestScriptIndex) > 0) {
-                    addRegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, indexedScript);
-                } else {
-                    if (indexedScript.isPatchScript()) {
-                        if (allowOutOfSequenceExecutionOfPatchScripts) {
-                            addPatchScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, indexedScript);
-                        } else {
-                            addIrregularScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, indexedScript);
-                        }
-                    } else {
-                        addIrregularScriptUpdate(LOWER_INDEX_NON_PATCH_SCRIPT_ADDED, indexedScript);
-                    }
-                }
-            } else {
-                if (!alreadyExecutedScripts.get(indexedScript).getScript().isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates)) {
-                    addIrregularScriptUpdate(INDEXED_SCRIPT_UPDATED, indexedScript);
-                }
-            }
-        }
-
-        for (Script repeatableScript : scriptRepository.getRepeatableScripts()) {
-            if (!alreadyExecutedScripts.containsKey(repeatableScript)) {
-                addRegularScriptUpdate(REPEATABLE_SCRIPT_ADDED, repeatableScript);
-            } else {
-                if (!alreadyExecutedScripts.get(repeatableScript).getScript().isScriptContentEqualTo(repeatableScript, useScriptFileLastModificationDates)) {
-                    addRegularScriptUpdate(REPEATABLE_SCRIPT_UPDATED, repeatableScript);
-                }
-            }
-        }
-
-        for (Script postprocessingScript : scriptRepository.getPostProcessingScripts()) {
-            if (!alreadyExecutedScripts.containsKey(postprocessingScript)) {
-                addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_ADDED, postprocessingScript);
-            } else {
-                if (!alreadyExecutedScripts.get(postprocessingScript).getScript().isScriptContentEqualTo(postprocessingScript, useScriptFileLastModificationDates)) {
-                    addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_UPDATED, postprocessingScript);
-                }
-            }
-        }
-    }
-
-    protected Script getExecutedScriptWithHighestScriptIndex(Set<ExecutedScript> executedScripts) {
-        Script result = null;
-        for (ExecutedScript executedScript : executedScripts) {
-            if (executedScript.getScript().isIncremental() && (result == null  || executedScript.getScript().compareTo(result) > 0)) {
-                result = executedScript.getScript();
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * @return The already executed scripts, as a map from Script => ExecutedScript
-     */
-    protected Map<Script, ExecutedScript> getAlreadyExecutedScripts(ExecutedScriptInfoSource executedScriptInfoSource) {
-        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<Script, ExecutedScript>();
-        for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
-            alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
-        }
-        return alreadyExecutedScripts;
-    }
-
-    protected Map<ScriptUpdateType, SortedSet<ScriptUpdate>> initScriptUpdateMap(Set<ScriptUpdateType> scriptUpdateTypes) {
-        Map<ScriptUpdateType, SortedSet<ScriptUpdate>> result = new EnumMap<ScriptUpdateType, SortedSet<ScriptUpdate>>(ScriptUpdateType.class);
-        for (ScriptUpdateType scriptUpdateType : scriptUpdateTypes) {
-            result.put(scriptUpdateType, new TreeSet<ScriptUpdate>());
-        }
-        return result;
-    }
-
-
-    public void addRegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        regularScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
+    protected ScriptUpdates(Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates,
+                         Map<ScriptUpdateType, SortedSet<ScriptUpdate>> patchScriptUpdates, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates) {
+        this.regularScriptUpdates = regularScriptUpdates;
+        this.irregularScriptUpdates = irregularScriptUpdates;
+        this.patchScriptUpdates = patchScriptUpdates;
+        this.postprocessingScriptUpdates = postprocessingScriptUpdates;
     }
 
 
@@ -158,11 +55,6 @@ public class ScriptUpdates {
             result.addAll(regularScriptUpdates.get(regularScriptUpdateType));
         }
         return result;
-    }
-
-
-    protected void addIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        irregularScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
     }
 
 
@@ -190,11 +82,6 @@ public class ScriptUpdates {
     }
 
 
-    protected void addPatchScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        patchScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
-    }
-
-
     public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates(ScriptUpdateType scriptUpdateType) {
         return patchScriptUpdates.get(scriptUpdateType);
     }
@@ -208,10 +95,6 @@ public class ScriptUpdates {
         return result;
     }
 
-
-    protected void addPostprocessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        postprocessingScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
-    }
 
     protected SortedSet<ScriptUpdate> getPostprocessingScriptUpdates() {
         SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
