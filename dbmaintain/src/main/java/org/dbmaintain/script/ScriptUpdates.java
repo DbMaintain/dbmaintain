@@ -50,7 +50,7 @@ public class ScriptUpdates {
         postprocessingScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPostprocessingScriptUpdateTypes());
 
         Map<Script, ExecutedScript> alreadyExecutedScripts = getAlreadyExecutedScripts(executedScriptInfoSource);
-        // Search for indexed scripts that have been executed but don't appear in the current indexed scripts anymore
+        // Search for indexed scriptNames that have been executed but don't appear in the current indexed scriptNames anymore
         SortedSet<Script> allScripts = scriptRepository.getAllScripts();
         for (Script alreadyExecutedScript : alreadyExecutedScripts.keySet()) {
             if (!allScripts.contains(alreadyExecutedScript)) {
@@ -66,7 +66,7 @@ public class ScriptUpdates {
             }
         }
 
-        // Search for indexed scripts whose version < the current version, which are new or whose contents have changed
+        // Search for indexed scriptNames whose version < the current version, which are new or whose contents have changed
         Script scriptWithHighestScriptIndex = getExecutedScriptWithHighestScriptIndex(executedScriptInfoSource.getExecutedScripts());
         for (Script indexedScript : scriptRepository.getIndexedScripts()) {
             if (!alreadyExecutedScripts.containsKey(indexedScript)) {
@@ -195,6 +195,11 @@ public class ScriptUpdates {
     }
 
 
+    public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates(ScriptUpdateType scriptUpdateType) {
+        return patchScriptUpdates.get(scriptUpdateType);
+    }
+
+
     public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates() {
         SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
         for (ScriptUpdateType patchScriptUpdateType : ScriptUpdateType.getPatchScriptUpdateTypes()) {
@@ -208,10 +213,22 @@ public class ScriptUpdates {
         postprocessingScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
     }
 
+    protected SortedSet<ScriptUpdate> getPostprocessingScriptUpdates() {
+        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
+        for (ScriptUpdateType postProcessingScriptUpdateType : ScriptUpdateType.getPostprocessingScriptUpdateTypes()) {
+            result.addAll(postprocessingScriptUpdates.get(postProcessingScriptUpdateType));
+        }
+        return result;
+    }
+
+    public SortedSet<ScriptUpdate> getPostprocessingScriptUpdates(ScriptUpdateType scriptUpdateType) {
+        return postprocessingScriptUpdates.get(scriptUpdateType);
+    }
+
 
     public boolean isEmpty() {
         return getRegularScriptUpdates().size() == 0 && getIrregularScriptUpdates().size() == 0 &&
-                getRegularPatchScriptUpdates().size() == 0 && getPostprocessingScriptUpdateTypes().size() == 0;
+                getRegularPatchScriptUpdates().size() == 0 && getPostprocessingScriptUpdates().size() == 0;
     }
 
 }

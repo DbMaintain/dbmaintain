@@ -44,16 +44,19 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
         if (this == o) return true;
         if (!(o instanceof ScriptUpdate)) return false;
 
-        ScriptUpdate other = (ScriptUpdate) o;
+        ScriptUpdate that = (ScriptUpdate) o;
 
-        if (!script.equals(other.script)) return false;
+        if (!script.equals(that.script)) return false;
+        if (type != that.type) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return script.hashCode();
+        int result = type.hashCode();
+        result = 31 * result + script.hashCode();
+        return result;
     }
 
     public int compareTo(ScriptUpdate other) {

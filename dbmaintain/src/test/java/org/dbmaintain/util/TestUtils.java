@@ -24,8 +24,10 @@ import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.impl.*;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
@@ -47,8 +49,13 @@ import static java.util.Collections.singleton;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-abstract public class TestUtils {
+public class TestUtils {
 
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private TestUtils() {
+    }
 
     public static DbSupport getDbSupport() {
         return getDbSupport("PUBLIC");
@@ -142,5 +149,37 @@ abstract public class TestUtils {
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
         return new FileSystemScriptLocation(scriptRootLocation, asSet("sql"), "@", "#", asSet("PATCH"), "postprocessing", "ISO-8859-1");
+    }
+
+    public static ScriptRepository getScriptRepository(final SortedSet<Script> scriptsToReturn) {
+        ScriptLocation scriptLocation = new ScriptLocation() {
+            public String getLocationName() {
+                return null;
+            }
+
+            @Override
+            public SortedSet<Script> getScripts() {
+                return scriptsToReturn;
+            }
+        };
+        return new ScriptRepository(asSet(scriptLocation));
+    }
+
+    public static ExecutedScriptInfoSource getExecutedScriptInfoSource(final SortedSet<ExecutedScript> executedScripts) {
+        return new ExecutedScriptInfoSource() {
+
+            public void registerExecutedScript(ExecutedScript executedScript) {
+            }
+
+            public void updateExecutedScript(ExecutedScript executedScript) {
+            }
+
+            public void clearAllExecutedScripts() {
+            }
+
+            public Set<ExecutedScript> getExecutedScripts() {
+                return executedScripts;
+            }
+        };
     }
 }
