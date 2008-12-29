@@ -177,6 +177,9 @@ public class TestUtils {
             public void clearAllExecutedScripts() {
             }
 
+            public void deleteExecutedScript(ExecutedScript executedScript) {
+            }
+
             public Set<ExecutedScript> getExecutedScripts() {
                 return executedScripts;
             }

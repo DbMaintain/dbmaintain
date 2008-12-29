@@ -23,7 +23,6 @@ import static org.apache.commons.lang.time.DateUtils.parseDate;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -49,10 +48,10 @@ import org.junit.Test;
 public class DefaultExecutedScriptInfoSourceTest {
 
     /* The tested instance */
-    DefaultExecutedScriptInfoSource dbExecutedScriptInfoSource;
+    DefaultExecutedScriptInfoSource executedScriptInfoSource;
 
     /* The tested instance with auto-create configured */
-    DefaultExecutedScriptInfoSource dbExecutedScriptInfoSourceAutoCreate;
+    DefaultExecutedScriptInfoSource executedScriptInfoSourceAutoCreate;
 
     /* The dataSource */
     DataSource dataSource;
@@ -71,16 +70,20 @@ public class DefaultExecutedScriptInfoSourceTest {
         dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
 
-        dbExecutedScriptInfoSource = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, false);
-        dbExecutedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, true);
+        initExecutedScriptInfoSource();
 
         dropExecutedScriptsTable();
         createExecutedScriptsTable();
     }
 
+    private void initExecutedScriptInfoSource() {
+        executedScriptInfoSource = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, false);
+        executedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, true);
+    }
+
     @Before
     public void initTestData() throws ParseException {
-        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), true);
+        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "@", "#", Collections.singleton("PATCH"), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
@@ -99,13 +102,19 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @Test
     public void testRegisterAndRetrieveExecutedScript() {
-        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
-        Set<ExecutedScript> executedScripts1 = dbExecutedScriptInfoSource.getExecutedScripts();
-        assertEquals(1, executedScripts1.size());
-        assertTrue(executedScripts1.contains(executedScript1));
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+        assertTrue(executedScriptInfoSource.getExecutedScripts().contains(executedScript1));
+        initExecutedScriptInfoSource();
+        assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+        assertTrue(executedScriptInfoSource.getExecutedScripts().contains(executedScript1));
 
-        dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
-        Set<ExecutedScript> executedScripts2 = dbExecutedScriptInfoSource.getExecutedScripts();
+        executedScriptInfoSource.registerExecutedScript(executedScript2);
+        Set<ExecutedScript> executedScripts2 = executedScriptInfoSource.getExecutedScripts();
+        assertEquals(2, executedScripts2.size());
+        assertTrue(executedScripts2.contains(executedScript1));
+        assertTrue(executedScripts2.contains(executedScript2));
+        initExecutedScriptInfoSource();
         assertEquals(2, executedScripts2.size());
         assertTrue(executedScripts2.contains(executedScript1));
         assertTrue(executedScripts2.contains(executedScript2));
@@ -118,7 +127,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     @Test(expected = DbMaintainException.class)
     public void testRegisterExecutedScript_NoExecutedScriptsTable() {
         dropExecutedScriptsTable();
-        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
     }
 
 
@@ -126,49 +135,52 @@ public class DefaultExecutedScriptInfoSourceTest {
      * Tests getting the version, but no executed scripts table yet and auto-create is true.
      */
     @Test
-    public void testGetDBVersion_noExecutedScriptsTableAutoCreate() {
+    public void testAutoCreateExecutedScriptsTable() {
         dropExecutedScriptsTable();
 
-        dbExecutedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
-        assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
-//        assertLenEquals(asList(executedScript1), dbVersionSource.getExecutedScripts());
+        executedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
+        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().iterator().next());
+        initExecutedScriptInfoSource();
+        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().iterator().next());
     }
 
     @Test
     public void testUpdateExecutedScript() {
-        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
-        executedScript1 = new ExecutedScript(executedScript1.getScript(), new Date(), false);
-        dbExecutedScriptInfoSource.updateExecutedScript(executedScript1);
-        assertEquals(executedScript1, dbExecutedScriptInfoSource.getExecutedScripts().iterator().next());
-//    	assertLenEquals(CollectionUtils.asSet(executedScript1), dbVersionSource.getExecutedScripts());
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        assertFalse(executedScriptInfoSource.getExecutedScripts().iterator().next().isSuccessful());
+        executedScript1.setSuccessful(true);
+        executedScriptInfoSource.updateExecutedScript(executedScript1);
+        assertTrue(executedScriptInfoSource.getExecutedScripts().iterator().next().isSuccessful());
+        initExecutedScriptInfoSource();
+        assertTrue(executedScriptInfoSource.getExecutedScripts().iterator().next().isSuccessful());
     }
 
     @Test
     public void testClearAllRegisteredScripts() {
-        dbExecutedScriptInfoSource.registerExecutedScript(executedScript1);
-        dbExecutedScriptInfoSource.registerExecutedScript(executedScript2);
-        dbExecutedScriptInfoSource.clearAllExecutedScripts();
-        assertEquals(0, dbExecutedScriptInfoSource.getExecutedScripts().size());
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        executedScriptInfoSource.registerExecutedScript(executedScript2);
+        executedScriptInfoSource.clearAllExecutedScripts();
+        assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
+        initExecutedScriptInfoSource();
+        assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
     }
     
-    
-    @Test
-    public void testIsFromScratchUpdateRecommended() throws SQLException {
-        assertFalse(dbExecutedScriptInfoSource.isFromScratchUpdateRecommended());
-        assertFalse(dbExecutedScriptInfoSourceAutoCreate.isFromScratchUpdateRecommended());
-        
-        dropExecutedScriptsTable();
-        
-        assertFalse(dbExecutedScriptInfoSource.isFromScratchUpdateRecommended());
-        assertTrue(dbExecutedScriptInfoSourceAutoCreate.isFromScratchUpdateRecommended());
-    }
 
+    @Test
+    public void testDeleteExecutedScript() {
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+        executedScriptInfoSource.deleteExecutedScript(executedScript1);
+        assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
+        initExecutedScriptInfoSource();
+        assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
+    }
 
     /**
      * Utility method to create the test version table.
      */
     private void createExecutedScriptsTable() {
-        SQLTestUtils.executeUpdate(dbExecutedScriptInfoSource.getCreateExecutedScriptTableStatement(), dataSource);
+        SQLTestUtils.executeUpdate(executedScriptInfoSource.getCreateExecutedScriptTableStatement(), dataSource);
     }
 
 

@@ -46,7 +46,7 @@ public class ExecutedScript implements Comparable<ExecutedScript> {
 	}
 
 	
-	public Boolean isSucceeded() {
+	public Boolean isSuccessful() {
 		return successful;
 	}
 
@@ -55,30 +55,22 @@ public class ExecutedScript implements Comparable<ExecutedScript> {
 		this.successful = successful;
 	}
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExecutedScript)) return false;
 
-	@Override
-	public int hashCode() {
-		return script.hashCode();
-	}
+        ExecutedScript that = (ExecutedScript) o;
 
+        if (!script.equals(that.script)) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final ExecutedScript other = (ExecutedScript) obj;
-		if (script == null) {
-			if (other.script != null)
-				return false;
-		} else if (!script.equals(other.script))
-			return false;
-		return true;
-	}
+        return true;
+    }
 
+    @Override
+    public int hashCode() {
+        return script.hashCode();
+    }
 
     @Override
     public String toString() {

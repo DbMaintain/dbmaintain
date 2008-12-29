@@ -23,17 +23,17 @@ import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUT
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.script.ExecutedScript;
 import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
 import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
-import org.junit.Assert;
-import static org.junit.Assert.fail;
 
 import java.io.*;
 import java.util.Properties;
@@ -94,25 +94,6 @@ public class DbMaintainIntegrationTest {
         newIncrementalScript();
         updateDatabase();
         assertTablesExist(NEW_INCREMENTAL_1);
-    }
-
-    @Test
-    public void testAddRepeatable() {
-        createInitialScripts();
-        updateDatabase();
-        assertTablesDontExist(NEW_REPEATABLE);
-        newRepeatableScript();
-        updateDatabase();
-        assertTablesExist(NEW_REPEATABLE);
-    }
-
-    @Test
-    public void testUpdateRepeatable() {
-        createInitialScripts();
-        updateDatabase();
-        updateRepeatableScript();
-        updateDatabase();
-        assertTablesExist(UPDATED_REPEATABLE);
     }
 
     @Test
@@ -184,6 +165,36 @@ public class DbMaintainIntegrationTest {
     }
 
 
+    @Test
+    public void testAddRepeatable() {
+        createInitialScripts();
+        updateDatabase();
+        assertTablesDontExist(NEW_REPEATABLE);
+        newRepeatableScript();
+        updateDatabase();
+        assertTablesExist(NEW_REPEATABLE);
+    }
+
+    @Test
+    public void testUpdateRepeatable() {
+        createInitialScripts();
+        updateDatabase();
+        updateRepeatableScript();
+        updateDatabase();
+        assertTablesExist(UPDATED_REPEATABLE);
+    }
+
+
+    @Test
+    public void testDeleteRepeatable() {
+        createInitialScripts();
+        updateDatabase();
+        removeRepeatableScript();
+        updateDatabase();
+        assertNotInExecutedScripts("repeatable/" + INITIAL_REPEATABLE + ".sql");
+    }
+
+
     /**
      * Test for adding a hotfix script that has an index smaller than an existing index. Out of sequence is
      * not allowed so the update should have failed.
@@ -248,9 +259,8 @@ public class DbMaintainIntegrationTest {
         }
         assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
 
-        // try again
-        // No script should have been executed, an exception should have been raised that the script that
-        // caused the error, was not changed.
+        // Try again without changing anything
+        // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
@@ -278,12 +288,16 @@ public class DbMaintainIntegrationTest {
         } catch (DbMaintainException e) {
             assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
         }
+        // Try again without changing anything
+        // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
         try {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
             assertMessageContains(e.getMessage(), "During the latest update", INITIAL_REPEATABLE + ".sql");
         }
+        // Update an incremental script, without fixing the error
+        // A from-scratch recreation is performed, but the error occurs again
         updateIncrementalScript();
         try {
             updateDatabase();
@@ -291,6 +305,7 @@ public class DbMaintainIntegrationTest {
         } catch (DbMaintainException e) {
             assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
         }
+        // Fix the error and witness that the repeatable script is re-executed, and the update finishes successfully
         fixErrorInRepeatableScript();
         updateDatabase();
         assertTablesExist(UPDATED_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
@@ -308,10 +323,13 @@ public class DbMaintainIntegrationTest {
             e.printStackTrace();
             assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
         }
+        // Remove the script. Now the update should finish successfully. The record pointing to the previously failed
+        // repeatable script must be removed from the dbmaintain_scripts table.
         removeRepeatableScript();
         updateDatabase();
         assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
         assertTablesDontExist(INITIAL_REPEATABLE);
+        assertNotInExecutedScripts("repeatable/" + INITIAL_REPEATABLE + ".sql");
     }
 
     /**
@@ -424,6 +442,15 @@ public class DbMaintainIntegrationTest {
         }
     }
 
+    private void assertNotInExecutedScripts(String scriptName) {
+        ExecutedScriptInfoSource executedScriptInfoSource = dbMaintainConfigurer.createExecutedScriptInfoSource();
+        Set<ExecutedScript> executedScripts = executedScriptInfoSource.getExecutedScripts();
+        for (ExecutedScript executedScript : executedScripts) {
+            if (scriptName.equals(executedScript.getScript().getFileName())) {
+                fail("Expected " + scriptName + " not to be part of the executed scripts, but it is");
+            }
+        }
+    }
 
     private void enableFromScratch() {
         configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "true");

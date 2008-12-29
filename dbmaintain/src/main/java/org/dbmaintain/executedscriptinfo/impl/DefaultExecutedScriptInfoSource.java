@@ -145,21 +145,6 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     
     
     /**
-     * This method returns whether a from scratch update is recommended: It will return true
-     * if the database is in it's initial state (i.e. the dbmaintain_scripts table doesn't exist yet 
-     * or is invalid) and the autoCreateExecutedScriptsTable property is set to true.
-     * <p/>
-     * The reasoning behind this is that before executing the first script, it's a good idea to 
-     * clear the database in order to start with a clean situation.
-     * 
-     * @return True if a from-scratch update is recommended
-     */
-    public boolean isFromScratchUpdateRecommended() {
-        return !isExecutedScriptsTableValid() && autoCreateExecutedScriptsTable;
-    }
-
-
-    /**
      * @return All scripts that were registered as executed on the database
      */
     public Set<ExecutedScript> getExecutedScripts() {
@@ -167,7 +152,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
             return doGetExecutedScripts();
 
         } catch (DbMaintainException e) {
-            if (checkVersionTable()) {
+            if (checkExecutedScriptsTable()) {
                 throw e;
             }
             // try again, executed scripts table was not ok
@@ -229,51 +214,11 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @param executedScript The script that was executed on the database
      */
     public void registerExecutedScript(ExecutedScript executedScript) {
-        try {
-            doRegisterExecutedScript(executedScript);
-
-        } catch (DbMaintainException e) {
-            if (checkVersionTable()) {
-                throw e;
-            }
-            // try again, version table was not ok
-            doRegisterExecutedScript(executedScript);
-        }
-    }
-
-
-    /**
-     * Registers the fact that the given script has been executed on the database
-     * Precondition: The table db_executed_scripts must exist
-     *
-     * @param executedScript The script that was executed on the database
-     */
-    protected void doRegisterExecutedScript(ExecutedScript executedScript) {
         if (getExecutedScripts().contains(executedScript)) {
-            doUpdateExecutedScript(executedScript);
+            updateExecutedScript(executedScript);
         } else {
-            doSaveExecutedScript(executedScript);
+            insertExecutedScript(executedScript);
         }
-    }
-
-
-    /**
-     * Updates the given registered script
-     *
-     * @param executedScript
-     */
-    public void updateExecutedScript(ExecutedScript executedScript) {
-        try {
-            doUpdateExecutedScript(executedScript);
-
-        } catch (DbMaintainException e) {
-            if (checkVersionTable()) {
-                throw e;
-            }
-            // try again, version table was not ok
-            doUpdateExecutedScript(executedScript);
-        }
-
     }
 
 
@@ -283,36 +228,49 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      *
      * @param executedScript
      */
-    protected void doSaveExecutedScript(ExecutedScript executedScript) {
-        executedScripts.add(executedScript);
+    protected void insertExecutedScript(ExecutedScript executedScript) {
+        getExecutedScripts().add(executedScript);
 
         String executedAt = timestampFormat.format(executedScript.getExecutedAt());
         String insertSql = "insert into " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
                 " (" + fileNameColumnName + ", " + fileLastModifiedAtColumnName + ", " + checksumColumnName + ", " +
                 executedAtColumnName + ", " + succeededColumnName + ") values ('" + executedScript.getScript().getFileName() +
                 "', " + executedScript.getScript().getFileLastModifiedAt() + ", '" +
-                executedScript.getScript().getCheckSum() + "', '" + executedAt + "', " + (executedScript.isSucceeded() ? "1" : "0") + ")";
+                executedScript.getScript().getCheckSum() + "', '" + executedAt + "', " + (executedScript.isSuccessful() ? "1" : "0") + ")";
         sqlHandler.executeUpdateAndCommit(insertSql, defaultDbSupport.getDataSource());
     }
 
 
     /**
      * Updates the given registered script
-     * Precondition: The table db_executed_scripts must exist
      *
      * @param executedScript
      */
-    protected void doUpdateExecutedScript(ExecutedScript executedScript) {
-        executedScripts.add(executedScript);
+    public void updateExecutedScript(ExecutedScript executedScript) {
+        getExecutedScripts().add(executedScript);
 
         String executedAt = timestampFormat.format(executedScript.getExecutedAt());
         String updateSql = "update " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
                 " set " + checksumColumnName + " = '" + executedScript.getScript().getCheckSum() + "', " +
                 fileLastModifiedAtColumnName + " = " + executedScript.getScript().getFileLastModifiedAt() + ", " +
                 executedAtColumnName + " = '" + executedAt + "', " +
-                succeededColumnName + " = " + (executedScript.isSucceeded() ? "1" : "0") +
+                succeededColumnName + " = " + (executedScript.isSuccessful() ? "1" : "0") +
                 " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
         sqlHandler.executeUpdateAndCommit(updateSql, defaultDbSupport.getDataSource());
+    }
+
+
+    /**
+     * Remove the given executed script from the executed scripts
+     *
+     * @param executedScript The executed script, which is no longer part of the executed scripts
+     */
+    public void deleteExecutedScript(ExecutedScript executedScript) {
+        getExecutedScripts().remove(executedScript);
+
+        String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+                " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
+        sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
     }
 
 
@@ -321,25 +279,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * {@link #getExecutedScripts()} will return an empty set.
      */
     public void clearAllExecutedScripts() {
-        try {
-            doClearAllExecutedScripts();
-
-        } catch (DbMaintainException e) {
-            if (checkVersionTable()) {
-                throw e;
-            }
-            // try again, version table was not ok
-            doClearAllExecutedScripts();
-        }
-
-    }
-
-
-    /**
-     * Actual implementation of the {@link #clearAllExecutedScripts()} method.
-     */
-    protected void doClearAllExecutedScripts() {
-        executedScripts.clear();
+        getExecutedScripts().clear();
 
         String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName);
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
@@ -352,7 +292,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      *
      * @return False if the version table was not ok and therefore auto-created
      */
-    protected boolean checkVersionTable() {
+    protected boolean checkExecutedScriptsTable() {
         // check valid
         if (isExecutedScriptsTableValid()) {
             return true;

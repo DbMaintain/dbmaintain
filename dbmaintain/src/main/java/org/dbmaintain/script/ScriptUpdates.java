@@ -117,14 +117,14 @@ public class ScriptUpdates {
         return result;
     }
 
+    
     public SortedSet<ScriptUpdate> getPostprocessingScriptUpdates(ScriptUpdateType scriptUpdateType) {
         return postprocessingScriptUpdates.get(scriptUpdateType);
     }
 
 
-    public boolean isEmpty() {
-        return getRegularScriptUpdates().size() == 0 && getIrregularScriptUpdates().size() == 0 &&
-                getRegularPatchScriptUpdates().size() == 0 && getPostprocessingScriptUpdates().size() == 0;
+    public boolean hasUpdatesOtherThanRepeatableScriptDeletions() {
+        return getRegularScriptUpdates().size() != 0 || getIrregularScriptUpdates().size() != 0 ||
+                getRegularPatchScriptUpdates().size() != 0 || getPostprocessingScriptUpdates().size() != 0;
     }
-
 }

@@ -58,4 +58,10 @@ public interface ExecutedScriptInfoSource {
     Set<ExecutedScript> getExecutedScripts();
 
 
+    /**
+     * Remove the given executed script from the executed scripts
+     *
+     * @param executedScript The executed script, which is no longer part of the executed scripts
+     */
+    void deleteExecutedScript(ExecutedScript executedScript);
 }

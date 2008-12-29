@@ -194,12 +194,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
             }
         }
 
-        if (scriptUpdates.isEmpty()) {
-            logger.info("Database is up to date");
-            // Interrupt execution to make sure nothing is performed on the database
-            return;
-        }
-
         boolean recreateFromScratch = false;
         if (fromScratchEnabled && !hasItemsToPreserve && isInitialDatabaseUpdate()) {
             logger.info("Since the database is updated for the first time, the database is cleared first to be sure we start with a clean database");
@@ -237,17 +231,24 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executeScriptUpdates(scriptUpdates.getRegularPatchScriptUpdates());
             // Execute all new incremental and all new or modified repeatable scripts
             executeScriptUpdates(scriptUpdates.getRegularScriptUpdates());
+            // If repeatable scripts were removed, also remove them from the executed scripts
+            removeDeletedRepeatableScriptsFromExecutedScripts(scriptUpdates.getRepeatableScriptDeletions());
         }
-        // Execute all post processing scripts
-        executeScripts(scriptRepository.getPostProcessingScripts());
+        if (scriptUpdates.hasUpdatesOtherThanRepeatableScriptDeletions()) {
+            // Execute all post processing scripts
+            executeScripts(scriptRepository.getPostProcessingScripts());
 
-        // If the disable constraints option is enabled, disable all FK and not null constraints
-        if (disableConstraintsEnabled) {
-            constraintsDisabler.disableConstraints();
-        }
-        // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
-        if (updateSequencesEnabled) {
-            sequenceUpdater.updateSequences();
+            // If the disable constraints option is enabled, disable all FK and not null constraints
+            if (disableConstraintsEnabled) {
+                constraintsDisabler.disableConstraints();
+            }
+            // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
+            if (updateSequencesEnabled) {
+                sequenceUpdater.updateSequences();
+            }
+            logger.info("The database has been updated successfully.");
+        } else {
+            logger.info("No script changes detected.");
         }
     }
 
@@ -348,6 +349,18 @@ public class DefaultDbMaintainer implements DbMaintainer {
             alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
         }
         return alreadyExecutedScripts;
+    }
+
+
+    /**
+     * Removes all executed scripts that indicate repeatable scripts that were removed since the last database update
+     *
+     * @param repeatableScriptDeletions The scripts that were removed since the last database updates
+     */
+    protected void removeDeletedRepeatableScriptsFromExecutedScripts(SortedSet<ScriptUpdate> repeatableScriptDeletions) {
+        for (ScriptUpdate deletedRepeatableScriptUpdate : repeatableScriptDeletions) {
+            executedScriptInfoSource.deleteExecutedScript(getAlreadyExecutedScripts().get(deletedRepeatableScriptUpdate.getScript()));
+        }
     }
 
 
@@ -469,7 +482,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected SortedSet<ExecutedScript> getIndexedScriptsThatFailedDuringLastUpdate() {
         SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
-            if (!script.isSucceeded() && script.getScript().isIncremental()) {
+            if (!script.isSuccessful() && script.getScript().isIncremental()) {
                 failedExecutedScripts.add(script);
             }
         }
@@ -480,7 +493,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected SortedSet<ExecutedScript> getRepeatableScriptsThatFailedDuringLastUpdate() {
         SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
-            if (!script.isSucceeded() && script.getScript().isRepeatable()) {
+            if (!script.isSuccessful() && script.getScript().isRepeatable()) {
                 failedExecutedScripts.add(script);
             }
         }
@@ -490,7 +503,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
     protected boolean errorInIndexedScriptDuringLastUpdate() {
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
-            if (script.getScript().isIncremental() && !script.isSucceeded()) {
+            if (script.getScript().isIncremental() && !script.isSuccessful()) {
                 return true;
             }
         }

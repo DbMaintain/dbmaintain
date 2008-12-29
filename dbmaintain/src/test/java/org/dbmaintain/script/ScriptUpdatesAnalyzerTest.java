@@ -181,10 +181,6 @@ public class ScriptUpdatesAnalyzerTest {
         assertTrue(scriptUpdates.getPostprocessingScriptUpdates(scriptUpdateType).contains(new ScriptUpdate(scriptUpdateType, createScript(scriptName))));
     }
 
-    private void assertNoScriptUpdates() {
-        assertTrue(scriptUpdates.isEmpty());
-    }
-
     private void calculateScriptUpdates() {
         calculateScriptUpdates(true);
     }
