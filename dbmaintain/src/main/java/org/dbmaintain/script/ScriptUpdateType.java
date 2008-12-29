@@ -28,7 +28,12 @@ public enum ScriptUpdateType {
     /**
      * 'Regular' script updates: these are always allowed
      */
-    HIGHER_INDEX_SCRIPT_ADDED, REPEATABLE_SCRIPT_ADDED, REPEATABLE_SCRIPT_UPDATED, REPEATABLE_SCRIPT_DELETED,
+    HIGHER_INDEX_SCRIPT_ADDED, REPEATABLE_SCRIPT_ADDED, REPEATABLE_SCRIPT_UPDATED,
+
+    /**
+     * Special case: deletion of a repeatable script: this is allowed, thought might introduce problems
+     */
+    REPEATABLE_SCRIPT_DELETED,
 
     /**
      * Postprocessing script updates: these are also always allowed
@@ -50,8 +55,8 @@ public enum ScriptUpdateType {
         return EnumSet.of(HIGHER_INDEX_SCRIPT_ADDED, REPEATABLE_SCRIPT_ADDED, REPEATABLE_SCRIPT_UPDATED);
     }
 
-    public static Set<ScriptUpdateType> getPostprocessingScriptUpdateTypes() {
-        return EnumSet.of(POSTPROCESSING_SCRIPT_ADDED, POSTPROCESSING_SCRIPT_UPDATED, POSTPROCESSING_SCRIPT_DELETED);
+    public static Set<ScriptUpdateType> getRepeatableScriptDeletionTypes() {
+        return EnumSet.of(REPEATABLE_SCRIPT_DELETED);
     }
 
     public static Set<ScriptUpdateType> getIrregularScriptUpdateTypes() {
@@ -60,5 +65,9 @@ public enum ScriptUpdateType {
 
     public static Set<ScriptUpdateType> getPatchScriptUpdateTypes() {
         return EnumSet.of(LOWER_INDEX_PATCH_SCRIPT_ADDED);
+    }
+
+    public static Set<ScriptUpdateType> getPostprocessingScriptUpdateTypes() {
+        return EnumSet.of(POSTPROCESSING_SCRIPT_ADDED, POSTPROCESSING_SCRIPT_UPDATED, POSTPROCESSING_SCRIPT_DELETED);
     }
 }

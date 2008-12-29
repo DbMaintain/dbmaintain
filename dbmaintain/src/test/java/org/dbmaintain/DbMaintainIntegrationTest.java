@@ -32,6 +32,8 @@ import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Assert;
+import static org.junit.Assert.fail;
 
 import java.io.*;
 import java.util.Properties;
@@ -252,7 +254,7 @@ public class DbMaintainIntegrationTest {
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_INCREMENTAL_2);
+            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_INCREMENTAL_2 + ".sql");
         }
         assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
 
@@ -266,22 +268,50 @@ public class DbMaintainIntegrationTest {
 
     @Test
     public void testErrorInRepeatableScript() {
+        enableFromScratch();
+
         createInitialScripts();
-        //createErrorInRepeatableScript();
+        errorInRepeatableScript();
         try {
             updateDatabase();
+            fail();
         } catch (DbMaintainException e) {
-            // TODO
-            //assertMessageContains(e.getMessage(), "error", INITIAL_INCREMENTAL_2 + ".sql");
+            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
         }
         try {
             updateDatabase();
+            fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "previous run", "error", INITIAL_REPEATABLE + ".sql");
+            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_REPEATABLE + ".sql");
         }
-        //fixErrorInRepeatableScript();
+        updateIncrementalScript();
+        try {
+            updateDatabase();
+            fail();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
+        }
+        fixErrorInRepeatableScript();
         updateDatabase();
-        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
+        assertTablesExist(UPDATED_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
+    }
+
+
+    @Test
+    public void testErrorInRepeatableScript_fixByRemovingScript() {
+        createInitialScripts();
+        errorInRepeatableScript();
+        try {
+            updateDatabase();
+            fail();
+        } catch (DbMaintainException e) {
+            e.printStackTrace();
+            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
+        }
+        removeRepeatableScript();
+        updateDatabase();
+        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
+        assertTablesDontExist(INITIAL_REPEATABLE);
     }
 
     /**
@@ -297,6 +327,7 @@ public class DbMaintainIntegrationTest {
         assertTablesDontExist(BEFORE_INITIAL_TABLE);
     }
 
+
     /**
      * Verifies that, if the dbmaintain_scripts table doesn't exist yet, and the autoCreateExecutedScriptsInfoTable property is set to true,
      * we start with a from scratch update
@@ -309,13 +340,13 @@ public class DbMaintainIntegrationTest {
         updateDatabase();
         assertTablesExist(BEFORE_INITIAL_TABLE);
     }
-    
+
     @Test
     public void testExecutePostProcessingScriptsIfSomeScriptIsModified() {
         disableFromScratch();
         createInitialScripts();
         createPostProcessingScripts();
-        
+
         // Do an initial database setup and verify that the postprocessing scripts are executed
         updateDatabase();
         assertTablesExist(POST_PROCESSING_INDEXED_1);
@@ -364,6 +395,19 @@ public class DbMaintainIntegrationTest {
 
     private void fixErrorInInitialScript() {
         createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
+    }
+
+    private void errorInRepeatableScript() {
+        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "this is an error;");
+    }
+
+    private void fixErrorInRepeatableScript() {
+        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\n" +
+                "create table " + INITIAL_REPEATABLE + "(test varchar(10));");
+    }
+
+    private void removeRepeatableScript() {
+        removeScript("repeatable/" + INITIAL_REPEATABLE + ".sql");
     }
 
     private void removeIncrementalScript() {

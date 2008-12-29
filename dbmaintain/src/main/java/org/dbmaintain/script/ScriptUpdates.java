@@ -30,16 +30,20 @@ public class ScriptUpdates {
 
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates;
 
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> patchScriptUpdates;
+    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> repeatableScriptDeletions;
+
+    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularPatchScriptUpdates;
 
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates;
 
 
     protected ScriptUpdates(Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates,
-                         Map<ScriptUpdateType, SortedSet<ScriptUpdate>> patchScriptUpdates, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates) {
+                         Map<ScriptUpdateType, SortedSet<ScriptUpdate>> repeatableScriptDeletions, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularPatchScriptUpdates,
+                         Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates) {
         this.regularScriptUpdates = regularScriptUpdates;
         this.irregularScriptUpdates = irregularScriptUpdates;
-        this.patchScriptUpdates = patchScriptUpdates;
+        this.repeatableScriptDeletions = repeatableScriptDeletions;
+        this.regularPatchScriptUpdates = regularPatchScriptUpdates;
         this.postprocessingScriptUpdates = postprocessingScriptUpdates;
     }
 
@@ -82,15 +86,24 @@ public class ScriptUpdates {
     }
 
 
+    public SortedSet<ScriptUpdate> getRepeatableScriptDeletions() {
+        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
+        for (ScriptUpdateType irregularScriptUpdateType : ScriptUpdateType.getRepeatableScriptDeletionTypes()) {
+            result.addAll(repeatableScriptDeletions.get(irregularScriptUpdateType));
+        }
+        return result;
+    }
+
+
     public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates(ScriptUpdateType scriptUpdateType) {
-        return patchScriptUpdates.get(scriptUpdateType);
+        return regularPatchScriptUpdates.get(scriptUpdateType);
     }
 
 
     public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates() {
         SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
         for (ScriptUpdateType patchScriptUpdateType : ScriptUpdateType.getPatchScriptUpdateTypes()) {
-            result.addAll(patchScriptUpdates.get(patchScriptUpdateType));
+            result.addAll(regularPatchScriptUpdates.get(patchScriptUpdateType));
         }
         return result;
     }

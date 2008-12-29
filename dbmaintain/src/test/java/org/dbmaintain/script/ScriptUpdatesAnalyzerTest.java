@@ -95,16 +95,12 @@ public class ScriptUpdatesAnalyzerTest {
         assertRegularScriptUpdate(REPEATABLE_SCRIPT_UPDATED, REPEATABLE_2);
     }
 
-    /**
-     * Deletions of repeatable scripts are currently not registered! Nothing is done if a repeatable script is deleted:
-     * this is ignored. This must be fixed in the future! TODO
-     */
     @Test
     public void repeatableScriptDeleted() {
         executedScripts(REPEATABLE_1, REPEATABLE_2);
         scripts(REPEATABLE_1);
         calculateScriptUpdates();
-        assertNoScriptUpdates();
+        assertRepeatableScriptDeletion(REPEATABLE_2);
     }
 
     @Test
@@ -154,12 +150,12 @@ public class ScriptUpdatesAnalyzerTest {
         }
     }
 
-
     private void executedScripts(String... scriptNames) {
         for (String scriptName : scriptNames) {
             executedScriptNames.add(scriptName);
         }
     }
+
 
     private void updatedScript(String scriptName) {
         modifiedScriptNames.add(scriptName);
@@ -171,6 +167,10 @@ public class ScriptUpdatesAnalyzerTest {
 
     private void assertIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, String scriptName) {
         assertTrue(scriptUpdates.getIrregularScriptUpdates(scriptUpdateType).contains(new ScriptUpdate(scriptUpdateType, createScript(scriptName))));
+    }
+
+    private void assertRepeatableScriptDeletion(String scriptName) {
+        assertTrue(scriptUpdates.getRepeatableScriptDeletions().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, createScript(scriptName))));
     }
 
     private void assertRegularPatchScriptUpdate(ScriptUpdateType scriptUpdateType, String scriptName) {

@@ -41,6 +41,7 @@ public class ScriptUpdatesAnalyzer {
 
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates;
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates;
+    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> repeatableScriptDeletions;
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> patchScriptUpdates;
     private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates;
 
@@ -55,6 +56,7 @@ public class ScriptUpdatesAnalyzer {
     public ScriptUpdates calculateScriptUpdates() {
         regularScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getRegularScriptUpdateTypes());
         irregularScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getIrregularScriptUpdateTypes());
+        repeatableScriptDeletions = initScriptUpdateMap(ScriptUpdateType.getRepeatableScriptDeletionTypes());
         patchScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPatchScriptUpdateTypes());
         postprocessingScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPostprocessingScriptUpdateTypes());
 
@@ -66,9 +68,7 @@ public class ScriptUpdatesAnalyzer {
                 if (alreadyExecutedScript.isIncremental()) {
                     addIrregularScriptUpdate(INDEXED_SCRIPT_DELETED, alreadyExecutedScript);
                 } else if (alreadyExecutedScript.isRepeatable()) {
-                    logger.warn("A repeatable script has been deleted. Currently this is ignored by dbmaintain");
-                    // TODO Handle repeatable script updates
-                    //addRegularScriptUpdate(REPEATABLE_SCRIPT_DELETED, alreadyExecutedScript);
+                    addRepeatableScriptDeletion(alreadyExecutedScript);
                 } else if (alreadyExecutedScript.isPostProcessingScript()) {
                     addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, alreadyExecutedScript);
                 }
@@ -119,7 +119,7 @@ public class ScriptUpdatesAnalyzer {
             }
         }
 
-        return new ScriptUpdates(regularScriptUpdates, irregularScriptUpdates, patchScriptUpdates, postprocessingScriptUpdates);
+        return new ScriptUpdates(regularScriptUpdates, irregularScriptUpdates, repeatableScriptDeletions, patchScriptUpdates, postprocessingScriptUpdates);
     }
 
     protected Map<ScriptUpdateType, SortedSet<ScriptUpdate>> initScriptUpdateMap(Set<ScriptUpdateType> scriptUpdateTypes) {
@@ -129,7 +129,6 @@ public class ScriptUpdatesAnalyzer {
         }
         return result;
     }
-
 
     /**
      * @return The already executed scripts, as a map from Script => ExecutedScript
@@ -146,10 +145,15 @@ public class ScriptUpdatesAnalyzer {
     protected void addRegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
         regularScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
     }
-    
+
 
     protected void addIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
         irregularScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
+    }
+
+
+    private void addRepeatableScriptDeletion(Script script) {
+        repeatableScriptDeletions.get(REPEATABLE_SCRIPT_DELETED).add(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, script));
     }
 
 

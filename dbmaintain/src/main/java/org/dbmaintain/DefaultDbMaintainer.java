@@ -176,9 +176,21 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
         if (!getIndexedScriptsThatFailedDuringLastUpdate().isEmpty()) {
             if (!scriptUpdates.hasIrregularScriptUpdates()) {
-                throw new DbMaintainException("During the latest update, the execution of the following script failed: " +
-                    getIndexedScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must " +
-                    "be fixed before any other updates can be performed.");
+                throw new DbMaintainException("During the latest update, the execution of the following indexed script failed: " +
+                    getIndexedScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
+                    "before any other updates can be performed: This can be the failed script itself or another indexed script with " +
+                    "a lower index.");
+            }
+        }
+
+        if (!getRepeatableScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
+            for (ExecutedScript failedScript : getRepeatableScriptsThatFailedDuringLastUpdate()) {
+                if (!scriptUpdates.getRegularScriptUpdates(REPEATABLE_SCRIPT_UPDATED).contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
+                        && !scriptUpdates.getRepeatableScriptDeletions().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
+                    throw new DbMaintainException("During the latest update, the execution of the following repeatable script failed: " +
+                        getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
+                        "before any other updates can be performed: This can be the failed script itself or an indexed script.");
+                }
             }
         }
 
@@ -201,7 +213,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
                         formatIrregularUpdates(scriptUpdates));
                 recreateFromScratch = true;
             } else {
-                throw new DbMaintainException("Irregular script updates detected, but fromScratch updates are disabled. To solve this problem, you can do one of the following:\n" +
+                throw new DbMaintainException("Irregular script updates detected, but the fromScratch option is disabled. To solve this problem, you can do one of the following:\n" +
                     "  1: Revert the changes and perform the desired changes using incremental scripts\n" +
                     "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
                     "  3: Fix the database manually and invoke the markDatabaseAsUpToDate operation (error prone)\n\n" +
@@ -458,6 +470,17 @@ public class DefaultDbMaintainer implements DbMaintainer {
         SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
             if (!script.isSucceeded() && script.getScript().isIncremental()) {
+                failedExecutedScripts.add(script);
+            }
+        }
+        return failedExecutedScripts;
+    }
+
+
+    protected SortedSet<ExecutedScript> getRepeatableScriptsThatFailedDuringLastUpdate() {
+        SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
+        for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
+            if (!script.isSucceeded() && script.getScript().isRepeatable()) {
                 failedExecutedScripts.add(script);
             }
         }
