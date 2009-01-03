@@ -18,8 +18,9 @@ package org.dbmaintain.dbsupport.impl;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.apache.commons.dbutils.DbUtils;
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -309,7 +310,7 @@ public class MsSqlDbSupport extends DbSupport {
         } catch (Exception e) {
             throw new DbMaintainException("Error while disabling not null constraints. Table name: " + tableName, e);
         } finally {
-            DbUtils.closeQuietly(connection, statement, resultSet);
+            closeQuietly(connection, statement, resultSet);
         }
     }
 

@@ -18,8 +18,9 @@ package org.dbmaintain.dbsupport.impl;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.apache.commons.dbutils.DbUtils;
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -260,7 +261,7 @@ public class DerbyDbSupport extends DbSupport {
         } catch (SQLException e) {
             throw new DbMaintainException("Error while querying for Derby primary keys for table name: " + tableName, e);
         } finally {
-            DbUtils.closeQuietly(connection, null, resultSet);
+            closeQuietly(connection, null, resultSet);
         }
     }
 
@@ -291,7 +292,7 @@ public class DerbyDbSupport extends DbSupport {
         } catch (SQLException e) {
             throw new DbMaintainException("Error while querying for Derby primary keys for table name: " + tableName, e);
         } finally {
-            DbUtils.closeQuietly(connection, null, resultSet);
+            closeQuietly(connection, null, resultSet);
         }
     }
 

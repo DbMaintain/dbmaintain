@@ -15,36 +15,17 @@
  */
 package org.dbmaintain.config;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import org.dbmaintain.util.DbMaintainException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import org.dbmaintain.util.DbMaintainException;
-
 
 /**
  * Utility that loads the configuration of DbMaintain.
- * <p/>
- * Unitils settings can be defined in 3 files:<ul>
- * <li><b>unitils-default.properties</b> - a fixed file packaged in the unitils jar that contains all predefined defaults.
- * This file should normally not be modified.</li>
- * <li><b>unitils.properties</b> - a file somewhere in the classpath or user.home dir that contains all custom configuration
- * settings. Settings in this file will override the default settings. This is where you should put your project
- * specific configuration</li>
- * <li><b>unitils-local.properties</b> - a file somewhere in the classpath or user.home that contains machine/user local
- * configuration. Eg the database schema specific to the local user could be defined here. Settings in this file
- * will override the unitil default and custom settings.</li>
- * </ul>
- * The name of the custom settings file (unitils.properties) is defined by the {@link #PROPKEY_CUSTOM_CONFIGURATION}
- * property in the default settings. The name of the local settings file (unitils-local.propeties) is defined
- * by the {@link #PROPKEY_LOCAL_CONFIGURATION} in the custom or default settings. If these properties are set to
- * null or empty, the corresponding property file will not be loaded.
- * <p/>
- * A runtime exception is thrown when the default properties cannot be loaded.
- * A warning is logged when the custom propreties cannot be loaded.
- * A debug message is logged when the local properties cannot be loaded.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -75,8 +56,7 @@ public class DbMaintainConfigurationLoader {
     /**
      * Creates and loads all configuration settings.
      * 
-     * @param customConfigurationFileName The name of the custom configuration file. 
-     *        May be null: if so, the fileName is retrieved from the default properties. 
+     * @param customConfiguration URL that points to the custom configuration, may be null if there is no custom config 
      *
      * @return the settings, not null
      */
@@ -121,7 +101,7 @@ public class DbMaintainConfigurationLoader {
         } catch (IOException e) {
             throw new DbMaintainException("Unable to load configuration file: " + propertiesFileName, e);
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            closeQuietly(inputStream);
         }
 	}
 
@@ -134,7 +114,7 @@ public class DbMaintainConfigurationLoader {
 	    } catch (IOException e) {
 	        throw new DbMaintainException("Unable to load configuration file", e);
 	    } finally {
-	        IOUtils.closeQuietly(urlStream);
+	        closeQuietly(urlStream);
 	    }
 	}
 

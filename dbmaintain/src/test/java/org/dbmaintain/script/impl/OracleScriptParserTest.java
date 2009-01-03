@@ -19,9 +19,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.dbmaintain.scriptparser.impl.OracleScriptParser;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.File;
 import java.io.FileReader;
@@ -44,7 +45,7 @@ public class OracleScriptParserTest {
      */
     @After
     public void tearDown() throws Exception {
-        IOUtils.closeQuietly(scriptReader);
+        closeQuietly(scriptReader);
     }
 
 

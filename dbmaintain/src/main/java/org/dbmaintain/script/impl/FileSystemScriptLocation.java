@@ -17,9 +17,10 @@ package org.dbmaintain.script.impl;
 
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.IOUtils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,7 +99,7 @@ public class FileSystemScriptLocation extends ScriptLocation {
         } catch (IOException e) {
             throw new DbMaintainException("Error while reading configuration file " + customPropertiesFileLocation, e);
         } finally {
-            IOUtils.closeQuietly(propertiesInputStream);
+            closeQuietly(propertiesInputStream);
         }
     }
 

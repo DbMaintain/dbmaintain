@@ -25,15 +25,17 @@ import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.ExecutedScript;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.FileUtils.cleanDirectory;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
+import static org.apache.commons.io.FileUtils.cleanDirectory;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.*;
 import java.util.Properties;
@@ -548,7 +550,7 @@ public class DbMaintainIntegrationTest {
             File scriptFile = new File(scriptsLocation.getAbsolutePath(), relativePath);
             scriptFile.getParentFile().mkdirs();
             fileWriter = new FileWriter(scriptFile);
-            IOUtils.copy(new StringReader(scriptContent), fileWriter);
+            copy(new StringReader(scriptContent), fileWriter);
         } catch (IOException e) {
             throw new DbMaintainException(e);
         } finally {

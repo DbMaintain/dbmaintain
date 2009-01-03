@@ -18,9 +18,10 @@ package org.dbmaintain.script.impl;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReaderInputStream;
 import org.dbmaintain.util.WriterOutputStream;

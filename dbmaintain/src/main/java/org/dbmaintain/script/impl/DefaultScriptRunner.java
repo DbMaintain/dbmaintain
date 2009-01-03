@@ -17,13 +17,14 @@ package org.dbmaintain.script.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.IOUtils.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptRunner;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.Reader;
@@ -98,7 +99,7 @@ public class DefaultScriptRunner implements ScriptRunner {
                 sqlHandler.executeUpdateAndCommit(statement, targetDbSupport.getDataSource());
             }
         } finally {
-            IOUtils.closeQuietly(scriptContentReader);
+            closeQuietly(scriptContentReader);
         }
     }
 

@@ -15,8 +15,6 @@
  */
 package org.dbmaintain.executedscriptinfo.impl;
 
-import static org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils.closeQuietly;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,6 +27,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.dbutils.DbUtils;
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;

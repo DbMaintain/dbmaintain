@@ -39,7 +39,7 @@ public class DbMaintainOperations {
      * 
      * @param jarFileName The name of the jar file to create
      */
-    public void createScriptJar(String jarFileName) {
+    public static void createScriptJar(String jarFileName) {
         getDbMaintain().createScriptJar(jarFileName);
     }
 
@@ -47,7 +47,7 @@ public class DbMaintainOperations {
     /**
      * Updates the database to the latest version.
      */
-    public void updateDatabase() {
+    public static void updateDatabase() {
         getDbMaintain().updateDatabase();
     }
 
@@ -56,7 +56,7 @@ public class DbMaintainOperations {
      * Marks the database as up-to-date, without executing any script. You can use this operation to prepare 
      * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
      */
-    public void markDatabaseAsUptodate() {
+    public static void markDatabaseAsUptodate() {
         getDbMaintain().markDatabaseAsUpToDate();
     }
 
@@ -64,7 +64,7 @@ public class DbMaintainOperations {
     /**
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
-    public void clearDatabase() {
+    public static void clearDatabase() {
         getDbMaintain().clearDatabase();
     }
 
@@ -72,7 +72,7 @@ public class DbMaintainOperations {
     /**
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
-    public void cleanDatabase() {
+    public static void cleanDatabase() {
         getDbMaintain().cleanDatabase();
     }
 
@@ -80,7 +80,7 @@ public class DbMaintainOperations {
     /**
      * Disables or drops all foreign key and not null constraints.
      */
-    public void disableConstraints() {
+    public static void disableConstraints() {
         getDbMaintain().disableConstraints();
     }
 
@@ -88,7 +88,7 @@ public class DbMaintainOperations {
     /**
      * Updates all sequences and identity columns to a minimum value.
      */
-    public void updateSequences() {
+    public static void updateSequences() {
         getDbMaintain().updateSequences();
     }
     

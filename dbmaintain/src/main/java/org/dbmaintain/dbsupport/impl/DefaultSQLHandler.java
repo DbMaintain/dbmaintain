@@ -18,8 +18,8 @@ package org.dbmaintain.dbsupport.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.unitils.thirdparty.org.apache.commons.dbutils.DbUtils;
 
 import javax.sql.DataSource;
 

@@ -16,8 +16,8 @@
 package org.dbmaintain.script;
 
 import org.apache.tools.ant.util.ReaderInputStream;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
-import org.dbmaintain.thirdparty.org.apache.commons.io.NullWriter;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullWriter;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.*;

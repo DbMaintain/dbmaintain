@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.dbsupport;
 
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
 import org.dbmaintain.util.DbMaintainException;
+import org.unitils.thirdparty.org.apache.commons.dbutils.DbUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

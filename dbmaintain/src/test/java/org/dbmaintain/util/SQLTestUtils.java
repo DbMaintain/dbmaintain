@@ -24,7 +24,8 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.thirdparty.org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.DbUtils;
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Utilities for creating and dropping test tables, views....
@@ -178,7 +179,7 @@ public class SQLTestUtils {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(connection, statement, null);
+            closeQuietly(connection, statement, null);
         }
     }
 
@@ -222,7 +223,7 @@ public class SQLTestUtils {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(connection, statement, resultSet);
+            closeQuietly(connection, statement, resultSet);
         }
 
         // in case no value was found, throw an exception
@@ -252,7 +253,7 @@ public class SQLTestUtils {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(connection, statement, resultSet);
+            closeQuietly(connection, statement, resultSet);
         }
 
         // in case no value was found, throw an exception
@@ -284,7 +285,7 @@ public class SQLTestUtils {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(connection, statement, resultSet);
+            closeQuietly(connection, statement, resultSet);
         }
     }
 

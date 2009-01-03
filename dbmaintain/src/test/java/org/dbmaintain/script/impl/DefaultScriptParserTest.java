@@ -17,13 +17,14 @@ package org.dbmaintain.script.impl;
 
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
-import static org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.File;
 import java.io.FileReader;

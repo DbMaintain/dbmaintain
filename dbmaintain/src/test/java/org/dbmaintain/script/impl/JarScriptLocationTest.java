@@ -18,21 +18,20 @@ package org.dbmaintain.script.impl;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.impl.JarScriptLocation;
-import org.dbmaintain.thirdparty.org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.CollectionUtils;
-import org.dbmaintain.util.TestUtils;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
+import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.IOUtils.contentEquals;
 
 import java.io.File;
 import static java.io.File.createTempFile;
 import java.io.IOException;
-
 import java.util.Collections;
-import java.util.SortedSet;
 import java.util.Iterator;
+import java.util.SortedSet;
 
 /**
  * @author Filip Neven
@@ -76,7 +75,7 @@ public class JarScriptLocationTest {
         assertEquals(originalScript.getFileName(), scriptFromFile.getFileName());
         // There's loss in precision of the last modified timestamp when writing it to a jar file
         assertTrue(originalScript.getFileLastModifiedAt() - scriptFromFile.getFileLastModifiedAt() < 2000);
-        assertTrue(IOUtils.contentEquals(originalScript.getScriptContentHandle().openScriptContentReader(),
+        assertTrue(contentEquals(originalScript.getScriptContentHandle().openScriptContentReader(),
                 scriptFromFile.getScriptContentHandle().openScriptContentReader()));
         assertTrue(originalScript.isScriptContentEqualTo(scriptFromFile, true));
     }
