@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.config;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
@@ -336,8 +335,8 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    public DbSupport createDefaultDbSupport() {
-        BasicDataSource dataSource = createDefaultDataSource();
+    public DbSupport createUnnamedDbSupport() {
+        DataSource dataSource = createUnnamedDataSource();
 
         String databaseDialect = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END, configuration);
         List<String> schemaNamesList = PropertyUtils.getStringList(PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMA_NAMES_END, configuration);
@@ -362,7 +361,7 @@ public class PropertiesDbMaintainConfigurer {
      * @return The dbms specific instance of {@link DbSupport}, not null
      */
     public DbSupport createDbSupport(String databaseName) {
-        BasicDataSource dataSource = createDataSource(databaseName);
+        DataSource dataSource = createDataSource(databaseName);
 
         String databaseDialect = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DIALECT_END, configuration);
         List<String> schemaNamesList = PropertyUtils.getStringList(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMA_NAMES_END, configuration);
@@ -421,7 +420,7 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    public BasicDataSource createDefaultDataSource() {
+    public DataSource createUnnamedDataSource() {
         String driverClassName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END, configuration);
         String url = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_URL_END, configuration);
         String userName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_USERNAME_END, configuration);
@@ -434,7 +433,7 @@ public class PropertiesDbMaintainConfigurer {
      * @param databaseName
      * @return
      */
-    public BasicDataSource createDataSource(String databaseName) {
+    public DataSource createDataSource(String databaseName) {
         String driverClassName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DRIVERCLASSNAME_END, configuration);
         String url = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_URL_END, configuration);
         String userName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_USERNAME_END, configuration);
@@ -443,26 +442,10 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    public BasicDataSource createDataSource(String driverClassName, String url, String userName, String password) {
+    public DataSource createDataSource(String driverClassName, String url, String userName, String password) {
         logger.info("Creating data source. Driver: " + driverClassName + ", url: " + url + ", user: " + userName
                 + ", password: <not shown>");
-
-        BasicDataSource dataSource = getNewDataSource();
-        dataSource.setDriverClassName(driverClassName);
-        dataSource.setUrl(url);
-        dataSource.setUsername(userName);
-        dataSource.setPassword(password);
-        return dataSource;
-    }
-
-    /**
-     * Returns a concrete instance of <code>BasicDataSource</code>. This
-     * method may be overridden e.g. to return a mock instance for testing
-     *
-     * @return An instance of <code>BasicDataSource</code>
-     */
-    protected BasicDataSource getNewDataSource() {
-        return new BasicDataSource();
+        return DbMaintainDataSource.createDataSource(driverClassName, url, userName, password);
     }
 
 
@@ -470,7 +453,7 @@ public class PropertiesDbMaintainConfigurer {
         nameDbSupportMap = new HashMap<String, DbSupport>();
         List<String> databaseNames = PropertyUtils.getStringList(PROPERTY_DATABASE_NAMES, configuration);
         if (databaseNames.isEmpty()) {
-            defaultDbSupport = createDefaultDbSupport();
+            defaultDbSupport = createUnnamedDbSupport();
             nameDbSupportMap.put(null, defaultDbSupport);
         } else {
             for (String databaseName : databaseNames) {

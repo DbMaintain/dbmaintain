@@ -15,12 +15,12 @@
  */
 package org.dbmaintain.util;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.dbmaintain.clean.impl.DefaultDBCleaner;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbItemType;
+import org.dbmaintain.dbsupport.DbMaintainDataSource;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
@@ -69,12 +69,7 @@ public class TestUtils {
 
 
     protected static DataSource getDataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
-        dataSource.setUrl("jdbc:hsqldb:mem:unitils");
-        dataSource.setUsername("sa");
-        dataSource.setPassword("");
-        return dataSource;
+        return DbMaintainDataSource.createDataSource("org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "");
     }
 
 
