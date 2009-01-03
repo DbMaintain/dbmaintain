@@ -27,7 +27,7 @@ public interface DBCleaner {
 
 
     /**
-     * Delete data from the database schema, that could cause problems when performing updates.
+     * Delete all data from all database tables.
      */
     void cleanDatabase();
 

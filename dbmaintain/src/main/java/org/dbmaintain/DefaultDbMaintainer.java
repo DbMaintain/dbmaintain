@@ -27,6 +27,7 @@ import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.dbsupport.SQLHandler;
 
 import java.util.*;
 
@@ -80,6 +81,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected SequenceUpdater sequenceUpdater;
 
+    /**
+     * Handles all SQL statements
+     */
+    protected SQLHandler sqlHandler;
 
     protected boolean cleanDbEnabled;
 
@@ -144,7 +149,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
                boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled, DBClearer dbClearer,
-               DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater) {
+               DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater, SQLHandler sqlHandler) {
 
         this.scriptRunner = scriptRunner;
         this.scriptRepository = scriptRepository;
@@ -160,6 +165,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.dbCleaner = dbCleaner;
         this.constraintsDisabler = constraintsDisabler;
         this.sequenceUpdater = sequenceUpdater;
+        this.sqlHandler = sqlHandler;
     }
 
 
@@ -250,6 +256,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         } else {
             logger.info("No script changes detected.");
         }
+        sqlHandler.closeAllConnections();
     }
 
 
@@ -376,6 +383,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         for (Script script : allScripts) {
             executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
         }
+        sqlHandler.closeAllConnections();
     }
 
 
@@ -388,12 +396,53 @@ public class DefaultDbMaintainer implements DbMaintainer {
      *
      */
     public void clearDatabase() {
+        doClearDatabase();
+        sqlHandler.closeAllConnections();
+    }
+
+
+    /**
+     * This operation removes all database objects from the database, such as tables, views, sequences, synonyms and triggers.
+     * The database schemas will be left untouched: this way, you can immediately start an update afterwards. This operation
+     * is also called when a from-scratch update is performed. The table dbmaintain_scripts is not dropped but all data in
+     * it is removed. It's possible to exclude certain database objects to make sure they are not dropped, like described
+     * in {@link org.dbmaintain.clear.DBClearer}
+     *
+     */
+    protected void doClearDatabase() {
         // Constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables
         constraintsDisabler.disableConstraints();
         dbClearer.clearDatabase();
         executedScriptInfoSource.clearAllExecutedScripts();
     }
 
+
+    /**
+     * This operation deletes all data from the database, except for the DBMAINTAIN_SCRIPTS table.
+     */
+    public void cleanDatabase() {
+        dbCleaner.cleanDatabase();
+        sqlHandler.closeAllConnections();
+    }
+
+
+    /**
+     * This operation disables all foreign key and not null constraints of the database schemas. Primary key constraints
+     * are left untouched.
+     */
+    public void disableConstraints() {
+        constraintsDisabler.disableConstraints();
+        sqlHandler.closeAllConnections();
+    }
+
+
+    /**
+     * This operation thatupdates all sequences and identity columns to a minimum value.
+     */
+    public void updateSequences() {
+        sequenceUpdater.updateSequences();
+        sqlHandler.closeAllConnections();
+    }
 
     /**
      * Executes the given scripts and updates the database execution registry appropriately. After

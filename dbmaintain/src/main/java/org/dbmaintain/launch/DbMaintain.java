@@ -100,10 +100,8 @@ public class DbMaintain {
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
     public void clearDatabase() {
-        DBClearer dbClearer = dbMaintainConfigurer.createDbClearer();
-        dbClearer.clearDatabase();
-        ExecutedScriptInfoSource executedScriptInfoSource = dbMaintainConfigurer.createExecutedScriptInfoSource();
-        executedScriptInfoSource.clearAllExecutedScripts();
+        DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+        dbMaintainer.clearDatabase();
     }
 
     
@@ -111,8 +109,8 @@ public class DbMaintain {
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
     public void cleanDatabase() {
-        DBCleaner dbCleaner = dbMaintainConfigurer.createDbCleaner();
-        dbCleaner.cleanDatabase();
+        DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+        dbMaintainer.cleanDatabase();
     }
 
     
@@ -120,8 +118,8 @@ public class DbMaintain {
      * Disables or drops all foreign key and not null constraints.
      */
     public void disableConstraints() {
-        ConstraintsDisabler constraintsDisabler = dbMaintainConfigurer.createConstraintsDisabler();
-        constraintsDisabler.disableConstraints();
+        DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+        dbMaintainer.disableConstraints();
     }
 
     
@@ -129,8 +127,8 @@ public class DbMaintain {
      * Updates all sequences and identity columns to a minimum value.
      */
     public void updateSequences() {
-        SequenceUpdater sequenceUpdater = dbMaintainConfigurer.createSequenceUpdater();
-        sequenceUpdater.updateSequences();
+        DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+        dbMaintainer.updateSequences();
     }
 
 }

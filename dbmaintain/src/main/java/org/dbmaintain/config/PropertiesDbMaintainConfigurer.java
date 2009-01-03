@@ -114,10 +114,10 @@ public class PropertiesDbMaintainConfigurer {
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
                 new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class, boolean.class,
-                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class},
+                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class, SQLHandler.class},
                 new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
                         allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
-                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater});
+                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, sqlHandler});
     }
 
 

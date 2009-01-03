@@ -38,12 +38,14 @@ public interface DbMaintainer {
      */
     void updateDatabase();
 
+
     /**
      * This operation updates the state of the database to indicate that all scripts have been executed, without actually
      * executing them. This can be useful when you want to start using DbMaintain on an existing database, or after having
      * fixed a problem directly on the database.
      */
     void markDatabaseAsUpToDate();
+
 
     /**
      * This operation removes all database objects from the database, such as tables, views, sequences, synonyms and triggers.
@@ -54,4 +56,22 @@ public interface DbMaintainer {
      */
     void clearDatabase();
 
+
+    /**
+     * This operation deletes all data from the database, except for the DBMAINTAIN_SCRIPTS table.
+     */
+    void cleanDatabase();
+
+
+    /**
+     * This operation disables all foreign key and not null constraints of the database schemas. Primary key constraints
+     * are left untouched.
+     */
+    void disableConstraints();
+
+
+    /**
+     * This operation thatupdates all sequences and identity columns to a minimum value.
+     */
+    void updateSequences();
 }

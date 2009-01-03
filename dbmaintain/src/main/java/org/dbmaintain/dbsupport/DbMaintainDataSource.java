@@ -84,12 +84,16 @@ public class DbMaintainDataSource {
          * @throws Throwable
          */
         public Object invoke(Object dataSourceProxy, Method method, Object[] args) throws Throwable {
-            if (isParameterLessGetConnectionMethod(method)) {
+            if (isEqualsMethod(method)) {
+                return dataSourceProxy == args[0];
+            } else if (isHashCodeMethod(method)) {
+                // We simply use the hashcode of the invocation handler
+                return hashCode();
+            } else if (isParameterLessGetConnectionMethod(method)) {
                 return getDatabaseConnection();
             }
             return null;
         }
-
 
         /**
          * @return A connection to the database
@@ -109,12 +113,29 @@ public class DbMaintainDataSource {
 
 
         /**
+         * @param method The invoked method
+         * @return Whether the given method is the equals method
+         */
+        protected boolean isEqualsMethod(Method method) {
+            return "equals".equals(method.getName()) && method.getParameterTypes().length == 1 && Object.class.equals(method.getParameterTypes()[0]);
+        }
+
+
+        /**
+         * @param method The invoked method
+         * @return Whether the given method is the hashCode method
+         */
+        protected boolean isHashCodeMethod(Method method) {
+            return "hashCode".equals(method.getName()) && method.getParameterTypes().length == 0;
+        }
+
+
+        /**
          * @param method The method invoked on the datasource proxy
          * @return whether the given method is the method DataSource.getConnection()
          */
         protected boolean isParameterLessGetConnectionMethod(Method method) {
-            return "getConnection".equals(method.getName()) && method.getParameterTypes().length == 0 &&
-                    Connection.class.equals(method.getReturnType());
+            return "getConnection".equals(method.getName()) && method.getParameterTypes().length == 0;
         }
     }
 }

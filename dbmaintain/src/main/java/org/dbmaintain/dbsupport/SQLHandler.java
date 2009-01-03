@@ -69,4 +69,9 @@ public interface SQLHandler {
 	 */
 	boolean isDoExecuteUpdates();
 
+    /**
+     * Closes all connections that were created and cached by this SQLHandler. This method must always be invoked before
+     * disposing this object.
+     */
+    void closeAllConnections();
 }
