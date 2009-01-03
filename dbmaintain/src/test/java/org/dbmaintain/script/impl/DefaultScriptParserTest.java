@@ -23,13 +23,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.commons.io.IOUtils;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
+import java.net.URISyntaxException;
 
 /**
  * Tests the SQL script parser
@@ -59,12 +56,22 @@ public class DefaultScriptParserTest {
      * Initialize test fixture
      */
     @Before
-    public void setUp() throws Exception {
-        testSQLScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
-        testSQLMissingSemiColonScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script-missing-semicolon.sql").toURI()));
-        testSQLEndingWithCommentScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script-ending-with-comment.sql").toURI()));
-        testSQLNotEndingWithNewLineScriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script-not-ending-with-new-line.sql").toURI()));
+    public void setUp() {
+        testSQLScriptReader = getScriptReader("ScriptParserTest/sql-script.sql");
+        testSQLMissingSemiColonScriptReader = getScriptReader("ScriptParserTest/sql-script-missing-semicolon.sql");
+        testSQLEndingWithCommentScriptReader = getScriptReader("ScriptParserTest/sql-script-ending-with-comment.sql");
+        testSQLNotEndingWithNewLineScriptReader = getScriptReader("ScriptParserTest/sql-script-not-ending-with-new-line.sql");
         emptyScriptReader = new StringReader("");
+    }
+
+    private FileReader getScriptReader(String scriptName) {
+        try {
+            return new FileReader(new File(getClass().getResource(scriptName).toURI()));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -72,7 +79,7 @@ public class DefaultScriptParserTest {
      * Cleans up the test by closing the streams.
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         closeQuietly(testSQLEndingWithCommentScriptReader);
         closeQuietly(testSQLMissingSemiColonScriptReader);
         closeQuietly(testSQLNotEndingWithNewLineScriptReader);
@@ -86,7 +93,7 @@ public class DefaultScriptParserTest {
      * 13 statements should have been found in the script.
      */
     @Test
-    public void testParseStatements() throws Exception {
+    public void testParseStatements() {
         ScriptParser scriptParser = new DefaultScriptParser(testSQLScriptReader, false);
 
         for (int i = 0; i < 13; i++) {
@@ -101,7 +108,7 @@ public class DefaultScriptParserTest {
      * This should raise an exception
      */
     @Test(expected = DbMaintainException.class)
-    public void testParseStatements_missingEndingSemiColon() throws Exception {
+    public void testParseStatements_missingEndingSemiColon() {
         ScriptParser scriptParser = new DefaultScriptParser(testSQLMissingSemiColonScriptReader, false);
         scriptParser.getNextStatement();
     }
@@ -111,7 +118,7 @@ public class DefaultScriptParserTest {
      * Test parsing statements out of a script ending with a comment.
      */
     @Test
-    public void testParseStatements_endingWithComment() throws Exception {
+    public void testParseStatements_endingWithComment() {
         ScriptParser scriptParser = new DefaultScriptParser(testSQLEndingWithCommentScriptReader, false);
         scriptParser.getNextStatement();
         scriptParser.getNextStatement();
@@ -122,7 +129,7 @@ public class DefaultScriptParserTest {
      * Test parsing statements out of a script that does not end with a new line.
      */
     @Test
-    public void testParseStatements_notEndingWithNewLine() throws Exception {
+    public void testParseStatements_notEndingWithNewLine() {
         ScriptParser scriptParser = new DefaultScriptParser(testSQLNotEndingWithNewLineScriptReader, false);
         scriptParser.getNextStatement();
         scriptParser.getNextStatement();
@@ -133,7 +140,7 @@ public class DefaultScriptParserTest {
      * Test parsing some statements out of an empty script.
      */
     @Test
-    public void testParseStatements_emptyScript() throws Exception {
+    public void testParseStatements_emptyScript() {
         ScriptParser scriptParser = new DefaultScriptParser(emptyScriptReader, false);
 
         assertNull(scriptParser.getNextStatement());
