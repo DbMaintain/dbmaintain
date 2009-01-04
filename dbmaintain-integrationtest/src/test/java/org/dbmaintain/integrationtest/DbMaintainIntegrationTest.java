@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain;
+package org.dbmaintain.integrationtest;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
@@ -27,15 +29,9 @@ import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
-import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FileUtils;
-import static org.apache.commons.io.FileUtils.cleanDirectory;
-import static org.apache.commons.io.IOUtils.copy;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.*;
 import java.util.Properties;
@@ -218,7 +214,7 @@ public class DbMaintainIntegrationTest {
      */
     @Test
     public void testAddPatchScript_outOfSequenceAllowed() {
-        configuration.put(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
+        configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
         createInitialScripts();
         createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
@@ -234,7 +230,7 @@ public class DbMaintainIntegrationTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testAddPatchScript_identicalSequenceNr() {
-        configuration.put(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
+        configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
         createInitialScripts();
         createNewScript("02_latest/02_create_another_table.sql", NEW_INCREMENTAL_3);
         updateDatabase();
@@ -372,13 +368,13 @@ public class DbMaintainIntegrationTest {
         assertTablesExist(POST_PROCESSING_INDEXED_1);
 
         // Verify that the postprocessing scripts are executed when a new incremental script is added
-        dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
+        SQLTestUtils.dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
         newIncrementalScript();
         updateDatabase();
         assertTablesExist(POST_PROCESSING_INDEXED_1);
 
         // Verify that the postprocessing scripts are executed when a repeatable script is updated
-        dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
+        SQLTestUtils.dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
         updateRepeatableScript();
         updateDatabase();
         assertTablesExist(POST_PROCESSING_INDEXED_1);
@@ -393,13 +389,13 @@ public class DbMaintainIntegrationTest {
         assertTablesExist(POST_PROCESSING_INDEXED_1);
 
         // Verify that all postprocessing scripts are re-executed if a not indexed postprocessing script is updated
-        dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
+        SQLTestUtils.dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
         updateNotIndexedPostProcessingScript();
         updateDatabase();
         assertTablesExist(POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if an indexed postprocessing script is updated
-        dropTestTables(dbSupport, UPDATED_POST_PROCESSING_NOTINDEXED);
+        SQLTestUtils.dropTestTables(dbSupport, UPDATED_POST_PROCESSING_NOTINDEXED);
         updateIndexedPostProcessingScript();
         updateDatabase();
         assertTablesExist(UPDATED_POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
@@ -538,7 +534,7 @@ public class DbMaintainIntegrationTest {
 
 
     private void clearTestDatabase() {
-        dropTestTables(dbSupport, "dbmaintain_scripts", INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE, NEW_INCREMENTAL_1,
+        SQLTestUtils.dropTestTables(dbSupport, "dbmaintain_scripts", INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE, NEW_INCREMENTAL_1,
                 NEW_INCREMENTAL_2, NEW_INCREMENTAL_3, NEW_REPEATABLE, UPDATED_REPEATABLE, UPDATED_INCREMENTAL_1, NEW_INCREMENTAL_LOWER_INDEX,
                 BEFORE_INITIAL_TABLE);
     }
@@ -550,11 +546,11 @@ public class DbMaintainIntegrationTest {
             File scriptFile = new File(scriptsLocation.getAbsolutePath(), relativePath);
             scriptFile.getParentFile().mkdirs();
             fileWriter = new FileWriter(scriptFile);
-            copy(new StringReader(scriptContent), fileWriter);
+            IOUtils.copy(new StringReader(scriptContent), fileWriter);
         } catch (IOException e) {
             throw new DbMaintainException(e);
         } finally {
-            closeQuietly(fileWriter);
+            IOUtils.closeQuietly(fileWriter);
         }
     }
 
@@ -565,7 +561,7 @@ public class DbMaintainIntegrationTest {
 
     private void clearScriptsDirectory() {
         try {
-            cleanDirectory(scriptsLocation);
+            FileUtils.cleanDirectory(scriptsLocation);
         } catch (IOException e) {
             throw new DbMaintainException(e);
         } catch (IllegalArgumentException e) {
