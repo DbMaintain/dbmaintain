@@ -15,10 +15,10 @@
  */
 package org.dbmaintain.script;
 
-import org.apache.tools.ant.util.ReaderInputStream;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullWriter;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.ReaderInputStream;
+import org.dbmaintain.util.NullWriter;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -169,7 +169,7 @@ public abstract class ScriptContentHandle {
          */
         @Override
         protected InputStream getScriptInputStream() {
-            return new ReaderInputStream(new StringReader(scriptContent), encoding);
+            return new ReaderInputStream(new StringReader(scriptContent));
 		}
         
         

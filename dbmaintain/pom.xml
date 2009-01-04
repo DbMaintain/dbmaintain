@@ -8,12 +8,12 @@
     </parent>
     <artifactId>dbmaintain</artifactId>
     <!-- Project information -->
-    <name>dbmaintain</name>
+    <name>${project.artifactId}</name>
     <build>
         <testResources>
             <testResource>
                 <directory>src/test/java</directory>
-                <excludes>                   
+                <excludes>
                     <exclude>**/*.java</exclude>
                 </excludes>
             </testResource>
@@ -45,6 +45,67 @@
                         <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
                         <descriptor>assembly-descriptors/assembly-dbmaintain-with-dependencies.xml</descriptor>
                     </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.pyx4me</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>proguard</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <assembly>
+                        <inclusions>
+                            <!--inclusion>
+                                <groupId>commons-lang</groupId>
+                                <artifactId>commons-lang</artifactId>
+                                <filter>!META-INF/**</filter>
+                            </inclusion>
+                            <inclusion>
+                                <groupId>commons-logging</groupId>
+                                <artifactId>commons-logging</artifactId>
+                                <filter>!META-INF/**</filter>
+                            </inclusion>
+                            <inclusion>
+                                <groupId>commons-dbutils</groupId>
+                                <artifactId>commons-dbutils</artifactId>
+                                <filter>!META-INF/**</filter>
+                            </inclusion-->
+                            <inclusion>
+                                <groupId>commons-io</groupId>
+                                <artifactId>commons-io</artifactId>
+                                <filter>!META-INF/**</filter>
+                            </inclusion>
+                        </inclusions>
+                    </assembly>
+                    <libs>
+                        <lib>${java.home}/lib/rt.jar</lib>
+                    </libs>
+                    <options>
+                        <option>-keep class org.dbmaintain.** {public protected *;}</option>
+                        <option>-keep class org.apache.commons.logging.** {public protected *;}</option>
+                        <option>-flattenpackagehierarchy org.dbmaintain.thirdparty-obfuscated</option>
+                        <option>-dontusemixedcaseclassnames</option>
+                        <option>-keepattributes SourceFile,LineNumberTable</option>
+                        <!--option>-keepclassmembernames class ** {public protected private *;}</option-->
+                        <option>-dontoptimize</option>
+                        <option>-ignorewarnings</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>
@@ -102,11 +163,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-	      <groupId>org.objenesis</groupId>
-    	  <artifactId>objenesis</artifactId>
-	      <version>1.1</version>
-          <scope>test</scope>
-	    </dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>1.1</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>asm</groupId>
             <artifactId>asm</artifactId>

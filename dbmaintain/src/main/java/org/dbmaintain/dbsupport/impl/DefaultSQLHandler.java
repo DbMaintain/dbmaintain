@@ -15,22 +15,21 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.util.DbMaintainException;
-import org.unitils.thirdparty.org.apache.commons.dbutils.DbUtils;
 
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
+import java.sql.Statement;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to which database updates and queries are passed. Is in fact a utility class, but is a concrete instance to
@@ -91,7 +90,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while performing database update: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(statement);
+            closeQuietly(statement);
         }
     }
 
@@ -119,7 +118,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while performing database update: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(statement);
+            closeQuietly(statement);
         }
     }
 
@@ -142,7 +141,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while performing database update: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(statement);
+            closeQuietly(statement);
         }
     }
 
@@ -164,7 +163,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(null, statement, resultSet);
+            closeQuietly(null, statement, resultSet);
         }
 
         // in case no value was found, throw an exception
@@ -189,7 +188,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(null, statement, resultSet);
+            closeQuietly(null, statement, resultSet);
         }
 
         // in case no value was found, throw an exception
@@ -217,7 +216,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(null, statement, resultSet);
+            closeQuietly(null, statement, resultSet);
         }
     }
 
@@ -238,7 +237,7 @@ public class DefaultSQLHandler implements SQLHandler {
         } catch (Exception e) {
             throw new DbMaintainException("Error while executing statement: " + sql, e);
         } finally {
-            DbUtils.closeQuietly(null, statement, resultSet);
+            closeQuietly(null, statement, resultSet);
         }
     }
 
@@ -257,7 +256,7 @@ public class DefaultSQLHandler implements SQLHandler {
      */
     public void closeAllConnections() {
         for (Connection connection : cachedConnections.values()) {
-            DbUtils.closeQuietly(connection);
+            closeQuietly(connection);
         }
         cachedConnections.clear();
     }

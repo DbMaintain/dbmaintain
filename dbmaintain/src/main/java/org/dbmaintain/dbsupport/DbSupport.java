@@ -16,7 +16,8 @@
 package org.dbmaintain.dbsupport;
 
 import org.dbmaintain.util.DbMaintainException;
-import org.unitils.thirdparty.org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.DbUtils;
+import static org.apache.commons.dbutils.DbUtils.*;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -498,7 +499,7 @@ abstract public class DbSupport {
         } catch (SQLException e) {
             throw new DbMaintainException("Unable to determine stored identifier case.", e);
         } finally {
-            DbUtils.closeQuietly(connection, null, null);
+            closeQuietly(connection, null, null);
         }
     }
 
@@ -538,7 +539,7 @@ abstract public class DbSupport {
         } catch (SQLException e) {
             throw new DbMaintainException("Unable to determine identifier quote string.", e);
         } finally {
-            DbUtils.closeQuietly(connection, null, null);
+            closeQuietly(connection, null, null);
         }
     }
 
