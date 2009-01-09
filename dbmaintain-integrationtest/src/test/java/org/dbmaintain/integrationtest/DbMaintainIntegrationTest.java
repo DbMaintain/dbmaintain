@@ -18,7 +18,8 @@ package org.dbmaintain.integrationtest;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static org.apache.commons.lang.StringUtils.*;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
@@ -29,11 +30,13 @@ import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -47,22 +50,20 @@ import java.util.Set;
  */
 public class DbMaintainIntegrationTest {
 
-    private static final String INITIAL_INCREMENTAL_1 = "initial_incremental_1";
-    private static final String INITIAL_INCREMENTAL_2 = "initial_incremental_2";
-    private static final String INITIAL_REPEATABLE = "initial_repeatable";
-    private static final String NEW_INCREMENTAL_1 = "new_incremental_1";
-    private static final String NEW_INCREMENTAL_2 = "new_incremental_2";
-    private static final String NEW_INCREMENTAL_3 = "new_incremental_3";
-    private static final String NEW_REPEATABLE = "new_repeatable";
-    private static final String UPDATED_REPEATABLE = "updated_repeatable";
-    private static final String UPDATED_INCREMENTAL_1 = "updated_incremental_1";
-    private static final String NEW_INCREMENTAL_LOWER_INDEX = "new_incremental_lower_index";
+    private static final String INITIAL_INCREMENTAL_1 = "01_incremental/01_initial_incremental_1.sql";
+    private static final String INITIAL_INCREMENTAL_1_RENAMED = "01_incremental/01_initial_incremental_1_renamed.sql";
+    private static final String INITIAL_INCREMENTAL_2 = "01_incremental/02_initial_incremental_2.sql";
+    private static final String INITIAL_INCREMENTAL_3 = "01_incremental/03_initial_incremental_3.sql";
+
+    private static final String INITIAL_REPEATABLE = "repeatable/initial_repeatable.sql";
+    private static final String INITIAL_REPEATABLE_RENAMED = "repeatable/initial_repeatable_renamed.sql";
+
+    private static final String POST_PROCESSING_INDEXED_1 = "postprocessing/postProcessing_indexed_1.sql";
+    private static final String POST_PROCESSING_INDEXED_2 = "postprocessing/postProcessing_indexed_2.sql";
+    private static final String POST_PROCESSING_INDEXED_2_RENAMED = "postprocessing/postProcessing_indexed_2_renamed.sql";
+    private static final String POST_PROCESSING_NOTINDEXED = "postprocessing/postProcessing_notindexed.sql";
+
     private static final String BEFORE_INITIAL_TABLE = "before_initial";
-    private static final String POST_PROCESSING_INDEXED_1 = "postProcessing_indexed_1";
-    private static final String POST_PROCESSING_INDEXED_2 = "postProcessing_indexed_2";
-    private static final String POST_PROCESSING_NOTINDEXED = "postProcessing_notindexed";
-    public static final String UPDATED_POST_PROCESSING_NOTINDEXED = "updated_postProcessing_notindexed";
-    public static final String UPDATED_POST_PROCESSING_INDEXED_1 = "updated_postProcessing_indexed_1";
 
     private File scriptsLocation;
     private DbSupport dbSupport;
@@ -72,6 +73,7 @@ public class DbMaintainIntegrationTest {
     @Before
     public void init() {
         scriptsLocation = new File("target", "dbmaintain-integrationtest/scripts");
+        System.out.println("scriptsLocation.getAbsolutePath() = " + scriptsLocation.getAbsolutePath());
         initConfiguration();
         clearScriptsDirectory();
         clearTestDatabase();
@@ -79,117 +81,120 @@ public class DbMaintainIntegrationTest {
 
     @Test
     public void testInitial() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
+        assertScriptsCorrectlyExecuted(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
     }
 
     @Test
     public void testAddIncremental() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesDontExist(NEW_INCREMENTAL_1);
-        newIncrementalScript();
+        assertScriptsNotExecuted(INITIAL_INCREMENTAL_2);
+        createScript(INITIAL_INCREMENTAL_2);
         updateDatabase();
-        assertTablesExist(NEW_INCREMENTAL_1);
+        assertScriptsCorrectlyExecuted(INITIAL_INCREMENTAL_2);
     }
 
     @Test
     public void testUpdateIncremental_fromScratchEnabled() {
         enableFromScratch();
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
         updateDatabase();
-        updateIncrementalScript();
+        updateScript(INITIAL_INCREMENTAL_1);
         updateDatabase();
-        assertTablesDontExist(INITIAL_INCREMENTAL_1);
-        assertTablesExist(UPDATED_INCREMENTAL_1);
+        assertScriptsNotExecuted(INITIAL_INCREMENTAL_1);
+        assertUpdatedScriptsExecuted(INITIAL_INCREMENTAL_1);
     }
 
     @Test
     public void testUpdateIncremental_fromScratchDisabled() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
         updateDatabase();
-        updateIncrementalScript();
+        updateScript(INITIAL_INCREMENTAL_1);
         try {
             updateDatabase();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "updated", "indexed", INITIAL_INCREMENTAL_1 + ".sql");
+            assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INITIAL_INCREMENTAL_1));
         }
     }
 
     @Test
     public void testAddIncrementalWithLowerIndex_fromScratchEnabled() {
         enableFromScratch();
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_2);
         updateDatabase();
-        addIncrementalScriptWithLowerIndex();
+        createScripts(INITIAL_INCREMENTAL_1);
         updateDatabase();
-        assertTablesExist(NEW_INCREMENTAL_LOWER_INDEX);
+        assertScriptsCorrectlyExecuted(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
     }
 
     @Test
     public void testAddIncrementalWithLowerIndex_fromScratchDisabled() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_2);
         updateDatabase();
-        addIncrementalScriptWithLowerIndex();
+        createScripts(INITIAL_INCREMENTAL_1);
         try {
             updateDatabase();
+            fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "added", "incremental", "lower index", NEW_INCREMENTAL_LOWER_INDEX + ".sql");
+            assertMessageContains(e.getMessage(), "added", "incremental", "lower index", INITIAL_INCREMENTAL_1);
         }
     }
 
     @Test
     public void testRemoveExistingIncremental_fromScratchEnabled() {
         enableFromScratch();
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
         updateDatabase();
-        removeIncrementalScript();
+        removeScript(INITIAL_INCREMENTAL_2);
         updateDatabase();
-        assertTablesDontExist(INITIAL_INCREMENTAL_1);
+        assertScriptsNotExecuted(INITIAL_INCREMENTAL_2);
     }
 
 
     @Test
     public void testRemoveExistingIncremental_fromScratchDisabled() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
         updateDatabase();
-        removeIncrementalScript();
+        removeScript(INITIAL_INCREMENTAL_2);
         try {
             updateDatabase();
+            fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "deleted", "indexed", INITIAL_INCREMENTAL_1 + ".sql");
+            assertMessageContains(e.getMessage(), "deleted", "indexed", INITIAL_INCREMENTAL_2);
         }
     }
 
 
     @Test
     public void testAddRepeatable() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1);
         updateDatabase();
-        assertTablesDontExist(NEW_REPEATABLE);
-        newRepeatableScript();
+        assertScriptsNotExecuted(INITIAL_REPEATABLE);
+        createScripts(INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesExist(NEW_REPEATABLE);
+        assertScriptsCorrectlyExecuted(INITIAL_REPEATABLE);
     }
 
     @Test
     public void testUpdateRepeatable() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
         updateDatabase();
-        updateRepeatableScript();
+        updateRepeatableScript(INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesExist(UPDATED_REPEATABLE);
+        assertUpdatedScriptsExecuted(INITIAL_REPEATABLE);
     }
 
 
     @Test
     public void testDeleteRepeatable() {
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
         updateDatabase();
-        removeRepeatableScript();
+        removeScript(INITIAL_REPEATABLE);
+        assertInExecutedScripts(INITIAL_REPEATABLE);
         updateDatabase();
-        assertNotInExecutedScripts("repeatable/" + INITIAL_REPEATABLE + ".sql");
+        assertNotInExecutedScripts(INITIAL_REPEATABLE);
     }
 
 
@@ -199,11 +204,10 @@ public class DbMaintainIntegrationTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testAddPatchScript_outOfSequenceNotAllowed() {
-        createInitialScripts();
-        createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
+        createScripts(INITIAL_INCREMENTAL_2);
         updateDatabase();
 
-        createNewScript("02_latest/02_#patch_a_patch_script.sql", NEW_INCREMENTAL_2);
+        createPatchScript(INITIAL_INCREMENTAL_1);
         updateDatabase();
     }
 
@@ -214,15 +218,13 @@ public class DbMaintainIntegrationTest {
      */
     @Test
     public void testAddPatchScript_outOfSequenceAllowed() {
-        configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
-        createInitialScripts();
-        createNewScript("02_latest/03_create_another_table.sql", NEW_INCREMENTAL_3);
+        allowOutOfSequenceExecutionOfPatches();
+        createScripts(INITIAL_INCREMENTAL_2);
         updateDatabase();
 
-        createNewScript("02_latest/02_#PATCH_a_patch_script.sql", NEW_INCREMENTAL_2);
+        createPatchScript(INITIAL_INCREMENTAL_1);
         updateDatabase();
     }
-
 
     /**
      * Test for adding a patch script that has an index smaller than an existing index. Out of sequence is
@@ -230,12 +232,11 @@ public class DbMaintainIntegrationTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testAddPatchScript_identicalSequenceNr() {
-        configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
-        createInitialScripts();
-        createNewScript("02_latest/02_create_another_table.sql", NEW_INCREMENTAL_3);
+        allowOutOfSequenceExecutionOfPatches();
+        createScripts(INITIAL_INCREMENTAL_1);
         updateDatabase();
 
-        createNewScript("02_latest/02_#patch_a_patch_script.sql", NEW_INCREMENTAL_2);
+        createPatchScript(INITIAL_INCREMENTAL_1);
         updateDatabase();
     }
 
@@ -244,33 +245,32 @@ public class DbMaintainIntegrationTest {
     public void testErrorInIncrementalScript() {
         enableFromScratch();
 
-        createInitialScripts();
-        errorInInitialScript();
-        newIncrementalScript();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
+        errorInScript(INITIAL_INCREMENTAL_1);
 
-        // execute the scripts
-        // the second script will have an error
         try {
             updateDatabase();
+            fail();
         } catch (DbMaintainException e) {
             assertMessageContains(e.getMessage(), "Error while performing database update");
         }
-        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+        assertScriptsNotExecuted(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
 
         // Try again without changing anything
         // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
         try {
             updateDatabase();
+            fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_INCREMENTAL_2 + ".sql");
+            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_INCREMENTAL_1);
         }
-        assertTablesDontExist(INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+        assertScriptsNotExecuted(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
 
         // change the script and try again
         // the database should have been recreated from scratch and all the tables should have been re-created
-        fixErrorInInitialScript();
+        fixErrorInScript(INITIAL_INCREMENTAL_1);
         updateDatabase();
-        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2, NEW_INCREMENTAL_1);
+        assertScriptsCorrectlyExecuted(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
     }
 
 
@@ -278,13 +278,13 @@ public class DbMaintainIntegrationTest {
     public void testErrorInRepeatableScript() {
         enableFromScratch();
 
-        createInitialScripts();
-        errorInRepeatableScript();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
+        errorInScript(INITIAL_REPEATABLE);
         try {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
+            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE);
         }
         // Try again without changing anything
         // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
@@ -292,42 +292,43 @@ public class DbMaintainIntegrationTest {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_REPEATABLE + ".sql");
+            assertMessageContains(e.getMessage(), "During the latest update", INITIAL_REPEATABLE);
         }
         // Update an incremental script, without fixing the error
         // A from-scratch recreation is performed, but the error occurs again
-        updateIncrementalScript();
+        updateScript(INITIAL_INCREMENTAL_1);
         try {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
+            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE);
         }
+        assertUpdatedScriptsExecuted(INITIAL_INCREMENTAL_1);
         // Fix the error and witness that the repeatable script is re-executed, and the update finishes successfully
-        fixErrorInRepeatableScript();
+        fixErrorInRepeatableScript(INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesExist(UPDATED_INCREMENTAL_1, INITIAL_REPEATABLE, INITIAL_INCREMENTAL_2);
+        assertUpdatedScriptsExecuted(INITIAL_INCREMENTAL_1);
+        assertScriptsCorrectlyExecuted(INITIAL_REPEATABLE);
     }
 
 
     @Test
     public void testErrorInRepeatableScript_fixByRemovingScript() {
-        createInitialScripts();
-        errorInRepeatableScript();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
+        errorInScript(INITIAL_REPEATABLE);
         try {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
-            e.printStackTrace();
-            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE + ".sql");
+            assertMessageContains(e.getMessage(), "error", INITIAL_REPEATABLE);
         }
         // Remove the script. Now the update should finish successfully. The record pointing to the previously failed
         // repeatable script must be removed from the dbmaintain_scripts table.
-        removeRepeatableScript();
+        removeScript(INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesExist(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
-        assertTablesDontExist(INITIAL_REPEATABLE);
-        assertNotInExecutedScripts("repeatable/" + INITIAL_REPEATABLE + ".sql");
+        assertScriptsCorrectlyExecuted(INITIAL_INCREMENTAL_1);
+        assertScriptsNotExecuted(INITIAL_REPEATABLE);
+        assertNotInExecutedScripts(INITIAL_REPEATABLE);
     }
 
     /**
@@ -338,9 +339,9 @@ public class DbMaintainIntegrationTest {
     public void testInitialFromScratchUpdate() {
         enableFromScratch();
         createTable(BEFORE_INITIAL_TABLE);
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1);
         updateDatabase();
-        assertTablesDontExist(BEFORE_INITIAL_TABLE);
+        assertTableDoesntExist(BEFORE_INITIAL_TABLE);
     }
 
 
@@ -352,92 +353,163 @@ public class DbMaintainIntegrationTest {
     public void testNoInitialFromScratchUpdateIfFromScratchDisabled() {
         disableFromScratch();
         createTable(BEFORE_INITIAL_TABLE);
-        createInitialScripts();
+        createScripts(INITIAL_INCREMENTAL_1);
         updateDatabase();
-        assertTablesExist(BEFORE_INITIAL_TABLE);
+        assertTableExists(BEFORE_INITIAL_TABLE);
     }
 
     @Test
     public void testExecutePostProcessingScriptsIfSomeScriptIsModified() {
         disableFromScratch();
-        createInitialScripts();
-        createPostProcessingScripts();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
+        createPostprocessingScripts(POST_PROCESSING_INDEXED_1);
 
         // Do an initial database setup and verify that the postprocessing scripts are executed
         updateDatabase();
-        assertTablesExist(POST_PROCESSING_INDEXED_1);
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1);
 
         // Verify that the postprocessing scripts are executed when a new incremental script is added
-        SQLTestUtils.dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
-        newIncrementalScript();
+        dropTestTables(dbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        createScript(INITIAL_INCREMENTAL_2);
         updateDatabase();
-        assertTablesExist(POST_PROCESSING_INDEXED_1);
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1);
 
         // Verify that the postprocessing scripts are executed when a repeatable script is updated
-        SQLTestUtils.dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
-        updateRepeatableScript();
+        dropTestTables(dbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        updateScript(INITIAL_REPEATABLE);
         updateDatabase();
-        assertTablesExist(POST_PROCESSING_INDEXED_1);
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1);
     }
 
     @Test
     public void testReExecuteAllPostProcessingScriptsIfOneOfThemIsModified() {
         disableFromScratch();
-        createInitialScripts();
-        createPostProcessingScripts();
+        createScripts(INITIAL_INCREMENTAL_1);
+        createPostprocessingScripts(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
         updateDatabase();
-        assertTablesExist(POST_PROCESSING_INDEXED_1);
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
+
+        // Verify that all postprocessing scripts are re-executed if a new one is added
+        dropTestTables(dbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        createScripts(POST_PROCESSING_INDEXED_2);
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_INDEXED_2, POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if a not indexed postprocessing script is updated
-        SQLTestUtils.dropTestTables(dbSupport, POST_PROCESSING_INDEXED_1);
-        updateNotIndexedPostProcessingScript();
+        dropTestTables(dbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        updateRepeatableScript(POST_PROCESSING_NOTINDEXED);
         updateDatabase();
-        assertTablesExist(POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_INDEXED_2);
+        assertUpdatedScriptsExecuted(POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if an indexed postprocessing script is updated
-        SQLTestUtils.dropTestTables(dbSupport, UPDATED_POST_PROCESSING_NOTINDEXED);
-        updateIndexedPostProcessingScript();
+        dropTestTables(dbSupport, getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
+        updateRepeatableScript(POST_PROCESSING_INDEXED_1);
         updateDatabase();
-        assertTablesExist(UPDATED_POST_PROCESSING_INDEXED_1, UPDATED_POST_PROCESSING_NOTINDEXED);
+        assertUpdatedScriptsExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
+
+        // Verify that all postprocessing scripts are re-executed if one of them is renamed
+        dropTestTables(dbSupport, getUpdatedTableNameForScript(POST_PROCESSING_INDEXED_1),
+                getTableNameForScript(POST_PROCESSING_INDEXED_2), getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
+        renameScript(POST_PROCESSING_INDEXED_2, POST_PROCESSING_INDEXED_2_RENAMED);
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_2);
+        assertUpdatedScriptsExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
+        assertNotInExecutedScripts(POST_PROCESSING_INDEXED_2);
+
+        // Verify that all postprocessing scripts are re-executed if one of them is deleted
+        dropTestTables(dbSupport, getUpdatedTableNameForScript(POST_PROCESSING_INDEXED_1),
+                getTableNameForScript(POST_PROCESSING_INDEXED_2), getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
+        removeScript(POST_PROCESSING_INDEXED_2_RENAMED);
+        updateDatabase();
+        assertScriptsNotExecuted(POST_PROCESSING_INDEXED_2);
+        assertUpdatedScriptsExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
+        assertNotInExecutedScripts(POST_PROCESSING_INDEXED_2);
+    }
+
+
+    @Test
+    public void testHandleRegularIndexedScriptRename() {
+        disableFromScratch();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2);
+        updateDatabase();
+        // Rename an indexed script
+        renameScript(INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_1_RENAMED);
+        updateDatabase();
+        assertNotInExecutedScripts(INITIAL_INCREMENTAL_1);
+        assertInExecutedScripts(INITIAL_INCREMENTAL_1_RENAMED);
+    }
+
+    @Test
+    public void testHandleRepeatableScriptRename() {
+        disableFromScratch();
+        createScripts(INITIAL_INCREMENTAL_1, INITIAL_REPEATABLE);
+        updateDatabase();
+        // Rename a repeatable script
+        renameScript(INITIAL_REPEATABLE, INITIAL_REPEATABLE_RENAMED);
+        updateDatabase();
+        assertNotInExecutedScripts(INITIAL_REPEATABLE);
+        assertInExecutedScripts(INITIAL_REPEATABLE_RENAMED);
+    }
+
+    @Test
+    public void testHandleScriptRenameThatChangesScriptSequence() {
+        disableFromScratch();
+        createScripts(INITIAL_INCREMENTAL_2, INITIAL_INCREMENTAL_3);
+        updateDatabase();
+        // Rename an indexed script
+        renameScript(INITIAL_INCREMENTAL_3, INITIAL_INCREMENTAL_1);
+        try {
+            updateDatabase();
+            fail();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "indexed", "renamed", "changes the sequence", INITIAL_INCREMENTAL_3, INITIAL_INCREMENTAL_1);
+        }
     }
 
     private void createTable(String tableName) {
         SQLTestUtils.executeUpdate("create table " + tableName + " (test varchar(10))", dbSupport.getDataSource());
     }
 
-    private void errorInInitialScript() {
-        createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "this is an error;");
+    private void errorInScript(String scriptName) {
+        createScript(scriptName, "this is an error;");
     }
 
-    private void fixErrorInInitialScript() {
-        createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
+    private void fixErrorInScript(String scriptName) {
+        createScript(scriptName, getCreateTableStatement(getTableNameForScript(scriptName)));
     }
 
-    private void errorInRepeatableScript() {
-        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "this is an error;");
+    private void fixErrorInRepeatableScript(String scriptName) {
+        createScript(scriptName, getRecreateTableStatement(getTableNameForScript(scriptName)));
     }
 
-    private void fixErrorInRepeatableScript() {
-        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\n" +
-                "create table " + INITIAL_REPEATABLE + "(test varchar(10));");
+    private void enableFromScratch() {
+        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "true");
     }
 
-    private void removeRepeatableScript() {
-        removeScript("repeatable/" + INITIAL_REPEATABLE + ".sql");
+    private void disableFromScratch() {
+        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "false");
     }
 
-    private void removeIncrementalScript() {
-        removeScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql");
-    }
-
-    private void addIncrementalScriptWithLowerIndex() {
-        createScript("01_initial/03_" + NEW_INCREMENTAL_LOWER_INDEX + ".sql", "create table " + NEW_INCREMENTAL_LOWER_INDEX + " (test varchar(10));");
+    private void allowOutOfSequenceExecutionOfPatches() {
+        configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
     }
 
     private void assertMessageContains(String message, String... subStrings) {
         for (String subString : subStrings) {
             assertTrue("Expected message to contain substring " + subString + ", but it doesn't.\nMessage was: " + message, message.toLowerCase().contains(subString.toLowerCase()));
         }
+    }
+
+    private void assertInExecutedScripts(String scriptName) {
+         ExecutedScriptInfoSource executedScriptInfoSource = dbMaintainConfigurer.createExecutedScriptInfoSource();
+        Set<ExecutedScript> executedScripts = executedScriptInfoSource.getExecutedScripts();
+        for (ExecutedScript executedScript : executedScripts) {
+            if (scriptName.equals(executedScript.getScript().getFileName())) {
+                return;
+            }
+        }
+        fail("Expected " + scriptName + " to be part of the executed scripts, but it isn't");
     }
 
     private void assertNotInExecutedScripts(String scriptName) {
@@ -450,81 +522,38 @@ public class DbMaintainIntegrationTest {
         }
     }
 
-    private void enableFromScratch() {
-        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "true");
-    }
-
-
-    private void disableFromScratch() {
-        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "false");
-    }
-
-
-    private void updateIncrementalScript() {
-        createScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + UPDATED_INCREMENTAL_1 + "(test varchar(10));");
-    }
-
-
-    private void updateRepeatableScript() {
-        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\n" +
-                "drop table " + UPDATED_REPEATABLE + " if exists;\n" +
-                "create table " + UPDATED_REPEATABLE + "(test varchar(10));");
-    }
-
-
-    private void newIncrementalScript() {
-        createScript("02_latest/02_" + NEW_INCREMENTAL_1 + ".sql", "create table " + NEW_INCREMENTAL_1 + " (test varchar(10));");
-    }
-
-
-    private void newRepeatableScript() {
-        createScript("repeatable/" + NEW_REPEATABLE + ".sql", "drop table " + NEW_REPEATABLE + " if exists;\n" +
-                "create table " + NEW_REPEATABLE + " (test varchar(10));");
-    }
-
-
-    private void createInitialScripts() {
-        createScript("01_initial/01_" + INITIAL_INCREMENTAL_1 + ".sql", "create table " + INITIAL_INCREMENTAL_1 + "(test varchar(10));");
-        createScript("repeatable/" + INITIAL_REPEATABLE + ".sql", "drop table " + INITIAL_REPEATABLE + " if exists;\ncreate table " + INITIAL_REPEATABLE + "(test varchar(10));");
-        createScript("01_initial/02_" + INITIAL_INCREMENTAL_2 + ".sql", "create table " + INITIAL_INCREMENTAL_2 + "(test varchar(10));");
-    }
-
-
-    private void createPostProcessingScripts() {
-        createScript("postprocessing/01_" + POST_PROCESSING_INDEXED_1 + ".sql", "drop table " + POST_PROCESSING_INDEXED_1 +
-                " if exists; create table " + POST_PROCESSING_INDEXED_1 + "(test varchar(10));");
-        createScript("postprocessing/02_" + POST_PROCESSING_INDEXED_2 + ".sql", "drop table " + POST_PROCESSING_INDEXED_2 +
-                " if exists; create table " + POST_PROCESSING_INDEXED_2 + "(test varchar(10));");
-        createScript("postprocessing/" + POST_PROCESSING_NOTINDEXED + ".sql", "drop table " + POST_PROCESSING_NOTINDEXED +
-                " if exists; create table " + POST_PROCESSING_NOTINDEXED + "(test varchar(10));");
-    }
-
-    private void updateIndexedPostProcessingScript() {
-        createScript("postprocessing/01_" + POST_PROCESSING_INDEXED_1 + ".sql", "drop table " + POST_PROCESSING_INDEXED_1 + " if exists; " +
-                "drop table " + UPDATED_POST_PROCESSING_INDEXED_1 +
-                " if exists; create table " + UPDATED_POST_PROCESSING_INDEXED_1 + "(test varchar(10));");
-    }
-
-    private void updateNotIndexedPostProcessingScript() {
-        createScript("postprocessing/" + POST_PROCESSING_NOTINDEXED + ".sql", "drop table " + POST_PROCESSING_NOTINDEXED + " if exists; " +
-                "drop table " + UPDATED_POST_PROCESSING_NOTINDEXED +
-                " if exists; create table " + UPDATED_POST_PROCESSING_NOTINDEXED + "(test varchar(10));");
-    }
-
-
-    private void assertTablesExist(String... tables) {
+    private void assertScriptsCorrectlyExecuted(String... scripts) {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
-        for (String table : tables) {
-            assertTrue(table + " does not exist", tableNames.contains(dbSupport.toCorrectCaseIdentifier(table)));
+        for (String script : scripts) {
+            String tableName = getTableNameForScript(script);
+            assertTrue(tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
         }
     }
 
-
-    private void assertTablesDontExist(String... tables) {
+    private void assertUpdatedScriptsExecuted(String... scripts) {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
-        for (String table : tables) {
-            assertFalse(table + " exists, while it shouldn't", tableNames.contains(dbSupport.toCorrectCaseIdentifier(table)));
+        for (String script : scripts) {
+            String tableName = getUpdatedTableNameForScript(script);
+            assertTrue(tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
         }
+    }
+
+    private void assertScriptsNotExecuted(String... scripts) {
+        Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
+        for (String script : scripts) {
+            String tableName = getTableNameForScript(script);
+            assertFalse(tableName + " exists, so the script " + script + " has been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+        }
+    }
+
+    private void assertTableExists(String tableName) {
+        Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
+        assertTrue(tableName + " doesn't exist", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+    }
+
+    private void assertTableDoesntExist(String tableName) {
+        Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
+        assertFalse(tableName + " exists, while it shouldn't", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
     }
 
     private void updateDatabase() {
@@ -532,25 +561,132 @@ public class DbMaintainIntegrationTest {
         dbMaintainer.updateDatabase();
     }
 
-
     private void clearTestDatabase() {
-        SQLTestUtils.dropTestTables(dbSupport, "dbmaintain_scripts", INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE, NEW_INCREMENTAL_1,
-                NEW_INCREMENTAL_2, NEW_INCREMENTAL_3, NEW_REPEATABLE, UPDATED_REPEATABLE, UPDATED_INCREMENTAL_1, NEW_INCREMENTAL_LOWER_INDEX,
-                BEFORE_INITIAL_TABLE);
+        dropTestTables(dbSupport, "dbmaintain_scripts");
+        dropTablesForScripts(dbSupport, INITIAL_INCREMENTAL_1, INITIAL_INCREMENTAL_2, INITIAL_REPEATABLE);
     }
 
+    private void dropTablesForScripts(DbSupport dbSupport, String... scripts) {
+        for (String tableName : scripts) {
+            dropTestTables(dbSupport, getTableNameForScript(tableName));
+        }
+    }
 
-    private void createScript(String relativePath, String scriptContent) {
-        Writer fileWriter = null;
+    private void createScripts(String... scriptNames) {
+        for (String scriptName : scriptNames) {
+            createScript(scriptName);
+        }
+    }
+
+    private void createScript(String scriptName) {
+        if (isIndexedFileName(getShortFileName(scriptName))) {
+            createIncrementalScript(scriptName);
+        } else {
+            createRepeatableScript(scriptName);
+        }
+    }
+
+    private void updateScript(String scriptName) {
+        if (isIndexedFileName(getShortFileName(scriptName))) {
+            updateIncrementalScript(scriptName);
+        } else {
+            updateRepeatableScript(scriptName);
+        }
+    }
+
+    private void renameScript(String scriptName, String newScriptName) {
+        removeScript(scriptName);
+        if (isIndexedFileName(scriptName)) {
+            createScript(newScriptName, getCreateTableStatement(getTableNameForScript(scriptName)));
+        } else {
+            createScript(newScriptName, getRecreateTableStatement(getTableNameForScript(scriptName)));
+        }
+    }
+
+    private void createIncrementalScript(String scriptName) {
+        createScript(scriptName, getCreateTableStatement(getTableNameForScript(scriptName)));
+    }
+
+    private void updateIncrementalScript(String scriptName) {
+        createScript(scriptName, getCreateTableStatement(getUpdatedTableNameForScript(scriptName)));
+    }
+
+    private void createPostprocessingScripts(String... scriptNames) {
+        for (String scriptName : scriptNames) {
+            createPostprocessingScript(scriptName);
+        }
+    }
+
+    private void createPostprocessingScript(String scriptName) {
+        createRepeatableScript(scriptName);
+    }
+
+    private void createRepeatableScript(String scriptName) {
+        createScript(scriptName, getRecreateTableStatement(getTableNameForScript(scriptName)));
+    }
+
+    private void updateRepeatableScript(String scriptName) {
+        createScript(scriptName, getDropTableStatement(getTableNameForScript(scriptName)) +
+                getRecreateTableStatement(getUpdatedTableNameForScript(scriptName)));
+    }
+
+    private void createPatchScript(String scriptName) {
+        String patchScriptName = getPatchScriptName(scriptName);
+        createScript(patchScriptName, getCreateTableStatement(getTableNameForScript(scriptName)));
+    }
+
+    private String getPatchScriptName(String scriptName) {
+        String directory = substringBeforeLast(scriptName, "/");
+        String scriptNameWithoutDirectory = substringAfterLast(scriptName, "/");
+        String index = substringBefore(scriptNameWithoutDirectory, "_");
+        String scriptNameAfterIndex = substringAfter(scriptNameWithoutDirectory, "_");
+        return directory + "/" + index + "_#patch_" + scriptNameAfterIndex;
+    }
+
+    private String getTableNameForScript(String scriptName) {
+        String shortFileName = getShortFileName(scriptName);
+        if (isIndexedFileName(shortFileName)) {
+            return substringAfter(shortFileName, "_");
+        } else {
+            return shortFileName;
+        }
+    }
+
+    private String getShortFileName(String scriptName) {
+        return substringBeforeLast(substringAfterLast(scriptName, "/"), ".sql");
+    }
+
+    private boolean isIndexedFileName(String shortFileName) {
+        return isNumeric(substringBefore(shortFileName, "_"));
+    }
+
+    private String getUpdatedTableNameForScript(String scriptName) {
+        return getTableNameForScript(scriptName) + "_updated";
+    }
+
+    private String getCreateTableStatement(String tableName) {
+        return "create table " + tableName + " (test varchar(10)); ";
+    }
+
+    private String getDropTableStatement(String tableName) {
+        return "drop table " + tableName + " if exists; ";
+    }
+
+    private String getRecreateTableStatement(String tableName) {
+        return getDropTableStatement(tableName) + getCreateTableStatement(tableName);
+    }
+
+    private void createScript(String scriptName, String scriptContent) {
+        File scriptFile = new File(scriptsLocation.getAbsolutePath(), scriptName);
+        scriptFile.getParentFile().mkdirs();
+        writeContentToFile(scriptFile, scriptContent);
+    }
+
+    private void writeContentToFile(File scriptFile, String scriptContent) {
         try {
-            File scriptFile = new File(scriptsLocation.getAbsolutePath(), relativePath);
-            scriptFile.getParentFile().mkdirs();
-            fileWriter = new FileWriter(scriptFile);
-            IOUtils.copy(new StringReader(scriptContent), fileWriter);
+            writeStringToFile(scriptFile, scriptContent);
         } catch (IOException e) {
-            throw new DbMaintainException(e);
-        } finally {
-            IOUtils.closeQuietly(fileWriter);
+            throw new RuntimeException(e);
         }
     }
 
@@ -568,18 +704,6 @@ public class DbMaintainIntegrationTest {
             // Ignored
         }
     }
-
-
-    /**
-     * Creates a script for creating a table with the given name.
-     *
-     * @param fileName  The name of the script file to create, not null
-     * @param tableName The table to create, not null
-     */
-    private void createNewScript(String fileName, String tableName) {
-        createScript(fileName, "create table " + tableName + " (test varchar(10));");
-    }
-
 
     private void initConfiguration() {
         configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
