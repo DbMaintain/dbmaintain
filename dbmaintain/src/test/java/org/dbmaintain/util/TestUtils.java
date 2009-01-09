@@ -175,6 +175,12 @@ public class TestUtils {
             public void deleteExecutedScript(ExecutedScript executedScript) {
             }
 
+            public void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript) {
+            }
+
+            public void deleteAllExecutedPostprocessingScripts() {
+            }
+
             public Set<ExecutedScript> getExecutedScripts() {
                 return executedScripts;
             }

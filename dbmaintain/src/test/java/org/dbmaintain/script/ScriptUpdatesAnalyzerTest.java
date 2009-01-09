@@ -32,18 +32,28 @@ import java.util.*;
  */
 public class ScriptUpdatesAnalyzerTest {
 
-    private static final String INDEXED_1 = "1_indexed1.sql";
-    private static final String INDEXED_2 = "2_indexed2.sql";
-    private static final String REPEATABLE_1 = "repeatable1.sql";
-    private static final String REPEATABLE_2 = "repeatable2.sql";
-    private static final String PATCH_1 = "1_#PATCH_patch1.sql";
-    private static final String POSTPROCESSING_1 = "postprocessing/1_postprocessing1.sql";
-    private static final String POSTPROCESSING_2 = "postprocessing/2_postprocessing2.sql";
-
+    private static final Script INDEXED_1 = createScript("1_indexed1.sql", false);
+    private static final Script INDEXED_1_RENAMED = createRenamedScript(INDEXED_1, "1_indexed1_renamed.sql");
+    private static final Script INDEXED_2 = createScript("2_indexed2.sql", false);
+    private static final Script INDEXED_2_UPDATED = createScript("2_indexed2.sql", true);
+    private static final Script INDEXED_2_RENAMED_WITH_INDEX_1 = createRenamedScript(INDEXED_2, "1_indexed2.sql");
+    private static final Script INDEXED_3 = createScript("3_indexed3.sql", false);
+    private static final Script INDEXED_3_RENAMED_WITH_INDEX_1 = createRenamedScript(INDEXED_3, "1_indexed3.sql");
+    private static final Script REPEATABLE_1 = createScript("repeatable1.sql",false);
+    private static final Script REPEATABLE_1_RENAMED = createRenamedScript(REPEATABLE_1, "repeatable1_renamed.sql");
+    private static final Script REPEATABLE_2 = createScript("repeatable2.sql", false);
+    private static final Script REPEATABLE_2_UPDATED = createScript("repeatable2.sql", true);
+    private static final Script PATCH_1 = createScript("1_#PATCH_patch1.sql", false);
+    private static final Script POSTPROCESSING_1 = createScript("postprocessing/1_postprocessing1.sql", false);
+    private static final Script POSTPROCESSING_2 = createScript("postprocessing/2_postprocessing2.sql", false);
+    private static final Script POSTPROCESSING_3 = createScript("postprocessing/3_postprocessing3.sql", false);
+    private static final Script POSTPROCESSING_3_RENAMED_WITH_INDEX_1 = createRenamedScript(POSTPROCESSING_3, "postprocessing/1_postprocessing3.sql");
+    private static final Script POSTPROCESSING_1_UPDATED = createScript("postprocessing/1_postprocessing1.sql", true);
     ScriptUpdates scriptUpdates;
-    Set<String> scriptNames = new HashSet<String>();
-    Set<String> executedScriptNames = new HashSet<String>();
-    Set<String> modifiedScriptNames = new HashSet<String>();
+
+    SortedSet<Script> scripts = new TreeSet<Script>();
+    SortedSet<ExecutedScript> executedScripts = new TreeSet<ExecutedScript>();
+    private static int sequence = 0;
 
     @Test
     public void newIndexedScript() {
@@ -64,8 +74,7 @@ public class ScriptUpdatesAnalyzerTest {
     @Test
     public void indexedScriptUpdated() {
         executedScripts(INDEXED_1, INDEXED_2);
-        scripts(INDEXED_1, INDEXED_2);
-        updatedScript(INDEXED_2);
+        scripts(INDEXED_1, INDEXED_2_UPDATED);
         calculateScriptUpdates();
         assertIrregularScriptUpdate(INDEXED_SCRIPT_UPDATED, INDEXED_2);
     }
@@ -89,8 +98,7 @@ public class ScriptUpdatesAnalyzerTest {
     @Test
     public void repeatableScriptUpdated() {
         executedScripts(REPEATABLE_1, REPEATABLE_2);
-        scripts(REPEATABLE_1, REPEATABLE_2);
-        updatedScript(REPEATABLE_2);
+        scripts(REPEATABLE_1, REPEATABLE_2_UPDATED);
         calculateScriptUpdates();
         assertRegularScriptUpdate(REPEATABLE_SCRIPT_UPDATED, REPEATABLE_2);
     }
@@ -130,8 +138,7 @@ public class ScriptUpdatesAnalyzerTest {
     @Test
     public void postprocessingScriptUpdated() {
         executedScripts(POSTPROCESSING_1, POSTPROCESSING_2);
-        scripts(POSTPROCESSING_1, POSTPROCESSING_2);
-        updatedScript(POSTPROCESSING_1);
+        scripts(POSTPROCESSING_1_UPDATED, POSTPROCESSING_2);
         calculateScriptUpdates();
         assertPostProcessingScriptUpdate(POSTPROCESSING_SCRIPT_UPDATED, POSTPROCESSING_1);
     }
@@ -144,41 +151,99 @@ public class ScriptUpdatesAnalyzerTest {
         assertPostProcessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, POSTPROCESSING_1);
     }
 
-    private void scripts(String... scriptNames) {
-        for (String scriptName : scriptNames) {
-            this.scriptNames.add(scriptName);
+    @Test
+    public void indexedScriptRenamed() {
+        executedScripts(INDEXED_1, INDEXED_2);
+        scripts(INDEXED_1_RENAMED, INDEXED_2);
+        calculateScriptUpdates();
+        assertRegularScriptRenames(INDEXED_SCRIPT_RENAMED, INDEXED_1, INDEXED_1_RENAMED);
+        assertNoIrregularScriptUpdates();
+    }
+
+    @Test
+    public void indexedScriptRenamed_IndexChanged_SequenceDidntChange() {
+        executedScripts(INDEXED_2, INDEXED_3);
+        scripts(INDEXED_2_RENAMED_WITH_INDEX_1, INDEXED_3);
+        calculateScriptUpdates();
+        assertRegularScriptRenames(INDEXED_SCRIPT_RENAMED, INDEXED_2, INDEXED_2_RENAMED_WITH_INDEX_1);
+        assertNoIrregularScriptUpdates();
+    }
+
+    @Test
+    public void indexedScriptRenamed_IndexChanged_ScriptSequenceChanged() {
+        executedScripts(INDEXED_2, INDEXED_3);
+        scripts(INDEXED_2, INDEXED_3_RENAMED_WITH_INDEX_1);
+        calculateScriptUpdates();
+        assertIrregularScriptUpdate(INDEXED_SCRIPT_RENAMED_SCRIPT_SEQUENCE_CHANGED, INDEXED_3, INDEXED_3_RENAMED_WITH_INDEX_1);
+    }
+
+    @Test
+    public void repeatableScriptRenamed() {
+        executedScripts(INDEXED_1, REPEATABLE_1);
+        scripts(INDEXED_1, REPEATABLE_1_RENAMED);
+        calculateScriptUpdates();
+        assertRegularScriptRenames(REPEATABLE_SCRIPT_RENAMED, REPEATABLE_1, REPEATABLE_1_RENAMED);
+        assertNoRegularlyAddedOrModifiedScripts();
+    }
+
+    @Test
+    public void postprocessingScriptRenamed() {
+        executedScripts(POSTPROCESSING_2, POSTPROCESSING_3);
+        scripts(POSTPROCESSING_3_RENAMED_WITH_INDEX_1, POSTPROCESSING_2);
+        calculateScriptUpdates();
+        assertPostProcessingScriptUpdate(POSTPROCESSING_SCRIPT_RENAMED, POSTPROCESSING_3, POSTPROCESSING_3_RENAMED_WITH_INDEX_1);
+    }
+
+    private void scripts(Script... scripts) {
+        for (Script script : scripts) {
+            this.scripts.add(script);
         }
     }
 
-    private void executedScripts(String... scriptNames) {
-        for (String scriptName : scriptNames) {
-            executedScriptNames.add(scriptName);
+    private void executedScripts(Script... scripts) {
+        for (Script script : scripts) {
+            executedScripts.add(new ExecutedScript(script, new Date(), true));
         }
     }
 
-
-    private void updatedScript(String scriptName) {
-        modifiedScriptNames.add(scriptName);
+    private void assertRegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+        assertTrue(scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
     }
 
-    private void assertRegularScriptUpdate(ScriptUpdateType scriptUpdateType, String scriptName) {
-        assertTrue(scriptUpdates.getRegularScriptUpdates(scriptUpdateType).contains(new ScriptUpdate(scriptUpdateType, createScript(scriptName))));
+    private void assertIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+        assertTrue(scriptUpdates.getIrregularScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, script)));
     }
 
-    private void assertIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, String scriptName) {
-        assertTrue(scriptUpdates.getIrregularScriptUpdates(scriptUpdateType).contains(new ScriptUpdate(scriptUpdateType, createScript(scriptName))));
+    private void assertIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script1, Script script2) {
+        assertTrue(scriptUpdates.getIrregularScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, script1, script2)));
     }
 
-    private void assertRepeatableScriptDeletion(String scriptName) {
-        assertTrue(scriptUpdates.getRepeatableScriptDeletions().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, createScript(scriptName))));
+    private void assertRepeatableScriptDeletion(Script script) {
+        assertTrue(scriptUpdates.getRegularlyDeletedRepeatableScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, script)));
     }
 
-    private void assertRegularPatchScriptUpdate(ScriptUpdateType scriptUpdateType, String scriptName) {
-        assertTrue(scriptUpdates.getRegularPatchScriptUpdates(scriptUpdateType).contains(new ScriptUpdate(scriptUpdateType, createScript(scriptName))));
+    private void assertRegularPatchScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+        assertTrue(scriptUpdates.getRegularlyAddedPatchScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
     }
 
-    private void assertPostProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, String scriptName) {
-        assertTrue(scriptUpdates.getPostprocessingScriptUpdates(scriptUpdateType).contains(new ScriptUpdate(scriptUpdateType, createScript(scriptName))));
+    private void assertPostProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+        assertTrue(scriptUpdates.getRegularPostprocessingScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, script)));
+    }
+
+    private void assertPostProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedScript) {
+        assertTrue(scriptUpdates.getRegularPostprocessingScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, originalScript, renamedScript)));
+    }
+
+    private void assertRegularScriptRenames(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedScript) {
+        assertTrue(scriptUpdates.getRegularlyRenamedScripts().contains(new ScriptUpdate(scriptUpdateType, originalScript, renamedScript)));
+    }
+
+    private void assertNoIrregularScriptUpdates() {
+        assertTrue(scriptUpdates.getIrregularScriptUpdates().isEmpty());
+    }
+
+    private void assertNoRegularlyAddedOrModifiedScripts() {
+        assertTrue(scriptUpdates.getRegularlyAddedOrModifiedScripts().isEmpty());
     }
 
     private void calculateScriptUpdates() {
@@ -186,41 +251,19 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
-        ScriptRepository scriptRepository = TestUtils.getScriptRepository(createScripts());
-        ExecutedScriptInfoSource executedScriptInfoSource = TestUtils.getExecutedScriptInfoSource(createExecutedScripts());
+        ScriptRepository scriptRepository = TestUtils.getScriptRepository(scripts);
+        ExecutedScriptInfoSource executedScriptInfoSource = TestUtils.getExecutedScriptInfoSource(executedScripts);
         scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, true,
                 allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
     }
 
-
-    private SortedSet<Script> createScripts() {
-        SortedSet<Script> result = new TreeSet<Script>();
-        for (String scriptName : scriptNames) {
-            result.add(createScript(scriptName));
-        }
-        return result;
-    }
-
-    private SortedSet<ExecutedScript> createExecutedScripts() {
-        SortedSet<ExecutedScript> result = new TreeSet<ExecutedScript>();
-        for (String executedScriptName : executedScriptNames) {
-            result.add(createExecutedScript(executedScriptName, modifiedScriptNames.contains(executedScriptName)));
-        }
-        return result;
-    }
-
-    private ExecutedScript createExecutedScript(String scriptName, boolean isModified) {
-        Script script = createScript(scriptName, isModified);
-        return new ExecutedScript(script, new Date(), true);
-    }
-
-    private Script createScript(String scriptName) {
-        return createScript(scriptName, false);
-    }
-
-    private Script createScript(String scriptName, boolean modified) {
-        String checkSum = modified ? "modified" : "original";
-        Long lastModifiedAt = modified ? 1L : 2L;
+    private static Script createScript(String scriptName, boolean modified) {
+        String checkSum = scriptName + (modified ? (++sequence) : "");
+        Long lastModifiedAt = modified ? 1L : 0L;
         return new Script(scriptName, lastModifiedAt, checkSum, "@", "#", asSet("PATCH"), "postprocessing");
+    }
+
+    private static Script createRenamedScript(Script originalScript, String newName) {
+        return new Script(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum(), "@", "#", asSet("PATCH"), "postprocessing");
     }
 }

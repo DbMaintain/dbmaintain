@@ -18,6 +18,7 @@ package org.dbmaintain.executedscriptinfo;
 import java.util.Set;
 
 import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Script;
 
 
 /**
@@ -64,4 +65,19 @@ public interface ExecutedScriptInfoSource {
      * @param executedScript The executed script, which is no longer part of the executed scripts
      */
     void deleteExecutedScript(ExecutedScript executedScript);
+
+
+    /**
+     * Registers the fact that the script that was originally executed has been renamed.
+     *
+     * @param executedScript the original executed script that still refers to the original script
+     * @param renamedToScript the script to which the original script has been renamed
+     */
+    void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript);
+
+
+    /**
+     * Removes all previously registered executed postprocessing scripts
+     */
+    void deleteAllExecutedPostprocessingScripts();
 }

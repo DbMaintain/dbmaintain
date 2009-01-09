@@ -15,9 +15,13 @@
  */
 package org.dbmaintain.script;
 
-import java.util.Map;
+import org.dbmaintain.util.CollectionUtils;
+import org.apache.commons.collections.SetUtils;
+
 import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Collections;
+
+import com.sun.jmx.mbeanserver.Repository;
 
 /**
  * @author Filip Neven
@@ -25,106 +29,67 @@ import java.util.TreeSet;
  * @since 24-dec-2008
  */
 public class ScriptUpdates {
+    
+    private SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts;
+    private SortedSet<ScriptUpdate> irregularScriptUpdates;
+    private SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts;
+    private SortedSet<ScriptUpdate> regularlyAddedPatchScripts;
+    private SortedSet<ScriptUpdate> regularPostprocessingScriptUpdates;
+    private SortedSet<ScriptUpdate> regularlyRenamedScripts;
 
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates;
-
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates;
-
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> repeatableScriptDeletions;
-
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularPatchScriptUpdates;
-
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates;
-
-
-    protected ScriptUpdates(Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates,
-                         Map<ScriptUpdateType, SortedSet<ScriptUpdate>> repeatableScriptDeletions, Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularPatchScriptUpdates,
-                         Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates) {
-        this.regularScriptUpdates = regularScriptUpdates;
+    protected ScriptUpdates(SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts, SortedSet<ScriptUpdate> irregularScriptUpdates,
+                         SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts, SortedSet<ScriptUpdate> regularlyAddedPatchScripts,
+                         SortedSet<ScriptUpdate> regularPostprocessingScriptUpdates, SortedSet<ScriptUpdate> regularlyRenamedScripts) {
+        this.regularlyAddedOrModifiedScripts = regularlyAddedOrModifiedScripts;
         this.irregularScriptUpdates = irregularScriptUpdates;
-        this.repeatableScriptDeletions = repeatableScriptDeletions;
-        this.regularPatchScriptUpdates = regularPatchScriptUpdates;
-        this.postprocessingScriptUpdates = postprocessingScriptUpdates;
+        this.regularlyDeletedRepeatableScripts = regularlyDeletedRepeatableScripts;
+        this.regularlyAddedPatchScripts = regularlyAddedPatchScripts;
+        this.regularPostprocessingScriptUpdates = regularPostprocessingScriptUpdates;
+        this.regularlyRenamedScripts = regularlyRenamedScripts;
     }
 
 
-    public SortedSet<ScriptUpdate> getRegularScriptUpdates(ScriptUpdateType scriptUpdateType) {
-        return regularScriptUpdates.get(scriptUpdateType);
-    }
-
-
-    public SortedSet<ScriptUpdate> getRegularScriptUpdates() {
-        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
-        for (ScriptUpdateType regularScriptUpdateType : ScriptUpdateType.getRegularScriptUpdateTypes()) {
-            result.addAll(regularScriptUpdates.get(regularScriptUpdateType));
-        }
-        return result;
-    }
-
-
-    public boolean hasIrregularScriptUpdates() {
-        for (ScriptUpdateType scriptUpdateType : ScriptUpdateType.getIrregularScriptUpdateTypes()) {
-            if (irregularScriptUpdates.get(scriptUpdateType).size() > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    public SortedSet<ScriptUpdate> getIrregularScriptUpdates(ScriptUpdateType scriptUpdateType) {
-        return irregularScriptUpdates.get(scriptUpdateType);
+    public SortedSet<ScriptUpdate> getRegularlyAddedOrModifiedScripts() {
+        return regularlyAddedOrModifiedScripts;
     }
 
 
     public SortedSet<ScriptUpdate> getIrregularScriptUpdates() {
-        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
-        for (ScriptUpdateType irregularScriptUpdateType : ScriptUpdateType.getIrregularScriptUpdateTypes()) {
-            result.addAll(irregularScriptUpdates.get(irregularScriptUpdateType));
-        }
-        return result;
+        return irregularScriptUpdates;
     }
 
 
-    public SortedSet<ScriptUpdate> getRepeatableScriptDeletions() {
-        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
-        for (ScriptUpdateType irregularScriptUpdateType : ScriptUpdateType.getRepeatableScriptDeletionTypes()) {
-            result.addAll(repeatableScriptDeletions.get(irregularScriptUpdateType));
-        }
-        return result;
+    public SortedSet<ScriptUpdate> getRegularlyDeletedRepeatableScripts() {
+        return regularlyDeletedRepeatableScripts;
     }
 
 
-    public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates(ScriptUpdateType scriptUpdateType) {
-        return regularPatchScriptUpdates.get(scriptUpdateType);
+    public SortedSet<ScriptUpdate> getRegularlyAddedPatchScripts() {
+        return regularlyAddedPatchScripts;
     }
 
 
-    public SortedSet<ScriptUpdate> getRegularPatchScriptUpdates() {
-        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
-        for (ScriptUpdateType patchScriptUpdateType : ScriptUpdateType.getPatchScriptUpdateTypes()) {
-            result.addAll(regularPatchScriptUpdates.get(patchScriptUpdateType));
-        }
-        return result;
+    public SortedSet<ScriptUpdate> getRegularlyRenamedScripts() {
+        return regularlyRenamedScripts;
     }
 
 
-    protected SortedSet<ScriptUpdate> getPostprocessingScriptUpdates() {
-        SortedSet<ScriptUpdate> result = new TreeSet<ScriptUpdate>();
-        for (ScriptUpdateType postProcessingScriptUpdateType : ScriptUpdateType.getPostprocessingScriptUpdateTypes()) {
-            result.addAll(postprocessingScriptUpdates.get(postProcessingScriptUpdateType));
-        }
-        return result;
+    public SortedSet<ScriptUpdate> getRegularPostprocessingScriptUpdates() {
+        return regularPostprocessingScriptUpdates;
     }
-
     
-    public SortedSet<ScriptUpdate> getPostprocessingScriptUpdates(ScriptUpdateType scriptUpdateType) {
-        return postprocessingScriptUpdates.get(scriptUpdateType);
+
+    public SortedSet<ScriptUpdate> getRegularScriptUpdates() {
+        return CollectionUtils.unionSortedSet(regularlyAddedOrModifiedScripts, regularlyAddedPatchScripts, regularlyRenamedScripts,
+                regularlyDeletedRepeatableScripts, regularPostprocessingScriptUpdates);
     }
 
+    public boolean hasIrregularScriptUpdates() {
+        return irregularScriptUpdates.size() > 0;
+    }
 
-    public boolean hasUpdatesOtherThanRepeatableScriptDeletions() {
-        return getRegularScriptUpdates().size() != 0 || getIrregularScriptUpdates().size() != 0 ||
-                getRegularPatchScriptUpdates().size() != 0 || getPostprocessingScriptUpdates().size() != 0;
+    public boolean hasUpdatesOtherThanRepeatableScriptDeletionsOrRenames() {
+        return regularlyAddedOrModifiedScripts.size() != 0 || irregularScriptUpdates.size() != 0 ||
+                regularlyAddedPatchScripts.size() != 0 || regularPostprocessingScriptUpdates.size() != 0;
     }
 }

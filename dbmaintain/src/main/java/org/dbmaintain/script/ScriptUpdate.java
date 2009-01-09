@@ -26,9 +26,16 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
 
     private Script script;
 
+    private Script renamedToScript;
+
     public ScriptUpdate(ScriptUpdateType type, Script script) {
+        this(type, script, null);
+    }
+
+    public ScriptUpdate(ScriptUpdateType type, Script script, Script renamedToScript) {
         this.type = type;
         this.script = script;
+        this.renamedToScript = renamedToScript;
     }
 
     public ScriptUpdateType getType() {
@@ -39,6 +46,10 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
         return script;
     }
 
+    public Script getRenamedToScript() {
+        return renamedToScript;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -46,8 +57,10 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
 
         ScriptUpdate that = (ScriptUpdate) o;
 
-        if (!script.equals(that.script)) return false;
         if (type != that.type) return false;
+        if (!script.equals(that.script)) return false;
+        if (renamedToScript != null ? !renamedToScript.equals(that.renamedToScript) : that.renamedToScript != null)
+            return false;
 
         return true;
     }
@@ -56,6 +69,7 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
     public int hashCode() {
         int result = type.hashCode();
         result = 31 * result + script.hashCode();
+        result = 31 * result + (renamedToScript != null ? renamedToScript.hashCode() : 0);
         return result;
     }
 

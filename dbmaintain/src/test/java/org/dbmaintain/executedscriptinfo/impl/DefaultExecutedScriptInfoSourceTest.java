@@ -59,7 +59,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     /* The db support instance for the default schema */
     DbSupport dbSupport;
 
-    ExecutedScript executedScript1, executedScript2;
+    ExecutedScript executedScript1, executedScript2, executedPostprocessingScript;
 
 
     /**
@@ -85,6 +85,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     public void initTestData() throws ParseException {
         executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "@", "#", Collections.singleton("PATCH"), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedPostprocessingScript = new ExecutedScript(new Script("postprocessing/postprocessingscript1.sql", 20L, "yyy", "@", "#", Collections.singleton("PATCH"), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
 
@@ -139,20 +140,30 @@ public class DefaultExecutedScriptInfoSourceTest {
         dropExecutedScriptsTable();
 
         executedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
-        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().iterator().next());
+        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
         initExecutedScriptInfoSource();
-        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().iterator().next());
+        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
     }
 
     @Test
     public void testUpdateExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
-        assertFalse(executedScriptInfoSource.getExecutedScripts().iterator().next().isSuccessful());
+        assertFalse(executedScriptInfoSource.getExecutedScripts().first().isSuccessful());
         executedScript1.setSuccessful(true);
         executedScriptInfoSource.updateExecutedScript(executedScript1);
-        assertTrue(executedScriptInfoSource.getExecutedScripts().iterator().next().isSuccessful());
+        assertTrue(executedScriptInfoSource.getExecutedScripts().first().isSuccessful());
         initExecutedScriptInfoSource();
-        assertTrue(executedScriptInfoSource.getExecutedScripts().iterator().next().isSuccessful());
+        assertTrue(executedScriptInfoSource.getExecutedScripts().first().isSuccessful());
+    }
+
+    @Test
+    public void renameExecutedScript() {
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        Script renamedToScript = new Script("1_script1_renamed.sql", 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        executedScriptInfoSource.renameExecutedScript(executedScript1, renamedToScript);
+        assertEquals(renamedToScript, executedScriptInfoSource.getExecutedScripts().first().getScript());
+        initExecutedScriptInfoSource();
+        assertEquals(renamedToScript, executedScriptInfoSource.getExecutedScripts().first().getScript());
     }
 
     @Test
@@ -174,6 +185,20 @@ public class DefaultExecutedScriptInfoSourceTest {
         assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
         initExecutedScriptInfoSource();
         assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
+    }
+
+
+    @Test
+    public void testDeleteAllExecutedPostprocessingScripts() {
+        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        executedScriptInfoSource.registerExecutedScript(executedPostprocessingScript);
+        assertEquals(2, executedScriptInfoSource.getExecutedScripts().size());
+        executedScriptInfoSource.deleteAllExecutedPostprocessingScripts();
+        assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
+        initExecutedScriptInfoSource();
+        assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+        assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
     }
 
     /**

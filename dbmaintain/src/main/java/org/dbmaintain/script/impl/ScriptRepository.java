@@ -84,7 +84,7 @@ public class ScriptRepository {
             current = script;
             if (previous != null && previous.getVersion().equals(current.getVersion())) {
                 throw new DbMaintainException("Found 2 indexed scripts with the same index: "
-                        + previous.getFileName() + " and " + current.getFileName() + " both have index "
+                        + previous.getFileName() + " and " + current.getFileName() + ": both scripts have index "
                         + previous.getVersion().getIndexesString());
             }
         }

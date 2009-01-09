@@ -21,13 +21,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.dbutils.DbUtils;
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
@@ -51,7 +48,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
     protected SQLHandler sqlHandler;
 
-    protected Set<ExecutedScript> executedScripts;
+    protected SortedSet<ExecutedScript> executedScripts;
 
     /**
      * The name of the database table in which the executed script info is stored
@@ -119,9 +116,9 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
 
     public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName,
-            int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize, 
-            String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat, 
-            DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix, 
+            int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize,
+            String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat,
+            DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix,
             Set<String> patchQualifiers, String postProcessingDirName) {
 
         this.defaultDbSupport = defaultSupport;
@@ -147,7 +144,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     /**
      * @return All scripts that were registered as executed on the database
      */
-    public Set<ExecutedScript> getExecutedScripts() {
+    public SortedSet<ExecutedScript> getExecutedScripts() {
         try {
             return doGetExecutedScripts();
 
@@ -167,7 +164,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      *
      * @return All scripts that were registered as executed on the database
      */
-    protected Set<ExecutedScript> doGetExecutedScripts() {
+    protected SortedSet<ExecutedScript> doGetExecutedScripts() {
         if (executedScripts != null) {
             return executedScripts;
         }
@@ -182,7 +179,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                     checksumColumnName + ", " + executedAtColumnName + ", " + succeededColumnName +
                     " from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName));
 
-            executedScripts = new HashSet<ExecutedScript>();
+            executedScripts = new TreeSet<ExecutedScript>();
             while (resultSet.next()) {
                 String fileName = resultSet.getString(fileNameColumnName);
                 String checkSum = resultSet.getString(checksumColumnName);
@@ -275,6 +272,36 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
 
     /**
+     * Registers the fact that the script that was originally executed has been renamed.
+     *
+     * @param executedScript the original executed script that still refers to the original script
+     * @param renamedToScript the script to which the original script has been renamed
+     */
+    public void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript) {
+        String renameSql = "update " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+                " set " + fileNameColumnName + " = '" + renamedToScript.getFileName() + "', " +
+                checksumColumnName + " = '" + renamedToScript.getCheckSum() + "', " +
+                fileLastModifiedAtColumnName + " = " + renamedToScript.getFileLastModifiedAt() +
+                " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
+        sqlHandler.executeUpdateAndCommit(renameSql, defaultDbSupport.getDataSource());
+        executedScript.renameTo(renamedToScript);
+    }
+
+
+    public void deleteAllExecutedPostprocessingScripts() {
+        for (Iterator<ExecutedScript> executedScriptsIterator = getExecutedScripts().iterator(); executedScriptsIterator.hasNext(); ) {
+            ExecutedScript executedScript = executedScriptsIterator.next();
+            if (executedScript.getScript().isPostProcessingScript()) {
+                executedScriptsIterator.remove();
+                String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+                    " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
+                sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
+            }
+        }
+    }
+
+
+    /**
      * Clears all script executions that have been registered. After having invoked this method,
      * {@link #getExecutedScripts()} will return an empty set.
      */
@@ -326,8 +353,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         if (tableNames.contains(executedScriptsTableName)) {
             // Check columns of version table
             Set<String> columnNames = defaultDbSupport.getColumnNames(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName);
-            if (columnNames.contains(fileNameColumnName) && columnNames.contains(fileLastModifiedAtColumnName) 
-                    && columnNames.contains(checksumColumnName) && columnNames.contains(executedAtColumnName) 
+            if (columnNames.contains(fileNameColumnName) && columnNames.contains(fileLastModifiedAtColumnName)
+                    && columnNames.contains(checksumColumnName) && columnNames.contains(executedAtColumnName)
                     && columnNames.contains(succeededColumnName)) {
                 return true;
             }
@@ -365,6 +392,4 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 executedAtColumnName + " " + defaultDbSupport.getTextDataType(executedAtColumnSize) + ", " +
                 succeededColumnName + " " + longDataType + " )";
     }
-
-
 }

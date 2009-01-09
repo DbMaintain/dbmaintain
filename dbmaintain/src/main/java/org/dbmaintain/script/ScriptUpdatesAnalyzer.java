@@ -19,8 +19,6 @@ import org.dbmaintain.script.impl.ScriptRepository;
 import static org.dbmaintain.script.ScriptUpdateType.*;
 import static org.dbmaintain.script.ScriptUpdateType.POSTPROCESSING_SCRIPT_UPDATED;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
 
@@ -31,19 +29,17 @@ import java.util.*;
  */
 public class ScriptUpdatesAnalyzer {
 
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(ScriptUpdates.class);
-
     private ScriptRepository scriptRepository;
     private ExecutedScriptInfoSource executedScriptInfoSource;
     private boolean useScriptFileLastModificationDates;
     private boolean allowOutOfSequenceExecutionOfPatchScripts;
 
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> regularScriptUpdates;
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> irregularScriptUpdates;
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> repeatableScriptDeletions;
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> patchScriptUpdates;
-    private Map<ScriptUpdateType, SortedSet<ScriptUpdate>> postprocessingScriptUpdates;
+    private SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts;
+    private SortedSet<ScriptUpdate> irregularScriptUpdates;
+    private SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts;
+    private SortedSet<ScriptUpdate> regularlyAddedPatchScripts;
+    private SortedSet<ScriptUpdate> regularPostprocessingScriptUpdates;
+    private SortedSet<ScriptUpdate> regularlyRenamedScripts;
 
     public ScriptUpdatesAnalyzer(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                          boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts) {
@@ -54,23 +50,90 @@ public class ScriptUpdatesAnalyzer {
     }
 
     public ScriptUpdates calculateScriptUpdates() {
-        regularScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getRegularScriptUpdateTypes());
-        irregularScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getIrregularScriptUpdateTypes());
-        repeatableScriptDeletions = initScriptUpdateMap(ScriptUpdateType.getRepeatableScriptDeletionTypes());
-        patchScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPatchScriptUpdateTypes());
-        postprocessingScriptUpdates = initScriptUpdateMap(ScriptUpdateType.getPostprocessingScriptUpdateTypes());
+        regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
+        irregularScriptUpdates = new TreeSet<ScriptUpdate>();
+        regularlyDeletedRepeatableScripts = new TreeSet<ScriptUpdate>();
+        regularlyAddedPatchScripts = new TreeSet<ScriptUpdate>();
+        regularPostprocessingScriptUpdates = new TreeSet<ScriptUpdate>();
+        regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
+        regularlyRenamedScripts = new TreeSet<ScriptUpdate>();
 
-        Map<Script, ExecutedScript> alreadyExecutedScripts = getAlreadyExecutedScripts(executedScriptInfoSource);
-        // Search for indexed scriptNames that have been executed but don't appear in the current indexed scriptNames anymore
-        SortedSet<Script> allScripts = scriptRepository.getAllScripts();
-        for (Script alreadyExecutedScript : alreadyExecutedScripts.keySet()) {
-            if (!allScripts.contains(alreadyExecutedScript)) {
-                if (alreadyExecutedScript.isIncremental()) {
-                    addIrregularScriptUpdate(INDEXED_SCRIPT_DELETED, alreadyExecutedScript);
-                } else if (alreadyExecutedScript.isRepeatable()) {
-                    addRepeatableScriptDeletion(alreadyExecutedScript);
-                } else if (alreadyExecutedScript.isPostProcessingScript()) {
-                    addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, alreadyExecutedScript);
+        Map<String, ExecutedScript> scriptNameExecutedScriptMap = getScriptNameExecutedScriptMap();
+        Map<String, Script> scriptNameScriptMap = getScriptNameScriptMap();
+        Map<Script, ExecutedScript> scriptExecutedScriptMap = new HashMap<Script, ExecutedScript>();
+
+        // Iterate over the already executed scripts, and find out whether there are any updates. We map the executed scripts
+        // with the new script counterparts, to be able to verify afterwards if scripts have been renamed or deleted.
+        for (String executedScriptName : scriptNameExecutedScriptMap.keySet()) {
+            if (scriptNameScriptMap.containsKey(executedScriptName)) {
+                // The script with this name still exists. We store this in the executedScriptScriptMap
+                ExecutedScript executedScript = scriptNameExecutedScriptMap.get(executedScriptName);
+                Script script = scriptNameScriptMap.get(executedScriptName);
+                scriptExecutedScriptMap.put(script, executedScript);
+                // Check if the content didn't change
+                if (!executedScript.getScript().isScriptContentEqualTo(script, useScriptFileLastModificationDates)) {
+                    if (script.isIncremental()) {
+                        addIrregularScriptUpdate(INDEXED_SCRIPT_UPDATED, script);
+                    } else if (script.isRepeatable()) {
+                        addRegularScriptUpdate(REPEATABLE_SCRIPT_UPDATED, script);
+                    } else if (script.isPostProcessingScript()) {
+                        addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_UPDATED, script);
+                    }
+                }
+            }
+        }
+
+        Map<ExecutedScript, Script> renamedIndexedScripts = new HashMap<ExecutedScript, Script>();
+        if (executedScriptInfoSource.getExecutedScripts().size() != scriptExecutedScriptMap.size()) {
+            // There are executed scripts for which a script with the same name cannot be found anymore. We are going to find
+            // out what has happened to the executed scripts that could not be mapped: were they renamed or were they deleted?
+            Map<String, Set<Script>> checkSumScriptMap = getCheckSumScriptMap();
+            for (String executedScriptName : scriptNameExecutedScriptMap.keySet()) {
+                if (!scriptNameScriptMap.containsKey(executedScriptName)) {
+                    // Find out if there's a script with the same content, which is not yet mapped with an executed script,
+                    // in this case we conclude that the script has been renamed.
+                    ExecutedScript executedScript = scriptNameExecutedScriptMap.get(executedScriptName);
+                    SortedSet<Script> newScriptsWithSameContent = new TreeSet<Script>();
+                    Set<Script> scriptsWithSameContent = checkSumScriptMap.get(executedScript.getScript().getCheckSum());
+                    if (scriptsWithSameContent != null) {
+                        for (Script scriptWithSameContent : scriptsWithSameContent) {
+                            if (!scriptExecutedScriptMap.containsKey(scriptWithSameContent)) {
+                                newScriptsWithSameContent.add(scriptWithSameContent);
+                            }
+                        }
+                    }
+                    if (newScriptsWithSameContent.size() == 1) {
+                        Script newScriptWithSameContent = newScriptsWithSameContent.first();
+                        if (executedScript.getScript().isIncremental() && newScriptWithSameContent.isIncremental()) {
+                            scriptExecutedScriptMap.put(newScriptWithSameContent, executedScript);
+                            renamedIndexedScripts.put(executedScript, newScriptWithSameContent);
+                        } else if (executedScript.getScript().isRepeatable() && newScriptWithSameContent.isRepeatable()) {
+                            scriptExecutedScriptMap.put(newScriptWithSameContent, executedScript);
+                            addRegularScriptRename(REPEATABLE_SCRIPT_RENAMED, executedScript.getScript(), newScriptWithSameContent);
+                        } else if (executedScript.getScript().isPostProcessingScript() && newScriptWithSameContent.isPostProcessingScript()) {
+                            scriptExecutedScriptMap.put(newScriptWithSameContent, executedScript);
+                            addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_RENAMED, executedScript.getScript(), newScriptWithSameContent);
+                        }
+                    } else {
+                        // We didn't find a script with the same content that isn't mapped with an executed script yet
+                        Script deletedScript = scriptNameExecutedScriptMap.get(executedScriptName).getScript();
+                        if (deletedScript.isIncremental()) {
+                            addIrregularScriptUpdate(INDEXED_SCRIPT_DELETED, deletedScript);
+                        } else if (deletedScript.isRepeatable()) {
+                            addRepeatableScriptDeletion(deletedScript);
+                        } else if (deletedScript.isPostProcessingScript()) {
+                            addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, deletedScript);
+                        }
+                    }
+                }
+            }
+            boolean sequenceOfIndexedScriptsChangedDueToRenames = sequenceOfIndexedScriptsChangedDueToRenames(renamedIndexedScripts);
+            for (ExecutedScript renamedIndexedExecutedScript : renamedIndexedScripts.keySet()) {
+                if (sequenceOfIndexedScriptsChangedDueToRenames) {
+                    addIrregularScriptUpdate(ScriptUpdateType.INDEXED_SCRIPT_RENAMED_SCRIPT_SEQUENCE_CHANGED,
+                            renamedIndexedExecutedScript.getScript(), renamedIndexedScripts.get(renamedIndexedExecutedScript));
+                } else {
+                    addRegularScriptRename(ScriptUpdateType.INDEXED_SCRIPT_RENAMED, renamedIndexedExecutedScript.getScript(), renamedIndexedScripts.get(renamedIndexedExecutedScript));
                 }
             }
         }
@@ -78,13 +141,13 @@ public class ScriptUpdatesAnalyzer {
         // Search for indexed scriptNames whose version < the current version, which are new or whose contents have changed
         Script scriptWithHighestScriptIndex = getExecutedScriptWithHighestScriptIndex(executedScriptInfoSource.getExecutedScripts());
         for (Script indexedScript : scriptRepository.getIndexedScripts()) {
-            if (!alreadyExecutedScripts.containsKey(indexedScript)) {
+            if (!scriptExecutedScriptMap.containsKey(indexedScript)) {
                 if (scriptWithHighestScriptIndex == null || indexedScript.compareTo(scriptWithHighestScriptIndex) > 0) {
                     addRegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, indexedScript);
                 } else {
                     if (indexedScript.isPatchScript()) {
                         if (allowOutOfSequenceExecutionOfPatchScripts) {
-                            addPatchScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, indexedScript);
+                            addRegularlyAddedPatchScript(LOWER_INDEX_PATCH_SCRIPT_ADDED, indexedScript);
                         } else {
                             addIrregularScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, indexedScript);
                         }
@@ -92,78 +155,120 @@ public class ScriptUpdatesAnalyzer {
                         addIrregularScriptUpdate(LOWER_INDEX_NON_PATCH_SCRIPT_ADDED, indexedScript);
                     }
                 }
-            } else {
-                if (!alreadyExecutedScripts.get(indexedScript).getScript().isScriptContentEqualTo(indexedScript, useScriptFileLastModificationDates)) {
-                    addIrregularScriptUpdate(INDEXED_SCRIPT_UPDATED, indexedScript);
-                }
             }
         }
 
         for (Script repeatableScript : scriptRepository.getRepeatableScripts()) {
-            if (!alreadyExecutedScripts.containsKey(repeatableScript)) {
+            if (!scriptExecutedScriptMap.containsKey(repeatableScript)) {
                 addRegularScriptUpdate(REPEATABLE_SCRIPT_ADDED, repeatableScript);
-            } else {
-                if (!alreadyExecutedScripts.get(repeatableScript).getScript().isScriptContentEqualTo(repeatableScript, useScriptFileLastModificationDates)) {
-                    addRegularScriptUpdate(REPEATABLE_SCRIPT_UPDATED, repeatableScript);
-                }
             }
         }
 
         for (Script postprocessingScript : scriptRepository.getPostProcessingScripts()) {
-            if (!alreadyExecutedScripts.containsKey(postprocessingScript)) {
+            if (!scriptExecutedScriptMap.containsKey(postprocessingScript)) {
                 addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_ADDED, postprocessingScript);
-            } else {
-                if (!alreadyExecutedScripts.get(postprocessingScript).getScript().isScriptContentEqualTo(postprocessingScript, useScriptFileLastModificationDates)) {
-                    addPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_UPDATED, postprocessingScript);
+            } 
+        }
+
+        return new ScriptUpdates(regularlyAddedOrModifiedScripts, irregularScriptUpdates, regularlyDeletedRepeatableScripts, regularlyAddedPatchScripts,
+                regularPostprocessingScriptUpdates, regularlyRenamedScripts);
+    }
+
+
+    protected boolean sequenceOfIndexedScriptsChangedDueToRenames(Map<ExecutedScript, Script> renamedIndexedScripts) {
+        Iterator<Script> indexedScriptsIterator = scriptRepository.getIndexedScripts().iterator();
+        for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
+            Script scriptInNewSequence = renamedIndexedScripts.get(executedScript);
+            if (scriptInNewSequence == null) {
+                scriptInNewSequence = executedScript.getScript();
+            }
+            boolean foundScriptInNewSequenceInIndexedScripts = false;
+            while (!foundScriptInNewSequenceInIndexedScripts) {
+                if (!indexedScriptsIterator.hasNext()) {
+                    return true;
+                }
+                if (scriptInNewSequence.equals(indexedScriptsIterator.next())) {
+                    foundScriptInNewSequenceInIndexedScripts = true;
                 }
             }
         }
-
-        return new ScriptUpdates(regularScriptUpdates, irregularScriptUpdates, repeatableScriptDeletions, patchScriptUpdates, postprocessingScriptUpdates);
-    }
-
-    protected Map<ScriptUpdateType, SortedSet<ScriptUpdate>> initScriptUpdateMap(Set<ScriptUpdateType> scriptUpdateTypes) {
-        Map<ScriptUpdateType, SortedSet<ScriptUpdate>> result = new EnumMap<ScriptUpdateType, SortedSet<ScriptUpdate>>(ScriptUpdateType.class);
-        for (ScriptUpdateType scriptUpdateType : scriptUpdateTypes) {
-            result.put(scriptUpdateType, new TreeSet<ScriptUpdate>());
-        }
-        return result;
+        return false;
     }
 
     /**
-     * @return The already executed scripts, as a map from Script => ExecutedScript
+     * @return The already executed scripts, as a map from scriptName => ExecutedScript
      */
-    protected Map<Script, ExecutedScript> getAlreadyExecutedScripts(ExecutedScriptInfoSource executedScriptInfoSource) {
-        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<Script, ExecutedScript>();
+    protected Map<String, ExecutedScript> getScriptNameExecutedScriptMap() {
+        Map<String, ExecutedScript> scriptNameAlreadyExecutedScriptMap = new HashMap<String, ExecutedScript>();
         for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
-            alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
+            scriptNameAlreadyExecutedScriptMap.put(executedScript.getScript().getFileName(), executedScript);
         }
-        return alreadyExecutedScripts;
+        return scriptNameAlreadyExecutedScriptMap;
+    }
+
+    /**
+     * @return All scripts, as a map from scriptName => Script
+     */
+    protected Map<String, Script> getScriptNameScriptMap() {
+        Map<String, Script> scriptNameScriptMap = new HashMap<String, Script>();
+        for (Script script : scriptRepository.getAllScripts()) {
+            scriptNameScriptMap.put(script.getFileName(), script);
+        }
+        return scriptNameScriptMap;
+    }
+
+
+    protected Map<String, Set<Script>> getCheckSumScriptMap() {
+        Map<String, Set<Script>> checkSumScriptMap = new HashMap<String, Set<Script>>();
+        for (Script script : scriptRepository.getAllScripts()) {
+            Set<Script> scriptsWithCheckSum = checkSumScriptMap.get(script.getCheckSum());
+            if (scriptsWithCheckSum == null) {
+                scriptsWithCheckSum = new HashSet<Script>();
+                checkSumScriptMap.put(script.getCheckSum(), scriptsWithCheckSum);
+            }
+            scriptsWithCheckSum.add(script);
+        }
+        return checkSumScriptMap;
     }
 
 
     protected void addRegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        regularScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
+        regularlyAddedOrModifiedScripts.add(new ScriptUpdate(scriptUpdateType, script));
     }
 
 
     protected void addIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        irregularScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
+        irregularScriptUpdates.add(new ScriptUpdate(scriptUpdateType, script));
+    }
+
+
+    protected void addIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script1, Script script2) {
+        irregularScriptUpdates.add(new ScriptUpdate(scriptUpdateType, script1, script2));
     }
 
 
     private void addRepeatableScriptDeletion(Script script) {
-        repeatableScriptDeletions.get(REPEATABLE_SCRIPT_DELETED).add(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, script));
+        regularlyDeletedRepeatableScripts.add(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, script));
     }
 
 
-    protected void addPatchScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        patchScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
+    protected void addRegularlyAddedPatchScript(ScriptUpdateType scriptUpdateType, Script script) {
+        regularlyAddedPatchScripts.add(new ScriptUpdate(scriptUpdateType, script));
     }
 
 
     protected void addPostprocessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        postprocessingScriptUpdates.get(scriptUpdateType).add(new ScriptUpdate(scriptUpdateType, script));
+        regularPostprocessingScriptUpdates.add(new ScriptUpdate(scriptUpdateType, script));
+    }
+
+
+    protected void addPostprocessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedToScript) {
+        regularPostprocessingScriptUpdates.add(new ScriptUpdate(scriptUpdateType, originalScript, renamedToScript));
+    }
+
+
+    protected void addRegularScriptRename(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedScript) {
+        regularlyRenamedScripts.add(new ScriptUpdate(scriptUpdateType, originalScript, renamedScript));
     }
 
     protected Script getExecutedScriptWithHighestScriptIndex(Set<ExecutedScript> executedScripts) {

@@ -133,6 +133,11 @@ public class Script implements Comparable<Script> {
         return fileName;
     }
 
+
+    /**
+     *
+     * @param fileName
+     */
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }

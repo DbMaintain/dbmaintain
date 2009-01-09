@@ -191,8 +191,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
         if (!getRepeatableScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
             for (ExecutedScript failedScript : getRepeatableScriptsThatFailedDuringLastUpdate()) {
-                if (!scriptUpdates.getRegularScriptUpdates(REPEATABLE_SCRIPT_UPDATED).contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
-                        && !scriptUpdates.getRepeatableScriptDeletions().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
+                if (!scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
+                        && !scriptUpdates.getRegularlyDeletedRepeatableScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
                     throw new DbMaintainException("During the latest update, the execution of the following repeatable script failed: " +
                         getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
                         "before any other updates can be performed: This can be the failed script itself or an indexed script.");
@@ -210,14 +210,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
             if (fromScratchEnabled) {
                 // Recreate the database from scratch
                 logger.info("The database is recreated from scratch, because one or more irregular script updates were detected:\n" +
-                        formatIrregularUpdates(scriptUpdates));
+                        formatUpdates(scriptUpdates.getIrregularScriptUpdates()));
                 recreateFromScratch = true;
             } else {
-                throw new DbMaintainException("Irregular script updates detected, but the fromScratch option is disabled. To solve this problem, you can do one of the following:\n" +
-                    "  1: Revert the changes and perform the desired changes using incremental scripts\n" +
+                throw new DbMaintainException("Following irregular script updates were detected:\n" + formatUpdates(scriptUpdates.getIrregularScriptUpdates()) +
+                    "\nBecause of this, dbmaintain can't perform the update. To solve this problem, you can do one of the following:\n" +
+                    "  1: Revert the irregular updates and use regular script updates instead\n" +
                     "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
-                    "  3: Fix the database manually and invoke the markDatabaseAsUpToDate operation (error prone)\n\n" +
-                    "Following irregular updates were performed:\n" + formatIrregularUpdates(scriptUpdates) + "\n");
+                    "  3: Perform the updates manually on the database and invoke the markDatabaseAsUpToDate operation (error prone)\n");
             }
         }
 
@@ -226,7 +226,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
             clearDatabase();
             executeScripts(scriptRepository.getAllUpdateScripts());
         } else {
-            logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + formatRegularUpdates(scriptUpdates));
+            logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + formatUpdates(scriptUpdates.getRegularScriptUpdates()));
 
             // If cleandb is enabled, remove all data from the database.
             if (cleanDbEnabled) {
@@ -234,15 +234,17 @@ public class DefaultDbMaintainer implements DbMaintainer {
             }
             // If there are incremental patch scripts with a lower index and the option allowOutOfSequenceExecutionOfPatches
             // is enabled, execute them first
-            executeScriptUpdates(scriptUpdates.getRegularPatchScriptUpdates());
+            executeScriptUpdates(scriptUpdates.getRegularlyAddedPatchScripts());
             // Execute all new incremental and all new or modified repeatable scripts
-            executeScriptUpdates(scriptUpdates.getRegularScriptUpdates());
+            executeScriptUpdates(scriptUpdates.getRegularlyAddedOrModifiedScripts());
             // If repeatable scripts were removed, also remove them from the executed scripts
-            removeDeletedRepeatableScriptsFromExecutedScripts(scriptUpdates.getRepeatableScriptDeletions());
+            removeDeletedRepeatableScriptsFromExecutedScripts(scriptUpdates.getRegularlyDeletedRepeatableScripts());
+            // If regular script renames were detected, update the executed script records to reflect this
+            performRegularScriptRenamesInExecutedScripts(scriptUpdates.getRegularlyRenamedScripts());
         }
-        if (scriptUpdates.hasUpdatesOtherThanRepeatableScriptDeletions()) {
+        if (scriptUpdates.hasUpdatesOtherThanRepeatableScriptDeletionsOrRenames()) {
             // Execute all post processing scripts
-            executeScripts(scriptRepository.getPostProcessingScripts());
+            executePostprocessingScripts();
 
             // If the disable constraints option is enabled, disable all FK and not null constraints
             if (disableConstraintsEnabled) {
@@ -259,7 +261,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
         sqlHandler.closeAllConnections();
     }
 
-
     /**
      * @return Whether we are running dbmaintain for the first time. If there are no scripts available yet, this method
      * returns false.
@@ -269,20 +270,51 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
+    protected void executePostprocessingScripts() {
+        executedScriptInfoSource.deleteAllExecutedPostprocessingScripts();
+        executeScripts(scriptRepository.getPostProcessingScripts());
+    }
+
+
+    /**
+     * @return The already executed scripts, as a map from Script => ExecutedScript
+     */
+    protected Map<Script, ExecutedScript> getAlreadyExecutedScripts() {
+        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<Script, ExecutedScript>();
+        for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
+            alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
+        }
+        return alreadyExecutedScripts;
+    }
+
+
+    /**
+     * Removes all executed scripts that indicate repeatable scripts that were removed since the last database update
+     *
+     * @param repeatableScriptDeletions The scripts that were removed since the last database updates
+     */
+    protected void removeDeletedRepeatableScriptsFromExecutedScripts(SortedSet<ScriptUpdate> repeatableScriptDeletions) {
+        for (ScriptUpdate deletedRepeatableScriptUpdate : repeatableScriptDeletions) {
+            executedScriptInfoSource.deleteExecutedScript(getAlreadyExecutedScripts().get(deletedRepeatableScriptUpdate.getScript()));
+        }
+    }
+
+
+    protected void performRegularScriptRenamesInExecutedScripts(SortedSet<ScriptUpdate> regularScriptRenames) {
+        for (ScriptUpdate regularScriptRename : regularScriptRenames) {
+            executedScriptInfoSource.renameExecutedScript(getAlreadyExecutedScripts().get(regularScriptRename.getScript()), regularScriptRename.getRenamedToScript());
+        }
+    }
+
+
     /**
      * @param scriptUpdates The script updates, not null
      * @return An printable overview of the regular script updates
      */
-    protected String formatRegularUpdates(ScriptUpdates scriptUpdates) {
+    protected String formatUpdates(SortedSet<ScriptUpdate> scriptUpdates) {
         StringBuilder formattedUpdates = new StringBuilder();
         int index = 0;
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getRegularScriptUpdates(HIGHER_INDEX_SCRIPT_ADDED)) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getRegularScriptUpdates(REPEATABLE_SCRIPT_ADDED)) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getRegularScriptUpdates(REPEATABLE_SCRIPT_UPDATED)) {
+        for (ScriptUpdate scriptUpdate : scriptUpdates) {
             formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
         }
         return formattedUpdates.toString();
@@ -296,16 +328,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected String formatIrregularUpdates(ScriptUpdates scriptUpdates) {
         StringBuilder formattedUpdates = new StringBuilder();
         int index = 0;
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(INDEXED_SCRIPT_UPDATED)) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(INDEXED_SCRIPT_DELETED)) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(LOWER_INDEX_NON_PATCH_SCRIPT_ADDED)) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates(LOWER_INDEX_PATCH_SCRIPT_ADDED)) {
+        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates()) {
             formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
         }
         return formattedUpdates.toString();
@@ -338,36 +361,22 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 return "deleted indexed script: " + scriptUpdate.getScript().getFileName();
             case LOWER_INDEX_NON_PATCH_SCRIPT_ADDED:
                 return "newly added script with a lower index: "
-                    + scriptUpdate.getScript().getFileName();
+                        + scriptUpdate.getScript().getFileName();
             case LOWER_INDEX_PATCH_SCRIPT_ADDED:
-                return "newly added patch script with a lower index, with out-of-sequence execution of patch scripts disabled: "
-                    + scriptUpdate.getScript().getFileName();
+                return "newly added patch script with a lower index: "
+                        + scriptUpdate.getScript().getFileName();
+            case INDEXED_SCRIPT_RENAMED:
+                return "renamed indexed script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript()
+                        + ", without changing the sequence of the scripts";
+            case INDEXED_SCRIPT_RENAMED_SCRIPT_SEQUENCE_CHANGED:
+                return "renamed indexed script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript()
+                        + ", which changes the sequence of the scripts";
+            case REPEATABLE_SCRIPT_RENAMED:
+                return "renamed repeatable script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript();
+            case POSTPROCESSING_SCRIPT_RENAMED:
+                return "renamed postprocessing script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript();
         }
         throw new IllegalArgumentException("Invalid script update type " + scriptUpdate.getType());
-    }
-
-
-    /**
-     * @return The already executed scripts, as a map from Script => ExecutedScript
-     */
-    protected Map<Script, ExecutedScript> getAlreadyExecutedScripts() {
-        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<Script, ExecutedScript>();
-        for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
-            alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
-        }
-        return alreadyExecutedScripts;
-    }
-
-
-    /**
-     * Removes all executed scripts that indicate repeatable scripts that were removed since the last database update
-     *
-     * @param repeatableScriptDeletions The scripts that were removed since the last database updates
-     */
-    protected void removeDeletedRepeatableScriptsFromExecutedScripts(SortedSet<ScriptUpdate> repeatableScriptDeletions) {
-        for (ScriptUpdate deletedRepeatableScriptUpdate : repeatableScriptDeletions) {
-            executedScriptInfoSource.deleteExecutedScript(getAlreadyExecutedScripts().get(deletedRepeatableScriptUpdate.getScript()));
-        }
     }
 
 

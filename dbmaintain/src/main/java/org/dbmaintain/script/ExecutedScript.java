@@ -35,7 +35,7 @@ public class ExecutedScript implements Comparable<ExecutedScript> {
 		this.successful = successful;
 	}
 
-	
+
 	public Script getScript() {
 		return script;
 	}
@@ -55,6 +55,20 @@ public class ExecutedScript implements Comparable<ExecutedScript> {
 		this.successful = successful;
 	}
 
+
+    /**
+     * Registers the fact that the script that was originally executed has been renamed. This means the script is replaced
+     * by a new one: the one with the new filename, currently available on the filesystem.
+     * Important note: this method breaks the equals and hashcode: after invoking this method, the hashcode changes and
+     * the ExecutedScript object is no longer equal to a copy of the object taken before invoking this method. If this
+     * object is used in a hashmap or hashset, these collections should be disposed after having invoked this method.
+     *
+     * @param script The script to which the original script which was executed has been renamed.
+     */
+    public void renameTo(Script script) {
+        this.script = script;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -72,11 +86,11 @@ public class ExecutedScript implements Comparable<ExecutedScript> {
         return script.hashCode();
     }
 
+
     @Override
     public String toString() {
         return script.getFileName();
     }
-
 
     public int compareTo(ExecutedScript other) {
         return script.compareTo(other.getScript());
