@@ -39,10 +39,12 @@ database.schemaNames=PUBLIC
 
     To use a different config file than dbmaintain.properties, add the parameter -f followed by the config file name.
 	
-	To launch DbMaintain using ant, use following ant task:
+	To update a database using ant, write an ant task like the following:
 	
 +-----+
 <updateDatabase scriptLocations="${database.jarFile}">
      <database userName="admin" password="pwd" url="jdbc:hsqldb:mem:mydb" schemaNames="PUBLIC" dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" />
 </updateDatabase>
 +-----+
+
+    Note that, if you use the command line, you have to create a properties file to configure the dbmaintain options and database connection attributes. If you use ant, you can specify almost all relevant configuration using attributes of the ant tasks. You can also refer to a properties file from each ant task using the configFile attribute. If a certain option is specified both in the ant task and in the config file, the ant task attribute takes preference.

@@ -7,12 +7,32 @@ Ant tasks
 ~~~~~~~~~
 
     This page gives an overview of the different ant tasks and their attributes. The operations and attributes are not explained: for this we refer to the {{{tutorial.html#DbMaintain_operations}DbMaintain operations section in the tutorial}}.
-	
-+-----+
-Task: updateDatabase
-Attributes: scriptLocations (required), fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, cleanDb, disableConstraints, updateSequences, extensions, useLastModificationDates;
-Child element: database
-Attributes of database: name, enabled, dialect, driverClassName, url, userName, password, defaultSchemaName, schemaNames;
 
-Task:  
-+-----+
+* Tasks
+~~~~~~~
+	
+*--------+--------------+-------------------+
+|<<Task>>|<<Attributes>>||<<Child elements>>|
+*--------+--------------+-------------------+
+|createScriptJar|jarFileName (required), scriptLocations, extensions, postProcessingDirName, encoding, patchScriptSuffix, targetDatabasePrefix, configFile|
+*--------+--------------+-------------------+
+|updateDatabase|scriptLocations (required), fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, cleanDb, disableConstraints, updateSequences, extensions, useLastModificationDates, configFile|database|
+*--------+--------------+-------------------+
+|markDatabaseAsUpToDate|scriptLocations (required), autoCreateDbMaintainScriptsTable, extensions, configFile|database|
+*--------+--------------+-------------------+
+|clearDatabase|configFile|database|
+*--------+--------------+-------------------+
+|cleanDatabase|configFile|database|
+*--------+--------------+-------------------+
+|disableConstraints|configFile|database|
+*--------+--------------+-------------------+
+|updateSequences|lowestAcceptableSequenceValue, configFile|database|
+*--------+--------------+-------------------+
+
+* Child elements
+~~~~~~~~~~~~~~~~
+
+*-----------------+--------------+
+|<<Child element>>|<<Attributes>>|
+*-----------------+--------------+
+|database|name, enabled, dialect, driverClassName, url, userName, password, defaultSchemaName, schemaNames|

@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="DbMaintain">
-    <bannerLeft>
-        <name>DbMaintain</name>
-        <src>./images/logos/dbmaintain.gif</src>        
-    </bannerLeft>
     
     <poweredBy>    
         <logo img="http://sflogo.sourceforge.net/sflogo.php?group_id=167201&amp;type=1" name="SourceForge.net" href="http://sourceforge.net/" />        
@@ -22,9 +18,10 @@
         </links>
 
         <menu name="DbMaintain">
-            <item name="Summary" href="summary.html"/>
+            <item name="Overview" href="overview.html"/>
             <item name="Downloads" href="http://sourceforge.net/project/showfiles.php?group_id=167201"/>
-            <item name="Tutorial" href="tutorial.html"/> 
+            <item name="Tutorial" href="tutorial.html"/>
+            <item name="Cookbook" href="cookbook.html"/>
             <item name="API Javadoc" href="apidocs/index.html"/>
             <item name="Forum" href="http://sourceforge.net/forum/?group_id=167201"/>
         </menu>

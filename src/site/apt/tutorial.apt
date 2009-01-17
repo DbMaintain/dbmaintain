@@ -63,7 +63,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	
 ** {Postprocessing scripts}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Some projects have scripts that need to be executed each time a script was executed, such as for example a script that compiles all stored procedures. Post processing scripts can be defined for this purpose. Post processing scripts have to be located in the directory called <postprocessing>, located directly in the root of the configured scripts folder. For example:
+    Some projects have scripts that need to be executed each time a script was executed, such as for example a script that compiles all stored procedures. Post processing scripts can be defined for this purpose. Post processing scripts have to be located in the directory called <postprocessing>, located directly in the root of the configured scripts folder. They can be indexed, but don't have to be: Indexes can be used to indicate the execution sequence of the post-processing scripts. An indexed post-processing script can be modified without causing an error or triggering a from-scratch update. If a post-processing script is modified, all of them are executed again. For example:
 	
 +----+
 scripts/incremental/01_v1.0/01_products_and_orders.sql
@@ -96,6 +96,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 		postprocessing/01_compile_all.sql
 		               02_grant_select_to_read_user.sql
 +----+
+
 
 ** {Patches}
 ~~~~~~~~~~~~
@@ -166,7 +167,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	 
 +-----+
 <updateDatabase scriptLocations="${database.jarFile}">
-     <database userName="admin" password="pwd" url="jdbc:hsqldb:mem:mydb" schemaNames="PUBLIC" dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" />
+     <database dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
 </updateDatabase>
 +-----+
 
@@ -193,11 +194,62 @@ dbMaintain.updateDatabase();
 	 
 	If you run DbMaintain from the command line, you have to use a properties file for configuration. If you use ant, most of the configuration can be performed using attributes from the ant tasks. To configure less common options, you can still refer to a properties file from within the ant task using the <configFile> attribute.
 	 
+*** Configure the database(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    DbMaintain can be configured with one or more databases. If you use more than one database, the target database has to be specified in the script (see {{{#Multi-database__user_support}Multi-database / user support}}). To configure a single database in a properties file, add following properties:
+
++-----+
+database.dialect=<the dialect>
+database.driverClassName=<fully qualified JDBC driver class name>
+database.url=<database URL>
+database.userName=<database username>
+database.password=<database password>
+database.schemaNames=<comma separated list of all database schemas used>
++-----+
+
+    If you configure multiple databases, you have to give a logical name to each of them, and list them in the property databases.names. The logical name has to be added to the property name to configure the dialect, url, etc. The logical name can also be used in the script filenames to indicate the target database. The database that is listed first automatically becomes the default database, which is the target database for scripts that don't specify one. For example, if we want to configure a database called users and orders:
 	
++-----+
+databases.names=users,orders
+database.users.driverClassName=<fully qualified JDBC driver class name>
+database.orders.driverClassName=<fully qualified JDBC driver class name>
+...
++-----+
+
+    If, for a certain property, all databases share the same value, you can use the default property name to configure it, e.g. if all databases the hsqdb database dialect. If you have one database but you need to connect using different database users to execute certain scripts, you can configure multiple databases that share all properties except their credentials. E.g.:
+	
++-----+
+databases.names=admin,user,read
+database.driverClassName=oracle.jdbc.driver.OracleDriver
+database.url=jdbc:oracle:thin://mydb:1521:MYDB
+database.admin.username=admin
+database.admin.password=adminpwd
+database.admin.schemaNames=admin
+database.user.userName=user
+database.user.password=userpwd
+database.user.schemaNames=user
+database.read.userName=read
+database.read.password=readpwd
+database.read.schemaNames=read
++-----+
+
+    If you use ant, you can configure the database(s) with a <database> subelement like follows:
+	
++-----+
+<database dialect="<the dialect>" driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
++-----+
+
+    or with multiple <database> subelements having a <name> attribute:
+	
++-----+
+<database name="<logical database name>" dialect="<the dialect>" driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
++-----+
+
+    In some cases, you want to configure a database with a certain name but disable it. The scripts that have a disabled database as target will simply be ignored. This can be useful if you only want to execute the scripts with a certain target database on an end-to-end test database but not on a local test datatabase. When using command line configuration, simply add a property database.<logicalname>.enabled=false. When using ant, create a <database> element with a <name> attribute and an <enabled> attribute set to <false>.
 	 
 * DbMaintain operations
 ~~~~~~~~~~~~~~~~~~~~~~~
-    Whether you launch DbMaintain from the command line, using ant or directly from Java code, the same set of operations is exposed. This section explains all of them and shows the ant script that uses the operation. These ant tasks have more options than shown in the examples: for a complete reference, read the {{{ant-tasks.html}ant tasks}} page.
+    Whether you launch DbMaintain from the command line, using ant or directly from Java code, the same set of operations is exposed. This section explains all operations and also shows the relevant configuration parameters.
 	
 ** Create a jar file
 ~~~~~~~~~~~~~~~~~~~~
@@ -209,7 +261,7 @@ dbMaintain.updateDatabase();
 
 ** Update the database
 ~~~~~~~~~~~~~~~~~~~~~~
-    This operation can be used to bring the database to the lastest version. First it checks which scripts were already applied to the database and executes the new scripts or the updated repeatable scripts. If an existing incremental script was changed, removed, or if a new incremental script has been added with a lower index than one that was already executed, an error is given; unless the <fromScratch> option is enabled: in that case all database objects are removed and the database is rebuilt from scratch. If there are post-processing scripts, these are always executed at the end.
+    This operation can be used to bring the database to the latest version. First it checks which scripts were already applied to the database and executes the new scripts or the updated repeatable scripts. If an existing incremental script was changed, removed, or if a new incremental script has been added with a lower index than one that was already executed, an error is given; unless the <fromScratch> option is enabled: in that case all database objects are removed and the database is rebuilt from scratch. If there are post-processing scripts, these are always executed at the end.
 	
 	For example, following ant task performs a database update:
 	
@@ -257,11 +309,11 @@ dbMaintain.updateDatabase();
 	
 ** Update sequences
 ~~~~~~~~~~~~~~~~~~~
-    This is also an operation that is useful for databases used for unit testing purposes. This operation sets all sequences and identity columns to a minimum value. By default this value is 1000, but is can be configured with the <lowestAcceptableSequenceValue> option. The updateDatabase operation offers an option to automatically update the sequences after the scripts were executed.
+    This operation is also mainly useful for automated testing purposes. This operation sets all sequences and identity columns to a minimum value. By default this value is 1000, but is can be configured with the <lowestAcceptableSequenceValue> option. The updateDatabase operation offers an option to automatically update the sequences after the scripts were executed.
 	
 * Preserve database objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-It's possible to exclude certain database objects from being dropped when a fromScratch update occurs, or when the clearDatabase operation is invoked: the data in these tables is also not removed when performing an update using the cleanDatabase option. If you want a table to be dropped in case of a fromScratch update, but you want it's data to preserved when performing the cleanDatabase operation, you can use one of the preserveDataOnly properties.
+    It's possible to exclude certain database objects from being dropped when a fromScratch update occurs, or when the clearDatabase operation is invoked: the data in these tables is also not removed when performing an update using the cleanDatabase option. If you want a table to be dropped in case of a fromScratch update, but you want it's data to preserved when performing the cleanDatabase operation, you can use one of the preserveDataOnly properties.
 	
 +-----+
 # Comma separated list of database items that may not be dropped or cleared by DbMaintain when
