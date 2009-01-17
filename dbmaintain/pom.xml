@@ -43,7 +43,7 @@
                     <outputDirectory>${project.build.directory}/dist</outputDirectory>
                     <descriptors>
                         <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
-                        <descriptor>assembly-descriptors/assembly-dbmaintain-with-dependencies.xml</descriptor>
+                        <descriptor>assembly-descriptors/assembly-dbmaintain-src.xml</descriptor>
                     </descriptors>
                 </configuration>
             </plugin>
@@ -71,7 +71,7 @@
                 <configuration>
                     <assembly>
                         <inclusions>
-                            <!--inclusion>
+                            <inclusion>
                                 <groupId>commons-lang</groupId>
                                 <artifactId>commons-lang</artifactId>
                                 <filter>!META-INF/**</filter>
@@ -85,7 +85,7 @@
                                 <groupId>commons-dbutils</groupId>
                                 <artifactId>commons-dbutils</artifactId>
                                 <filter>!META-INF/**</filter>
-                            </inclusion-->
+                            </inclusion>
                             <inclusion>
                                 <groupId>commons-io</groupId>
                                 <artifactId>commons-io</artifactId>
@@ -102,7 +102,6 @@
                         <option>-flattenpackagehierarchy org.dbmaintain.thirdparty-obfuscated</option>
                         <option>-dontusemixedcaseclassnames</option>
                         <option>-keepattributes SourceFile,LineNumberTable</option>
-                        <!--option>-keepclassmembernames class ** {public protected private *;}</option-->
                         <option>-dontoptimize</option>
                         <option>-ignorewarnings</option>
                     </options>
