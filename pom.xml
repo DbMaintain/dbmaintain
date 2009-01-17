@@ -22,7 +22,7 @@
   </modules>
   <description>
         DbMaintain enables automatic roll-out of updates to a relational database. It brings database scripts into version control just like 
-        regular source code and can be used to transparently deploy databases from development on to production.
+        regular source code and can be used to transparently deploy databases from development to production.
     </description>
   <licenses>
     <license>
@@ -108,22 +108,6 @@
   <reporting>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-changelog-plugin</artifactId>
-        <version>2.1</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-changes-plugin</artifactId>
-        <configuration>
-          <columnNames>Key,Summary,Status,Resolution,Assignee,Type,Version,FixVersion</columnNames>
-          <toAddresses>
-            <!-- TODO: add sf.net announcement and users and -dev mailinglists -->
-            <toAddress>user@mojo.codehaus.org</toAddress>
-            <toAddress>users@maven.apache.org</toAddress>
-          </toAddresses>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
         <configuration>
@@ -140,12 +124,12 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <source>${jdk.level}</source>
+          <aggregate>true</aggregate>
         </configuration>
         <reportSets>
           <reportSet>
             <reports>
               <report>javadoc</report>
-              <report>test-javadoc</report>
             </reports>
           </reportSet>
         </reportSets>
