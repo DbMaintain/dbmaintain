@@ -22,12 +22,13 @@ import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import static org.dbmaintain.config.DbMaintainProperties.*;
+import static org.dbmaintain.config.PropertyUtils.*;
 import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptRunner;
+import org.dbmaintain.script.impl.ArchiveScriptLocation;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
-import org.dbmaintain.script.impl.JarScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
 import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.scriptparser.ScriptParser;
@@ -158,7 +159,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public ScriptRepository createScriptRepository() {
-        Set<String> scriptLocationIndicators = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
+        Set<String> scriptLocationIndicators = new HashSet<String>(getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
         Set<ScriptLocation> scriptLocations = new HashSet<ScriptLocation>();
         for (String scriptLocationIndicator : scriptLocationIndicators) {
             scriptLocations.add(createScriptLocation(scriptLocationIndicator));
@@ -167,52 +168,52 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    public JarScriptLocation createJarScriptLocation(SortedSet<Script> scripts) {
-        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
-        String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-        String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
-        return new JarScriptLocation(scripts, scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
+    public ArchiveScriptLocation createArchiveScriptLocation(SortedSet<Script> scripts) {
+        String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
+        String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String qualifierPefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        return new ArchiveScriptLocation(scripts, scriptEncoding, postProcessingScriptDirName, patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
     }
 
 
     public ScriptLocation createScriptLocation(String scriptLocation) {
-        Set<String> scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
-        String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        String qualifierPefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        String postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
-        String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, configuration);
-        if (scriptLocation.endsWith(".jar")) {
-            return new JarScriptLocation(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
+        String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
+        String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String qualifierPefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        File scriptLocationFile = new File(scriptLocation);
+        if (scriptLocationFile.isDirectory()) {
+            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
+                    patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
         } else {
-            return new FileSystemScriptLocation(new File(scriptLocation), scriptFileExtensions, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName, scriptEncoding);
+            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
+                    patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
         }
     }
 
 
-    /**
-     * @return
-     */
     public ExecutedScriptInfoSource createExecutedScriptInfoSource() {
 
         boolean autoCreateExecutedScriptsTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, configuration);
-        String executedScriptsTableName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration));
-        String fileNameColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_NAME_COLUMN_NAME, configuration));
+        String executedScriptsTableName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration));
+        String fileNameColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_FILE_NAME_COLUMN_NAME, configuration));
         int fileNameColumnSize = PropertyUtils.getInt(PROPERTY_FILE_NAME_COLUMN_SIZE, configuration);
-        String fileLastModifiedAtColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME, configuration));
-        String checksumColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_CHECKSUM_COLUMN_NAME, configuration));
+        String fileLastModifiedAtColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME, configuration));
+        String checksumColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_CHECKSUM_COLUMN_NAME, configuration));
         int checksumColumnSize = PropertyUtils.getInt(PROPERTY_CHECKSUM_COLUMN_SIZE, configuration);
-        String executedAtColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_EXECUTED_AT_COLUMN_NAME, configuration));
+        String executedAtColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_EXECUTED_AT_COLUMN_NAME, configuration));
         int executedAtColumnSize = PropertyUtils.getInt(PROPERTY_EXECUTED_AT_COLUMN_SIZE, configuration);
-        String succeededColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(PropertyUtils.getString(PROPERTY_SUCCEEDED_COLUMN_NAME, configuration));
-        DateFormat timestampFormat = new SimpleDateFormat(PropertyUtils.getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
-        String targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        String qualifierPrefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        String postProcessingScriptsDirname = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String succeededColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_SUCCEEDED_COLUMN_NAME, configuration));
+        DateFormat timestampFormat = new SimpleDateFormat(getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
+        String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
+        String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
+        Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        String postProcessingScriptsDirname = getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
         return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, String.class,
@@ -230,7 +231,7 @@ public class PropertiesDbMaintainConfigurer {
         Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve();
         Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve();
 
-        String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
+        String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
         itemsToPreserve.add(DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
 
         Class<DBCleaner> clazz = ConfigUtils.getConfiguredClass(DBCleaner.class, configuration);
@@ -264,7 +265,7 @@ public class PropertiesDbMaintainConfigurer {
         for (DbItemIdentifier schemaToPreserve : schemasToPreserve) {
             dbClearer.addItemToPreserve(schemaToPreserve, true);
         }
-        String executedScriptsTableName = PropertyUtils.getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
+        String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
         dbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, executedScriptsTableName, defaultDbSupport, nameDbSupportMap), false);
         addItemsToPreserve(dbClearer, DbItemType.TABLE, PROPERTY_PRESERVE_TABLES);
         addItemsToPreserve(dbClearer, DbItemType.VIEW, PROPERTY_PRESERVE_VIEWS);
@@ -278,7 +279,7 @@ public class PropertiesDbMaintainConfigurer {
     }
 
     private void addItemsToPreserve(DefaultDBClearer defaultDbClearer, DbItemType dbItemType, String itemsToPreserveProperty) {
-        List<String> itemsToPreserve = PropertyUtils.getStringList(itemsToPreserveProperty, configuration);
+        List<String> itemsToPreserve = getStringList(itemsToPreserveProperty, configuration);
         for (String itemToPreserve : itemsToPreserve) {
             DbItemIdentifier itemIdentifier = DbItemIdentifier.parseItemIdentifier(dbItemType, itemToPreserve, getDefaultDbSupport(), getNameDbSupportMap());
             defaultDbClearer.addItemToPreserve(itemIdentifier, true);
@@ -296,7 +297,7 @@ public class PropertiesDbMaintainConfigurer {
      */
     protected Set<DbItemIdentifier> getSchemasToPreserve(String propertyName) {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        List<String> schemasToPreserve = PropertyUtils.getStringList(propertyName, configuration);
+        List<String> schemasToPreserve = getStringList(propertyName, configuration);
         for (String schemaToPreserve : schemasToPreserve) {
             DbItemIdentifier itemIdentifier = DbItemIdentifier.parseSchemaIdentifier(schemaToPreserve, getDefaultDbSupport(), getNameDbSupportMap());
             result.add(itemIdentifier);
@@ -315,7 +316,7 @@ public class PropertiesDbMaintainConfigurer {
      */
     protected Set<DbItemIdentifier> getItemsToPreserve(DbItemType dbItemType, String propertyName) {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        List<String> itemsToPreserve = PropertyUtils.getStringList(propertyName, configuration);
+        List<String> itemsToPreserve = getStringList(propertyName, configuration);
         for (String itemToPreserve : itemsToPreserve) {
             DbItemIdentifier itemIdentifier = DbItemIdentifier.parseItemIdentifier(dbItemType, itemToPreserve, getDefaultDbSupport(), getNameDbSupportMap());
             result.add(itemIdentifier);
@@ -338,8 +339,8 @@ public class PropertiesDbMaintainConfigurer {
     public DbSupport createUnnamedDbSupport() {
         DataSource dataSource = createUnnamedDataSource();
 
-        String databaseDialect = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END, configuration);
-        List<String> schemaNamesList = PropertyUtils.getStringList(PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMA_NAMES_END, configuration);
+        String databaseDialect = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END, configuration);
+        List<String> schemaNamesList = getStringList(PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END, configuration);
         String defaultSchemaName = schemaNamesList.get(0);
         Set<String> schemaNames = new HashSet<String>(schemaNamesList);
         String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
@@ -363,8 +364,14 @@ public class PropertiesDbMaintainConfigurer {
     public DbSupport createDbSupport(String databaseName) {
         DataSource dataSource = createDataSource(databaseName);
 
-        String databaseDialect = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DIALECT_END, configuration);
-        List<String> schemaNamesList = PropertyUtils.getStringList(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMA_NAMES_END, configuration);
+        String databaseDialectPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END;
+        String customDatabaseDialectPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DIALECT_END;
+        String databaseDialect = containsProperty(customDatabaseDialectPropertyName, configuration) ?
+                getString(customDatabaseDialectPropertyName, configuration) : getString(databaseDialectPropertyName, configuration);
+        String schemaNamesListPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END;
+        String customSchemaNamesListPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMANAMES_END;
+        List<String> schemaNamesList = containsProperty(customSchemaNamesListPropertyName, configuration) ?
+                getStringList(customSchemaNamesListPropertyName, configuration) : getStringList(schemaNamesListPropertyName, configuration);
         String defaultSchemaName = schemaNamesList.get(0);
         Set<String> schemaNames = new HashSet<String>(schemaNamesList);
 
@@ -393,7 +400,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     protected StoredIdentifierCase getCustomStoredIdentifierCase(String databaseDialect) {
-        String storedIdentifierCasePropertyValue = PropertyUtils.getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, configuration);
+        String storedIdentifierCasePropertyValue = getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, configuration);
         if ("lower_case".equals(storedIdentifierCasePropertyValue)) {
             return StoredIdentifierCase.LOWER_CASE;
         } else if ("upper_case".equals(storedIdentifierCasePropertyValue)) {
@@ -409,7 +416,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     protected String getCustomIdentifierQuoteString(String databaseDialect) {
-        String identifierQuoteStringPropertyValue = PropertyUtils.getString(PROPERTY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, configuration);
+        String identifierQuoteStringPropertyValue = getString(PROPERTY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, configuration);
         if ("none".equals(identifierQuoteStringPropertyValue)) {
             return "";
         }
@@ -421,23 +428,44 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public DataSource createUnnamedDataSource() {
-        String driverClassName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END, configuration);
-        String url = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_URL_END, configuration);
-        String userName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_USERNAME_END, configuration);
-        String password = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + PROPERTY_PASSWORD_END, "", configuration);
+        String driverClassName = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END, configuration);
+        String url = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_URL_END, configuration);
+        String userName = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_USERNAME_END, configuration);
+        String password = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_PASSWORD_END, "", configuration);
         return createDataSource(driverClassName, url, userName, password);
     }
 
 
     /**
-     * @param databaseName
-     * @return
+     * @param databaseName The name that identifies the database, not null
+     * @return a DataSource that connects with the database as configured for the given database name
      */
     public DataSource createDataSource(String databaseName) {
-        String driverClassName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DRIVERCLASSNAME_END, configuration);
-        String url = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_URL_END, configuration);
-        String userName = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_USERNAME_END, configuration);
-        String password = PropertyUtils.getString(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_PASSWORD_END, configuration);
+        String driverClassNamePropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
+        String urlPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
+        String userNamePropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
+        String passwordPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
+        String customDriverClassNamePropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DRIVERCLASSNAME_END;
+        String customUrlPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_URL_END;
+        String customUserNamePropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_USERNAME_END;
+        String customPasswordPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_PASSWORD_END;
+        String customSchemaNamesPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMANAMES_END;
+
+        if (!(containsProperty(customDriverClassNamePropertyName, configuration) ||
+                containsProperty(customUrlPropertyName, configuration) ||
+                containsProperty(customUserNamePropertyName, configuration) ||
+                containsProperty(customPasswordPropertyName, configuration) ||
+                containsProperty(customSchemaNamesPropertyName, configuration))) {
+            throw new DbMaintainException("No custom database properties defined for database " + databaseName);
+        }
+        String driverClassName = containsProperty(customDriverClassNamePropertyName, configuration) ?
+                getString(customDriverClassNamePropertyName, configuration) : getString(driverClassNamePropertyName, configuration);
+        String url = containsProperty(customUrlPropertyName, configuration) ?
+                getString(customUrlPropertyName, configuration) : getString(urlPropertyName, configuration);
+        String userName = containsProperty(customUserNamePropertyName, configuration) ?
+                getString(customUserNamePropertyName, configuration) : getString(userNamePropertyName, configuration);
+        String password = containsProperty(customPasswordPropertyName, configuration) ?
+                getString(customPasswordPropertyName, configuration) : getString(passwordPropertyName, configuration);
         return createDataSource(driverClassName, url, userName, password);
     }
 
@@ -451,7 +479,7 @@ public class PropertiesDbMaintainConfigurer {
 
     protected void initDbSupports() {
         nameDbSupportMap = new HashMap<String, DbSupport>();
-        List<String> databaseNames = PropertyUtils.getStringList(PROPERTY_DATABASE_NAMES, configuration);
+        List<String> databaseNames = getStringList(PROPERTY_DATABASE_NAMES, configuration);
         if (databaseNames.isEmpty()) {
             defaultDbSupport = createUnnamedDbSupport();
             nameDbSupportMap.put(null, defaultDbSupport);

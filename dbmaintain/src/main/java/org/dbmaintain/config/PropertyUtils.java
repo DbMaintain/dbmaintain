@@ -15,12 +15,12 @@
  */
 package org.dbmaintain.config;
 
+import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.ReflectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.ReflectionUtils;
 
 /**
  * Utilities for working with property files.
@@ -292,7 +292,7 @@ public class PropertyUtils {
      * @param properties   The properties if not found in System, not null
      * @return The property value, null if not found
      */
-    private static String getProperty(String propertyName, Properties properties) {
+    public static String getProperty(String propertyName, Properties properties) {
         String value = System.getProperty(propertyName);
         if (value == null) {
             value = properties.getProperty(propertyName);

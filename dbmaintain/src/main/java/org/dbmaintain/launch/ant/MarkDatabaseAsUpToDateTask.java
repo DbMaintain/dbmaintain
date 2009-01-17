@@ -18,10 +18,10 @@
 package org.dbmaintain.launch.ant;
 
 
-import java.util.Properties;
-
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.launch.DbMaintain;
+
+import java.util.Properties;
 
 /**
  * Task that marks the database as up-to-date, without executing any script. You can use this operation to prepare 
@@ -33,9 +33,9 @@ import org.dbmaintain.launch.DbMaintain;
 public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
     private String scriptLocations;
-    private String extensions;
+    private String scriptExtensions;
     private Boolean autoCreateExecutedScriptsTable;
-    
+
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.markDatabaseAsUpToDate();
     }
@@ -46,8 +46,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         if (scriptLocations != null) {
             configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
-        if (extensions != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, extensions);
+        if (scriptExtensions != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, scriptExtensions);
         }
         if (autoCreateExecutedScriptsTable != null) {
             configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
@@ -59,12 +59,12 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         this.scriptLocations = scriptLocations;
     }
     
-    public void setExtensions(String extensions) {
-        this.extensions = extensions;
+    public void setScriptExtensions(String scriptExtensions) {
+        this.scriptExtensions = scriptExtensions;
     }
     
     public void setAutoCreateExecutedScriptsTable(Boolean autoCreateExecutedScriptsTable) {
         this.autoCreateExecutedScriptsTable = autoCreateExecutedScriptsTable;
     }
-	
+
 }

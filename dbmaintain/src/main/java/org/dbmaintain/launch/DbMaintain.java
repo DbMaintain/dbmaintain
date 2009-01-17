@@ -15,23 +15,18 @@
  */
 package org.dbmaintain.launch;
 
+import org.dbmaintain.DbMaintainer;
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
+import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.script.impl.ArchiveScriptLocation;
+import org.dbmaintain.script.impl.ScriptRepository;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 import java.util.SortedSet;
-
-import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clear.DBClearer;
-import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.script.impl.JarScriptLocation;
-import org.dbmaintain.script.impl.ScriptRepository;
-import org.dbmaintain.structure.ConstraintsDisabler;
-import org.dbmaintain.structure.SequenceUpdater;
 
 /**
  * Class that exposes all available DbMaintain operations.
@@ -65,15 +60,15 @@ public class DbMaintain {
 
 
     /**
-     * Creates a jar file containing all scripts in all configured script locations
+     * Creates a archive file containing all scripts in all configured script locations
      * 
-     * @param jarFileName The name of the jar file to create
+     * @param archiveFileName The name of the archivie file to create
      */
-    public void createScriptJar(String jarFileName) {
+    public void createScriptArchive(String archiveFileName) {
         ScriptRepository scriptRepository = dbMaintainConfigurer.createScriptRepository();
         SortedSet<Script> allScripts = scriptRepository.getAllScripts();
-        JarScriptLocation jarScriptLocation = dbMaintainConfigurer.createJarScriptLocation(allScripts);
-        jarScriptLocation.writeToJarFile(new File(jarFileName));
+        ArchiveScriptLocation archiveScriptLocation = dbMaintainConfigurer.createArchiveScriptLocation(allScripts);
+        archiveScriptLocation.writeToJarFile(new File(archiveFileName));
     }
 
     

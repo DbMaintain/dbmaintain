@@ -3,19 +3,18 @@
  */
 package org.dbmaintain.launch.ant;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 import org.apache.tools.ant.BuildException;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
+
+import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -50,9 +49,7 @@ abstract public class BaseDatabaseTask extends BaseTask {
      */
     @Override
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(
-                getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
-        return dbMaintainConfigurer;
+        return new PropertiesDbMaintainConfigurer(getConfiguration(), defaultDbSupport, nameDbSupportMap, getSQLHandler());
     }
     
     
@@ -115,9 +112,6 @@ abstract public class BaseDatabaseTask extends BaseTask {
      * @param database The configuration of the database
      */
     public void addDatabase(Database database) {
-        if (databases == null) {
-            databases = new ArrayList<Database>();
-        }
         databases.add(database);
     }
 

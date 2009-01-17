@@ -15,17 +15,20 @@
  */
 package org.dbmaintain.script.impl;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
-import static org.apache.commons.io.IOUtils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 /**
@@ -47,23 +50,22 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * Constructor for FileSystemScriptLocation.
      * 
      * @param scriptLocation The file system directory that is the root of this script location
-     * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultQualifierPefix The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultPatchQualifiers The default qualfiers that indicate a patch file. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultPostProcessingScriptDirName The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultScriptEncoding The default script encoding. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPostProcessingScriptDirName The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPatchQualifiers The default qualfiers that indicate a patch file. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultQualifierPefix The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      */
-    public FileSystemScriptLocation(File scriptLocation, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
-            String defaultQualifierPefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName, 
-            String defaultScriptEncoding) {
+    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
+                Set<String> defaultPatchQualifiers, String defaultQualifierPefix, String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
 
         this.scriptLocation = scriptLocation;
         assertValidScriptLocation();
 
         Properties customProperties = getLocationCustomProperties();
-        initConfiguration(customProperties, defaultScriptFileExtensions, defaultTargetDatabasePrefix, defaultQualifierPefix, defaultPatchQualifiers,
-                defaultPostProcessingScriptDirName, defaultScriptEncoding);
+        initConfiguration(customProperties, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultPatchQualifiers,
+                defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions);
 
         scripts = loadScriptsFromFileSystem();
     }

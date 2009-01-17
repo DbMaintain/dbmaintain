@@ -17,14 +17,13 @@ package org.dbmaintain.script.impl;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.commons.io.IOUtils.contentEquals;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.CollectionUtils;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.commons.io.IOUtils;
-import static org.apache.commons.io.IOUtils.contentEquals;
 
 import java.io.File;
 import static java.io.File.createTempFile;
@@ -53,15 +52,15 @@ public class JarScriptLocationTest {
 
     @Test
     public void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
-        JarScriptLocation originalScriptJar = new JarScriptLocation(scripts, CollectionUtils.asSet("sql", "ddl"), "@", "#",
-                Collections.singleton("PATCH"), "postprocessing", "ISO-8859-1");
-        originalScriptJar.writeToJarFile(jarFile);
-        JarScriptLocation scriptJarFromFile = new JarScriptLocation(jarFile, CollectionUtils.asSet("sql", "ddl"), "@", "#",
-                Collections.singleton("PATCH"), "postprocessing", "ISO-8859-1");
+        ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(scripts, "ISO-8859-1", "postprocessing", Collections.singleton("PATCH"), "#", "@", CollectionUtils.asSet("sql", "ddl")
+        );
+        originalScriptArchive.writeToJarFile(jarFile);
+        ArchiveScriptLocation scriptArchiveFromFile = new ArchiveScriptLocation(jarFile, "ISO-8859-1", "postprocessing", Collections.singleton("PATCH"), "#", "@", CollectionUtils.asSet("sql", "ddl")
+        );
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
-        assertEqualProperties(originalScriptJar, scriptJarFromFile);
-        assertEqualScripts(originalScriptJar.getScripts(), scriptJarFromFile.getScripts());
+        assertEqualProperties(originalScriptArchive, scriptArchiveFromFile);
+        assertEqualScripts(originalScriptArchive.getScripts(), scriptArchiveFromFile.getScripts());
     }
 
     private void assertEqualScripts(SortedSet<Script> originalScripts, SortedSet<Script> scriptsFromFile) throws IOException {

@@ -17,10 +17,10 @@
  */
 package org.dbmaintain.launch.ant;
 
-import java.util.Properties;
-
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.launch.DbMaintain;
+
+import java.util.Properties;
 
 /**
  * Task that updates the database to the latest version.
@@ -37,9 +37,9 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     private Boolean cleanDb;
     private Boolean disableConstraints;
     private Boolean updateSequences;
-    private String extensions;
     private Boolean useLastModificationDates;
-    
+    private String scriptExtensions;
+
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.updateDatabase();
     }
@@ -68,8 +68,8 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         if (updateSequences != null) {
             configuration.put(DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES_ENABLED, updateSequences);
         }
-        if (extensions != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, extensions);
+        if (scriptExtensions != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, scriptExtensions);
         }
         if (useLastModificationDates != null) {
             configuration.put(DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, String.valueOf(useLastModificationDates));
@@ -109,7 +109,7 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
      *
      * @param autoCreateDbMaintainScriptsTable True if the DBMAINTAIN_SCRIPTS table can be created automatically
      */
-    public void setAutoCreateExecutedScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {
+    public void setAutoCreateExecutedScriptsTable(boolean autoCreateDbMaintainScriptsTable) {
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
     }
 
@@ -117,9 +117,9 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     /**
      * If this property is set to true, a patch script is allowed to be executed even if another script 
      * with a higher index was already executed.
-     * @param allowOutOfSequenceExecutionOfPatches
+     * @param allowOutOfSequenceExecutionOfPatches true if out-of-sequence execution of patches is enabled
      */
-    public void setAllowOutOfSequenceExecutionOfPatches(Boolean allowOutOfSequenceExecutionOfPatches) {
+    public void setAllowOutOfSequenceExecutionOfPatches(boolean allowOutOfSequenceExecutionOfPatches) {
         this.allowOutOfSequenceExecutionOfPatches = allowOutOfSequenceExecutionOfPatches;
     }
 
@@ -159,10 +159,10 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
      * Sets the extensions property, that defines the extensions of the files that are regarded to be database scripts.
      * The extensions should not start with a dot. The default is 'sql,ddl'.
      * 
-     * @param extensions Comma separated list of file extensions.
+     * @param scriptExtensions Comma separated list of file extensions.
      */
-    public void setExtensions(String extensions) {
-        this.extensions = extensions;
+    public void setScriptExtensions(String scriptExtensions) {
+        this.scriptExtensions = scriptExtensions;
     }
     
     /**

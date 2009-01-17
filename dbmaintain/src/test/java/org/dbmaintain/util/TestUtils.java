@@ -17,18 +17,21 @@ package org.dbmaintain.util;
 
 import org.dbmaintain.clean.impl.DefaultDBCleaner;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
-import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.DbMaintainDataSource;
+import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
-import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
+import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
-import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.impl.*;
+import org.dbmaintain.script.impl.DefaultScriptRunner;
+import org.dbmaintain.script.impl.FileSystemScriptLocation;
+import org.dbmaintain.script.impl.ScriptLocation;
+import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
@@ -143,7 +146,7 @@ public class TestUtils {
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
-        return new FileSystemScriptLocation(scriptRootLocation, asSet("sql"), "@", "#", asSet("PATCH"), "postprocessing", "ISO-8859-1");
+        return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "postprocessing", asSet("PATCH"), "#", "@", asSet("sql"));
     }
 
     public static ScriptRepository getScriptRepository(final SortedSet<Script> scriptsToReturn) {

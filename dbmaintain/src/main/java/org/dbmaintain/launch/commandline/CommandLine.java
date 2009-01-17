@@ -15,10 +15,6 @@
  */
 package org.dbmaintain.launch.commandline;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
@@ -28,6 +24,10 @@ import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
+
+import java.io.File;
+import java.net.URL;
+import java.util.Properties;
 
 /**
  * Class that exposes a set of DbMaintain operations for command line execution.
@@ -47,7 +47,7 @@ public class CommandLine {
      */
     public enum DbMaintainOperation {
         
-        CREATE_JAR("createJar"), 
+        CREATE_SCRIPT_ARCHIVE("createScriptArchive"),
         UPDATE_DATABASE("updateDatabase"), 
         MARK_DATABASE_AS_UPTODATE("markDatabaseAsUpToDate"), 
         CLEAR_DATABASE("clearDatabase"), 
@@ -165,20 +165,19 @@ public class CommandLine {
      * @param operation The operation that must be executed
      * @param configuration The dbMaintain configuration
      * @param commandLineArguments The command line arguments
-     * @param args The command line arguments
      */
     public static void executeOperation(DbMaintainOperation operation, Properties configuration, CommandLineArguments commandLineArguments) {
         switch (operation) {
-        case CREATE_JAR:
+        case CREATE_SCRIPT_ARCHIVE:
             if (commandLineArguments.getFirstExtraArgument() == null) {
-                System.err.println("Jar file name must be specified as extra argument");
+                System.err.println("Archive file name must be specified as extra argument");
                 System.exit(1);
             }
             if (commandLineArguments.getSecondExtraArgument() != null) {
                 configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
             }
             String jarFileName = commandLineArguments.getFirstExtraArgument();
-            getDbMaintain(configuration).createScriptJar(jarFileName);
+            getDbMaintain(configuration).createScriptArchive(jarFileName);
             break;
         case UPDATE_DATABASE:
             if (commandLineArguments.getFirstExtraArgument() != null) {
@@ -215,8 +214,7 @@ public class CommandLine {
      */
     private static DbMaintain getDbMaintain(Properties configuration) {
         PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, new DefaultSQLHandler());
-        DbMaintain dbMaintain = new DbMaintain(dbMaintainConfigurer);
-        return dbMaintain;
+        return new DbMaintain(dbMaintainConfigurer);
     }
     
     
@@ -245,27 +243,27 @@ public class CommandLine {
         System.out.println("java org.dbmaintain.launch.DbMaintain <operation> [extra operation arguments] [-config propertiesFile]");
         System.out.println();
         System.out.println("The -config argument is optional. If omitted, the file " + DBMAINTAIN_PROPERTIES + " is expected to be available in the execution directory.");
-        System.out.println("The jarFile/scriptFolder argument is also optional, and only applicable to the operations " + 
-                DbMaintainOperation.CREATE_JAR.getOperationName() + ", " + DbMaintainOperation.UPDATE_DATABASE.getOperationName() + " and " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
+        System.out.println("The archive file/script folder argument is also optional, and only applicable to the operations " +
+                DbMaintainOperation.CREATE_SCRIPT_ARCHIVE.getOperationName() + ", " + DbMaintainOperation.UPDATE_DATABASE.getOperationName() + " and " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
         System.out.println();
         System.out.println("Available operations are:");
         System.out.println();
-        System.out.println("- " + DbMaintainOperation.CREATE_JAR.getOperationName());
-        System.out.println("     Creates a jar file containing all scripts in all configured script locations.");
-        System.out.println("     Expects a second argument indicating the jar file name.");
-        System.out.println("     Optionally, a third argument may be added indicating the scripts jar file or root folder.");
+        System.out.println("- " + DbMaintainOperation.CREATE_SCRIPT_ARCHIVE.getOperationName());
+        System.out.println("     Creates an archive file containing all scripts in all configured script locations.");
+        System.out.println("     Expects a second argument indicating the file name.");
+        System.out.println("     Optionally, a third argument may be added indicating the scripts archive file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.UPDATE_DATABASE.getOperationName());
         System.out.println("     Updates the database to the latest version.");
-        System.out.println("     Optionally, an extra argument may be added indicating the scripts jar file or root folder.");
+        System.out.println("     Optionally, an extra argument may be added indicating the scripts archive file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
         System.out.println("     Marks the database as up-to-date, without executing any script. ");
         System.out.println("     You can use this operation to prepare an existing database to be managed by DbMaintain, ");
         System.out.println("     or after fixing a problem manually.");
-        System.out.println("     Optionally, an extra argument may be added indicating the scripts jar file or root folder.");
+        System.out.println("     Optionally, an extra argument may be added indicating the scripts archive file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println("- " + DbMaintainOperation.CLEAR_DATABASE.getOperationName());
         System.out.println("     Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.");
@@ -274,7 +272,7 @@ public class CommandLine {
         System.out.println("- " + DbMaintainOperation.DISABLE_CONSTRAINTS.getOperationName());
         System.out.println("     Disables or drops all foreign key and not null constraints.");
         System.out.println("- " + DbMaintainOperation.UPDATE_SEQUENCES.getOperationName());
-        System.out.println("     Updates all sequences and identity columns to a minimum value.");
+        System.out.println("     Updates all sequences and identity columns to a minimal value.");
     }
 
 }

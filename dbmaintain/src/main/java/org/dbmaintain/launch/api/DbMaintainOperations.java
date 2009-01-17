@@ -15,14 +15,14 @@
  */
 package org.dbmaintain.launch.api;
 
-import java.net.URL;
-import java.util.Properties;
-
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.DbMaintainException;
+
+import java.net.URL;
+import java.util.Properties;
 
 /**
  * Class that offers static methods that expose all available DbMaintain operations.
@@ -35,12 +35,12 @@ public class DbMaintainOperations {
     private static final String DBMAINTAIN_PROPERTIES = "dbmaintain.properties";
 
     /**
-     * Creates a jar file containing all scripts in all configured script locations
+     * Creates an archive file containing all scripts in all configured script locations
      * 
-     * @param jarFileName The name of the jar file to create
+     * @param archiveFileName The name of the archive file to create
      */
-    public static void createScriptJar(String jarFileName) {
-        getDbMaintain().createScriptJar(jarFileName);
+    public static void createScriptArchive(String archiveFileName) {
+        getDbMaintain().createScriptArchive(archiveFileName);
     }
 
     

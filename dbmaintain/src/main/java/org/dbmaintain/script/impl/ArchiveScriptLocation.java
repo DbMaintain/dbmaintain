@@ -15,11 +15,9 @@
  */
 package org.dbmaintain.script.impl;
 
-import static org.dbmaintain.config.DbMaintainProperties.*;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.io.IOUtils;
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import org.apache.commons.lang.StringUtils;
+import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
 import org.dbmaintain.util.DbMaintainException;
@@ -39,7 +37,7 @@ import java.util.zip.ZipEntry;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class JarScriptLocation extends ScriptLocation {
+public class ArchiveScriptLocation extends ScriptLocation {
 
     /* The file that contains the jar file on the file system */
     protected File jarFile;
@@ -49,26 +47,26 @@ public class JarScriptLocation extends ScriptLocation {
 
 
     /**
-     * Creates a new instance of the {@link JarScriptLocation}, while there is no jar file available yet.
+     * Creates a new instance of the {@link ArchiveScriptLocation}, while there is no jar file available yet.
      * This constructor can be used to initialize the container while the scripts are still on the file system,
      * and to write the jar file afterwards.
      * 
      * @param scripts The scripts contained in the container, not null
-     * @param scriptFileExtensions 
-     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
-     * @param qualifierPrefix The prefix that identifies a qualifier in the filename, not null
-     * @param patchQualifiers The qualifiers that indicate that this script is a patch script, not null
-     * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param scriptEncoding Encoding used to read the contents of the script, not null
+     * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
+     * @param patchQualifiers The qualifiers that indicate that this script is a patch script, not null
+     * @param qualifierPrefix The prefix that identifies a qualifier in the filename, not null
+     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
+     * @param scriptFileExtensions The script file extensions
      */
-    public JarScriptLocation(SortedSet<Script> scripts, Set<String> scriptFileExtensions, String targetDatabasePrefix, String qualifierPrefix,
-            Set<String> patchQualifiers, String postProcessingScriptDirName, String scriptEncoding) {
-        this.scriptFileExtensions = scriptFileExtensions;
+    public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName, Set<String> patchQualifiers,
+                String qualifierPrefix, String targetDatabasePrefix, Set<String> scriptFileExtensions) {
+        this.scriptEncoding = scriptEncoding;
+        this.postProcessingScriptDirName = postProcessingScriptDirName;
+        this.patchQualifiers = patchQualifiers;
         this.targetDatabasePrefix = targetDatabasePrefix;
         this.qualifierPrefix = qualifierPrefix;
-        this.patchQualifiers = patchQualifiers;
-        this.postProcessingScriptDirName = postProcessingScriptDirName;
-        this.scriptEncoding = scriptEncoding;
+        this.scriptFileExtensions = scriptFileExtensions;
 
         this.scripts = scripts;
     }
@@ -76,13 +74,17 @@ public class JarScriptLocation extends ScriptLocation {
 
     /**
      * Creates a new instance based on the contents of the given jar file
-     * 
-     * @param jarFile Script jar file, not null
+     *
+     * @param jarFile The jar file
+     * @param defaultScriptEncoding The default script encoding
+     * @param defaultPostProcessingScriptDirName The default postprocessing dir name
+     * @param defaultPatchQualifiers The default patch qualifiers
+     * @param defaultQualifierPefix The default qualifier prefix
+     * @param defaultTargetDatabasePrefix The default target database prefix
+     * @param defaultScriptFileExtensions The default script file extensions
      */
-    public JarScriptLocation(File jarFile, Set<String> defaultScriptFileExtensions, String defaultTargetDatabasePrefix,
-            String defaultQualifierPefix, Set<String> defaultPatchQualifiers, String defaultPostProcessingScriptDirName,
-            String defaultScriptEncoding) {
-
+    public ArchiveScriptLocation(File jarFile, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<String> defaultPatchQualifiers,
+                String defaultQualifierPefix, String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
         try {
             this.jarFile = jarFile;
             jar = new JarFile(jarFile);
@@ -91,8 +93,8 @@ public class JarScriptLocation extends ScriptLocation {
         }
 
         Properties propertiesFromJar = getPropertiesFromJar(jar);
-        initConfiguration(propertiesFromJar, defaultScriptFileExtensions, defaultTargetDatabasePrefix, defaultQualifierPefix,
-                defaultPatchQualifiers, defaultPostProcessingScriptDirName, defaultScriptEncoding);
+        initConfiguration(propertiesFromJar, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions
+        );
 
         scripts = loadScriptsFromJar();
     }
@@ -130,18 +132,25 @@ public class JarScriptLocation extends ScriptLocation {
     }
 
 
+    /**
+     * @return The jar location's configuration as a <code>Properties</code> object
+     */
     protected Properties getJarProperties() {
         Properties configuration = new Properties();
-        configuration.put(PROPERTY_SCRIPT_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
-        configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
-        configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
-        configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, StringUtils.join(patchQualifiers, ","));
-        configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptDirName);
         configuration.put(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
+        configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptDirName);
+        configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, StringUtils.join(patchQualifiers, ","));
+        configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
+        configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
+        configuration.put(PROPERTY_SCRIPT_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
         return configuration;
     }
 
 
+    /**
+     * @param jarFile The jar file, not null
+     * @return The properties as a properties map
+     */
     protected Properties getPropertiesFromJar(JarFile jarFile) {
         InputStream configurationInputStream = null;
         try {
@@ -158,6 +167,11 @@ public class JarScriptLocation extends ScriptLocation {
     }
 
 
+    /**
+     * @param properties A properties map
+     * @return The given properties as a reader to a properties file
+     * @throws IOException if a problem occurs opening the reader
+     */
     protected Reader getPropertiesAsFile(Properties properties) throws IOException {
         Writer propertiesFileWriter = new StringWriter();
         properties.store(new WriterOutputStream(propertiesFileWriter), null);
@@ -188,7 +202,7 @@ public class JarScriptLocation extends ScriptLocation {
                 }
             }
         } catch (IOException e) {
-            throw new DbMaintainException("Error while creating jar file " + jarFile, e);
+            throw new DbMaintainException("Error while writing archive file " + jarFile, e);
         } finally {
             closeQuietly(jarOutputStream);
         }
@@ -231,6 +245,10 @@ public class JarScriptLocation extends ScriptLocation {
         jarOutputStream.closeEntry();
     }
 
+
+    /**
+     * @return A description of the location, for logging purposes
+     */
     @Override
     public String getLocationName() {
         if (jarFile == null) {

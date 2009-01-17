@@ -17,16 +17,10 @@
  */
 package org.dbmaintain.launch.ant;
 
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PATCH_QUALIFIERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_PREFIX;
+import org.apache.tools.ant.BuildException;
+import static org.dbmaintain.config.DbMaintainProperties.*;
 
 import java.util.Properties;
-
-import org.apache.tools.ant.BuildException;
 
 /**
  * Task that enables creating a jar file that packages all database update scripts. to apply changes on a target
@@ -40,75 +34,82 @@ import org.apache.tools.ant.BuildException;
  * @author Tim Ducheyne
  * @author Alexander Snaps <alex.snaps@gmail.com>
  */
-public class CreateScriptJarTask extends BaseTask {
+public class CreateScriptArchiveTask extends BaseTask {
 
-    private String jarFileName;
+    private String archiveFileName;
     private String scriptLocations;
-    private String extensions;
-    private String postProcessingDirName;
     private String encoding;
-    private String patchScriptSuffix;
+    private String postProcessingScriptsDirName;
+    private String patchQualifiers;
+    private String qualifierPrefix;
     private String targetDatabasePrefix;
+    private String extensions;
 
     @Override
     public void execute() throws BuildException {
         try {
-            getDbMaintain().createScriptJar(jarFileName);
+            getDbMaintain().createScriptArchive(archiveFileName);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BuildException("Error creating jar file " + jarFileName, e);
+            throw new BuildException("Error creating jar file " + archiveFileName, e);
         }
     }
-
 
     @Override
     protected void addTaskConfiguration(Properties configuration) {
         if (scriptLocations != null) {
             configuration.put(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
-        if (extensions != null) {
-            configuration.put(PROPERTY_SCRIPT_EXTENSIONS, extensions);
-        }
-        if (postProcessingDirName != null) {
-            configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingDirName);
-        }
         if (encoding != null) {
             configuration.put(PROPERTY_SCRIPT_ENCODING, encoding);
         }
-        if (patchScriptSuffix != null) {
-            configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchScriptSuffix);
+        if (postProcessingScriptsDirName != null) {
+            configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptsDirName);
+        }
+        if (patchQualifiers != null) {
+            configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
         }
         if (targetDatabasePrefix != null) {
             configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
         }
+        if (qualifierPrefix != null) {
+            configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
+        }
+        if (extensions != null) {
+            configuration.put(PROPERTY_SCRIPT_EXTENSIONS, extensions);
+        }
     }
 
 
-    public void setJarFileName(String jarFileName) {
-        this.jarFileName = jarFileName;
+    public void setArchiveFileName(String archiveFileName) {
+        this.archiveFileName = archiveFileName;
     }
 
     public void setScriptLocations(String scriptLocations) {
         this.scriptLocations = scriptLocations;
     }
 
-    public void setExtensions(String extensions) {
-        this.extensions = extensions;
-    }
-
-    public void setPostProcessingDirName(String postProcessingDirName) {
-        this.postProcessingDirName = postProcessingDirName;
-    }
-
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
-    public void setFixScriptSuffix(String fixScriptSuffix) {
-        this.patchScriptSuffix = fixScriptSuffix;
+    public void setPostProcessingScriptsDirName(String postProcessingScriptsDirName) {
+        this.postProcessingScriptsDirName = postProcessingScriptsDirName;
+    }
+
+    public void setPatchQualifiers(String patchQualifiers) {
+        this.patchQualifiers = patchQualifiers;
+    }
+
+    public void setQualifierPrefix(String qualifierPrefix) {
+        this.qualifierPrefix = qualifierPrefix;
     }
 
     public void setTargetDatabasePrefix(String targetDatabasePrefix) {
         this.targetDatabasePrefix = targetDatabasePrefix;
+    }
+
+    public void setExtensions(String extensions) {
+        this.extensions = extensions;
     }
 }

@@ -41,7 +41,7 @@ public interface DbMaintainProperties {
     /**
      * Property key for the database schema names
      */
-    public static final String PROPERTY_SCHEMA_NAMES_END = "schemaNames";
+    public static final String PROPERTY_SCHEMANAMES_END = "schemaNames";
 
     /**
      * Property key for the default identifier casing (lower_case, upper_case,
@@ -202,5 +202,4 @@ public interface DbMaintainProperties {
 
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 
-    public static final String DB_MAINTAINER_SCRIPT_JAR = "dbMaintainer.script.jar";
 }
