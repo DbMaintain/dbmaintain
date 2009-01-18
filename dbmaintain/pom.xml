@@ -66,11 +66,11 @@
                                 <artifactId>commons-lang</artifactId>
                                 <filter>!META-INF/**</filter>
                             </inclusion>
-                            <inclusion>
+                            <!--inclusion>
                                 <groupId>commons-logging</groupId>
                                 <artifactId>commons-logging</artifactId>
                                 <filter>!META-INF/**</filter>
-                            </inclusion>
+                            </inclusion-->
                             <inclusion>
                                 <groupId>commons-dbutils</groupId>
                                 <artifactId>commons-dbutils</artifactId>
@@ -88,7 +88,7 @@
                     </libs>
                     <options>
                         <option>-keep class org.dbmaintain.** {public protected *;}</option>
-                        <option>-keep,allowobfuscation class org.apache.commons.logging.** {public protected *;}</option>
+                        <!--option>-keep,allowobfuscation class org.apache.commons.logging.** {public protected *;}</option-->
                         <option>-flattenpackagehierarchy org.dbmaintain.thirdparty-obfuscated</option>
                         <option>-dontusemixedcaseclassnames</option>
                         <option>-keepattributes SourceFile,LineNumberTable</option>

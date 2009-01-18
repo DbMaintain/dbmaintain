@@ -10,16 +10,36 @@
                 <include>NOTICE.txt</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--fileSet>
             <directory>dbmaintain/target</directory>
             <outputDirectory>lib</outputDirectory>
             <includes>
                 <include>dbmaintain-${project.version}.jar</include>
             </includes>
-        </fileSet>
+        </fileSet-->
         <fileSet>
             <directory>dbmaintain/commandline</directory>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
     </fileSets>
+	<moduleSets>
+		<moduleSet>
+		    <includes>
+				<include>org.dbmaintain:dbmaintain</include>
+			</includes>
+			<binaries>
+			    <outputDirectory>lib</outputDirectory>
+			    <unpack>false</unpack>
+				<dependencySets>
+					<dependencySet>
+						<useProjectArtifact>false</useProjectArtifact>
+						<outputDirectory>lib</outputDirectory>
+						<includes>
+							<include>commons-logging:commons-logging</include>
+						</includes>
+					</dependencySet>
+				</dependencySets>
+			</binaries>
+		</moduleSet>
+	</moduleSets>
 </assembly>

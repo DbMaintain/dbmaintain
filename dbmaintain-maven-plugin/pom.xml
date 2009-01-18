@@ -56,7 +56,7 @@
             <goals>
               <goal>clean</goal>
               <goal>install</goal>
-              <goal>test</goal>
+              <!--goal>test</goal-->
             </goals>
           </execution>
         </executions>
