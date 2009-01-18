@@ -16,12 +16,8 @@
 package org.dbmaintain.script;
 
 import org.dbmaintain.util.CollectionUtils;
-import org.apache.commons.collections.SetUtils;
 
 import java.util.SortedSet;
-import java.util.Collections;
-
-import com.sun.jmx.mbeanserver.Repository;
 
 /**
  * @author Filip Neven
