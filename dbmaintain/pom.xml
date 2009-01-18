@@ -38,16 +38,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                    <descriptors>
-                        <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
-                        <descriptor>assembly-descriptors/assembly-dbmaintain-src.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.2</version>
@@ -98,7 +88,7 @@
                     </libs>
                     <options>
                         <option>-keep class org.dbmaintain.** {public protected *;}</option>
-                        <option>-keep class org.apache.commons.logging.** {public protected *;}</option>
+                        <option>-keep,allowobfuscation class org.apache.commons.logging.** {public protected *;}</option>
                         <option>-flattenpackagehierarchy org.dbmaintain.thirdparty-obfuscated</option>
                         <option>-dontusemixedcaseclassnames</option>
                         <option>-keepattributes SourceFile,LineNumberTable</option>

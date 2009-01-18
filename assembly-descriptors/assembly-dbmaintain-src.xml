@@ -12,23 +12,22 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory/>
+            <directory>dbmaintain/target</directory>
+            <outputDirectory>lib</outputDirectory>
             <includes>
-                <include>${project.build.finalName}.jar</include>
+                <include>dbmaintain-${project.version}.jar</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>commandline</directory>
+            <directory>dbmaintain/commandline</directory>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
         <fileSet>
-            <includes>
-                <include>src/main/**</include>
-            </includes>
+		    <directory>dbmaintain/src/main</directory>
+		    <outputDirectory>src</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/site/apidocs</directory>
+            <directory>target/site/apidocs</directory>
             <outputDirectory>docs/apidocs</outputDirectory>
             <includes>
                 <include>**</include>

@@ -108,6 +108,16 @@
   <reporting>
     <plugins>
       <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+            <descriptors>
+                <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
+                <descriptor>assembly-descriptors/assembly-dbmaintain-src.xml</descriptor>
+            </descriptors>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
         <configuration>
