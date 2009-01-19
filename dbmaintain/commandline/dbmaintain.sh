@@ -112,8 +112,6 @@ if $cygwin ; then
     DBMAINTAIN_HOME=`cygpath --unix "$DBMAINTAIN_HOME"`
   [ -n "$JAVA_HOME" ] &&
     JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
-  [ -n "$CLASSPATH" ] &&
-    CLASSPATH=`cygpath --path --unix "$CLASSPATH"`
 fi
 
 # For Migwn, ensure paths are in UNIX format before anything is touched
@@ -148,7 +146,9 @@ if [ -z "$JAVA_HOME" ] ; then
   echo "Warning: JAVA_HOME environment variable is not set."
 fi
 
-DBMAINTAIN_LAUNCHER=org.dbmaintain.launch.commandline.CommandLine
+DBMAINTAIN_LAUNCHER="org.dbmaintain.launch.commandline.CommandLine"
+DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.0-SNAPSHOT.jar"
+COMMONS_LOGGING_JAR="${DBMAINTAIN_HOME}/lib/commons-logging-1.1.1.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
@@ -158,9 +158,14 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
   [ -n "$HOME" ] &&
     HOME=`cygpath --path --windows "$HOME"`
+  [ -n "$DBMAINTAIN_JAR" ] &&
+    DBMAINTAIN_JAR=`cygpath --path --windows "$DBMAINTAIN_JAR"`
+  [ -n "$COMMONS_LOGGING_JAR" ] &&
+    COMMONS_LOGGING_JAR=`cygpath --path --windows "$COMMONS_LOGGING_JAR"`
 fi
+
+DBMAINTAIN_CLASSPATH="${DBMAINTAIN_JAR};${COMMONS_LOGGING_JAR}"
 
 exec "$JAVACMD" \
   $DBMAINTAIN_OPTS \
-  -classpath "${DBMAINTAIN_HOME}"/lib/*.jar;$DBMAINTAIN_JDBC_DRIVER \
-  ${DBMAINTAIN_LAUNCHER} $QUOTED_ARGS
+  -classpath ${DBMAINTAIN_CLASSPATH} ${DBMAINTAIN_LAUNCHER} $QUOTED_ARGS

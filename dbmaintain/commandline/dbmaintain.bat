@@ -146,21 +146,11 @@ goto Win9xApp
 :endInit
 SET DBMAINTAIN_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
 
-@REM -- 4NT shell
-if "%@eval[2+2]" == "4" goto 4NTCWJars
-
-@REM -- Regular WinNT shell
-for %%i in ("%DBMAINTAIN_HOME%"\lib\*.jar) do set DBMAINTAIN_JAR=%DBMAINTAIN_JAR%;"%%i"
-goto runm2
-
-@REM The 4NT Shell from jp software
-:4NTCWJars
-for %%i in ("%DBMAINTAIN_HOME%\lib\*.jar") do set DBMAINTAIN_JAR=%DBMAINTAIN_JAR%;"%%i"
-goto runm2
+SET DBMAINTAIN_JAR="%DBMAINTAIN_HOME%\lib\dbmaintain-1.0-SNAPSHOT.jar";"%DBMAINTAIN_HOME%\lib\commons-logging-1.1.1.jar"
 
 @REM Start DBMAINTAIN
 :runm2
-%DBMAINTAIN_JAVA_EXE% %DBMAINTAIN_OPTS% -classpath %DBMAINTAIN_JAR%;%DBMAINTAIN_JDBC_DRIVER% org.dbmaintain.launch.commandline.CommandLine %DBMAINTAIN_CMD_LINE_ARGS%
+%DBMAINTAIN_JAVA_EXE% %DBMAINTAIN_OPTS% -classpath %DBMAINTAIN_JAR% org.dbmaintain.launch.commandline.CommandLine %DBMAINTAIN_CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
 
