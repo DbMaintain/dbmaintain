@@ -15,19 +15,20 @@
  */
 package org.dbmaintain;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.*;
+import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
+import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 import org.dbmaintain.script.impl.ScriptRepository;
-import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.dbsupport.SQLHandler;
 
 import java.util.*;
 
@@ -200,6 +201,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
             }
         }
 
+        if (scriptUpdates.isEmpty()) {
+            logger.info("The database is up to date");
+            return;
+        }
+
         boolean recreateFromScratch = false;
         if (fromScratchEnabled && !hasItemsToPreserve && isInitialDatabaseUpdate()) {
             logger.info("Since the database is updated for the first time, the database is cleared first to be sure we start with a clean database");
@@ -260,6 +266,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         }
         sqlHandler.closeAllConnections();
     }
+
 
     /**
      * @return Whether we are running dbmaintain for the first time. If there are no scripts available yet, this method
@@ -393,6 +400,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executedScriptInfoSource.registerExecutedScript(new ExecutedScript(script, new Date(), true));
         }
         sqlHandler.closeAllConnections();
+        logger.info("The database has been marked as up-to-date");
     }
 
 
