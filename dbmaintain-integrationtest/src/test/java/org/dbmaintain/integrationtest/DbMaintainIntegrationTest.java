@@ -17,7 +17,6 @@ package org.dbmaintain.integrationtest;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.*;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang.StringUtils.*;
@@ -28,6 +27,7 @@ import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.*;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
@@ -88,10 +88,11 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testInitial() {
+    public void testInitialScriptsExecuted() {
         createScripts(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
+        updateDatabase();
     }
 
     @Test
@@ -724,6 +725,7 @@ public class DbMaintainIntegrationTest {
         configuration.put("database.schemaNames", "PUBLIC");
         configuration.put("dbMaintainer.autoCreateDbMaintainScriptsTable", "true");
         configuration.put("dbMaintainer.script.locations", scriptsLocation.getAbsolutePath());
+        configuration.put("dbMaintainer.useScriptFileLastModificationDates.enabled", "false");
         configuration.put("dbMaintainer.fromScratch.enabled", "false");
 
         dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, new DefaultSQLHandler());
