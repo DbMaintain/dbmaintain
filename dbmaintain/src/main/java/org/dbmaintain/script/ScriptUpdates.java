@@ -80,12 +80,33 @@ public class ScriptUpdates {
                 regularlyDeletedRepeatableScripts, regularPostprocessingScriptUpdates);
     }
 
+
     public boolean hasIrregularScriptUpdates() {
         return irregularScriptUpdates.size() > 0;
     }
+
 
     public boolean hasUpdatesOtherThanRepeatableScriptDeletionsOrRenames() {
         return regularlyAddedOrModifiedScripts.size() != 0 || irregularScriptUpdates.size() != 0 ||
                 regularlyAddedPatchScripts.size() != 0 || regularPostprocessingScriptUpdates.size() != 0;
     }
+
+    public boolean isEmpty() {
+        return regularlyAddedOrModifiedScripts.size() == 0 && irregularScriptUpdates.size() == 0 &&
+                regularlyAddedPatchScripts.size() == 0 && regularPostprocessingScriptUpdates.size() == 0 &&
+                regularlyRenamedScripts.size() == 0 && regularlyDeletedRepeatableScripts.size() == 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ScriptUpdates{" +
+                (!regularlyAddedOrModifiedScripts.isEmpty() ? "regularlyAddedOrModifiedScripts=" + regularlyAddedOrModifiedScripts : "") +
+                (!irregularScriptUpdates.isEmpty() ? ", irregularScriptUpdates=" + irregularScriptUpdates : "") +
+                (!regularlyDeletedRepeatableScripts.isEmpty() ? ", regularlyDeletedRepeatableScripts=" + regularlyDeletedRepeatableScripts : "") +
+                (!regularlyAddedPatchScripts.isEmpty() ? ", regularlyAddedPatchScripts=" + regularlyAddedPatchScripts : "") +
+                (!regularPostprocessingScriptUpdates.isEmpty() ? ", regularPostprocessingScriptUpdates=" + regularPostprocessingScriptUpdates : "") +
+                (!regularlyRenamedScripts.isEmpty() ? ", regularlyRenamedScripts=" + regularlyRenamedScripts : "") +
+                '}';
+    }
+
 }

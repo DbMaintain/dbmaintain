@@ -9,12 +9,10 @@ import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.util.CollectionUtils;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -42,8 +40,14 @@ abstract public class BaseDatabaseTask extends BaseTask {
         }
     }
 
+
+    /**
+     * Executes the database operation
+     * @param dbMaintain the DbMaintain instance used to invoke to operation
+     */
     abstract protected void performTask(DbMaintain dbMaintain);
 
+    
     /**
      * @return The {@link PropertiesDbMaintainConfigurer} for this task
      */
@@ -61,7 +65,7 @@ abstract public class BaseDatabaseTask extends BaseTask {
             nameDbSupportMap = new HashMap<String, DbSupport>();
             for (Database database : databases) {
                 DbSupport dbSupport = null;
-                if (database.getEnabled()) {
+                if (database.getIncluded()) {
                     dbSupport = createDbSupport(database);
                 }
                 nameDbSupportMap.put(database.getName(), dbSupport);
@@ -74,8 +78,7 @@ abstract public class BaseDatabaseTask extends BaseTask {
     
     
     /**
-     * Create an instance of {@link DbSupport} that will act as a gateway to the database with the
-     * given configuration.
+     * Create an instance of {@link DbSupport} that will act as a gateway to the database with the given configuration.
      * 
      * @param database The configuration of the database
      * @return The {@link DbSupport} instance for the database with the given configuration
@@ -83,9 +86,9 @@ abstract public class BaseDatabaseTask extends BaseTask {
     protected DbSupport createDbSupport(Database database) {
         DataSource dataSource = getDefaultDbMaintainConfigurer().createDataSource(database.getDriverClassName(), 
                 database.getUrl(), database.getUserName(), database.getPassword());
-    
+        String defaultSchemaName = database.getSchemaNames().get(0);
         return getDefaultDbMaintainConfigurer().createDbSupport(database.getName(), database.getDialect(), dataSource, 
-                database.getDefaultSchemaName(), database.getSchemaNames());
+                defaultSchemaName, new HashSet<String>(database.getSchemaNames()));
     }
 
 

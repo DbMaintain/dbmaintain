@@ -18,9 +18,10 @@
 package org.dbmaintain.launch.ant;
 
 import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.util.CollectionUtils;
 
-import java.util.Collections;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,24 +31,23 @@ import java.util.Set;
 public class Database {
 
 	private String name;
-	private boolean enabled = true;
+	private boolean included = true;
 	private String dialect;
 	private String driverClassName;
 	private String url;
 	private String userName;
 	private String password;
-	private String defaultSchemaName;
-	private Set<String> schemaNames;
+	private List<String> schemaNames;
 
-	public Database() {
+    public Database() {
 	}
 
 	public String getName() {
 		return name;
 	}
 	
-    public boolean getEnabled() {
-        return enabled;
+    public boolean getIncluded() {
+        return included;
     }
 
     public String getDialect() {
@@ -70,11 +70,7 @@ public class Database {
 		return password;
 	}
 
-	public String getDefaultSchemaName() {
-		return defaultSchemaName;
-	}
-
-	public Set<String> getSchemaNames() {
+	public List<String> getSchemaNames() {
 		return schemaNames;
 	}
 
@@ -82,8 +78,8 @@ public class Database {
 		this.name = name;
 	}
 	
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void setIncluded(boolean included) {
+        this.included = included;
     }
 
     public void setDialect(String dialect) {
@@ -108,15 +104,11 @@ public class Database {
 	
 	public void setSchemaNames(String schemaNamesCommaSeparated) {
 		if (schemaNamesCommaSeparated == null) {
-			defaultSchemaName = null;
-			schemaNames = Collections.emptySet();
+			schemaNames = emptyList();
 		} else {
 			String[] schemas = StringUtils.split(schemaNamesCommaSeparated, ',');
-			schemaNames = CollectionUtils.asSet(schemas);
-			if (schemas.length > 0) {
-				defaultSchemaName = schemas[0];
-			}
+			schemaNames = asList(schemas);
 		}
 	}
-	
+
 }

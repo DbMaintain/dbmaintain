@@ -76,4 +76,15 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
     public int compareTo(ScriptUpdate other) {
         return script.compareTo(other.getScript());
     }
+
+
+    @Override
+    public String toString() {
+        return "ScriptUpdate{" +
+                "type=" + type +
+                ", script=" + script +
+                (renamedToScript != null ?
+                ", renamedToScript=" + renamedToScript : "") +
+                '}';
+    }
 }

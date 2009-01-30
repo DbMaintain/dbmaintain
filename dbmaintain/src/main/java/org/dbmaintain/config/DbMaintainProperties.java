@@ -31,7 +31,7 @@ public interface DbMaintainProperties {
 
     public static final String PROPERTY_PASSWORD_END = "password";
 
-    public static final String PROPERTY_ENABLED_END = "enabled";
+    public static final String PROPERTY_INCLUDED_END = "included";
 
     /**
      * Property key of the SQL dialect of the underlying DBMS implementation

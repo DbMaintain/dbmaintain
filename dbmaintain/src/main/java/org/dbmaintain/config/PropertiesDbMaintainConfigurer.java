@@ -336,21 +336,21 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
+    /**
+     * @return an instance of DbSupport that is not named: this means there's only one database and consequently only one
+     * DbSupport.
+     */
     public DbSupport createUnnamedDbSupport() {
         DataSource dataSource = createUnnamedDataSource();
 
         String databaseDialect = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END, configuration);
         List<String> schemaNamesList = getStringList(PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END, configuration);
+        if (schemaNamesList.isEmpty()) {
+            throw new DbMaintainException("No value found for property " + PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END);
+        }
         String defaultSchemaName = schemaNamesList.get(0);
         Set<String> schemaNames = new HashSet<String>(schemaNamesList);
-        String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
-        StoredIdentifierCase customStoredIdentifierCase = getCustomStoredIdentifierCase(databaseDialect);
-
-        Class<DbSupport> clazz = ConfigUtils.getConfiguredClass(DbSupport.class, configuration, databaseDialect);
-        return createInstanceOfType(clazz, false,
-                new Class<?>[]{String.class, DataSource.class, String.class, Set.class, SQLHandler.class, String.class, StoredIdentifierCase.class},
-                new Object[]{null, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase}
-        );
+        return createDbSupport(null, databaseDialect, dataSource, defaultSchemaName, schemaNames);
     }
 
 
@@ -358,7 +358,7 @@ public class PropertiesDbMaintainConfigurer {
      * Returns the dbms specific {@link DbSupport} as configured in the given
      * <code>Configuration</code>.
      *
-     * @param databaseName
+     * @param databaseName logical name that identifies this database
      * @return The dbms specific instance of {@link DbSupport}, not null
      */
     public DbSupport createDbSupport(String databaseName) {
@@ -372,6 +372,9 @@ public class PropertiesDbMaintainConfigurer {
         String customSchemaNamesListPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMANAMES_END;
         List<String> schemaNamesList = containsProperty(customSchemaNamesListPropertyName, configuration) ?
                 getStringList(customSchemaNamesListPropertyName, configuration) : getStringList(schemaNamesListPropertyName, configuration);
+        if (schemaNamesList.isEmpty()) {
+            throw new DbMaintainException("No value found for property " + schemaNamesListPropertyName);
+        }
         String defaultSchemaName = schemaNamesList.get(0);
         Set<String> schemaNames = new HashSet<String>(schemaNamesList);
 
@@ -486,7 +489,7 @@ public class PropertiesDbMaintainConfigurer {
         } else {
             for (String databaseName : databaseNames) {
                 DbSupport dbSupport = null;
-                if (isDatabaseEnabled(databaseName)) {
+                if (isDatabaseIncluded(databaseName)) {
                     dbSupport = createDbSupport(databaseName);
                 }
                 nameDbSupportMap.put(databaseName, dbSupport);
@@ -499,11 +502,11 @@ public class PropertiesDbMaintainConfigurer {
 
 
     /**
-     * @param databaseName
-     * @return
+     * @param databaseName the logical name that identifies the database
+     * @return whether the database with the given name is included in the set of database to be updated by dbmaintain
      */
-    protected boolean isDatabaseEnabled(String databaseName) {
-        return PropertyUtils.getBoolean(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_ENABLED_END, true, configuration);
+    protected boolean isDatabaseIncluded(String databaseName) {
+        return PropertyUtils.getBoolean(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_INCLUDED_END, true, configuration);
     }
 
 
