@@ -106,12 +106,12 @@ public class CommandLine {
      * @param args The command line arguments as an array of strings
      * @return An instance of {@link CommandLineArguments}
      */
-    private static CommandLineArguments parseCommandLineArguments(String[] args) {
+    protected static CommandLineArguments parseCommandLineArguments(String[] args) {
         CommandLineArguments commandLineArguments = null;
         try {
             commandLineArguments = new CommandLineArguments(args);
         } catch (DbMaintainException e) {
-            System.err.println(e.getMessage());
+            System.err.println("\n" + e.getMessage());
             printHelpMessage();
             System.exit(1);
         }
@@ -125,7 +125,7 @@ public class CommandLine {
      * @param commandLineArguments The command line arguments
      * @return The requested DbMaintain operation
      */
-    private static DbMaintainOperation getDbMaintainOperation(CommandLineArguments commandLineArguments) {
+    protected static DbMaintainOperation getDbMaintainOperation(CommandLineArguments commandLineArguments) {
         String dbMaintainOperation = commandLineArguments.getDbMaintainOperation();
         DbMaintainOperation operation = DbMaintainOperation.getByOperationName(dbMaintainOperation);
         if (operation == null) {
@@ -144,7 +144,7 @@ public class CommandLine {
      * @param commandLineArguments The command line arguments
      * @return The configuration as a <code>Properties</code> file
      */
-    private static Properties loadConfiguration(CommandLineArguments commandLineArguments) {
+    protected static Properties loadConfiguration(CommandLineArguments commandLineArguments) {
         URL propertiesAsURL = null;
         String customConfigFile = commandLineArguments.getConfigFile();
         if (customConfigFile == null) {
@@ -212,7 +212,7 @@ public class CommandLine {
      * @param configuration The configuration to use to configure DbMaintain
      * @return An instance of {@link DbMaintain}
      */
-    private static DbMaintain getDbMaintain(Properties configuration) {
+    protected static DbMaintain getDbMaintain(Properties configuration) {
         PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, new DefaultSQLHandler());
         return new DbMaintain(dbMaintainConfigurer);
     }
@@ -223,7 +223,7 @@ public class CommandLine {
      * 
      * @return An inputStream giving access to the file with the given name.
      */
-    private static URL getPropertiesAsURL(String fileName) {
+    protected static URL getPropertiesAsURL(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
             System.err.println("Could not find config file" + DBMAINTAIN_PROPERTIES);
