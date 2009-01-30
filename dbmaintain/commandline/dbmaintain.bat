@@ -25,6 +25,7 @@
 @REM
 @REM Optional ENV vars
 @REM DBMAINTAIN_JDBC_DRIVER - JDBC driver library to be used by DbMaintain. May optionally be multiple jars separated by semicolons.
+@REM Preferably, this variable is set in the script setJdbcDriver.bat.
 @REM DBMAINTAIN_HOME - location of DbMaintain's installed home dir
 @REM DBMAINTAIN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands
 @REM DBMAINTAIN_BATCH_PAUSE - set to 'on' to wait for a key stroke before ending
@@ -40,9 +41,16 @@
 @REM enable echoing my setting DBMAINTAIN_BATCH_ECHO to 'on'
 @if "%DBMAINTAIN_BATCH_ECHO%" == "on"  echo %DBMAINTAIN_BATCH_ECHO%
 
-@REM Uncomment the following line and complete it to set DBMAINTAIN_JDCB_DRIVER to your jdbc driver lib(s)
-@REM set DBMAINTAIN_JDBC_DRIVER=
+@if (%DBMAINTAIN_JDBC_DRIVER%)==() goto callSetJdbcDriver
 
+@REM
+set JDBC_DRIVER=%DBMAINTAIN_JDBC_DRIVER%
+goto afterCallSetJdbcDriver
+
+:callSetJdbcDriver
+call "setJdbcDriver.bat"
+
+:afterCallSetJdbcDriver
 @REM set %HOME% to equivalent of $HOME
 if "%HOME%" == "" (set HOME=%HOMEDRIVE%%HOMEPATH%)
 
@@ -146,11 +154,11 @@ goto Win9xApp
 :endInit
 SET DBMAINTAIN_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
 
-SET DBMAINTAIN_JAR="%DBMAINTAIN_HOME%\lib\dbmaintain-1.0-SNAPSHOT.jar";"%DBMAINTAIN_HOME%\lib\commons-logging-1.1.1.jar"
+SET DBMAINTAIN_CLASSPATH="%DBMAINTAIN_HOME%\lib\dbmaintain-1.0-SNAPSHOT.jar";"%DBMAINTAIN_HOME%\lib\commons-logging-1.1.1.jar";%JDBC_DRIVER%
 
 @REM Start DBMAINTAIN
 :runm2
-%DBMAINTAIN_JAVA_EXE% %DBMAINTAIN_OPTS% -classpath %DBMAINTAIN_JAR% org.dbmaintain.launch.commandline.CommandLine %DBMAINTAIN_CMD_LINE_ARGS%
+%DBMAINTAIN_JAVA_EXE% %DBMAINTAIN_OPTS% -classpath %DBMAINTAIN_CLASSPATH% org.dbmaintain.launch.commandline.CommandLine %DBMAINTAIN_CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
 
@@ -167,6 +175,9 @@ if "%OS%"=="WINNT" goto endNT
 @REM For old DOS remove the set variables from ENV - we assume they were not set
 @REM before we started - at least we don't leave any baggage around
 set DBMAINTAIN_JAVA_EXE=
+set DBMAINTAIN_OPTS=
+set DBMAINTAIN_CLASSPATH=
+set JDBC_DRIVER=
 set DBMAINTAIN_CMD_LINE_ARGS=
 goto finish
 

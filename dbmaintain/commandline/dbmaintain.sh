@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-# DbMaintain Start Up Batch script
+# DbMaintain Start Up Shell script
 #
 # Required ENV vars:
 # ------------------
@@ -28,21 +28,19 @@
 # Optional ENV vars
 # -----------------
 #   DBMAINTAIN_JDBC_DRIVER - JDBC driver library to be used by DbMaintain. May optionally be multiple jars separated by semicolons.
+#        Preferably, this variable is set in the script setJdbcDriver.sh.
 #   DBMAINTAIN_HOME - location of dbmaintain's installed home dir
 #   DBMAINTAIN_OPTS - parameters passed to the Java VM when running DbMaintain
 #     e.g. to debug DbMaintain itself, use
 #       set DBMAINTAIN_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
 # ----------------------------------------------------------------------------
 
-# This shell script is based on the batch script for starting maven2 (mvn)
-
-# Uncomment the following line and complete it to set DBMAINTAIN_JDCB_DRIVER to your jdbc driver lib(s)
-# DBMAINTAIN_JDBC_DRIVER=""
+# This shell script is based on the shell script for starting maven2 (mvn)
 
 QUOTED_ARGS=""
 while [ "$1" != "" ] ; do
 
-  QUOTED_ARGS="$QUOTED_ARGS \"$1\""
+  QUOTED_ARGS="$QUOTED_ARGS $1"
   shift
 
 done
@@ -103,7 +101,7 @@ if [ -z "$DBMAINTAIN_HOME" ] ; then
   DBMAINTAIN_HOME=`cd "$DBMAINTAIN_HOME" && pwd`
 
   cd "$saveddir"
-  # echo Using m2 at $DBMAINTAIN_HOME
+  # echo Using dbmaintain at $DBMAINTAIN_HOME
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
@@ -150,6 +148,17 @@ DBMAINTAIN_LAUNCHER="org.dbmaintain.launch.commandline.CommandLine"
 DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.0-SNAPSHOT.jar"
 COMMONS_LOGGING_JAR="${DBMAINTAIN_HOME}/lib/commons-logging-1.1.1.jar"
 
+# Check if $DBMAINTAIN_JDBC_DRIVER is set. If not, call setJdbcDriver.sh.
+if [ -z "$DBMAINTAIN_JDBC_DRIVER" ] ; then
+  if [ -f "$DBMAINTAIN_HOME/bin/setJdbcDriver.sh" ] ; then
+    . "$DBMAINTAIN_HOME/bin/setJdbcDriver.sh"
+  else
+    . setJdbcDriver.sh
+  fi
+else
+  JDBC_DRIVER="$DBMAINTAIN_JDBC_DRIVER"
+fi
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
   [ -n "$DBMAINTAIN_HOME" ] &&
@@ -162,10 +171,12 @@ if $cygwin; then
     DBMAINTAIN_JAR=`cygpath --path --windows "$DBMAINTAIN_JAR"`
   [ -n "$COMMONS_LOGGING_JAR" ] &&
     COMMONS_LOGGING_JAR=`cygpath --path --windows "$COMMONS_LOGGING_JAR"`
+  [ -n "$JDBC_DRIVER" ] &&
+    JDBC_DRIVER=`cygpath --path --windows "$JDBC_DRIVER"`
 fi
 
-DBMAINTAIN_CLASSPATH="${DBMAINTAIN_JAR};${COMMONS_LOGGING_JAR}"
+DBMAINTAIN_CLASSPATH="${DBMAINTAIN_JAR};${COMMONS_LOGGING_JAR};${JDBC_DRIVER}"
 
 exec "$JAVACMD" \
   $DBMAINTAIN_OPTS \
-  -classpath ${DBMAINTAIN_CLASSPATH} ${DBMAINTAIN_LAUNCHER} $QUOTED_ARGS
+  -classpath "${DBMAINTAIN_CLASSPATH}" ${DBMAINTAIN_LAUNCHER} $QUOTED_ARGS
