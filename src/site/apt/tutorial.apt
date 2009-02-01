@@ -138,16 +138,16 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	 
 ** From the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~
-    Launch scripts are provided for Windows and *nix to perform operations from the command line. For instance, to create a jar file containing all scripts simply call (Replace .sh by .bat if you're using windows):
+    Launch scripts are provided for Windows and *nix to perform operations from the command line. For instance, to create an archive file containing all scripts simply call (Replace .sh by .bat if you're using windows):
 
 +-----+	 
-/path/to/dbmaintain/dbmaintain.sh createJar path/to/jarFile path/to/scriptFolder
+/path/to/dbmaintain/dbmaintain.sh createScriptArchive path/to/archive path/to/scriptFolder
 +-----+
 	 
 	To bring a database up-to-date, execute following command:
 	 
 +-----+	 
-/path/to/dbmaintain/dbmaintain.sh update path/to/scriptFolderOrJarFile
+/path/to/dbmaintain/dbmaintain.sh update path/to/scriptFolderOrArchive
 +-----+
 
     If a file named dbmaintain.properties is available in the execution directory, this file is automatically loaded. To load another file, add -config path/to/configFile to the command.
@@ -166,7 +166,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
     You can perform a database update with the following task.
 	 
 +-----+
-<updateDatabase scriptLocations="${database.jarFile}">
+<updateDatabase scriptLocations="${database.archive}">
      <database dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
 </updateDatabase>
 +-----+
@@ -251,12 +251,12 @@ database.read.schemaNames=read
 ~~~~~~~~~~~~~~~~~~~~~~~
     Whether you launch DbMaintain from the command line, using ant or directly from Java code, the same set of operations is exposed. This section explains all operations and also shows the relevant configuration parameters.
 	
-** Create a jar file
-~~~~~~~~~~~~~~~~~~~~
-    The simplest way to use DbMaintain is to simply configure it with a scripts folder. However when you build the project, it's a good idea to also package the scripts in a jar file that you can publish as a build artifact. For example, to create the jar file from an ant task:
+** Create a script archive
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    The simplest way to use DbMaintain is to simply configure it with a scripts folder. However when building the project, it's a good idea to also package the scripts in the form of an archive file that you can publish as a build artifact. Following example demonstrates how to create a script archive using ant:
 	
 +-----+
-<createJar jarFileName="myproject-db.jar" scriptLocations="${basedir}/db/scripts"/>
+<createScriptArchive archiveFileName="myproject-db.dar" scriptLocations="${basedir}/db/scripts"/>
 +-----+	
 
 ** Update the database
@@ -266,14 +266,14 @@ database.read.schemaNames=read
 	For example, following ant task performs a database update:
 	
 +-----+
-<updateDatabase scriptLocations="path/to/dbscripts.jar">
+<updateDatabase scriptLocations="path/to/scriptarchive">
   <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" url="jdbc:oracle:thin:@localhost:1521:mydb" username="user" password="pwd" schemaNames="user"/>
 </updateDatabase>
 +-----+
 
     Following options can be used to configure the <updateDatabase> operation:
 	
-	* scriptLocations: Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a jar file. This property is required.
+	* scriptLocations: Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a script archive. This property is required.
 	
     * fromScratchEnabled: Indicates whether the database can be recreated from scratch if needed. Is disabled by default.
 	
