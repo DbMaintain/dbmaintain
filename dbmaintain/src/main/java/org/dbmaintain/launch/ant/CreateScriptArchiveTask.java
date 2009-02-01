@@ -38,7 +38,7 @@ public class CreateScriptArchiveTask extends BaseTask {
 
     private String archiveFileName;
     private String scriptLocations;
-    private String encoding;
+    private String scriptEncoding;
     private String postProcessingScriptDirectoryName;
     private String patchQualifiers;
     private String qualifierPrefix;
@@ -60,8 +60,8 @@ public class CreateScriptArchiveTask extends BaseTask {
         if (scriptLocations != null) {
             configuration.put(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
-        if (encoding != null) {
-            configuration.put(PROPERTY_SCRIPT_ENCODING, encoding);
+        if (scriptEncoding != null) {
+            configuration.put(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
         }
         if (postProcessingScriptDirectoryName != null) {
             configuration.put(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
@@ -89,8 +89,8 @@ public class CreateScriptArchiveTask extends BaseTask {
         this.scriptLocations = scriptLocations;
     }
 
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
+    public void setScriptEncoding(String scriptEncoding) {
+        this.scriptEncoding = scriptEncoding;
     }
 
     public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {
