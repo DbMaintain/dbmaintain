@@ -34,7 +34,7 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
     private String scriptLocations;
     private String scriptFileExtensions;
-    private Boolean autoCreateExecutedScriptsTable;
+    private Boolean autoCreateDbMaintainScriptsTable;
 
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.markDatabaseAsUpToDate();
@@ -49,8 +49,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         if (scriptFileExtensions != null) {
             configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         }
-        if (autoCreateExecutedScriptsTable != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
+        if (autoCreateDbMaintainScriptsTable != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateDbMaintainScriptsTable));
         }
     }
 
@@ -63,8 +63,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         this.scriptFileExtensions = scriptFileExtensions;
     }
     
-    public void setAutoCreateExecutedScriptsTable(Boolean autoCreateExecutedScriptsTable) {
-        this.autoCreateExecutedScriptsTable = autoCreateExecutedScriptsTable;
+    public void setAutoCreateDbMaintainScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {
+        this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
     }
 
 }
