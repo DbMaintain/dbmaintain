@@ -14,11 +14,11 @@ Ant tasks
 *--------+--------------+-------------------+
 |<<Task>>|<<Attributes>>||<<Child elements>>|
 *--------+--------------+-------------------+
-|createScriptJar|jarFileName (required), scriptLocations, extensions, postProcessingDirName, encoding, patchScriptSuffix, targetDatabasePrefix, configFile|
+|createScriptJar|jarFileName (required), scriptLocations, scriptFileExtensions, postProcessingDirName, encoding, patchScriptSuffix, targetDatabasePrefix, configFile|
 *--------+--------------+-------------------+
-|updateDatabase|scriptLocations (required), fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, cleanDb, disableConstraints, updateSequences, extensions, useLastModificationDates, configFile|database|
+|updateDatabase|scriptLocations (required), fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, cleanDb, disableConstraints, updateSequences, scriptFileExtensions, useLastModificationDates, configFile|database|
 *--------+--------------+-------------------+
-|markDatabaseAsUpToDate|scriptLocations (required), autoCreateDbMaintainScriptsTable, extensions, configFile|database|
+|markDatabaseAsUpToDate|scriptLocations (required), autoCreateDbMaintainScriptsTable, scriptFileExtensions, configFile|database|
 *--------+--------------+-------------------+
 |clearDatabase|configFile|database|
 *--------+--------------+-------------------+

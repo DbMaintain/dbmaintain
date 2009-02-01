@@ -33,7 +33,7 @@ import java.util.Properties;
 public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
     private String scriptLocations;
-    private String scriptExtensions;
+    private String scriptFileExtensions;
     private Boolean autoCreateExecutedScriptsTable;
 
     protected void performTask(DbMaintain dbMaintain) {
@@ -46,8 +46,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         if (scriptLocations != null) {
             configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         }
-        if (scriptExtensions != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, scriptExtensions);
+        if (scriptFileExtensions != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         }
         if (autoCreateExecutedScriptsTable != null) {
             configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateExecutedScriptsTable));
@@ -59,8 +59,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         this.scriptLocations = scriptLocations;
     }
     
-    public void setScriptExtensions(String scriptExtensions) {
-        this.scriptExtensions = scriptExtensions;
+    public void setScriptFileExtensions(String scriptFileExtensions) {
+        this.scriptFileExtensions = scriptFileExtensions;
     }
     
     public void setAutoCreateExecutedScriptsTable(Boolean autoCreateExecutedScriptsTable) {

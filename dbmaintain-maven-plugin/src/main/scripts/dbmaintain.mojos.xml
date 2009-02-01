@@ -85,7 +85,7 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>extensions</name>
+          <name>scriptFileExtensions</name>
           <type>java.lang.String</type>
           <required>true</required>
           <description></description>
@@ -136,10 +136,10 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>extensions</name>
-          <property>extensions</property>
+          <name>scriptFileExtensions</name>
+          <property>scriptFileExtensions</property>
           <required>false</required>
-          <expression>dbmaintain.extensions</expression>
+          <expression>dbmaintain.scriptFileExtensions</expression>
           <type>java.lang.String</type>
           <description></description>
         </parameter>
@@ -255,7 +255,7 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>extensions</name>
+          <name>scriptFileExtensions</name>
           <type>java.lang.String</type>
           <required>true</required>
           <description></description>

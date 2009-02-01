@@ -39,11 +39,11 @@ public class CreateScriptArchiveTask extends BaseTask {
     private String archiveFileName;
     private String scriptLocations;
     private String encoding;
-    private String postProcessingScriptsDirName;
+    private String postProcessingScriptDirectoryName;
     private String patchQualifiers;
     private String qualifierPrefix;
     private String targetDatabasePrefix;
-    private String extensions;
+    private String scriptFileExtensions;
 
     @Override
     public void execute() throws BuildException {
@@ -63,8 +63,8 @@ public class CreateScriptArchiveTask extends BaseTask {
         if (encoding != null) {
             configuration.put(PROPERTY_SCRIPT_ENCODING, encoding);
         }
-        if (postProcessingScriptsDirName != null) {
-            configuration.put(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, postProcessingScriptsDirName);
+        if (postProcessingScriptDirectoryName != null) {
+            configuration.put(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
         }
         if (patchQualifiers != null) {
             configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
@@ -75,8 +75,8 @@ public class CreateScriptArchiveTask extends BaseTask {
         if (qualifierPrefix != null) {
             configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
         }
-        if (extensions != null) {
-            configuration.put(PROPERTY_SCRIPT_EXTENSIONS, extensions);
+        if (scriptFileExtensions != null) {
+            configuration.put(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         }
     }
 
@@ -93,8 +93,8 @@ public class CreateScriptArchiveTask extends BaseTask {
         this.encoding = encoding;
     }
 
-    public void setPostProcessingScriptsDirName(String postProcessingScriptsDirName) {
-        this.postProcessingScriptsDirName = postProcessingScriptsDirName;
+    public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {
+        this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
     }
 
     public void setPatchQualifiers(String patchQualifiers) {
@@ -109,7 +109,7 @@ public class CreateScriptArchiveTask extends BaseTask {
         this.targetDatabasePrefix = targetDatabasePrefix;
     }
 
-    public void setExtensions(String extensions) {
-        this.extensions = extensions;
+    public void setScriptFileExtensions(String scriptFileExtensions) {
+        this.scriptFileExtensions = scriptFileExtensions;
     }
 }

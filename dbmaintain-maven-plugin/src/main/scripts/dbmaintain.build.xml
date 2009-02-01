@@ -17,7 +17,7 @@
       cleanDb="${cleanDb}"
       disableConstraints="${disableConstraints}"
       updateSequences="${updateSequences}"
-      extensions="${extensions}"
+      scriptFileExtensions="${scriptFileExtensions}"
       useLastModificationDates="${useLastModificationDates}" >
     </updateDatabase>
   </target>
@@ -32,7 +32,7 @@
       configFile="${configFile}" 
       jarFileName="${jarFileName}"
       scriptLocations="${scriptLocations}"
-      extensions="${extensions}"
+      scriptFileExtensions="${scriptFileExtensions}"
       postProcessingDirName="${postProcessingDirName}"
       encoding="${encoding}"
       patchScriptSuffix="${patchScriptSuffix}"
@@ -54,7 +54,7 @@
     <markDatabaseAsUpToDate 
       configFile="${configFile}"
       scriptLocations="${scriptLocations}"
-      extensions="${extensions}"
+      scriptFileExtensions="${scriptFileExtensions}"
       autoCreateExecutedScriptsTable="${autoCreateExecutedScriptsTable}">
     </markDatabaseAsUpToDate>
   </target>

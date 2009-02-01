@@ -173,12 +173,12 @@ public interface DbMaintainProperties {
     /**
      * Property key for the extension of the script files
      */
-    public static final String PROPERTY_SCRIPT_EXTENSIONS = "dbMaintainer.script.fileExtensions";
+    public static final String PROPERTY_SCRIPT_FILE_EXTENSIONS = "dbMaintainer.script.fileExtensions";
 
     /**
      * Property key for the directory in which the code script files are located
      */
-    public static final String PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
+    public static final String PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
 
     /**
      * Property key for the patch indicator. I.e. the keyword to use in the filename to indicate that the script is a patch script.

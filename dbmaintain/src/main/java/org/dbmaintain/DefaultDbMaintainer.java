@@ -184,9 +184,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
         if (!getIndexedScriptsThatFailedDuringLastUpdate().isEmpty()) {
             if (!scriptUpdates.hasIrregularScriptUpdates()) {
                 throw new DbMaintainException("During the latest update, the execution of the following indexed script failed: " +
-                    getIndexedScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
-                    "before any other updates can be performed: This can be the failed script itself or another indexed script with " +
-                    "a lower index.");
+                    getIndexedScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed before any other " +
+                    "updates can be performed.");
             }
         }
 
@@ -217,6 +216,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 // Recreate the database from scratch
                 logger.info("The database is recreated from scratch, because one or more irregular script updates were detected:\n" +
                         formatUpdates(scriptUpdates.getIrregularScriptUpdates()));
+                if (scriptUpdates.hasRegularScriptUpdates()) {
+                    logger.info("Following regular script updates were also detected:\n" + formatUpdates(scriptUpdates.getRegularScriptUpdates()));
+                }
                 recreateFromScratch = true;
             } else {
                 throw new DbMaintainException("Following irregular script updates were detected:\n" + formatUpdates(scriptUpdates.getIrregularScriptUpdates()) +
@@ -322,20 +324,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
         StringBuilder formattedUpdates = new StringBuilder();
         int index = 0;
         for (ScriptUpdate scriptUpdate : scriptUpdates) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        return formattedUpdates.toString();
-    }
-
-
-    /**
-     * @param scriptUpdates The script updates, not null
-     * @return An printable overview of the irregular script updates
-     */
-    protected String formatIrregularUpdates(ScriptUpdates scriptUpdates) {
-        StringBuilder formattedUpdates = new StringBuilder();
-        int index = 0;
-        for (ScriptUpdate scriptUpdate : scriptUpdates.getIrregularScriptUpdates()) {
             formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
         }
         return formattedUpdates.toString();

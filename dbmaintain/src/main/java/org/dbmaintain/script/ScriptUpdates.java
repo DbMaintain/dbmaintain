@@ -81,6 +81,11 @@ public class ScriptUpdates {
     }
 
 
+    public boolean hasRegularScriptUpdates() {
+        return getRegularScriptUpdates().size() != 0; 
+    }
+
+
     public boolean hasIrregularScriptUpdates() {
         return irregularScriptUpdates.size() > 0;
     }

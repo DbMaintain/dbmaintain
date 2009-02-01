@@ -38,7 +38,7 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     private Boolean disableConstraints;
     private Boolean updateSequences;
     private Boolean useLastModificationDates;
-    private String scriptExtensions;
+    private String scriptFileExtensions;
 
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.updateDatabase();
@@ -68,8 +68,8 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         if (updateSequences != null) {
             configuration.put(DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES_ENABLED, updateSequences);
         }
-        if (scriptExtensions != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_EXTENSIONS, scriptExtensions);
+        if (scriptFileExtensions != null) {
+            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         }
         if (useLastModificationDates != null) {
             configuration.put(DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, String.valueOf(useLastModificationDates));
@@ -156,13 +156,13 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     }
     
     /**
-     * Sets the extensions property, that defines the extensions of the files that are regarded to be database scripts.
+     * Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts.
      * The extensions should not start with a dot. The default is 'sql,ddl'.
      * 
-     * @param scriptExtensions Comma separated list of file extensions.
+     * @param scriptFileExtensions Comma separated list of file extensions.
      */
-    public void setScriptExtensions(String scriptExtensions) {
-        this.scriptExtensions = scriptExtensions;
+    public void setScriptFileExtensions(String scriptFileExtensions) {
+        this.scriptFileExtensions = scriptFileExtensions;
     }
     
     /**

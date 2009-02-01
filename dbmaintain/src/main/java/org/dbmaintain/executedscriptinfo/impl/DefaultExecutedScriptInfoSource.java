@@ -112,14 +112,14 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     /**
      * The name of the post processing dir
      */
-    protected String postProcessingDirName;
+    protected String postProcessingScriptDirName;
 
 
     public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName,
             int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize,
             String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat,
             DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix,
-            Set<String> patchQualifiers, String postProcessingDirName) {
+            Set<String> patchQualifiers, String postProcessingScriptDirName) {
 
         this.defaultDbSupport = defaultSupport;
         this.sqlHandler = sqlHandler;
@@ -137,7 +137,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         this.targetDatabasePrefix = targetDatabasePrefix;
         this.qualifierPefix = qualifierPrefix;
         this.patchQualifiers = patchQualifiers;
-        this.postProcessingDirName = postProcessingDirName;
+        this.postProcessingScriptDirName = postProcessingScriptDirName;
     }
     
     
@@ -192,7 +192,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingDirName), executedAt, succeeded);
+                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName), executedAt, succeeded);
                 executedScripts.add(executedScript);
             }
 

@@ -170,22 +170,22 @@ public class PropertiesDbMaintainConfigurer {
 
     public ArchiveScriptLocation createArchiveScriptLocation(SortedSet<Script> scripts) {
         String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
-        String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
         Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String qualifierPefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
         return new ArchiveScriptLocation(scripts, scriptEncoding, postProcessingScriptDirName, patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
     }
 
 
     public ScriptLocation createScriptLocation(String scriptLocation) {
         String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
-        String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
         Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String qualifierPefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
-        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_EXTENSIONS, configuration));
+        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
         File scriptLocationFile = new File(scriptLocation);
         if (scriptLocationFile.isDirectory()) {
             return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
@@ -213,7 +213,7 @@ public class PropertiesDbMaintainConfigurer {
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
-        String postProcessingScriptsDirname = getString(PROPERTY_POSTPROCESSINGSCRIPTS_DIRNAME, configuration);
+        String postProcessingScriptsDirname = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
         return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, String.class,

@@ -287,7 +287,7 @@ database.read.schemaNames=read
 	
     * updateSequences: If set to true, all sequences and identity columns are set to a sufficiently high value, so that test data can be inserted without having manually chosen test record IDs clashing with automatically generated keys. False by default.
 	
-    * extensions: Defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl'.
+    * scriptFileExtensions: Defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl'.
 	
     * useLastModificationDates: Defines whether the last modification dates of the scripts files can be used to determine whether the contents of a script has changed. If set to true, DbMaintain will not look at the contents of scripts that were already executed on the database, if the last modification date is still the same. If it did change, it will first calculate the checksum of the file to verify that the content really changed. Setting this property to true improves performance: if set to false the checksum of every script must be calculated for each run. True by default.
 
