@@ -60,13 +60,13 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
             configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, String.valueOf(allowOutOfSequenceExecutionOfPatches));
         }
         if (cleanDb != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_CLEANDB_ENABLED, String.valueOf(cleanDb));
+            configuration.put(DbMaintainProperties.PROPERTY_CLEANDB, String.valueOf(cleanDb));
         }
         if (disableConstraints != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_DISABLE_CONSTRAINTS_ENABLED, disableConstraints);
+            configuration.put(DbMaintainProperties.PROPERTY_DISABLE_CONSTRAINTS, disableConstraints);
         }
         if (updateSequences != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES_ENABLED, updateSequences);
+            configuration.put(DbMaintainProperties.PROPERTY_UPDATE_SEQUENCES, updateSequences);
         }
         if (scriptFileExtensions != null) {
             configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);

@@ -58,7 +58,7 @@ public interface DbMaintainProperties {
     /**
      * Property indicating if deleting all data from all tables before updating is enabled
      */
-    public static final String PROPERTY_CLEANDB_ENABLED = "dbMaintainer.cleanDb.enabled";
+    public static final String PROPERTY_CLEANDB = "dbMaintainer.cleanDb";
 
     /**
      * Property indicating if updating the database from scratch is enabled
@@ -66,25 +66,19 @@ public interface DbMaintainProperties {
     public static final String PROPERTY_FROM_SCRATCH_ENABLED = "dbMaintainer.fromScratch.enabled";
 
     /**
-     * Property indicating if database code should be cleared before installing a new version of
-     * the code or when updating the database from scratch
+     * Property indicating if the database constraints should org disabled after updating the database
      */
-    public static final String PROPERTY_CLEAR_DB_CODE_ENABLED = "dbMaintainer.clearDbCode.enabled";
+    public static final String PROPERTY_DISABLE_CONSTRAINTS = "dbMaintainer.disableConstraints";
 
     /**
      * Property indicating if the database constraints should org disabled after updating the database
      */
-    public static final String PROPERTY_DISABLE_CONSTRAINTS_ENABLED = "dbMaintainer.disableConstraints.enabled";
-
-    /**
-     * Property indicating if the database constraints should org disabled after updating the database
-     */
-    public static final String PROPERTY_UPDATE_SEQUENCES_ENABLED = "dbMaintainer.updateSequences.enabled";
+    public static final String PROPERTY_UPDATE_SEQUENCES = "dbMaintainer.updateSequences";
 
     /**
      * Property that indicates if a data set DTD or XSD is to be generated or not
      */
-    public static final String PROPERTY_GENERATE_DATA_SET_STRUCTURE_ENABLED = "dbMaintainer.generateDataSetStructure.enabled";
+    public static final String PROPERTY_GENERATE_DATA_SET_STRUCTURE = "dbMaintainer.generateDataSetStructure";
 
     /* Property key for the lowest acceptable sequence value */
     public static final String PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE = "sequenceUpdater.sequencevalue.lowestacceptable";
@@ -190,7 +184,7 @@ public interface DbMaintainProperties {
      */
     public static final String PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION = "dbMaintainer.patch.allowOutOfSequenceExecution";
 
-    public static final String PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates.enabled";
+    public static final String PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates";
 
     public static final String PROPERTY_SCRIPT_ENCODING = "dbMaintainer.script.encoding";
 
@@ -198,7 +192,7 @@ public interface DbMaintainProperties {
 
     public static final String PROPERTY_SCRIPT_QUALIFIER_PREFIX = "dbMaintainer.script.qualifier.prefix";
 
-    public static final String PROPERTY_BACKSLASH_ESCAPING_ENABLED = "org.dbmaintain.scriptparser.ScriptParser.backSlashEscapingEnabled";
+    public static final String PROPERTY_BACKSLASH_ESCAPING_ENABLED = "dbMaintainer.script.backSlashEscapingEnabled";
 
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 
