@@ -48,7 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * todo javadoc
+ * Configures all dbmaintain objects using dependency injection (constructor injection)
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -57,7 +57,6 @@ public class PropertiesDbMaintainConfigurer {
 
     /* The logger instance for this class */
     private static final Log logger = LogFactory.getLog(PropertiesDbMaintainConfigurer.class);
-
 
     protected Properties configuration;
 
@@ -68,8 +67,8 @@ public class PropertiesDbMaintainConfigurer {
     protected DbSupport defaultDbSupport;
 
     /**
-     * @param configuration
-     * @param sqlHandler
+     * @param configuration the properties that define the entire configuration of dbmaintain
+     * @param sqlHandler handles all queries and updates to the database
      */
     public PropertiesDbMaintainConfigurer(Properties configuration, SQLHandler sqlHandler) {
         this.configuration = configuration;
@@ -78,12 +77,12 @@ public class PropertiesDbMaintainConfigurer {
 
 
     /**
-     * Constructor for PropertiesDbMaintainConfigurer.
+     * Constructor for PropertiesDbMaintainConfigurer that passes in a custom defaultDbSupport and nameDbSupportMap
      *
-     * @param configuration
-     * @param defaultDbSupport
-     * @param nameDbSupportMap
-     * @param sqlHandler
+     * @param configuration the properties that define the rest of the configuration of dbmaintain
+     * @param defaultDbSupport the default DbSupport that provides access to the default database
+     * @param nameDbSupportMap maps logical database names to the DbSupport instances that provide access to these databases
+     * @param sqlHandler handles all queries and updates to the database
      */
     public PropertiesDbMaintainConfigurer(Properties configuration,
                                           DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {

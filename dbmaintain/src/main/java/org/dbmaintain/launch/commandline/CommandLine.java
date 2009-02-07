@@ -21,6 +21,7 @@ import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
@@ -206,14 +207,28 @@ public class CommandLine {
         }
     }
 
+
+
     /**
      * Gets an instance of {@link DbMaintain} configured with the given <code>Properties</code>
-     * 
+     *
      * @param configuration The configuration to use to configure DbMaintain
      * @return An instance of {@link DbMaintain}
      */
     protected static DbMaintain getDbMaintain(Properties configuration) {
-        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, new DefaultSQLHandler());
+        return getDbMaintain(configuration, new DefaultSQLHandler());
+    }
+
+
+    /**
+     * Gets an instance of {@link DbMaintain} configured with the given <code>Properties</code>
+     * 
+     * @param configuration the configuration to use to configure DbMaintain
+     * @param sqlHandler handles all access to the underlying database
+     * @return An instance of {@link DbMaintain}
+     */
+    protected static DbMaintain getDbMaintain(Properties configuration, SQLHandler sqlHandler) {
+        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, sqlHandler);
         return new DbMaintain(dbMaintainConfigurer);
     }
     

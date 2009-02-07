@@ -15,13 +15,13 @@
  */
 package org.dbmaintain;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.format.ScriptUpdatesFormatter;
 import org.dbmaintain.script.*;
 import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
 import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
@@ -87,7 +87,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected SQLHandler sqlHandler;
 
-    protected boolean cleanDbEnabled;
+    protected boolean cleanDb;
 
     /**
      * Indicates whether updating the database from scratch is enabled. If true, the database is
@@ -117,12 +117,17 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * Indicates if foreign key and not null constraints should removed after updating the database
      * structure
      */
-    protected boolean disableConstraintsEnabled;
+    protected boolean disableConstraints;
 
     /**
      * Indicates whether sequences and identity columns must be updated to a certain minimal value
      */
-    protected boolean updateSequencesEnabled;
+    protected boolean updateSequences;
+
+    /**
+     * Formats the script updates in order to output it to the user
+     */
+    protected ScriptUpdatesFormatter scriptUpdatesFormatter;
 
     protected DefaultDbMaintainer() {
     }
@@ -130,18 +135,18 @@ public class DefaultDbMaintainer implements DbMaintainer {
     /**
      * Creates a new instance
      *
-     * @param scriptRunner The runner that executes the database scripts
-     * @param scriptRepository
-     * @param executedScriptInfoSource Provides information about which scripts were already executed on the database
-     * @param fromScratchEnabled If true, the database will be cleared and recreated from scratch if needed
-     * @param hasItemsToPreserve
-     * @param useScriptFileLastModificationDates
-     * @param allowOutOfSequenceExecutionOfPatchScripts
-     * @param allowOutOfSequenceExecutionOfPatchScripts
-     * @param cleanDbEnabled If true, the data from all tables will be removed before performing any updates
-     * @param disableConstraintsEnabled If true, all foreign key and not null constraints will be automatically disabled
+     * @param scriptRunner runner that executes the database scripts
+     * @param scriptRepository provides access to all database scripts
+     * @param executedScriptInfoSource provides information about which scripts were already executed on the database
+     * @param fromScratchEnabled if true, the database will be cleared and recreated from scratch if needed
+     * @param hasItemsToPreserve if true, there are items in the database that must be preserved when performing a from-scratch update
+     * @param useScriptFileLastModificationDates if true, the dbmaintainer decides that a script hasn't changed if the
+     * last modification date is identical to the one of the last update, without looking at the contents of the script
+     * @param allowOutOfSequenceExecutionOfPatchScripts if true, patch scripts can be executed out-of-sequence
+     * @param cleanDb If true, the data from all tables will be removed before performing any updates
+     * @param disableConstraints If true, all foreign key and not null constraints will be automatically disabled
      * or removed after each update
-     * @param updateSequencesEnabled If true, the value of all sequences will be set to a minimal value after each update
+     * @param updateSequences If true, the value of all sequences will be set to a minimal value after each update
      * @param dbClearer Helper object that can clear the database, i.e. drop all database objects
      * @param dbCleaner Helper object that can clean the database, i.e. remove the data from all tables
      * @param constraintsDisabler Helper object that can disable or remove all foreign key or not null constraints
@@ -149,8 +154,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-               boolean cleanDbEnabled, boolean disableConstraintsEnabled, boolean updateSequencesEnabled, DBClearer dbClearer,
-               DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater, SQLHandler sqlHandler) {
+               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
+               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
 
         this.scriptRunner = scriptRunner;
         this.scriptRepository = scriptRepository;
@@ -159,13 +164,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.hasItemsToPreserve = hasItemsToPreserve;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
-        this.cleanDbEnabled = cleanDbEnabled;
-        this.disableConstraintsEnabled = disableConstraintsEnabled;
-        this.updateSequencesEnabled = updateSequencesEnabled;
+        this.cleanDb = cleanDb;
+        this.disableConstraints = disableConstraints;
+        this.updateSequences = updateSequences;
         this.dbClearer = dbClearer;
         this.dbCleaner = dbCleaner;
         this.constraintsDisabler = constraintsDisabler;
         this.sequenceUpdater = sequenceUpdater;
+        this.scriptUpdatesFormatter = scriptUpdatesFormatter;
         this.sqlHandler = sqlHandler;
     }
 
@@ -178,13 +184,12 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * at the end.
      */
     public void updateDatabase() {
-        ScriptUpdates scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource,
-                useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
+        ScriptUpdates scriptUpdates = getScriptUpdates();
 
-        if (!getIndexedScriptsThatFailedDuringLastUpdate().isEmpty()) {
+        if (!getIncrementalScriptsThatFailedDuringLastUpdate().isEmpty()) {
             if (!scriptUpdates.hasIrregularScriptUpdates()) {
                 throw new DbMaintainException("During the latest update, the execution of the following indexed script failed: " +
-                    getIndexedScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed before any other " +
+                    getIncrementalScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed before any other " +
                     "updates can be performed.");
             }
         }
@@ -215,13 +220,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
             if (fromScratchEnabled) {
                 // Recreate the database from scratch
                 logger.info("The database is recreated from scratch, because one or more irregular script updates were detected:\n" +
-                        formatUpdates(scriptUpdates.getIrregularScriptUpdates()));
+                        scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()));
                 if (scriptUpdates.hasRegularScriptUpdates()) {
-                    logger.info("Following regular script updates were also detected:\n" + formatUpdates(scriptUpdates.getRegularScriptUpdates()));
+                    logger.info("Following regular script updates were also detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
                 }
                 recreateFromScratch = true;
             } else {
-                throw new DbMaintainException("Following irregular script updates were detected:\n" + formatUpdates(scriptUpdates.getIrregularScriptUpdates()) +
+                throw new DbMaintainException("Following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()) +
                     "\nBecause of this, dbmaintain can't perform the update. To solve this problem, you can do one of the following:\n" +
                     "  1: Revert the irregular updates and use regular script updates instead\n" +
                     "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
@@ -234,10 +239,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
             clearDatabase();
             executeScripts(scriptRepository.getAllUpdateScripts());
         } else {
-            logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + formatUpdates(scriptUpdates.getRegularScriptUpdates()));
+            logger.info("The database is updated incrementally, since following regular script updates were detected:\n" +
+                    scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
 
             // If cleandb is enabled, remove all data from the database.
-            if (cleanDbEnabled) {
+            if (cleanDb) {
                 dbCleaner.cleanDatabase();
             }
             // If there are incremental patch scripts with a lower index and the option allowOutOfSequenceExecutionOfPatches
@@ -255,11 +261,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executePostprocessingScripts();
 
             // If the disable constraints option is enabled, disable all FK and not null constraints
-            if (disableConstraintsEnabled) {
+            if (disableConstraints) {
                 constraintsDisabler.disableConstraints();
             }
             // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
-            if (updateSequencesEnabled) {
+            if (updateSequences) {
                 sequenceUpdater.updateSequences();
             }
             logger.info("The database has been updated successfully.");
@@ -267,6 +273,17 @@ public class DefaultDbMaintainer implements DbMaintainer {
             logger.info("No script changes detected.");
         }
         sqlHandler.closeAllConnections();
+    }
+
+
+    /**
+     * This operation calcutes and logs which script updates have been performed since the last database update.
+     *
+     * @return the scripts that have been updated since the last database update
+     */
+    public ScriptUpdates getScriptUpdates() {
+        return new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates,
+                allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
     }
 
 
@@ -279,6 +296,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
+    /**
+     * Executes all postprocessing scripts
+     */
     protected void executePostprocessingScripts() {
         executedScriptInfoSource.deleteAllExecutedPostprocessingScripts();
         executeScripts(scriptRepository.getPostProcessingScripts());
@@ -309,72 +329,19 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
+    /**
+     * Updates the records in the DBMAINTAIN_SCRIPTS table for all scripts that were regularly renamed (i.e. renamed
+     * without changing the order of the incremental scripts.
+     *
+     * @param regularScriptRenames the scripts that were regularly renamed
+     */
     protected void performRegularScriptRenamesInExecutedScripts(SortedSet<ScriptUpdate> regularScriptRenames) {
         for (ScriptUpdate regularScriptRename : regularScriptRenames) {
             executedScriptInfoSource.renameExecutedScript(getAlreadyExecutedScripts().get(regularScriptRename.getScript()), regularScriptRename.getRenamedToScript());
         }
     }
 
-
-    /**
-     * @param scriptUpdates The script updates, not null
-     * @return An printable overview of the regular script updates
-     */
-    protected String formatUpdates(SortedSet<ScriptUpdate> scriptUpdates) {
-        StringBuilder formattedUpdates = new StringBuilder();
-        int index = 0;
-        for (ScriptUpdate scriptUpdate : scriptUpdates) {
-            formattedUpdates.append("  ").append(++index).append(". ").append(StringUtils.capitalize(formatScriptUpdate(scriptUpdate))).append("\n");
-        }
-        return formattedUpdates.toString();
-    }
-
-
-    /**
-     * @param scriptUpdate The script update to format, not null
-     * @return A printable view of the given script update
-     */
-    protected String formatScriptUpdate(ScriptUpdate scriptUpdate) {
-        switch (scriptUpdate.getType()) {
-            case HIGHER_INDEX_SCRIPT_ADDED:
-                return "newly added indexed script: " + scriptUpdate.getScript().getFileName();
-            case REPEATABLE_SCRIPT_ADDED:
-                return "newly added repeatable script: " + scriptUpdate.getScript().getFileName();
-            case REPEATABLE_SCRIPT_UPDATED:
-                return "updated repeatable script: " + scriptUpdate.getScript().getFileName();
-            case REPEATABLE_SCRIPT_DELETED:
-                return "deleted repeatable script: " + scriptUpdate.getScript().getFileName();
-            case POSTPROCESSING_SCRIPT_ADDED:
-                return "newly added postprocessing script: " + scriptUpdate.getScript().getFileName();
-            case POSTPROCESSING_SCRIPT_UPDATED:
-                return "updated postprocessing script: " + scriptUpdate.getScript().getFileName();
-            case POSTPROCESSING_SCRIPT_DELETED:
-                return "deleted postprocessing script: " + scriptUpdate.getScript().getFileName();
-            case INDEXED_SCRIPT_UPDATED:
-                return "updated indexed script: " + scriptUpdate.getScript().getFileName();
-            case INDEXED_SCRIPT_DELETED:
-                return "deleted indexed script: " + scriptUpdate.getScript().getFileName();
-            case LOWER_INDEX_NON_PATCH_SCRIPT_ADDED:
-                return "newly added script with a lower index: "
-                        + scriptUpdate.getScript().getFileName();
-            case LOWER_INDEX_PATCH_SCRIPT_ADDED:
-                return "newly added patch script with a lower index: "
-                        + scriptUpdate.getScript().getFileName();
-            case INDEXED_SCRIPT_RENAMED:
-                return "renamed indexed script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript()
-                        + ", without changing the sequence of the scripts";
-            case INDEXED_SCRIPT_RENAMED_SCRIPT_SEQUENCE_CHANGED:
-                return "renamed indexed script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript()
-                        + ", which changes the sequence of the scripts";
-            case REPEATABLE_SCRIPT_RENAMED:
-                return "renamed repeatable script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript();
-            case POSTPROCESSING_SCRIPT_RENAMED:
-                return "renamed postprocessing script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript();
-        }
-        throw new IllegalArgumentException("Invalid script update type " + scriptUpdate.getType());
-    }
-
-
+    
     /**
      * This operation updates the state of the database to indicate that all scripts have been executed, without actually
      * executing them. This can be useful when you want to start using DbMaintain on an existing database, or after having
@@ -459,7 +426,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected void executeScriptUpdates(SortedSet<ScriptUpdate> scriptUpdates) {
         for (ScriptUpdate scriptUpdate : scriptUpdates) {
-            logger.info("Executing " + formatScriptUpdate(scriptUpdate));
+            logger.info("Executing " + scriptUpdatesFormatter.formatScriptUpdate(scriptUpdate));
             executeScript(scriptUpdate.getScript());
         }
     }
@@ -507,33 +474,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-    /*protected boolean shouldUpdateDatabaseFromScratch() {
-        // check whether an existing script was updated
-        // check whether the last run was successful
-        if (errorInIndexedScriptDuringLastUpdate()) {
-            if (fromScratchEnabled) {
-                if (!keepRetryingAfterError) {
-                    throw new DbMaintainException("During a previous database update, the execution of an incremental script failed! Since " +
-                            PROPERTY_KEEP_RETRYING_AFTER_ERROR_ENABLED + " is set to false, the database will not be rebuilt " +
-                            "from scratch, unless the failed (or another) incremental script is modified.");
-                }
-                logger.info("During a previous database update, the execution of a incremental script failed! " +
-                        "Database will be cleared and rebuilt from scratch.");
-                return true;
-            } else {
-                logger.warn("During a previous database update, the execution of an incremental script failed! " +
-                        "Since from scratch updates are disabled, you should fix the erroneous script, solve the problem " +
-                        "manually on the database, and then reset the database state by invoking resetDatabaseState()");
-                return false;
-            }
-        }
-
-        // from scratch is not needed
-        return false;
-    } */
-
-
-    protected SortedSet<ExecutedScript> getIndexedScriptsThatFailedDuringLastUpdate() {
+    /**
+     * @return the incremental scripts that failed during the last database update
+     */
+    protected SortedSet<ExecutedScript> getIncrementalScriptsThatFailedDuringLastUpdate() {
         SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
             if (!script.isSuccessful() && script.getScript().isIncremental()) {
@@ -544,6 +488,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
+    /**
+     * @return the repeatable scripts that failed during the last database update
+     */
     protected SortedSet<ExecutedScript> getRepeatableScriptsThatFailedDuringLastUpdate() {
         SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
@@ -555,7 +502,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
 
-    protected boolean errorInIndexedScriptDuringLastUpdate() {
+    /**
+     * @return whether during the last database update, an error occured while executing an incremental script
+     */
+    protected boolean errorInIncrementalScriptDuringLastUpdate() {
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
             if (script.getScript().isIncremental() && !script.isSuccessful()) {
                 return true;

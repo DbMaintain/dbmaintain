@@ -15,6 +15,8 @@
  */
 package org.dbmaintain;
 
+import org.dbmaintain.script.ScriptUpdates;
+
 /**
  * Defines the contract for classes that perform automatic maintenance of a database.<br>
  * <p/>
@@ -27,6 +29,7 @@ package org.dbmaintain;
  * @author Tim Ducheyne
  */
 public interface DbMaintainer {
+
 
     /**
      * This operation can be used to bring the database to the latest version. First it checks which scripts were already
@@ -68,7 +71,6 @@ public interface DbMaintainer {
      * are left untouched.
      */
     void disableConstraints();
-
 
     /**
      * This operation thatupdates all sequences and identity columns to a minimum value.

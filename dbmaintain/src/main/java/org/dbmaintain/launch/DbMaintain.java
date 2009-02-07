@@ -15,13 +15,18 @@
  */
 package org.dbmaintain.launch;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
+import org.dbmaintain.format.ScriptUpdatesFormatter;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptUpdates;
 import org.dbmaintain.script.impl.ArchiveScriptLocation;
 import org.dbmaintain.script.impl.ScriptRepository;
+import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;
 import java.net.URL;
@@ -38,6 +43,8 @@ import java.util.SortedSet;
 public class DbMaintain {
     
     private PropertiesDbMaintainConfigurer dbMaintainConfigurer;
+
+    private static final Log logger = LogFactory.getLog(DbMaintain.class);
     
     /**
      * Creates a new instance of {@link DbMaintain} using the link to the given properties file URL for configuration.
@@ -71,7 +78,7 @@ public class DbMaintain {
         archiveScriptLocation.writeToJarFile(new File(archiveFileName));
     }
 
-    
+
     /**
      * Updates the database to the latest version.
      */

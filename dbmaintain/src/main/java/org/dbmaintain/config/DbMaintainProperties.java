@@ -19,7 +19,7 @@ package org.dbmaintain.config;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DbMaintainProperties {
+public class DbMaintainProperties {
 
     public static final String PROPERTY_DATABASE_START = "database";
 
@@ -196,4 +196,8 @@ public interface DbMaintainProperties {
 
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private DbMaintainProperties() {}
 }
