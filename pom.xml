@@ -88,6 +88,15 @@
             <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <outputEncoding>ISO-8859-1</outputEncoding>
+            <!--templateFile>${basedir}/src/site/maven-site.vm</templateFile-->
+         </configuration>
+         </plugin>
+
       </plugins>
     </pluginManagement>
   </build>

@@ -32,7 +32,13 @@ a:visited {
 }
 
 .section h2 {
-    font-size: 22px;
+  padding: 4px 4px 4px 24px;
+  color: #000;
+  background-color: #9999CC;
+  font-weight: bold;
+  font-size: 14px;
+  background-repeat: no-repeat;
+  background-position: left bottom;
 }
 
 .section h3 {

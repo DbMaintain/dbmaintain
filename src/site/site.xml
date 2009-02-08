@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="DbMaintain">
-    
+    <bannerLeft>
+        <name>DbMaintain</name>
+        <src>./images/logos/dbmaintain.gif</src>
+    </bannerLeft>
     <poweredBy>    
         <logo img="http://sflogo.sourceforge.net/sflogo.php?group_id=167201&amp;type=1" name="SourceForge.net" href="http://sourceforge.net/" />        
         <logo img="./images/logos/maven-feather-border.png" name="Built by Maven" href="http://maven.apache.org/" />     
