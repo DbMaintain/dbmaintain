@@ -49,7 +49,7 @@ scripts/01_v1.0/01_products_and_orders.sql
 	
 	You can recognize repeatable scripts from the file name: it has no index number. The directories that contain repeatable scripts also cannot have an index number. If you put a non-indexed script inside an indexed one, dbmaintain will give an error.
 	
-	Repeatable scripts are always executed after all indexed scripts. Therefore, they cannot be located inside an indexed folder. If your database project contains repeatable scripts, it's a good idea to clearly separate them from the incremental scripts, like in following example:
+	Repeatable scripts are always executed after all incremental (indexed) scripts. Therefore, they cannot be located inside an indexed folder. If your database project contains repeatable scripts, it's a good idea to clearly separate them from the incremental scripts, like in following example:
 	
 +----+
 scripts/incremental/01_v1.0/01_products_and_orders.sql
@@ -63,7 +63,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	
 ** {Postprocessing scripts}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Some projects have scripts that need to be executed each time a script was executed, such as for example a script that compiles all stored procedures. Post processing scripts can be defined for this purpose. Post processing scripts have to be located in the directory called <postprocessing>, located directly in the root of the configured scripts folder. They can be indexed, but don't have to be: Indexes can be used to indicate the execution sequence of the post-processing scripts. An indexed post-processing script can be modified without causing an error or triggering a from-scratch update. If a post-processing script is modified, all of them are executed again. For example:
+    Some projects have scripts that need to be executed each time a script was executed, such as for example a script that compiles all stored procedures. Post processing scripts can be defined for this purpose. Post processing scripts have to be located in the directory called <postprocessing>, located directly in the root of the configured scripts folder. They can be indexed, but they don't have to be: Indexes can be used to indicate the execution sequence of the post-processing scripts. An indexed post-processing script can be modified without causing an error or triggering a from-scratch update. If a post-processing script is modified, all of them are executed again. For example:
 	
 +----+
 scripts/incremental/01_v1.0/01_products_and_orders.sql
@@ -114,7 +114,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 		                    02_drop_itemcode_column.sql
 +----+
 
-    When we try to deploy to a test database on which the scripts in folder 02_v1.1 were already rolled out, DbMaintain will give an error. If the <fromScratch> option is enabled, the database will automatically be recreated from scratch. This will cause all data to be lost, which is in most cases not desirable since the database may be used by the customer to test the newly developed features.
+    When we try to deploy to a test database on which the scripts in folder 02_v1.1 were already rolled out, DbMaintain will give an error. If the <fromScratchEnabled> option is set to true, the database will automatically be recreated from scratch. This will cause all data to be lost, which is in most cases not desirable since the database may be used by the customer to test the newly developed features.
 	
 	To be able cope with such situations, we offer the notion of a <patch>. A script or a folder containing scripts can be marked as being a <patch>, by adding the #PATCH qualifier to the file or folder name. A patch has to be written in such a way that it can be executed on both the current production version and the latest development version. This will lead to the following scripts:
 	
@@ -130,24 +130,46 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	
 * The DBMAINTAIN_SCRIPTS table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    DbMaintain keeps a record of all executed scripts in the database itself. For this, the table DBMAINTAIN_SCRIPTS is used. TODO from here.
+    DbMaintain keeps a record of all executed scripts in the database itself. For this, the table DBMAINTAIN_SCRIPTS is used. It contains a record for each script that was executed on the database. The table definition looks like the following:
+	
+*---------+----------------------------------+
+|FILE_NAME|Relative path of the script file, starting from the root of the scripts directory or archive.|
+*---------+----------------------------------+
+|FILE_LAST_MODIFIED_AT|Last modification timestamp of the script. If the property useScriptFileLastModificationDates is set to true, this timestamp is used to determine whether a script might have changed, in order to improve performence when there are many or large scripts. If the timestamp is unchanged, we assume that the script didn't change, and the script doesn't have to be read to calculate the checksum. If the timestamp changed, the checksum is verified to decide whether the script changed.|
+*---------+----------------------------------+
+|CHECKSUM|MD5 hash calculated on the contents of the script. This value is used to determine whether a script has changed since the last update.|
+*---------+----------------------------------+
+|EXECUTED_AT|Indicates when the script was executed on the database. This is info for the user, which is not used by the system.|
+*---------+----------------------------------+
+|SUCCEEDED|Indicates whether the script was executed successfully (1 if successful, 0 if there was an error)|
+*---------+----------------------------------+
+
+* Error handling
+~~~~~~~~~~~~~~~~
+    If an error occurs during the execution of a script, dbmaintain immediately stops execution. If you try to perform the updateDatabase operation again, dbmaintain will refuse doing anything at all. To recover from an error, there are a number of possibilities:
+	
+    * An incremental script caused an error, and the fromScratch option is enabled. Simply fix the script: the datase is recreated from scratch during the next update.
+	
+    * An incremental script caused an error, and the fromScratch option is disabled. The easiest way to recover is to fix the script, manually undo any changes the script has made on the database, and remove this script's record from the DBMAINTAIN_SCRIPTS table. The next time you perform updateDatabase, dbmaintain starts with executing the fixed script.
+	
+    * A repeatable script caused an error. Simply fix the repeatable script, and it will be executed again when executing updateDatabase the next time.
 	
 * Configure and run DbMaintain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    DbMaintain operations can be executed in various ways: from the command line, using ant or directly from Java code. In the 1.1 release, maven integration will be provided.
+    DbMaintain operations can be executed in various ways: from the command line, using ant or directly from Java code. In a future release, maven integration will be provided.
 	 
 ** From the command line
 ~~~~~~~~~~~~~~~~~~~~~~~~
     Launch scripts are provided for Windows and *nix to perform operations from the command line. For instance, to create an archive file containing all scripts simply call (Replace .sh by .bat if you're using windows):
 
 +-----+	 
-/path/to/dbmaintain/dbmaintain.sh createScriptArchive path/to/archive path/to/scriptFolder
+/path/to/dbmaintain/bin/dbmaintain.sh createScriptArchive path/to/archive path/to/scriptFolder
 +-----+
 	 
 	To bring a database up-to-date, execute following command:
 	 
 +-----+	 
-/path/to/dbmaintain/dbmaintain.sh update path/to/scriptFolderOrArchive
+/path/to/dbmaintain/bin/dbmaintain.sh update path/to/scriptFolderOrArchive
 +-----+
 
     If a file named dbmaintain.properties is available in the execution directory, this file is automatically loaded. To load another file, add -config path/to/configFile to the command.
@@ -245,7 +267,7 @@ database.read.schemaNames=read
 <database name="<logical database name>" dialect="<the dialect>" driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
 +-----+
 
-    In some cases, you want to configure a database with a certain name but disable it. The scripts that have a disabled database as target will simply be ignored. This can be useful if you only want to execute the scripts with a certain target database on an end-to-end test database but not on a local test datatabase. When using command line configuration, simply add a property database.<logicalname>.enabled=false. When using ant, create a <database> element with a <name> attribute and an <enabled> attribute set to <false>.
+    In some cases, you want to configure a database with a certain name but exclude it from execution. The scripts that have an excluded database as target will simply be ignored. This can be useful if you only want to execute the scripts with a certain target database on an end-to-end test database but not on a local test datatabase. When using command line configuration, simply add a property database.<logicalname>.included=false. When using ant, create a <database> element with a <name> attribute and an <included> attribute set to <false>.
 	 
 * DbMaintain operations
 ~~~~~~~~~~~~~~~~~~~~~~~
