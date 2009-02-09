@@ -1,24 +1,24 @@
  --------
- Properties
+ Configuration
  --------
  --------
 
-Properties
+Configuration
 ~~~~~~~~
     This page shows a listing of all properties that are commonly used in dbmaintain. For a complete listing,
 	look at the file dbmaintain-default.properties in the source code.
 
 +-----+
-# A list of logical names for the different configured databases, separated by comma's. If there's 
+# A list of logical names for the different configured databases, separated by comma's. If there's
 # just one database, this property is not required. If names are listed, these names must be used
-# in the names of the properties that define the database connection parameters. 
+# in the names of the properties that define the database connection parameters.
 databases.names=<optional list of database names>
 
 # Properties that define the connection parameters to the database. If there are multiple databases,
-# you have to specify the names of these databases in the database property names (i.e. database.dialect, 
-# database.driverClassName, database.url, database.userName, database.password and database.schemaNames). 
-# E.g. if database.names=abc,def you must define the properties database.abc.url and database.def.url. 
-# If there's only one database, database.names can be omitted and you simply use the property database.url. 
+# you have to specify the names of these databases in the database property names (i.e. database.dialect,
+# database.driverClassName, database.url, database.userName, database.password and database.schemaNames).
+# E.g. if database.names=abc,def you must define the properties database.abc.url and database.def.url.
+# If there's only one database, database.names can be omitted and you simply use the property database.url.
 database.driverClassName=<fully qualified JDBC driver class name>
 database.url=<database URL>
 database.userName=<database username>
@@ -28,23 +28,24 @@ database.password=<database password>
 # 'postgresql', 'derby' and 'mssql'.
 database.dialect=<the dialect>
 
-# Comma-separated list of all database schemas used. 
+# Comma-separated list of all database schemas used.
 # A schema name is case sensitive if it's surrounded by database identifier quotes (eg " for oracle)
 database.schemaNames=<comma separated list of all database schemas used>
 
-# Indicates the database can be recreated from scratch if needed. From-scratch recreation is needed in following cases:
+# Indicates the database can be recreated from scratch if needed. If set to true, the database is cleared and recreated
+# from scratch in case of an irregular script update. Following are irregular script updates:
 # - A script that was already executed has been modified
 # - A new script has been added with an index number lower than the one of an already executed script
 # - An script that was already executed has been removed or renamed
-# 
+#
 # If set to false, the dbmaintainer will give an error if one of these situations occurs.
 dbMaintainer.fromScratch.enabled=false
 
-# If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. 
-# If false, an exception is thrown, indicating how to create the table manually. 
+# If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet.
+# If false, an exception is thrown, indicating how to create the table manually.
 dbMaintainer.autoCreateDbMaintainScriptsTable=false
 
-# Comma separated list of locations where database scripts can be found. This list may contain folders as well as script jar files.
+# Comma separated list of locations where database scripts can be found. This list may contain folders as well as script archive files.
 dbMaintainer.script.locations=
 
 # Extension of the files containing the database update scripts
@@ -65,18 +66,18 @@ dbMaintainer.script.encoding=ISO-8859-1
 dbMaintainer.script.targetDatabase.prefix=@
 
 # The prefix to use as prefix in script filenames to identify qualifiers
-# E.g. if the filename is 01_#REFDATA_myscript.sql, this script is qualified as a refdata script 
+# E.g. if the filename is 01_#REFDATA_myscript.sql, this script is qualified as a refdata script
 dbMaintainer.script.qualifier.prefix=#
 
 # The qualifier to use to determine whether a script is a patch script.
 #   E.g. 01_#PATCH_myscript.sql
 dbMaintainer.script.patch.qualifiers=patch
 
-# If dbMaintainer.patch.outOfSequenceExecutionAllowed is set to true, a patch script is allowed to be executed
+# If this property is set to true, a patch script is allowed to be executed
 # even if another script with a higher index was already executed.
-dbMaintainer.patch.outOfSequenceExecutionAllowed=false
+dbMaintainer.allowOutOfSequenceExecutionOfPatches=true
 
-# Defines whether script last modification dates can be used Tto decide whether an existing script has changed. If set 
+# Defines whether script last modification dates can be used Tto decide whether an existing script has changed. If set
 # to true, the dbmaintainer will decide that a file didn't change since the last time if it's last modification date hasn't
 # changed. If it did change, it will first calculate the checksum of the file to verify that the content really
 # changed. Setting this property to true improves performance: if set to false the checksum of every script must
@@ -85,19 +86,19 @@ dbMaintainer.useScriptFileLastModificationDates.enabled=true
 
 # If set to true, all foreign key and not null constraints of the database are automatically disabled after the execution
 # of the scripts.
-dbMaintainer.disableConstraints.enabled=false
+dbMaintainer.disableConstraints=false
 
 # If set to true, all database sequences and identity columns are set to a minimum value after the execution of the scripts.
 # The minimum accepted sequence value is indicated by the property sequenceUpdater.sequencevalue.lowestacceptable
-dbMaintainer.updateSequences.enabled=false
+dbMaintainer.updateSequences=false
 # Threshold indicating the minimum value of sequences. If sequences are updated, all sequences having a lower value than this
 # one are set to this value.
-sequenceUpdater.sequencevalue.lowestacceptable=1000
+sequenceUpdater.lowestAcceptableSequenceValue=1000
 
 # Indicates whether the database should be 'cleaned' before scripts are executed by the dbMaintainer. If true, the
 # records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' are deleted before executing
 # the first script.
-dbMaintainer.cleanDb.enabled=false
+dbMaintainer.cleanDb=false
 
 # Comma separated list of database items that may not be dropped or cleared by the db maintainer when
 # updating the database from scratch (dbMaintainer.fromScratch.enabled=true).
@@ -116,7 +117,7 @@ dbMaintainer.preserve.sequences=
 # is preserved automatically.
 # Tables listed here will still be dropped when the db maintainer performs a from scratch update. If this is not desirable
 # you should add the tablename to the dbMaintainer.preserve.tables property instead
-# Schemas can also be preserved completely. If identifiers are quoted (eg "" for oracle) they are considered 
+# Schemas can also be preserved completely. If identifiers are quoted (eg "" for oracle) they are considered
 # case sensitive. Items that do not have a schema prefix are considered to be in the default schema
 dbMaintainer.preserveDataOnly.schemas=
 dbMaintainer.preserveDataOnly.tables=
