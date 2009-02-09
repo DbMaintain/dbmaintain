@@ -1,3 +1,10 @@
+body {
+  font-family: Arial, Verdana, Helvetica, sans-serif;
+}
+td, select, input, li{
+  font-family: Arial, Verdana, Helvetica, sans-serif;
+}
+
 a:link {
     color: #47a;
 }
@@ -31,18 +38,26 @@ a:visited {
     padding-bottom: 5px;
 }
 
+a:active, a:hover {
+  color: grey;
+}
+
 .section h2 {
-  padding: 4px 4px 4px 24px;
-  color: #000;
-  background-color: #9999CC;
+  padding: 4px 4px 4px 10px;
+  color: white;
+  background: #220972 no-repeat left bottom;
   font-weight: bold;
   font-size: 14px;
-  background-repeat: no-repeat;
-  background-position: left bottom;
+
 }
 
 .section h3 {
-    color: #000;
+  padding: 4px 4px 4px 10px;
+  color: white;
+  background: #9e0712 none no-repeat left bottom;
+  font-weight: bold;
+  font-size: 14px;
+
 }
 
 .section h4 {
