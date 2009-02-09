@@ -33,8 +33,8 @@ import java.util.Properties;
 public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
     private String scriptLocations;
-    private String scriptFileExtensions;
     private Boolean autoCreateDbMaintainScriptsTable;
+    private String scriptFileExtensions;
 
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.markDatabaseAsUpToDate();

@@ -81,7 +81,7 @@ public class DbMaintainProperties {
     public static final String PROPERTY_GENERATE_DATA_SET_STRUCTURE = "dbMaintainer.generateDataSetStructure";
 
     /* Property key for the lowest acceptable sequence value */
-    public static final String PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE = "sequenceUpdater.sequencevalue.lowestacceptable";
+    public static final String PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE = "sequenceUpdater.lowestAcceptableSequenceValue";
 
     /**
      * The key of the property that specifies of which schemas nothing should be dropped
@@ -182,7 +182,7 @@ public class DbMaintainProperties {
     /**
      * The key for the property that specifies that patch scripts can be executed out of sequence
      */
-    public static final String PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION = "dbMaintainer.patch.allowOutOfSequenceExecution";
+    public static final String PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION = "dbMaintainer.allowOutOfSequenceExecutionOfPatches";
 
     public static final String PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES = "dbMaintainer.useScriptFileLastModificationDates";
 

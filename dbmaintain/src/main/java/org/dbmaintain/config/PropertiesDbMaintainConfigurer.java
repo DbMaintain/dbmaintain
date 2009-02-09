@@ -18,6 +18,7 @@ package org.dbmaintain.config;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
+import org.dbmaintain.format.ScriptUpdatesFormatter;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
@@ -110,14 +111,16 @@ public class PropertiesDbMaintainConfigurer {
         DBClearer dbClearer = createDbClearer();
         ConstraintsDisabler constraintsDisabler = createConstraintsDisabler();
         SequenceUpdater sequenceUpdater = createSequenceUpdater();
+        ScriptUpdatesFormatter scriptUpdatesFormatter = createScriptUpdatesFormatter();
 
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
                 new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class, boolean.class,
-                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class, SQLHandler.class},
+                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class,
+                        ScriptUpdatesFormatter.class, SQLHandler.class},
                 new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
                         allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
-                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, sqlHandler});
+                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
     }
 
 
@@ -275,6 +278,10 @@ public class PropertiesDbMaintainConfigurer {
         addItemsToPreserve(dbClearer, DbItemType.TYPE, PROPERTY_PRESERVE_TYPES);
 
         return dbClearer;
+    }
+
+    public ScriptUpdatesFormatter createScriptUpdatesFormatter() {
+        return new ScriptUpdatesFormatter();
     }
 
     private void addItemsToPreserve(DefaultDBClearer defaultDbClearer, DbItemType dbItemType, String itemsToPreserveProperty) {
