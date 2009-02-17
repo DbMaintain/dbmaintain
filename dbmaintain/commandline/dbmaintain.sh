@@ -145,7 +145,7 @@ if [ -z "$JAVA_HOME" ] ; then
 fi
 
 DBMAINTAIN_LAUNCHER="org.dbmaintain.launch.commandline.CommandLine"
-DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.0-SNAPSHOT.jar"
+DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.0.jar"
 COMMONS_LOGGING_JAR="${DBMAINTAIN_HOME}/lib/commons-logging-1.1.1.jar"
 
 # Check if $DBMAINTAIN_JDBC_DRIVER is set. If not, call setJdbcDriver.sh.
@@ -175,7 +175,13 @@ if $cygwin; then
     JDBC_DRIVER=`cygpath --path --windows "$JDBC_DRIVER"`
 fi
 
-DBMAINTAIN_CLASSPATH="${DBMAINTAIN_JAR};${COMMONS_LOGGING_JAR};${JDBC_DRIVER}"
+if $cygwin; then
+  CLASSPATH_SEPARATOR=";"
+else
+  CLASSPATH_SEPARATOR=":"
+fi
+
+DBMAINTAIN_CLASSPATH="${DBMAINTAIN_JAR}${CLASSPATH_SEPARATOR}${COMMONS_LOGGING_JAR}${CLASSPATH_SEPARATOR}${JDBC_DRIVER}"
 
 exec "$JAVACMD" \
   $DBMAINTAIN_OPTS \
