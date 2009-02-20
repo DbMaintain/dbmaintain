@@ -3,6 +3,7 @@
     <formats>
         <format>zip</format>
     </formats>
+    <baseDirectory>dbmaintain-${project.version}-src</baseDirectory>
     <fileSets>
         <fileSet>
             <includes>
