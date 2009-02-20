@@ -49,6 +49,7 @@ public class CommandLine {
     public enum DbMaintainOperation {
         
         CREATE_SCRIPT_ARCHIVE("createScriptArchive"),
+        CHECK_SCRIPT_UPDATES("checkScriptUpdates"),
         UPDATE_DATABASE("updateDatabase"), 
         MARK_DATABASE_AS_UPTODATE("markDatabaseAsUpToDate"), 
         CLEAR_DATABASE("clearDatabase"), 
@@ -179,6 +180,12 @@ public class CommandLine {
             }
             String jarFileName = commandLineArguments.getFirstExtraArgument();
             getDbMaintain(configuration).createScriptArchive(jarFileName);
+            break;
+        case CHECK_SCRIPT_UPDATES:
+            if (commandLineArguments.getFirstExtraArgument() != null) {
+                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
+            }
+            getDbMaintain(configuration).checkScriptUpdates();
             break;
         case UPDATE_DATABASE:
             if (commandLineArguments.getFirstExtraArgument() != null) {

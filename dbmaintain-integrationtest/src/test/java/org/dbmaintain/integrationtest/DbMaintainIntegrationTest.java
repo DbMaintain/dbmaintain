@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertTrue;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang.StringUtils.*;
-import org.dbmaintain.DbMaintainer;
+import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
@@ -106,6 +106,16 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
+    public void testAddIncremental_dryRun() {
+        createScripts(INCREMENTAL_1, REPEATABLE);
+        updateDatabase();
+        assertScriptsNotExecuted(INCREMENTAL_2);
+        createScript(INCREMENTAL_2);
+        checkScriptUpdates();
+        assertScriptsNotExecuted(INCREMENTAL_2);
+    }
+
+    @Test
     public void testUpdateIncremental_fromScratchEnabled() {
         enableFromScratch();
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
@@ -123,6 +133,18 @@ public class DbMaintainIntegrationTest {
         updateScript(INCREMENTAL_1);
         try {
             updateDatabase();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INCREMENTAL_1));
+        }
+    }
+
+    @Test
+    public void testUpdateIncremental_fromScratchDisabled_dryRun() {
+        createScripts(INCREMENTAL_1, INCREMENTAL_2);
+        updateDatabase();
+        updateScript(INCREMENTAL_1);
+        try {
+            checkScriptUpdates();
         } catch (DbMaintainException e) {
             assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INCREMENTAL_1));
         }
@@ -187,12 +209,32 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
+    public void testAddRepeatable_dryRun() {
+        createScripts(INCREMENTAL_1);
+        updateDatabase();
+        assertScriptsNotExecuted(REPEATABLE);
+        createScripts(REPEATABLE);
+        checkScriptUpdates();
+        assertScriptsNotExecuted(REPEATABLE);
+    }
+
+    @Test
     public void testUpdateRepeatable() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
         updateRepeatableScript(REPEATABLE);
         updateDatabase();
         assertUpdatedScriptsExecuted(REPEATABLE);
+    }
+
+
+    @Test
+    public void testUpdateRepeatable_dryRun() {
+        createScripts(INCREMENTAL_1, REPEATABLE);
+        updateDatabase();
+        updateRepeatableScript(REPEATABLE);
+        checkScriptUpdates();
+        assertUpdatedScriptsNotExecuted(REPEATABLE);
     }
 
 
@@ -204,6 +246,17 @@ public class DbMaintainIntegrationTest {
         assertInExecutedScripts(REPEATABLE);
         updateDatabase();
         assertNotInExecutedScripts(REPEATABLE);
+    }
+
+
+    @Test
+    public void testDeleteRepeatable_dryRun() {
+        createScripts(INCREMENTAL_1, REPEATABLE);
+        updateDatabase();
+        removeScript(REPEATABLE);
+        assertInExecutedScripts(REPEATABLE);
+        checkScriptUpdates();
+        assertInExecutedScripts(REPEATABLE);
     }
 
 
@@ -265,6 +318,14 @@ public class DbMaintainIntegrationTest {
         }
         assertScriptsNotExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
 
+        // Verify that an error is raised when we check for database updates
+        try {
+            checkScriptUpdates();
+            fail();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "During the latest update", INCREMENTAL_1.scriptName);
+        }
+
         // Try again without changing anything
         // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
         try {
@@ -282,7 +343,6 @@ public class DbMaintainIntegrationTest {
         assertScriptsCorrectlyExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
     }
 
-
     @Test
     public void testErrorInRepeatableScript() {
         enableFromScratch();
@@ -295,6 +355,15 @@ public class DbMaintainIntegrationTest {
         } catch (DbMaintainException e) {
             assertMessageContains(e.getMessage(), "error", REPEATABLE.scriptName);
         }
+        
+        // Verify that an error is raised when we check for database updates
+        try {
+            checkScriptUpdates();
+            fail();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "During the latest update", REPEATABLE.scriptName);
+        }
+
         // Try again without changing anything
         // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
         try {
@@ -340,6 +409,7 @@ public class DbMaintainIntegrationTest {
         assertNotInExecutedScripts(REPEATABLE);
     }
 
+
     /**
      * Verifies that, if the dbmaintain_scripts table doesn't exist yet, and the autoCreateExecutedScriptsInfoTable property is set to true,
      * we start with a from scratch update
@@ -353,7 +423,6 @@ public class DbMaintainIntegrationTest {
         assertTableDoesntExist(BEFORE_INITIAL_TABLE);
     }
 
-
     /**
      * Verifies that, if the dbmaintain_scripts table doesn't exist yet, and the autoCreateExecutedScriptsInfoTable property is set to true,
      * we start with a from scratch update
@@ -366,6 +435,7 @@ public class DbMaintainIntegrationTest {
         updateDatabase();
         assertTableExists(BEFORE_INITIAL_TABLE);
     }
+
 
     @Test
     public void testExecutePostProcessingScriptsIfSomeScriptIsModified() {
@@ -436,7 +506,6 @@ public class DbMaintainIntegrationTest {
         assertNotInExecutedScripts(POST_PROCESSING_INDEXED_2);
     }
 
-
     @Test
     public void testHandleRegularIndexedScriptRename() {
         disableFromScratch();
@@ -448,6 +517,7 @@ public class DbMaintainIntegrationTest {
         assertNotInExecutedScripts(INCREMENTAL_1);
         assertInExecutedScripts(INCREMENTAL_1_RENAMED);
     }
+
 
     @Test
     public void testHandleRepeatableScriptRename() {
@@ -555,6 +625,14 @@ public class DbMaintainIntegrationTest {
         }
     }
 
+    private void assertUpdatedScriptsNotExecuted(TestScript... scripts) {
+        Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
+        for (TestScript script : scripts) {
+            String tableName = getUpdatedTableNameForScript(script);
+            assertFalse(tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+        }
+    }
+
     private void assertTableExists(String tableName) {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
         assertTrue(tableName + " doesn't exist", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
@@ -566,8 +644,13 @@ public class DbMaintainIntegrationTest {
     }
 
     private void updateDatabase() {
-        DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-        dbMaintainer.updateDatabase();
+        DbMaintain dbMaintain = new DbMaintain(dbMaintainConfigurer);
+        dbMaintain.updateDatabase();
+    }
+
+    private void checkScriptUpdates() {
+        DbMaintain dbMaintain = new DbMaintain(dbMaintainConfigurer);
+        dbMaintain.checkScriptUpdates();
     }
 
     private void createScripts(TestScript... scripts) {

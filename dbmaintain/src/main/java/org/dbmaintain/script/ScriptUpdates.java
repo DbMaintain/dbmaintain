@@ -91,9 +91,9 @@ public class ScriptUpdates {
     }
 
 
-    public boolean hasUpdatesOtherThanRepeatableScriptDeletionsOrRenames() {
-        return regularlyAddedOrModifiedScripts.size() != 0 || irregularScriptUpdates.size() != 0 ||
-                regularlyAddedPatchScripts.size() != 0 || regularPostprocessingScriptUpdates.size() != 0;
+    public boolean noUpdatesOtherThanRepeatableScriptDeletionsOrRenames() {
+        return regularlyAddedOrModifiedScripts.size() == 0 && irregularScriptUpdates.size() == 0 &&
+                regularlyAddedPatchScripts.size() == 0 && regularPostprocessingScriptUpdates.size() == 0;
     }
 
     public boolean isEmpty() {

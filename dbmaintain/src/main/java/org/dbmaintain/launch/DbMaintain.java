@@ -80,11 +80,23 @@ public class DbMaintain {
 
 
     /**
-     * Updates the database to the latest version.
+     * Performs a dry run of the database update. May be used to verify if there are any updates or to fail quickly if
+     * it appears that an irregular script update was performed.
      */
-    public void updateDatabase() {
+    public void checkScriptUpdates(){
         DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
-        dbMaintainer.updateDatabase();
+        dbMaintainer.updateDatabase(true);
+    }
+
+
+    /**
+     * Updates the database to the latest version.
+     *
+     * @return whether updates were performed on the database
+     */
+    public boolean updateDatabase() {
+        DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
+        return dbMaintainer.updateDatabase(false);
     }
 
     

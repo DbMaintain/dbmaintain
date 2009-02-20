@@ -317,7 +317,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * Checks if the version table and columns are available and if a record exists in which the version info is stored.
      * If not, the table, columns and record are created if auto-create is true, else an exception is raised.
      *
-     * @return False if the version table was not ok and therefore auto-created
+     * @return false if the version table was not ok and therefore auto-created
      */
     protected boolean checkExecutedScriptsTable() {
         // check valid
@@ -334,7 +334,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
         // throw an exception that shows how to create the version table
         String message = "Executed scripts table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " doesn't exist yet or is invalid.\n";
-        message += "Please create it manually or let DbMaintain create it automatically by setting the dbMaintainer.autoCreateDbMaintainScriptsTable property to true.\n";
+        message += "Please create it manually or let DbMaintain create it automatically by setting the property autoCreateDbMaintainScriptsTable to true.\n";
         message += "The table can be created manually by executing following statement:\n";
         message += getCreateExecutedScriptTableStatement();
         throw new DbMaintainException(message);

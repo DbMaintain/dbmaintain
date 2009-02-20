@@ -20,9 +20,9 @@ import org.dbmaintain.script.ScriptUpdates;
 /**
  * Defines the contract for classes that perform automatic maintenance of a database.<br>
  * <p/>
- * The {@link #updateDatabase()} operation can be used to bring the database to the latest version. The
- * {@link #markDatabaseAsUpToDate()} operation updates the state of the database to indicate that all scripts have been
- * executed, without actually executing them. {@link #clearDatabase()} will drop all tables and update the state to
+ * The {@link #updateDatabase} operation can be used to bring the database to the latest version. The
+ * {@link #markDatabaseAsUpToDate} operation updates the state of the database to indicate that all scripts have been
+ * executed, without actually executing them. {@link #clearDatabase} will drop all tables and update the state to
  * indicate that no scripts have been executed yet on the database.
  *
  * @author Filip Neven
@@ -38,8 +38,12 @@ public interface DbMaintainer {
      * already executed, an error is given; unless the <fromScratch> option is enabled: in that case all database objects
      * are removed and the database is rebuilt from scratch. If there are post-processing scripts, these are always executed
      * at the end.
+     *
+     * @param dryRun if true, no updates have to be performed on the database - we do a simulation of the database update
+     * instead of actually performing the database update.
+     * @return whether updates were performed on the database
      */
-    void updateDatabase();
+    boolean updateDatabase(boolean dryRun);
 
 
     /**
