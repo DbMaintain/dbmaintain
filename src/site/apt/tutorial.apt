@@ -180,7 +180,15 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	 
 ** {From the command line}
 ~~~~~~~~~~~~~~~~~~~~~~~~
-    Launch scripts are provided for Windows and *nix to perform operations from the command line. For instance, to create an archive file containing all scripts simply call (Replace .sh by .bat if you're using windows):
+    Launch scripts are provided for Windows and *nix to perform operations from the command line. To be able to use them, you have to make following preparations:
+
+	* Make sure JAVA_HOME is set to the installation directory of your JRE or JDK. (Must be Java version 5 or higher)
+	
+	* Make sure DBMAINTAIN_HOME is set to the installation directory of dbmaintain.
+	
+	* Set DBMAINTAIN_JDBC_DRIVER to the jar file that contains the necessary JDBC driver for your DBMS, or edit the file bin/setJdbcDriver.bat or bin/setJdbcDriver.sh to set JDBC_DRIVER to the correct value.
+
+	For instance, to create an archive file containing all scripts simply call (Replace .sh by .bat if you're using windows):
 
 +-----+	 
 /path/to/dbmaintain/bin/dbmaintain.sh createScriptArchive path/to/archive path/to/scriptFolder

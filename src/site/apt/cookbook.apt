@@ -31,7 +31,7 @@ database.password=
 database.schemaNames=PUBLIC
 +-----+
 
-    Then execute following command (Replace .sh by .bat if you're using windows)
+    Make sure you've correctly set JAVA_HOME to your JRE or J2SDK home directory, and set DBMAINTAIN_HOME to the installation directory of dbmaintain. Set DBMAINTAIN_JDBC_DRIVER to the jar file that contains the necessary JDBC driver for your DBMS, or edit the file bin/setJdbcDriver.sh (or .bat) to set JDBC_DRIVER to the correct value. Then execute following command (Replace .sh by .bat if you're using windows)
 	
 +-----+
 /path/to/dbmaintain/dbmaintain.sh update path/to/scriptFolderOrArchive
