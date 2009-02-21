@@ -9,7 +9,7 @@ Tutorial
 	
 	* {{{#Script_organization}Script organization}}
 	
-	  * {{{#Repeatable_scripts}Repeatable scripts}}
+	  * {{{#Incremental_and_repeatable_scripts}Incremental and repeatable scripts}}
 	  
 	  * {{{#Postprocessing_scripts}Postprocessing cripts}}
 	  
@@ -63,7 +63,7 @@ scripts/01_v1.0/01_products_and_orders.sql
 
     Suppose you add a new script called <03_add_productid_sequence.sql>. The next time you call the <updateDatabase> operation, the database is updated incrementally by executing this new script. Unless you use the <fromScratch> option, updating an already executed incremental script is not allowed: the updateDatabase action will fail if you try to do so. If the <fromScratch> option is used and an existing incremental script is changed, the database is cleared (i.e. all database objects are dropped) and all scripts are executed again.
 	
-** {Repeatable scripts}
+** {Incremental and repeatable scripts}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     The database scripts from the example above are incremental: each script contains a <delta>, and should be executed only once in the proper sequence. But DbMaintain also supports repeatable scripts: A repeatable script must be written in such a way that it can be executed multiple times. For example, function or stored procedure defitions and views can be organized as repeatable scripts. The advantage of a repeatable script is that it can be modified: When changed, the script is simply executed again. 
 	
