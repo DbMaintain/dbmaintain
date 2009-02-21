@@ -6,7 +6,7 @@
   <packaging>pom</packaging>
   <version>1.0</version>
   <!-- Project information -->
-  <name>${project.artifactId}</name>
+  <name>dbmaintain-parent</name>
   <url>http://www.dbmaintain.org/</url>
   <organization>
     <name>sourceforge.net</name>

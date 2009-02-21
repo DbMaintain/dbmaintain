@@ -4,11 +4,10 @@
     <parent>
         <groupId>org.dbmaintain</groupId>
         <artifactId>dbmaintain-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     <artifactId>dbmaintain-integrationtest</artifactId>
     <!--packaging>jar</packaging-->
-    <version>1.0-SNAPSHOT</version>
     <name>${project.artifactId}</name>
     <description>
         Integration tests for dbmaintain
