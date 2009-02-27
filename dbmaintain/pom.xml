@@ -83,7 +83,7 @@
                     </libs>
                     <options>
                         <option>-keep class org.dbmaintain.** {public protected *;}</option>
-                        <option>-flattenpackagehierarchy org.dbmaintain.thirdparty-obfuscated</option>
+                        <option>-flattenpackagehierarchy org.dbmaintain.thirdpartyobfuscated</option>
                         <option>-dontusemixedcaseclassnames</option>
                         <option>-keepattributes SourceFile,LineNumberTable</option>
                         <option>-dontoptimize</option>
