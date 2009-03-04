@@ -18,6 +18,7 @@ package org.dbmaintain.dbsupport;
 import org.dbmaintain.util.DbMaintainException;
 import org.apache.commons.dbutils.DbUtils;
 import static org.apache.commons.dbutils.DbUtils.*;
+import org.apache.commons.lang.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -471,15 +472,6 @@ abstract public class DbSupport {
      * @return The stored case, not null
      */
     private StoredIdentifierCase determineStoredIdentifierCase(StoredIdentifierCase customStoredIdentifierCase) {
-        /*if ("lower_case".equals(storedIdentifierCase)) {
-            return StoredIdentifierCase.LOWER_CASE;
-        } else if ("upper_case".equals(storedIdentifierCase)) {
-            return StoredIdentifierCase.UPPER_CASE;
-        } else if ("mixed_case".equals(storedIdentifierCase)) {
-            return StoredIdentifierCase.MIXED_CASE;
-        } else if (!"auto".equals(storedIdentifierCase)) {
-            throw new DbMaintainException("Unknown value " + storedIdentifierCase + " for property " + PROPKEY_STORED_IDENTIFIER_CASE + ". It should be one of lower_case, upper_case, mixed_case or auto.");
-        }*/
         if (customStoredIdentifierCase != null) {
             return customStoredIdentifierCase;
         }
@@ -508,21 +500,13 @@ abstract public class DbSupport {
      * Determines the string used to quote identifiers to make them case-sensitive. This will use the connections
      * database metadata to determine the quote string.
      *
-     * @param customIdentifierQuoteString The string to quote identifiers, 'none' if quoting is not supported, 'auto' for auto detection
+     * @param customIdentifierQuoteString If not null, it specifies a custom identifier quote string that replaces the one
+     * specified by the JDBC DatabaseMetaData object
      * @return The quote string, null if quoting is not supported
      */
-    private String determineIdentifierQuoteString(String customIdentifierQuoteString) {
-        /*if ("none".equals(identifierQuoteStringProperty)) {
-            return null;
-        } else if (!"auto".equals(identifierQuoteStringProperty)) {
-            return identifierQuoteStringProperty;
-        }*/
-
+    protected String determineIdentifierQuoteString(String customIdentifierQuoteString) {
         if (customIdentifierQuoteString != null) {
-            if ("".equals(customIdentifierQuoteString.trim())) {
-                return null;
-            }
-            return customIdentifierQuoteString;
+            return StringUtils.trimToNull(customIdentifierQuoteString);
         }
 
         Connection connection = null;
@@ -531,10 +515,7 @@ abstract public class DbSupport {
 
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             String quoteString = databaseMetaData.getIdentifierQuoteString();
-            if (quoteString == null || "".equals(quoteString.trim())) {
-                return null;
-            }
-            return quoteString;
+            return StringUtils.trimToNull(quoteString);
 
         } catch (SQLException e) {
             throw new DbMaintainException("Unable to determine identifier quote string.", e);
