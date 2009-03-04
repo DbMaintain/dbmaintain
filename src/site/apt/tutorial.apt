@@ -129,7 +129,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 +----+
 scripts/incremental/01_v1.0/01_products_and_orders.sql
                             02_@users_users.sql
-							03_add_product_status.sql
+                            03_add_product_status.sql
 		            02_v1.1/01_add_barcode_column.sql
 		                    02_drop_itemcode_column.sql
 +----+
@@ -141,7 +141,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 +----+
 scripts/incremental/01_v1.0/01_products_and_orders.sql
                             02_@users_users.sql
-							03_#PATCH_add_product_status.sql
+                            03_#PATCH_add_product_status.sql
 		            02_v1.1/01_add_barcode_column.sql
 		                    02_drop_itemcode_column.sql
 +----+
