@@ -21,6 +21,8 @@ package org.dbmaintain.config;
  */
 public class DbMaintainProperties {
 
+    public static final String PROPERTY_DATABASE_NAMES = "databases.names";
+
     public static final String PROPERTY_DATABASE_START = "database";
 
     public static final String PROPERTY_DRIVERCLASSNAME_END = "driverClassName";
@@ -193,8 +195,6 @@ public class DbMaintainProperties {
     public static final String PROPERTY_SCRIPT_QUALIFIER_PREFIX = "dbMaintainer.script.qualifier.prefix";
 
     public static final String PROPERTY_BACKSLASH_ESCAPING_ENABLED = "dbMaintainer.script.backSlashEscapingEnabled";
-
-    public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 
     /**
      * Private constructor to prevent instantiation
