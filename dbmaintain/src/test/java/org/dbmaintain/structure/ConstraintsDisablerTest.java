@@ -55,7 +55,6 @@ public class ConstraintsDisablerTest {
      */
     @Before
     public void setUp() throws Exception {
-        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration();
         dbSupport = TestUtils.getDbSupport();
         dataSource = dbSupport.getDataSource();
         constraintsDisabler = TestUtils.getDefaultConstraintsDisabler(dbSupport);

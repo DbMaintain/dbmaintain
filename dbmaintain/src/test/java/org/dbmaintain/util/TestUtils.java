@@ -77,8 +77,7 @@ public class TestUtils {
 
 
     public static DefaultDBClearer getDefaultDBClearer(DbSupport dbSupport) {
-        return new DefaultDBClearer(getNameDbSupportMap(dbSupport)
-        );
+        return new DefaultDBClearer(getNameDbSupportMap(dbSupport));
     }
 
 

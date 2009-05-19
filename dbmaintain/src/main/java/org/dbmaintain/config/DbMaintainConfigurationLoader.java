@@ -44,32 +44,46 @@ public class DbMaintainConfigurationLoader {
 
     
     /**
-     * Creates and loads all configuration settings.
+     * Loads all properties as defined by the default configuration.
      *
      * @return the settings, not null
      */
     public Properties loadConfiguration() {
-        return loadConfiguration(null);
+        return loadConfiguration((Properties) null);
     }
-    
+
 
     /**
-     * Creates and loads all configuration settings.
+     * Loads all properties as defined by the default configuration. Properties defined by the properties
+     * file to which the given URL points override the default properties.
      * 
-     * @param customConfiguration URL that points to the custom configuration, may be null if there is no custom config 
+     * @param customConfigurationUrl URL that points to the custom configuration, may be null if there is no custom config
      *
      * @return the settings, not null
      */
-    public Properties loadConfiguration(URL customConfiguration) {
-    	Properties properties = new Properties();
-    	
+    public Properties loadConfiguration(URL customConfigurationUrl) {
+    	return loadConfiguration(loadPropertiesFromURL(customConfigurationUrl));
+    }
+
+
+    /**
+     * Loads all properties as defined by the default configuration. Properties from the given properties
+     * object override the default properties.
+     *
+     * @param customConfiguration custom configuration, may be null if there is no custom config
+     *
+     * @return the settings, not null
+     */
+    public Properties loadConfiguration(Properties customConfiguration) {
+        Properties properties = new Properties();
+
     	// Load the default properties file, that is distributed with DbMaintain (dbmaintain-default.properties)
     	properties.putAll(loadDefaultConfiguration());
-    	
+
     	if (customConfiguration != null) {
-    		properties.putAll(loadPropertiesFromURL(customConfiguration));
+    		properties.putAll(customConfiguration);
     	}
-        
+
         return properties;
     }
 

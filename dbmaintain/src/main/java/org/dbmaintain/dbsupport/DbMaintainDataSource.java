@@ -26,8 +26,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Very simple DataSource that provides access to a database without any connection pooling facilities. Only the
- * parameterless getConnection() method is implemented.
+ * Factory class for a very simple DataSource that provides access to a database without any connection pooling facilities.
+ * Only the parameterless getConnection() method is implemented.
  *
  * @author Filip Neven
  * @author Tim Ducheyne

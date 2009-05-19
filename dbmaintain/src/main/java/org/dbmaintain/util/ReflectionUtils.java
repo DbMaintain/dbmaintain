@@ -33,16 +33,14 @@ import java.util.Set;
  * @author Tim Ducheyne
  */
 public class ReflectionUtils {
-    
-    
+
+
     /**
      * Creates an instance of the class with the given name.
      * The class's no argument constructor is used to create an instance.
      *
      * @param className           The name of the class, not null
      * @param bypassAccessibility If true, no exception is thrown if the parameterless constructor is not public
-     * @param parameterTypes      Types of the constructor arguments
-     * @param parameters          Constructor arguments
      * @return An instance of this class
      * @throws DbMaintainException if the class could not be found or no instance could be created
      */
@@ -64,7 +62,7 @@ public class ReflectionUtils {
      * @throws DbMaintainException if the class could not be found or no instance could be created
      */
     @SuppressWarnings({"unchecked"})
-    public static <T> T createInstanceOfType(String className, boolean bypassAccessibility, Class<?>[] parameterTypes, Object[] parameters) {
+    private static <T> T createInstanceOfType(String className, boolean bypassAccessibility, Class<?>[] parameterTypes, Object[] parameters) {
         try {
             Class<?> type = Class.forName(className);
             return (T) createInstanceOfType(type, bypassAccessibility, parameterTypes, parameters);
@@ -81,20 +79,6 @@ public class ReflectionUtils {
         } catch (Exception e) {
             throw new DbMaintainException("Error while instantiating class " + className, e);
         }
-    }
-    
-    
-    /**
-     * Creates an instance of the given type
-     *
-     * @param <T>                 The type of the instance
-     * @param type                The type of the instance
-     * @param bypassAccessibility If true, no exception is thrown if the parameterless constructor is not public
-     * @return An instance of this type
-     * @throws DbMaintainException If an instance could not be created
-     */
-    public static <T> T createInstanceOfType(Class<T> type, boolean bypassAccessibility) {
-        return createInstanceOfType(type, bypassAccessibility, new Class<?>[0], new Object[0]);
     }
 
 

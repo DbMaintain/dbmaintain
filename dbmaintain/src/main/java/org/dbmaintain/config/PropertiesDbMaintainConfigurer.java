@@ -429,10 +429,10 @@ public class PropertiesDbMaintainConfigurer {
         if ("none".equals(identifierQuoteStringPropertyValue)) {
             return "";
         }
-        if (!"auto".equals(identifierQuoteStringPropertyValue)) {
-            return identifierQuoteStringPropertyValue;
+        if ("auto".equals(identifierQuoteStringPropertyValue)) {
+            return null;
         }
-        return null;
+        return identifierQuoteStringPropertyValue;
     }
 
 

@@ -21,18 +21,39 @@ package org.dbmaintain.config;
  */
 public class DbMaintainProperties {
 
+    /**
+     * Logical names for the databases. This property is only required if there's more than one database configured.
+     */
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 
+    /**
+     * Start of all property names that concern the configuration of a database
+     */
     public static final String PROPERTY_DATABASE_START = "database";
 
+    /**
+     * End of property names that indicate a database driver classname
+     */
     public static final String PROPERTY_DRIVERCLASSNAME_END = "driverClassName";
 
+    /**
+     * End of property names that indicate a database url
+     */
     public static final String PROPERTY_URL_END = "url";
 
+    /**
+     * End of property names that indicate a database username
+     */
     public static final String PROPERTY_USERNAME_END = "userName";
 
+    /**
+     * End of property names that indicate a database password
+     */
     public static final String PROPERTY_PASSWORD_END = "password";
 
+    /**
+     * End of property names that indicate whether the database is included: i.e. it is active and must be updated
+     */
     public static final String PROPERTY_INCLUDED_END = "included";
 
     /**

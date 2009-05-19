@@ -55,6 +55,12 @@ public class DbMaintain {
         Properties dbMaintainConfiguration = new DbMaintainConfigurationLoader().loadConfiguration(propertiesURL);
         dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(dbMaintainConfiguration, new DefaultSQLHandler());
     }
+
+
+    public DbMaintain(Properties properties) {
+        Properties dbMaintainConfiguration = new DbMaintainConfigurationLoader().loadConfiguration(properties);
+        dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(dbMaintainConfiguration, new DefaultSQLHandler());
+    }
     
     /**
      * Creates a new instance of {@link DbMaintain} that uses the given {@link PropertiesDbMaintainConfigurer} for configuration.
