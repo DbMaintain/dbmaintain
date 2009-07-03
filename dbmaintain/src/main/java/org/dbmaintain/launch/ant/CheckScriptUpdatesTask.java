@@ -15,14 +15,14 @@
  */
 package org.dbmaintain.launch.ant;
 
+import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.launch.DbMaintain;
-import org.dbmaintain.config.DbMaintainProperties;
 
 import java.util.Properties;
 
 /**
- * Performs a dry run of the database update. May be used to verify if there are any updates or to fail quickly if
- * it appears that an irregular script update was performed.
+ * Performs a dry run of the database update. May be used to verify if there are any updates or in a test that fails
+ * if it appears that an irregular script update was performed.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -34,6 +34,8 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     private Boolean fromScratchEnabled;
     private Boolean autoCreateDbMaintainScriptsTable;
     private Boolean allowOutOfSequenceExecutionOfPatches;
+    private String qualifiers;
+    private String excludedQualifiers;
     private Boolean useLastModificationDates;
     private String scriptFileExtensions;
 
@@ -45,24 +47,14 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
 
     @Override
     protected void addTaskConfiguration(Properties configuration) {
-        if (scriptLocations != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
-        }
-        if (fromScratchEnabled != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, String.valueOf(fromScratchEnabled));
-        }
-        if (autoCreateDbMaintainScriptsTable != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, String.valueOf(autoCreateDbMaintainScriptsTable));
-        }
-        if (allowOutOfSequenceExecutionOfPatches != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, String.valueOf(allowOutOfSequenceExecutionOfPatches));
-        }
-        if (scriptFileExtensions != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
-        }
-        if (useLastModificationDates != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, String.valueOf(useLastModificationDates));
-        }
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
+        addTaskConfiguration(configuration, PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
+        addTaskConfiguration(configuration, PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
+        addTaskConfiguration(configuration, PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
+        addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
+        addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
+        addTaskConfiguration(configuration, PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
     }
 
     /**
@@ -112,6 +104,23 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
         this.allowOutOfSequenceExecutionOfPatches = allowOutOfSequenceExecutionOfPatches;
     }
 
+    /**
+     * Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must
+     * be declared.
+     * @param qualifiers the registered (allowed) script qualifiers
+     */
+    public void setQualifiers(String qualifiers) {
+        this.qualifiers = qualifiers;
+    }
+
+    /**
+     * Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the
+     * qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed.
+     * @param excludedQualifiers the excluded script qualifiers
+     */
+    public void setExcludedQualifiers(String excludedQualifiers) {
+        this.excludedQualifiers = excludedQualifiers;
+    }
 
     /**
      * Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts.

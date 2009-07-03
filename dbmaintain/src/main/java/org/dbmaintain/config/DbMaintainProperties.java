@@ -217,6 +217,10 @@ public class DbMaintainProperties {
 
     public static final String PROPERTY_BACKSLASH_ESCAPING_ENABLED = "dbMaintainer.script.backSlashEscapingEnabled";
 
+    public static final String PROPERTY_QUALIFIERS = "dbMaintainer.qualifiers";
+
+    public static final String PROPERTY_EXCLUDED_QUALIFIERS = "dbMaintainer.qualifiers.excluded";
+
     /**
      * Private constructor to prevent instantiation
      */

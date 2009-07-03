@@ -86,10 +86,10 @@ public class DbMaintain {
 
 
     /**
-     * Performs a dry run of the database update. May be used to verify if there are any updates or to fail quickly if
-     * it appears that an irregular script update was performed.
+     * Performs a dry run of the database update. May be used to verify if there are any updates or in a test that fails
+     * if it appears that an irregular script update was performed.
      */
-    public void checkScriptUpdates(){
+    public void checkScriptUpdates() {
         DbMaintainer dbMaintainer = dbMaintainConfigurer.createDbMaintainer();
         dbMaintainer.updateDatabase(true);
     }

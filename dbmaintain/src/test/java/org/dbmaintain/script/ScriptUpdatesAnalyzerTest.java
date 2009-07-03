@@ -16,6 +16,7 @@
 package org.dbmaintain.script;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.dbmaintain.util.TestUtils;
@@ -44,11 +45,15 @@ public class ScriptUpdatesAnalyzerTest {
     private static final Script REPEATABLE_2 = createScript("repeatable2.sql", false);
     private static final Script REPEATABLE_2_UPDATED = createScript("repeatable2.sql", true);
     private static final Script PATCH_1 = createScript("1_#PATCH_patch1.sql", false);
+    private static final Script QUALIFIED_1 = createScript("2_#QUALIFIER.sql", false);
     private static final Script POSTPROCESSING_1 = createScript("postprocessing/1_postprocessing1.sql", false);
     private static final Script POSTPROCESSING_2 = createScript("postprocessing/2_postprocessing2.sql", false);
     private static final Script POSTPROCESSING_3 = createScript("postprocessing/3_postprocessing3.sql", false);
     private static final Script POSTPROCESSING_3_RENAMED_WITH_INDEX_1 = createRenamedScript(POSTPROCESSING_3, "postprocessing/1_postprocessing3.sql");
     private static final Script POSTPROCESSING_1_UPDATED = createScript("postprocessing/1_postprocessing1.sql", true);
+
+    private static final Qualifier QUALIFIER1 = new Qualifier("qualifier");
+
     ScriptUpdates scriptUpdates;
 
     SortedSet<Script> scripts = new TreeSet<Script>();
@@ -125,6 +130,18 @@ public class ScriptUpdatesAnalyzerTest {
         scripts(PATCH_1, INDEXED_2);
         calculateScriptUpdates(false);
         assertIrregularScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, PATCH_1);
+    }
+
+    @Test
+    public void newScriptWithExcludedQualifier() {
+        executedScripts(INDEXED_1);
+        scripts(INDEXED_1, QUALIFIED_1);
+        // If qualifier1 is not excluded, the addition of the qualified script should be registered
+        calculateScriptUpdates();
+        assertRegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, QUALIFIED_1);
+        // If qualifier1 is excluded, the addition of the qualified should not be registered
+        calculateScriptUpdates(QUALIFIER1);
+        assertNotARegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, QUALIFIED_1);
     }
 
     @Test
@@ -210,6 +227,10 @@ public class ScriptUpdatesAnalyzerTest {
         assertTrue(scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
     }
 
+    private void assertNotARegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+        assertFalse(scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
+    }
+
     private void assertIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
         assertTrue(scriptUpdates.getIrregularScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, script)));
     }
@@ -250,20 +271,24 @@ public class ScriptUpdatesAnalyzerTest {
         calculateScriptUpdates(true);
     }
 
-    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
+    private void calculateScriptUpdates(Qualifier... excludedQualifiers) {
+        calculateScriptUpdates(true, excludedQualifiers);
+    }
+
+    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts, Qualifier... excludedQualifiers) {
         ScriptRepository scriptRepository = TestUtils.getScriptRepository(scripts);
         ExecutedScriptInfoSource executedScriptInfoSource = TestUtils.getExecutedScriptInfoSource(executedScripts);
         scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, true,
-                allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
+                allowOutOfSequenceExecutionOfPatchScripts, asSet(excludedQualifiers)).calculateScriptUpdates();
     }
 
     private static Script createScript(String scriptName, boolean modified) {
         String checkSum = scriptName + (modified ? (++sequence) : "");
         Long lastModifiedAt = modified ? 1L : 0L;
-        return new Script(scriptName, lastModifiedAt, checkSum, "@", "#", asSet("PATCH"), "postprocessing");
+        return new Script(scriptName, lastModifiedAt, checkSum, "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing");
     }
 
     private static Script createRenamedScript(Script originalScript, String newName) {
-        return new Script(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum(), "@", "#", asSet("PATCH"), "postprocessing");
+        return new Script(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum(), "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing");
     }
 }

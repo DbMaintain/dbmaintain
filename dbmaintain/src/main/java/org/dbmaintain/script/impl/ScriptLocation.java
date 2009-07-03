@@ -6,12 +6,10 @@ package org.dbmaintain.script.impl;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * @author Filip Neven
@@ -30,7 +28,8 @@ abstract public class ScriptLocation {
 
     protected String scriptEncoding;
     protected String postProcessingScriptDirName;
-    protected Set<String> patchQualifiers;
+    protected Set<Qualifier> registeredQualifiers;
+    protected Set<Qualifier> patchQualifiers;
     protected String qualifierPrefix;
     protected String targetDatabasePrefix;
     protected Set<String> scriptFileExtensions;
@@ -43,7 +42,11 @@ abstract public class ScriptLocation {
         return postProcessingScriptDirName;
     }
 
-    public Set<String> getPatchQualifiers() {
+    public Set<Qualifier> getRegisteredQualifiers() {
+        return registeredQualifiers;
+    }
+
+    public Set<Qualifier> getPatchQualifiers() {
         return patchQualifiers;
     }
 
@@ -78,23 +81,27 @@ abstract public class ScriptLocation {
      * Initializes all fields of the script location using the given properties, and default values for each of the fields
      * which are used if not available in the properties.
      *
-     * @param customProperties The properties
-     * @param defaultScriptEncoding The default script encoding
-     * @param defaultPostProcessingScriptDirName The default postprocessing directory name
-     * @param defaultPatchQualifiers The default patch qualifiers
-     * @param defaultQualifierPrefix The default qualifier prefix
-     * @param defaultTargetDatabasePrefix The default target database prefix
-     * @param defaultScriptFileExtensions The default script file extensions
+     * @param customProperties the properties
+     * @param defaultScriptEncoding the default script encoding
+     * @param defaultPostProcessingScriptDirName the default postprocessing directory name
+     * @param defaultRegisteredQualifiers the default registered (allowed) qualifiers
+     * @param defaultPatchQualifiers the default patch qualifiers
+     * @param defaultQualifierPrefix the default qualifier prefix
+     * @param defaultTargetDatabasePrefix the default target database prefix
+     * @param defaultScriptFileExtensions the default script file extensions
      */
     protected void initConfiguration(Properties customProperties, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
-             Set<String> defaultPatchQualifiers, String defaultQualifierPrefix, String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
+             Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
+             String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
 
         this.scriptEncoding = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_ENCODING))
-                        ? PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, customProperties) : defaultScriptEncoding;
+                ? PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, customProperties) : defaultScriptEncoding;
         this.postProcessingScriptDirName = (customProperties != null && customProperties.containsKey(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME))
-                        ? PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, customProperties) : defaultPostProcessingScriptDirName;
+                ? PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, customProperties) : defaultPostProcessingScriptDirName;
+        this.registeredQualifiers = (customProperties != null && customProperties.containsKey(PROPERTY_QUALIFIERS))
+                ? createQualifiers(PropertyUtils.getStringList(PROPERTY_QUALIFIERS, customProperties)) : defaultRegisteredQualifiers;
         this.patchQualifiers = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_PATCH_QUALIFIERS))
-                        ? new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, customProperties)) : defaultPatchQualifiers;
+                ? createQualifiers(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, customProperties)) : defaultPatchQualifiers;
         this.qualifierPrefix = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_QUALIFIER_PREFIX))
                 ? PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, customProperties) : defaultQualifierPrefix;
         this.targetDatabasePrefix = (customProperties != null && customProperties.containsKey(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX))
@@ -103,7 +110,6 @@ abstract public class ScriptLocation {
                 ? new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, customProperties)) : defaultScriptFileExtensions;
         assertValidScriptExtensions();
     }
-
 
     /**
      * Asserts that the script extensions have the correct format
@@ -119,5 +125,14 @@ abstract public class ScriptLocation {
                 throw new DbMaintainException("Script file extension " + extension + " should not start with a '.'");
             }
         }
+    }
+
+
+    protected Set<Qualifier> createQualifiers(List<String> qualifierNames) {
+        Set<Qualifier> qualifiers = new HashSet<Qualifier>();
+        for (String qualifierName : qualifierNames) {
+            qualifiers.add(new Qualifier(qualifierName));
+        }
+        return qualifiers;
     }
 }

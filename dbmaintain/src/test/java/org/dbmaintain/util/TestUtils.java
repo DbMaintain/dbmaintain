@@ -28,6 +28,7 @@ import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.impl.DefaultScriptRunner;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
@@ -108,7 +109,8 @@ public class TestUtils {
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable) {
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
                 "db_executed_scripts", "script_file_name", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
-                new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@", "#", asSet("PATCH"), "postprocessing");
+                new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@", "#", Collections.<Qualifier>emptySet(),
+                asSet(new Qualifier("patch")), "postprocessing");
     }
 
 
@@ -137,15 +139,17 @@ public class TestUtils {
     }
 
     public static Script createScript(String fileName) {
-        return new Script(fileName, 1L, "xxxxx", "@", "#", asSet("PATCH"), "postprocessing");
+        return new Script(fileName, 1L, "xxxxx", "@", "#", Collections.<Qualifier>emptySet(), asSet(new Qualifier("patch")), "postprocessing");
     }
 
     public static Script createScript(String fileName, String content) {
-        return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1"), "@", "#", singleton("PATCH"), "postprocessing");
+        return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1"), "@", "#",
+                Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
-        return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "postprocessing", asSet("PATCH"), "#", "@", asSet("sql"));
+        return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "postprocessing", Collections.<Qualifier>emptySet(),
+                asSet(new Qualifier("patch")), "#", "@", asSet("sql"));
     }
 
     public static ScriptRepository getScriptRepository(final SortedSet<Script> scriptsToReturn) {

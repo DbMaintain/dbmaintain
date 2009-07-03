@@ -19,8 +19,10 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.IOUtils.contentEquals;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.util.CollectionUtils;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +33,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.SortedSet;
+import static java.util.Collections.*;
 
 /**
  * @author Filip Neven
@@ -52,11 +55,13 @@ public class JarScriptLocationTest {
 
     @Test
     public void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
-        ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(scripts, "ISO-8859-1", "postprocessing", Collections.singleton("PATCH"), "#", "@", CollectionUtils.asSet("sql", "ddl")
-        );
+        ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(scripts, "ISO-8859-1", "postprocessing",
+                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "#",
+                "@", asSet("sql", "ddl"));
         originalScriptArchive.writeToJarFile(jarFile);
-        ArchiveScriptLocation scriptArchiveFromFile = new ArchiveScriptLocation(jarFile, "ISO-8859-1", "postprocessing", Collections.singleton("PATCH"), "#", "@", CollectionUtils.asSet("sql", "ddl")
-        );
+        ArchiveScriptLocation scriptArchiveFromFile = new ArchiveScriptLocation(jarFile, "ISO-8859-1", "postprocessing",
+                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "#",
+                "@", asSet("sql", "ddl"));
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
         assertEqualProperties(originalScriptArchive, scriptArchiveFromFile);
@@ -83,6 +88,7 @@ public class JarScriptLocationTest {
         assertEquals(originalScriptJar.getScriptFileExtensions(), scriptJarFromFile.getScriptFileExtensions());
         assertEquals(originalScriptJar.getTargetDatabasePrefix(), scriptJarFromFile.getTargetDatabasePrefix());
         assertEquals(originalScriptJar.getQualifierPrefix(), scriptJarFromFile.getQualifierPrefix());
+        assertEquals(originalScriptJar.getRegisteredQualifiers(), scriptJarFromFile.getRegisteredQualifiers());
         assertEquals(originalScriptJar.getPatchQualifiers(), scriptJarFromFile.getPatchQualifiers());
         assertEquals(originalScriptJar.getPostProcessingScriptDirName(), scriptJarFromFile.getPostProcessingScriptDirName());
         assertEquals(originalScriptJar.getScriptEncoding(), scriptJarFromFile.getScriptEncoding());

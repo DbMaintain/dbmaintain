@@ -28,6 +28,7 @@ import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptRunner;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.impl.ArchiveScriptLocation;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
@@ -104,6 +105,7 @@ public class PropertiesDbMaintainConfigurer {
         boolean hasItemsToPreserve = getItemsToPreserve().size() > 0 || getSchemasToPreserve().size() > 0;
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
+        Set<Qualifier> excludedQualifiers = createQualifiers(PropertyUtils.getStringList(PROPERTY_EXCLUDED_QUALIFIERS, configuration));
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, configuration);
 
@@ -116,10 +118,10 @@ public class PropertiesDbMaintainConfigurer {
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
                 new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class, boolean.class,
-                        boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class,
+                        Set.class, boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class,
                         ScriptUpdatesFormatter.class, SQLHandler.class},
                 new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
-                        allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
+                        allowOutOfSequenceExecutionOfPatchScripts, excludedQualifiers, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
                         dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
     }
 
@@ -173,28 +175,30 @@ public class PropertiesDbMaintainConfigurer {
     public ArchiveScriptLocation createArchiveScriptLocation(SortedSet<Script> scripts) {
         String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
         String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+        Set<Qualifier> patchQualifiers = createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String qualifierPefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
-        return new ArchiveScriptLocation(scripts, scriptEncoding, postProcessingScriptDirName, patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
+        return new ArchiveScriptLocation(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers,
+                patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
     }
-
 
     public ScriptLocation createScriptLocation(String scriptLocation) {
         String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
         String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+        Set<Qualifier> patchQualifiers = createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String qualifierPefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
         File scriptLocationFile = new File(scriptLocation);
         if (scriptLocationFile.isDirectory()) {
             return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
-                    patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
+                    registeredQualifiers, patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
         } else {
             return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
-                    patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
+                    registeredQualifiers, patchQualifiers, qualifierPefix, targetDatabasePrefix, scriptFileExtensions);
         }
     }
 
@@ -214,18 +218,28 @@ public class PropertiesDbMaintainConfigurer {
         DateFormat timestampFormat = new SimpleDateFormat(getString(PROPERTY_TIMESTAMP_FORMAT, configuration));
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
-        Set<String> patchQualifiers = new HashSet<String>(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
+        Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+        Set<Qualifier> patchQualifiers = createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
         String postProcessingScriptsDirname = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
 
         Class<ExecutedScriptInfoSource> clazz = ConfigUtils.getConfiguredClass(ExecutedScriptInfoSource.class, configuration);
         return createInstanceOfType(clazz, false, new Class<?>[]{boolean.class, String.class, String.class, int.class, String.class, String.class,
                 int.class, String.class, int.class, String.class, DateFormat.class, DbSupport.class, SQLHandler.class, String.class, String.class,
-                Set.class, String.class},
+                Set.class, Set.class, String.class},
 
                 new Object[]{autoCreateExecutedScriptsTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
                         fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
                         executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, getDefaultDbSupport(),
-                        sqlHandler, targetDatabasePrefix, qualifierPrefix, patchQualifiers, postProcessingScriptsDirname});
+                        sqlHandler, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptsDirname});
+    }
+
+
+    protected Set<Qualifier> createQualifiers(List<String> qualifierNames) {
+        Set<Qualifier> qualifiers = new HashSet<Qualifier>(qualifierNames.size());
+        for (String qualifierName : qualifierNames) {
+            qualifiers.add(new Qualifier(qualifierName));
+        }
+        return qualifiers;
     }
 
 

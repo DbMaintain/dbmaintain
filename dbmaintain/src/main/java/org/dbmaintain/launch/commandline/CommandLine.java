@@ -282,17 +282,24 @@ public class CommandLine {
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
-        System.out.println("     Marks the database as up-to-date, without executing any script. ");
+        System.out.println("     Marks the database as up-to-date, without executing any script.");
         System.out.println("     You can use this operation to prepare an existing database to be managed by DbMaintain, ");
         System.out.println("     or after fixing a problem manually.");
         System.out.println("     Optionally, an extra argument may be added indicating the scripts archive file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
+        System.out.println();
+        System.out.println("- " + DbMaintainOperation.CHECK_SCRIPT_UPDATES.getOperationName());
+        System.out.println("     Checks if there are any script updates and prints them out, without executing any script.");
+        System.out.println();
         System.out.println("- " + DbMaintainOperation.CLEAR_DATABASE.getOperationName());
         System.out.println("     Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.");
+        System.out.println();
         System.out.println("- " + DbMaintainOperation.CLEAN_DATABASE.getOperationName());
         System.out.println("     Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.");
+        System.out.println();
         System.out.println("- " + DbMaintainOperation.DISABLE_CONSTRAINTS.getOperationName());
         System.out.println("     Disables or drops all foreign key and not null constraints.");
+        System.out.println();
         System.out.println("- " + DbMaintainOperation.UPDATE_SEQUENCES.getOperationName());
         System.out.println("     Updates all sequences and identity columns to a minimal value.");
     }

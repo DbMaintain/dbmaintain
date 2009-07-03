@@ -40,6 +40,7 @@ public class CreateScriptArchiveTask extends BaseTask {
     private String scriptLocations;
     private String scriptEncoding;
     private String postProcessingScriptDirectoryName;
+    private String qualifiers;
     private String patchQualifiers;
     private String qualifierPrefix;
     private String targetDatabasePrefix;
@@ -57,29 +58,15 @@ public class CreateScriptArchiveTask extends BaseTask {
 
     @Override
     protected void addTaskConfiguration(Properties configuration) {
-        if (scriptLocations != null) {
-            configuration.put(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
-        }
-        if (scriptEncoding != null) {
-            configuration.put(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
-        }
-        if (postProcessingScriptDirectoryName != null) {
-            configuration.put(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
-        }
-        if (patchQualifiers != null) {
-            configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
-        }
-        if (targetDatabasePrefix != null) {
-            configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
-        }
-        if (qualifierPrefix != null) {
-            configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
-        }
-        if (scriptFileExtensions != null) {
-            configuration.put(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
-        }
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_ENCODING, scriptEncoding);
+        addTaskConfiguration(configuration, PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
+        addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
+        addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
     }
-
 
     public void setArchiveFileName(String archiveFileName) {
         this.archiveFileName = archiveFileName;
@@ -95,6 +82,10 @@ public class CreateScriptArchiveTask extends BaseTask {
 
     public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {
         this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
+    }
+
+    public void setQualifiers(String qualifiers) {
+        this.qualifiers = qualifiers;
     }
 
     public void setPatchQualifiers(String patchQualifiers) {

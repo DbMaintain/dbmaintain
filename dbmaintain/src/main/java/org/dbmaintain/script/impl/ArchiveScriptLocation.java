@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReaderInputStream;
 import org.dbmaintain.util.WriterOutputStream;
@@ -45,7 +46,6 @@ public class ArchiveScriptLocation extends ScriptLocation {
     /* The jar file containing the scripts */
     protected JarFile jar;
 
-
     /**
      * Creates a new instance of the {@link ArchiveScriptLocation}, while there is no jar file available yet.
      * This constructor can be used to initialize the container while the scripts are still on the file system,
@@ -54,15 +54,18 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param scripts The scripts contained in the container, not null
      * @param scriptEncoding Encoding used to read the contents of the script, not null
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
+     * @param registeredQualifiers the registered qualifiers, not null
      * @param patchQualifiers The qualifiers that indicate that this script is a patch script, not null
      * @param qualifierPrefix The prefix that identifies a qualifier in the filename, not null
      * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
      * @param scriptFileExtensions The script file extensions
      */
-    public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName, Set<String> patchQualifiers,
-                String qualifierPrefix, String targetDatabasePrefix, Set<String> scriptFileExtensions) {
+    public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
+                Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix,
+                String targetDatabasePrefix, Set<String> scriptFileExtensions) {
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
+        this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
         this.targetDatabasePrefix = targetDatabasePrefix;
         this.qualifierPrefix = qualifierPrefix;
@@ -75,16 +78,18 @@ public class ArchiveScriptLocation extends ScriptLocation {
     /**
      * Creates a new instance based on the contents of the given jar file
      *
-     * @param jarFile The jar file
-     * @param defaultScriptEncoding The default script encoding
-     * @param defaultPostProcessingScriptDirName The default postprocessing dir name
-     * @param defaultPatchQualifiers The default patch qualifiers
-     * @param defaultQualifierPefix The default qualifier prefix
-     * @param defaultTargetDatabasePrefix The default target database prefix
-     * @param defaultScriptFileExtensions The default script file extensions
+     * @param jarFile the jar file
+     * @param defaultScriptEncoding the default script encoding
+     * @param defaultPostProcessingScriptDirName the default postprocessing dir name
+     * @param defaultRegisteredQualifiers the default registered (allowed) qualifiers
+     * @param defaultPatchQualifiers the default patch qualifiers
+     * @param defaultQualifierPefix the default qualifier prefix
+     * @param defaultTargetDatabasePrefix the default target database prefix
+     * @param defaultScriptFileExtensions the default script file extensions
      */
-    public ArchiveScriptLocation(File jarFile, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<String> defaultPatchQualifiers,
-                String defaultQualifierPefix, String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
+    public ArchiveScriptLocation(File jarFile, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
+                Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers,  String defaultQualifierPefix,
+                String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
         try {
             this.jarFile = jarFile;
             jar = new JarFile(jarFile);
@@ -93,7 +98,8 @@ public class ArchiveScriptLocation extends ScriptLocation {
         }
 
         Properties propertiesFromJar = getPropertiesFromJar(jar);
-        initConfiguration(propertiesFromJar, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions
+        initConfiguration(propertiesFromJar, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers,
+                defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions
         );
 
         scripts = loadScriptsFromJar();
@@ -124,7 +130,8 @@ public class ArchiveScriptLocation extends ScriptLocation {
                     }
                 };
                 String scriptName = jarEntry.getName();
-                Script script = new Script(scriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix, qualifierPrefix, patchQualifiers, postProcessingScriptDirName);
+                Script script = new Script(scriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix,
+                        qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
                 scripts.add(script);
             }
         }
@@ -139,11 +146,22 @@ public class ArchiveScriptLocation extends ScriptLocation {
         Properties configuration = new Properties();
         configuration.put(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
         configuration.put(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirName);
-        configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, StringUtils.join(patchQualifiers, ","));
+        configuration.put(PROPERTY_QUALIFIERS, toQualifiersPropertyValue(registeredQualifiers));
+        configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, toQualifiersPropertyValue(patchQualifiers));
         configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
         configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
         configuration.put(PROPERTY_SCRIPT_FILE_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
         return configuration;
+    }
+
+    protected String toQualifiersPropertyValue(Set<Qualifier> qualifiers) {
+        StringBuilder propertyValue = new StringBuilder();
+        String separator = "";
+        for (Qualifier qualifier : qualifiers) {
+            propertyValue.append(separator).append(qualifier.getQualifierName());
+            separator = ",";
+        }
+        return propertyValue.toString();
     }
 
 

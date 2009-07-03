@@ -80,7 +80,7 @@ public class ScriptRepositoryTest {
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateScript() {
-        ScriptLocation scriptLocationWithDuplicateScript = new ScriptLocation() {
+        ScriptLocation location = new ScriptLocation() {
             public String getLocationName() {
                 return "locationWithDuplicateScript";
             }
@@ -91,12 +91,12 @@ public class ScriptRepositoryTest {
             }
         };
 
-        new ScriptRepository(asSet(scriptLocation1, scriptLocationWithDuplicateScript));
+        new ScriptRepository(asSet(scriptLocation1, location));
     }
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateIndex() {
-        ScriptLocation scriptLocationWithDuplicateIndexScript = new ScriptLocation() {
+        ScriptLocation location = new ScriptLocation() {
             @Override
             public String getLocationName() {
                 return "locationWithDuplicateIndexScript";
@@ -108,6 +108,7 @@ public class ScriptRepositoryTest {
             }
         };
 
-        new ScriptRepository(asSet(scriptLocation1, scriptLocationWithDuplicateIndexScript));
+        new ScriptRepository(asSet(scriptLocation1, location));
     }
+    
 }

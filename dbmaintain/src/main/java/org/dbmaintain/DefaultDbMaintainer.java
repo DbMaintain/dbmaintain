@@ -114,6 +114,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected boolean allowOutOfSequenceExecutionOfPatchScripts;
 
     /**
+     * Scripts with one of these qualifiers are not executed
+     */
+    protected Set<Qualifier> excludedQualifiers;
+
+    /**
      * Indicates if foreign key and not null constraints should removed after updating the database
      * structure
      */
@@ -143,6 +148,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param useScriptFileLastModificationDates if true, the dbmaintainer decides that a script hasn't changed if the
      * last modification date is identical to the one of the last update, without looking at the contents of the script
      * @param allowOutOfSequenceExecutionOfPatchScripts if true, patch scripts can be executed out-of-sequence
+     * @param excludedQualifiers scripts with one of these qualifiers are not executed
      * @param cleanDb If true, the data from all tables will be removed before performing any updates
      * @param disableConstraints If true, all foreign key and not null constraints will be automatically disabled
      * or removed after each update
@@ -154,7 +160,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
+               Set<Qualifier> excludedQualifiers, boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
                SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
 
         this.scriptRunner = scriptRunner;
@@ -164,6 +170,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.hasItemsToPreserve = hasItemsToPreserve;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
+        this.excludedQualifiers = excludedQualifiers;
         this.cleanDb = cleanDb;
         this.disableConstraints = disableConstraints;
         this.updateSequences = updateSequences;
@@ -236,7 +243,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
             if (recreateFromScratch) {
                 logger.info("The database is cleared, and all database scripts are executed.");
                 if (!dryRun) {
-                    clearDatabase();
+                    doClearDatabase();
                     executeScripts(scriptRepository.getAllUpdateScripts());
                 }
             } else {
@@ -293,7 +300,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public ScriptUpdates getScriptUpdates() {
         return new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates,
-                allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
+                allowOutOfSequenceExecutionOfPatchScripts, excludedQualifiers).calculateScriptUpdates();
     }
 
 

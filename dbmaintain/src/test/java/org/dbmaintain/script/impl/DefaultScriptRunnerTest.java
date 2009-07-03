@@ -18,9 +18,11 @@ package org.dbmaintain.script.impl;
 import static junit.framework.Assert.assertTrue;
 
 import java.util.Collections;
+import static java.util.Collections.singleton;
 
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
 import org.dbmaintain.util.SQLTestUtils;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
@@ -63,8 +65,8 @@ public class DefaultScriptRunnerTest {
         dataSource = dbSupport.getDataSource();
         defaultScriptRunner = getDefaultScriptRunner(dbSupport);
 
-        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
-        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
+        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
 
         cleanupTestDatabase();
     }

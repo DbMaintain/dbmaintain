@@ -45,14 +45,12 @@ abstract public class BaseTask extends Task {
      */
     protected DbMaintain getDbMaintain() {
         PropertiesDbMaintainConfigurer dbMaintainConfigurer = getDbMaintainConfigurer();
-        DbMaintain dbMaintain = new DbMaintain(dbMaintainConfigurer);
-        return dbMaintain;
+        return new DbMaintain(dbMaintainConfigurer);
     }
     
     
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(getConfiguration(), null);
-        return dbMaintainConfigurer;
+        return new PropertiesDbMaintainConfigurer(getConfiguration(), null);
     }
     
     
@@ -81,14 +79,30 @@ abstract public class BaseTask extends Task {
     
     /**
      * Hook method for adding specific configuration for this ant task
-     * @param configuration
+     * @param configuration the configuration object that assembles all dbmaintain property values, not null
      */
     protected void addTaskConfiguration(Properties configuration) {
     }
 
+    protected void addTaskConfiguration(Properties configuration, String propertyName, String propertyValue) {
+        if (propertyValue != null) {
+            configuration.put(propertyName, propertyValue);
+        }
+    }
+
+    protected void addTaskConfiguration(Properties configuration, String propertyName, Boolean propertyValue) {
+        if (propertyValue != null) {
+            configuration.put(propertyName, String.valueOf(propertyValue));
+        }
+    }
+
+    protected void addTaskConfiguration(Properties configuration, String propertyName, Long propertyValue) {
+        if (propertyValue != null) {
+            configuration.put(propertyName, String.valueOf(propertyValue));
+        }
+    }
 
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
     }
-    
 }

@@ -31,6 +31,7 @@ import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 
 /**
@@ -105,9 +106,14 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     protected String qualifierPefix;
 
     /**
+     * The registered (allowed) custom qualifiers
+     */
+    protected Set<Qualifier> registeredQualifiers;
+
+    /**
      * The qualifiers that identify a script as a patch script, not null
      */
-    protected Set<String> patchQualifiers;
+    protected Set<Qualifier> patchQualifiers;
     
     /**
      * The name of the post processing dir
@@ -119,7 +125,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
             int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize,
             String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat,
             DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix,
-            Set<String> patchQualifiers, String postProcessingScriptDirName) {
+            Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
 
         this.defaultDbSupport = defaultSupport;
         this.sqlHandler = sqlHandler;
@@ -136,6 +142,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         this.timestampFormat = timestampFormat;
         this.targetDatabasePrefix = targetDatabasePrefix;
         this.qualifierPefix = qualifierPrefix;
+        this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
     }
@@ -192,7 +199,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, patchQualifiers, postProcessingScriptDirName), executedAt, succeeded);
+                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum,
+                        targetDatabasePrefix, qualifierPefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName), executedAt, succeeded);
                 executedScripts.add(executedScript);
             }
 

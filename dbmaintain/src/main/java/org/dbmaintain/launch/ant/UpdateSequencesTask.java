@@ -18,6 +18,7 @@ package org.dbmaintain.launch.ant;
 import java.util.Properties;
 
 import org.dbmaintain.config.DbMaintainProperties;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE;
 import org.dbmaintain.launch.DbMaintain;
 
 /**
@@ -36,9 +37,7 @@ public class UpdateSequencesTask extends BaseDatabaseTask {
     
     @Override
     protected void addTaskConfiguration(Properties configuration) {
-        if (lowestAcceptableSequenceValue != null) {
-            configuration.put(DbMaintainProperties.PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, lowestAcceptableSequenceValue);
-        }
+        addTaskConfiguration(configuration, PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, lowestAcceptableSequenceValue);
     }
 
     public void setLowestAcceptableSequenceValue(Long lowestAcceptableSequenceValue) {

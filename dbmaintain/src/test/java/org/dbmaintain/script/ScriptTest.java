@@ -19,10 +19,12 @@ import static junit.framework.Assert.*;
 
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.DbMaintainException;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Set;
+import static java.util.Collections.singleton;
 
 /**
  * Tests for the script class
@@ -31,7 +33,10 @@ import java.util.Collections;
  * @author Tim Ducheyne
  */
 public class ScriptTest {
-    
+
+    private static final Qualifier QUALIFIER1 = new Qualifier("qualifier1"), QUALIFIER2 = new Qualifier("qualifier2"),
+            QUALIFIER3 = new Qualifier("qualifier3");
+
     @Test
     public void testIsIncremental_incremental() {
         Script script = createScript("incremental/02_sprint1/01_incrementalScript.sql");
@@ -52,19 +57,13 @@ public class ScriptTest {
         createScript("incremental/02_script1/repeatableScript.sql");
     }
 
-    /**
-     * Tests for a script name with a 'fix' in the name.
-     */
     @Test
-    public void testIsPatchScript_caseIgnored() {
+    public void testIsPatchScript() {
         Script script = createScript("incremental/02_sprint2/03_#patch_addUser.sql");
         assertTrue(script.isPatchScript());
     }
 
 
-    /**
-     * Tests for a script name with a 'fix' in the folder name.
-     */
     @Test
     public void testIsPatchScript_patchInFolderName() {
         Script script = createScript("incremental/02_#patch_sprint2/03_addUser.sql");
@@ -72,9 +71,6 @@ public class ScriptTest {
     }
 
 
-    /**
-     * Tests for a script name with a 'fix' in the name but no index.
-     */
     @Test
     public void testIsPatchScript_patchWithoutIndex() {
         Script script = createScript("#patch_incremental/02_sprint2/03_addUser.sql");
@@ -82,9 +78,6 @@ public class ScriptTest {
     }
 
 
-    /**
-     * Tests for a script name with no 'patch' in the name.
-     */
     @Test
     public void testIsPatchScript_noPatch() {
         Script script = createScript("incremental/02_sprint2/03_addUser.sql");
@@ -101,6 +94,12 @@ public class ScriptTest {
         assertTrue(script.isPatchScript());
     }
 
+
+    @Test
+    public void testScriptWithQualifiers() {
+        Script script = createScript("#qualifier1_#qualifier2_script.sql");
+        assertEquals(asSet(QUALIFIER1, QUALIFIER2), script.getQualifiers());
+    }
 
     @Test
     public void testNoTargetDatabase() {
@@ -132,7 +131,18 @@ public class ScriptTest {
         assertEquals("thisdb", script.getTargetDatabaseName());
         assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
     }
-    
+
+    @Test
+    public void testGetQualifiers() {
+        Script script = createScript("#qualifier1/folderName/folderName_#qualifier2/#qualifier3.sql");
+        assertEquals(asSet(QUALIFIER1, QUALIFIER2, QUALIFIER3), script.getQualifiers());
+    }
+
+    @Test(expected = DbMaintainException.class)
+    public void testUnregisteredQualifier() {
+        createScript("#unregisteredQualifier.sql");
+    }
+
     @Test
     public void testIsScriptContentEqualTo() {
         Script script = createScriptWithContent("fileName", "script content");
@@ -186,19 +196,29 @@ public class ScriptTest {
     }
 
     private Script createScript(String fileName) {
-        return new Script(fileName, 10L, "xxx", "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        return new Script(fileName, 10L, "xxx", "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing");
     }
 
     private Script createScriptWithContent(String fileName, String scriptContent) {
-        return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1"), "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1"),
+                "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing");
     }
 
     private Script createScriptWithCheckSum(String fileName, String checkSum) {
-        return new Script(fileName, 0L, checkSum, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        return new Script(fileName, 0L, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing");
     }
 
     private Script createScriptWithModificationDateAndCheckSum(String fileName, long fileLastModifiedAt, String checkSum) {
-        return new Script(fileName, fileLastModifiedAt, checkSum, "@", "#", Collections.singleton("PATCH"), "postprocessing");
+        return new Script(fileName, fileLastModifiedAt, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(),
+                "postprocessing");
+    }
+
+    private Set<Qualifier> getPatchQualifier() {
+        return singleton(new Qualifier("patch"));
+    }
+
+    private Set<Qualifier> getRegisteredQualifiers() {
+        return asSet(QUALIFIER1, QUALIFIER2, QUALIFIER3);
     }
 
 }

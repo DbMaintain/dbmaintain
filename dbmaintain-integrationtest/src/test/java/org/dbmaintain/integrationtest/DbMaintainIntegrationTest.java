@@ -24,6 +24,7 @@ import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import static org.dbmaintain.config.DbMaintainProperties.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
@@ -56,6 +57,9 @@ public class DbMaintainIntegrationTest {
         INCREMENTAL_1_RENAMED("01_incremental/01_incremental_1_renamed.sql"),
         INCREMENTAL_2("01_incremental/02_incremental_2.sql"),
         INCREMENTAL_3("01_incremental/03_incremental_3.sql"),
+
+        INCREMENTAL_2_SPECIAL_QUALIFIER("01_incremental/02_#special.sql"),
+        INCREMENTAL_2_UNKNOWN_QUALIFIER("01_incremental/02_#unknown.sql"),
 
         REPEATABLE("repeatable/repeatable.sql"),
         REPEATABLE_RENAMED("repeatable/repeatable_renamed.sql"),
@@ -546,6 +550,29 @@ public class DbMaintainIntegrationTest {
         }
     }
 
+    @Test
+    public void testQualifiers() {
+        disableFromScratch();
+        createScripts(INCREMENTAL_1, INCREMENTAL_2_SPECIAL_QUALIFIER);
+        // Verify that the script with the special qualifier is not executed if it is excluded
+        excludeSpecialQualifier();
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1);
+        assertScriptsNotExecuted(INCREMENTAL_2_SPECIAL_QUALIFIER);
+        // Verify that the script with the special qualifier is executed if it is not excluded
+        includeSpecialQualifier();
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_2_SPECIAL_QUALIFIER);
+    }
+
+    @Test(expected = DbMaintainException.class)
+    public void testErrorInCaseOfUnknownQualifier() {
+        createScripts(INCREMENTAL_2_UNKNOWN_QUALIFIER);
+        updateDatabase();
+    }
+
+    ////////////// PRIVATE HELPER METHODS ////////////////////
+
     private void createTable(String tableName) {
         SQLTestUtils.executeUpdate("create table " + tableName + " (test varchar(10))", dbSupport.getDataSource());
     }
@@ -563,15 +590,23 @@ public class DbMaintainIntegrationTest {
     }
 
     private void enableFromScratch() {
-        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "true");
+        configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "true");
     }
 
     private void disableFromScratch() {
-        configuration.put(DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED, "false");
+        configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "false");
     }
 
     private void allowOutOfSequenceExecutionOfPatches() {
         configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
+    }
+
+    private void excludeSpecialQualifier() {
+        configuration.put(DbMaintainProperties.PROPERTY_EXCLUDED_QUALIFIERS, "special");
+    }
+
+    private void includeSpecialQualifier() {
+        configuration.put(DbMaintainProperties.PROPERTY_EXCLUDED_QUALIFIERS, "");
     }
 
     private void assertMessageContains(String message, String... subStrings) {
@@ -605,7 +640,7 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
-            assertTrue(tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+            assertTrue("Table " + tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
         }
     }
 
@@ -613,7 +648,7 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
-            assertTrue(tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+            assertTrue("Table " + tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
         }
     }
 
@@ -621,7 +656,7 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
-            assertFalse(tableName + " exists, so the script " + script + " has been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+            assertFalse("Table " + tableName + " exists, so the script " + script + " has been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
         }
     }
 
@@ -629,18 +664,18 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
-            assertFalse(tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+            assertFalse("Table " + tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
         }
     }
 
     private void assertTableExists(String tableName) {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
-        assertTrue(tableName + " doesn't exist", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+        assertTrue("Table " + tableName + " doesn't exist", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
     }
 
     private void assertTableDoesntExist(String tableName) {
         Set<String> tableNames = dbSupport.getTableNames("PUBLIC");
-        assertFalse(tableName + " exists, while it shouldn't", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
+        assertFalse("Table " + tableName + " exists, while it shouldn't", tableNames.contains(dbSupport.toCorrectCaseIdentifier(tableName)));
     }
 
     private void updateDatabase() {
@@ -726,11 +761,11 @@ public class DbMaintainIntegrationTest {
 
     private String getTableNameForScript(TestScript scriptName) {
         String shortFileName = getShortFileName(scriptName);
-        if (isIndexedFileName(shortFileName)) {
-            return substringAfter(shortFileName, "_");
-        } else {
-            return shortFileName;
-        }
+        if (isIndexedFileName(shortFileName))
+            shortFileName = substringAfter(shortFileName, "_");
+        if (shortFileName.startsWith("#"))
+            shortFileName = substringAfter(shortFileName, "#");
+        return shortFileName;
     }
 
     private String getShortFileName(TestScript script) {
@@ -806,10 +841,11 @@ public class DbMaintainIntegrationTest {
         configuration.put("database.userName", "sa");
         configuration.put("database.password", "");
         configuration.put("database.schemaNames", "PUBLIC");
-        configuration.put("dbMaintainer.autoCreateDbMaintainScriptsTable", "true");
-        configuration.put("dbMaintainer.script.locations", scriptsLocation.getAbsolutePath());
-        configuration.put("dbMaintainer.useScriptFileLastModificationDates.enabled", "false");
-        configuration.put("dbMaintainer.fromScratch.enabled", "false");
+        configuration.put(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, "true");
+        configuration.put(PROPERTY_SCRIPT_LOCATIONS, scriptsLocation.getAbsolutePath());
+        configuration.put(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, "false");
+        configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "false");
+        configuration.put(PROPERTY_QUALIFIERS, "special");
 
         dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, new DefaultSQLHandler());
         dbSupport = dbMaintainConfigurer.getDefaultDbSupport();

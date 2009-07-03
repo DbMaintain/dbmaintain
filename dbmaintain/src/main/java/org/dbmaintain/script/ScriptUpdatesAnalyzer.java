@@ -37,6 +37,7 @@ public class ScriptUpdatesAnalyzer {
     private ExecutedScriptInfoSource executedScriptInfoSource;
     private boolean useScriptFileLastModificationDates;
     private boolean allowOutOfSequenceExecutionOfPatchScripts;
+    private Set<Qualifier> excludedQualifiers;
 
     /* Sets that contain the result of the analysis: each set contains a specific type of script updates */
     private SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
@@ -58,18 +59,21 @@ public class ScriptUpdatesAnalyzer {
      * Creates a new instance that will compare the info from the given {@link ExecutedScriptInfoSource} with the current
      * scripts from the given {@link ScriptRepository}. It also needs to know whether a new patch script with a lower
      * index is a regular or irregular script update 
-     * @param scriptRepository Exposes the current set of scripts
-     * @param executedScriptInfoSource Provides info on the script that were executed on the database
-     * @param useScriptFileLastModificationDates Whether the last modification date of the scripts can be used to determine
+     * @param scriptRepository exposes the current set of scripts
+     * @param executedScriptInfoSource provides info on the script that were executed on the database
+     * @param useScriptFileLastModificationDates whether the last modification date of the scripts can be used to determine
      * if a script has changed.
-     * @param allowOutOfSequenceExecutionOfPatchScripts Whether scripts marked as patch scripts may be executed out-of-sequence
+     * @param allowOutOfSequenceExecutionOfPatchScripts whether scripts marked as patch scripts may be executed out-of-sequence
+     * @param excludedQualifiers scripts with one of these qualifiers are excluded from the analyzed scripts
      */
     public ScriptUpdatesAnalyzer(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-                         boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts) {
+                         boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
+                         Set<Qualifier> excludedQualifiers) {
         this.scriptRepository = scriptRepository;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
+        this.excludedQualifiers = excludedQualifiers;
     }
 
     /**
@@ -125,7 +129,7 @@ public class ScriptUpdatesAnalyzer {
 
         // Look for newly added scripts. A script is new if it's not mapped to an executed script in the scriptExecuteScriptMap,
         // which also contains the scripts that were renamed
-        for (Script script : scriptRepository.getAllScripts()) {
+        for (Script script : getAllIncludedScripts()) {
             if (!scriptExecutedScriptMap.containsKey(script)) {
                 registerScriptAddition(script);
             }
@@ -304,13 +308,12 @@ public class ScriptUpdatesAnalyzer {
     protected Map<String, Script> getScriptNameScriptMap() {
         if (scriptNameScriptMap == null) {
             scriptNameScriptMap = new HashMap<String, Script>();
-            for (Script script : scriptRepository.getAllScripts()) {
+            for (Script script : getAllIncludedScripts()) {
                 scriptNameScriptMap.put(script.getFileName(), script);
             }
         }
         return scriptNameScriptMap;
     }
-
 
     /**
      * @return All scripts, as a map from checksum => Script
@@ -318,7 +321,7 @@ public class ScriptUpdatesAnalyzer {
     protected Map<String, Set<Script>> getCheckSumScriptMap() {
         if (checkSumScriptMap == null) {
             checkSumScriptMap = new HashMap<String, Set<Script>>();
-            for (Script script : scriptRepository.getAllScripts()) {
+            for (Script script : getAllIncludedScripts()) {
                 Set<Script> scriptsWithCheckSum = checkSumScriptMap.get(script.getCheckSum());
                 if (scriptsWithCheckSum == null) {
                     scriptsWithCheckSum = new HashSet<Script>();
@@ -342,6 +345,17 @@ public class ScriptUpdatesAnalyzer {
             }
         }
         return result;
+    }
+
+
+    protected SortedSet<Script> getAllIncludedScripts() {
+        SortedSet<Script> scripts = new TreeSet<Script>();
+        for (Script script : scriptRepository.getAllScripts()) {
+            if (!script.hasQualifierFrom(excludedQualifiers)) {
+                scripts.add(script);
+            }
+        }
+        return scripts;
     }
 
 
