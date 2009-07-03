@@ -150,7 +150,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	
 * {The DBMAINTAIN_SCRIPTS table}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    DbMaintain keeps a record of all executed scripts in the database itself. For this, the table DBMAINTAIN_SCRIPTS is used. It contains a record for each script that was executed on the database. The table definition looks like the following:
+    The database keeps track of all executed scripts in the table DBMAINTAIN_SCRIPTS. The table definition looks like the following:
 	
 *---------+----------------------------------+
 |FILE_NAME|Relative path of the script file, starting from the root of the scripts directory or archive.|
@@ -377,6 +377,26 @@ database.read.schemaNames=read
 |scriptFileExtensions|Defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl'.|
 *--------+-------------+
 
+** {Check script updates}
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    Performs a dry-run of the <updateDatabase> operation and prints all detected script updates, without executing anything. This operation fails whenever the <updateDatabase> operation would fail, i.e. if there are any irregular script updates and <fromScratchEnabled> is <false> or if a patch script was added out-of-sequence and <allowOutOfSequenceExecutionOfPatches> is <false>. An automatic test could be created that executes this operation against a test database that cannot be updated from scratch, to enforce at all times that no irregular script updates are introduced.
+
+    Following options are applicable:
+
+*--------+-------------+
+|scriptLocations (required)|Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a script archive.|
+*--------+-------------+
+|fromScratchEnabled|Indicates whether the database can be recreated from scratch if needed. Is disabled by default.|
+*--------+-------------+
+|autoCreateDbMaintainScriptsTable|If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually. False by default.|
+*--------+-------------+
+|allowOutOfSequenceExecutionOfPatches|If this property is set to true, a patch script is allowed to be executed even if another script with a higher index was already executed. False by default.|
+*--------+-------------+
+|scriptFileExtensions|Defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl'.|
+*--------+-------------+
+|useLastModificationDates|Defines whether the last modification dates of the scripts files can be used to determine whether the contents of a script has changed. If set to true, DbMaintain will not look at the contents of scripts that were already executed on the database, if the last modification date is still the same. If it did change, it will first calculate the checksum of the file to verify that the content really changed. Setting this property to true improves performance: if set to false the checksum of every script must be calculated for each run. True by default.|
+*--------+-------------+
+	
 ** {Clear the database}
 ~~~~~~~~~~~~~~~~~~~~~
     This operation removes all database objects from the database, such as tables, views, sequences, synonyms and triggers. The database schemas will be left untouched: this way, you can immediately start an update afterwards. This operation is also called when a from-scratch update is performed. The table dbmaintain_scripts is not dropped but all data in it is removed. It's possible to exclude certain database objects to make sure they are not dropped, like described in {{{#Preserve_database_objects}Preserve database objects}}.
