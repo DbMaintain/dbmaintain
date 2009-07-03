@@ -40,6 +40,7 @@
             <item name="Team Members" href="http://sourceforge.net/project/memberlist.php?group_id=240079"/>
             <item name="Issue Tracking" href="http://jira.dbmaintain.org"/>
             <item name="Source Repository" href="source-repository.html"/>
+			<item name="Acknowledgements" href="acknowledgements.html"/>
         </menu>
         
     </body>
