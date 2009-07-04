@@ -219,7 +219,7 @@ public class DbMaintainProperties {
 
     public static final String PROPERTY_QUALIFIERS = "dbMaintainer.qualifiers";
 
-    public static final String PROPERTY_EXCLUDED_QUALIFIERS = "dbMaintainer.qualifiers.excluded";
+    public static final String PROPERTY_EXCLUDED_QUALIFIERS = "dbMaintainer.excludedQualifiers";
 
     /**
      * Private constructor to prevent instantiation
