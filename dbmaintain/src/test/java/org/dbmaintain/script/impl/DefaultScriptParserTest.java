@@ -36,43 +36,7 @@ import java.net.URISyntaxException;
  */
 public class DefaultScriptParserTest {
 
-    /* Reader for the test script */
-    private Reader testSQLScriptReader;
-
-    /* Reader for the test script with a missing semi colon */
-    private Reader testSQLMissingSemiColonScriptReader;
-
-    /* Reader for the test script ending with a comment */
-    private Reader testSQLEndingWithCommentScriptReader;
-
-    /* Reader for the test script not ending with a new line */
-    private Reader testSQLNotEndingWithNewLineScriptReader;
-
-    /* Reader for the empty script */
-    private Reader emptyScriptReader;
-
-
-    /**
-     * Initialize test fixture
-     */
-    @Before
-    public void setUp() {
-        testSQLScriptReader = getScriptReader("ScriptParserTest/sql-script.sql");
-        testSQLMissingSemiColonScriptReader = getScriptReader("ScriptParserTest/sql-script-missing-semicolon.sql");
-        testSQLEndingWithCommentScriptReader = getScriptReader("ScriptParserTest/sql-script-ending-with-comment.sql");
-        testSQLNotEndingWithNewLineScriptReader = getScriptReader("ScriptParserTest/sql-script-not-ending-with-new-line.sql");
-        emptyScriptReader = new StringReader("");
-    }
-
-    private FileReader getScriptReader(String scriptName) {
-        try {
-            return new FileReader(new File(getClass().getResource(scriptName).toURI()));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private Reader scriptReader;
 
 
     /**
@@ -80,11 +44,7 @@ public class DefaultScriptParserTest {
      */
     @After
     public void tearDown() {
-        closeQuietly(testSQLEndingWithCommentScriptReader);
-        closeQuietly(testSQLMissingSemiColonScriptReader);
-        closeQuietly(testSQLNotEndingWithNewLineScriptReader);
-        closeQuietly(testSQLScriptReader);
-        closeQuietly(emptyScriptReader);
+        closeQuietly(scriptReader);
     }
 
 
@@ -94,10 +54,13 @@ public class DefaultScriptParserTest {
      */
     @Test
     public void testParseStatements() {
-        ScriptParser scriptParser = new DefaultScriptParser(testSQLScriptReader, false);
+        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script.sql");
 
         for (int i = 0; i < 13; i++) {
-            assertNotNull(scriptParser.getNextStatement());
+            System.out.println("i = " + i);
+            String statement = scriptParser.getNextStatement();
+            System.out.println("statement = " + statement);
+            assertNotNull(statement);
         }
         assertNull(scriptParser.getNextStatement());
     }
@@ -109,7 +72,7 @@ public class DefaultScriptParserTest {
      */
     @Test(expected = DbMaintainException.class)
     public void testParseStatements_missingEndingSemiColon() {
-        ScriptParser scriptParser = new DefaultScriptParser(testSQLMissingSemiColonScriptReader, false);
+        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script-missing-semicolon.sql");
         scriptParser.getNextStatement();
     }
 
@@ -119,20 +82,19 @@ public class DefaultScriptParserTest {
      */
     @Test
     public void testParseStatements_endingWithComment() {
-        ScriptParser scriptParser = new DefaultScriptParser(testSQLEndingWithCommentScriptReader, false);
-        scriptParser.getNextStatement();
-        scriptParser.getNextStatement();
+        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script-ending-with-comment.sql");
+        assertNotNull(scriptParser.getNextStatement());
+        assertNull(scriptParser.getNextStatement());
     }
-
 
     /**
      * Test parsing statements out of a script that does not end with a new line.
      */
     @Test
     public void testParseStatements_notEndingWithNewLine() {
-        ScriptParser scriptParser = new DefaultScriptParser(testSQLNotEndingWithNewLineScriptReader, false);
-        scriptParser.getNextStatement();
-        scriptParser.getNextStatement();
+        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script-not-ending-with-new-line.sql");
+        assertNotNull(scriptParser.getNextStatement());
+        assertNull(scriptParser.getNextStatement());
     }
 
 
@@ -141,8 +103,25 @@ public class DefaultScriptParserTest {
      */
     @Test
     public void testParseStatements_emptyScript() {
-        ScriptParser scriptParser = new DefaultScriptParser(emptyScriptReader, false);
+        ScriptParser scriptParser = new DefaultScriptParser(new StringReader(""), false);
 
         assertNull(scriptParser.getNextStatement());
+    }
+
+
+    private DefaultScriptParser createScriptParser(String scriptName) {
+        scriptReader = getScriptReader(scriptName);
+        return new DefaultScriptParser(scriptReader, false);
+    }
+
+
+    private FileReader getScriptReader(String scriptName) {
+        try {
+            return new FileReader(new File(getClass().getResource(scriptName).toURI()));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

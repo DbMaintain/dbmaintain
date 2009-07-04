@@ -1,6 +1,9 @@
 package org.dbmaintain.scriptparser.impl;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
+import org.dbmaintain.scriptparser.parsingstate.ParsingState;
+
+import static java.lang.Character.isWhitespace;
 
 /**
  * A class for building statements.
@@ -14,12 +17,20 @@ public class StatementBuilder {
     /* The current statement content */
     private StringBuilder statement = new StringBuilder();
 
-    /* True if the the statement is executable */
-    private boolean executable;
+    /* Executable means that the statement contains other content than comments */
+    private boolean executable = false;
+
+    private ParsingState currentParsingState;
+
+    private char previousChar;
+
+    public StatementBuilder(ParsingState initialParsingState) {
+        currentParsingState = initialParsingState;
+    }
 
 
     /**
-     * @return True if the the statement is executable
+     * @return True if the statement contains other content than comments
      */
     public boolean isExecutable() {
         return executable;
@@ -27,12 +38,10 @@ public class StatementBuilder {
 
 
     /**
-     * Change the statement executable flag.
-     *
-     * @param executable True if the statement is executable
+     * Mark the statement as being executable, i.e. that it contains other content than comments
      */
-    public void setExecutable(boolean executable) {
-        this.executable = executable;
+    public void setExecutable() {
+        this.executable = true;
     }
 
 
@@ -61,6 +70,7 @@ public class StatementBuilder {
      */
     public void clear() {
         statement.setLength(0);
+        executable = false;
     }
 
 
@@ -108,4 +118,20 @@ public class StatementBuilder {
         return trimmedStatement;
     }
 
+    public void addCharacter(char currentChar, char nextChar) {
+        // Ignore leading whitespace
+        if (statement.length() == 0 && (isWhitespace(currentChar) || isEndOfStatementChar(currentChar))) {
+            return;
+        }
+        currentParsingState = currentParsingState.handleNextChar(previousChar, currentChar, nextChar, this);
+        previousChar = currentChar;
+    }
+
+    protected boolean isEndOfStatementChar(char character) {
+        return character == ';';
+    }
+
+    public boolean isComplete() {
+        return currentParsingState == null;
+    }
 }

@@ -107,7 +107,23 @@ public class DefaultScriptParser implements ScriptParser {
      * @throws IOException
      */
     protected String getNextStatementImpl() throws IOException {
-        currentChar = scriptReader.read();
+        StatementBuilder statementBuilder = createStatementBuilder();
+        int nextChar;
+        while (currentChar != -1) {
+            nextChar = scriptReader.read();
+            statementBuilder.addCharacter((char) currentChar, (char) nextChar);
+            currentChar = nextChar;
+            if (statementBuilder.isComplete()) {
+                return statementBuilder.createStatement();
+            }
+        }
+        if (!statementBuilder.isComplete() && statementBuilder.isExecutable()) {
+            throw new DbMaintainException("Last statement in script was not ended correctly. " +
+                    "Each statement should end with one of " + Arrays.toString(statementBuilder.getTrailingSeparatorCharsToRemove()));
+        }
+        return null;
+
+        /*currentChar = scriptReader.read();
         if (currentChar == -1) {
             // nothing more to read
             return null;
@@ -147,7 +163,6 @@ public class DefaultScriptParser implements ScriptParser {
                 // reset initial state
                 previousChar = 0;
                 statementBuilder.clear();
-                statementBuilder.setExecutable(false);
                 currentParsingState = initialParsingState;
 
                 if (statement != null) {
@@ -164,7 +179,7 @@ public class DefaultScriptParser implements ScriptParser {
                 throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(statementBuilder.getTrailingSeparatorCharsToRemove()));
             }
         }
-        return null;
+        return null; */
     }
 
 
@@ -201,7 +216,7 @@ public class DefaultScriptParser implements ScriptParser {
      * @return The statement builder, not null
      */
     protected StatementBuilder createStatementBuilder() {
-        return new StatementBuilder();
+        return new StatementBuilder(initialParsingState);
     }
 
 

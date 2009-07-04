@@ -95,13 +95,13 @@ public class NormalParsingState extends BaseParsingState {
         // escape current character
         if (escaping) {
             escaping = false;
-            statementBuilder.setExecutable(true);
+            statementBuilder.setExecutable();
             return this;
         }
         // check escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
             escaping = true;
-            statementBuilder.setExecutable(true);
+            statementBuilder.setExecutable();
             return this;
         }
         // check line comment
@@ -122,7 +122,7 @@ public class NormalParsingState extends BaseParsingState {
         }
         // flag the statement executable from the second character
         if (previousChar != 0) {
-            statementBuilder.setExecutable(true);
+            statementBuilder.setExecutable();
         }
         return this;
     }

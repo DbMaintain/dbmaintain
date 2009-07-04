@@ -21,13 +21,10 @@ import static org.junit.Assert.assertNull;
 import org.dbmaintain.scriptparser.impl.OracleScriptParser;
 import org.junit.After;
 import org.junit.Test;
-import org.apache.commons.io.IOUtils;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
+import java.net.URISyntaxException;
 
 /**
  * Tests the Oracle SQL and PL-SQL script parser
@@ -55,8 +52,7 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_SQL() throws Exception {
-        scriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/sql-script.sql").toURI()));
-        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
+        OracleScriptParser oracleScriptParser = createScriptParser("ScriptParserTest/sql-script.sql");
 
         for (int i = 0; i < 13; i++) {
             assertNotNull(oracleScriptParser.getNextStatement());
@@ -64,21 +60,20 @@ public class OracleScriptParserTest {
         assertNull(oracleScriptParser.getNextStatement());
     }
 
-
     /**
      * Test parsing some statements out of a PL-SQL script.
      * 4 statements should have been found in the script.
      */
     @Test
     public void testParseStatements_PLSQL() throws Exception {
-        scriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/plsql-script.sql").toURI()));
-        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
+        OracleScriptParser oracleScriptParser = createScriptParser("ScriptParserTest/plsql-script.sql");
 
         for (int i = 0; i < 5; i++) {
             assertNotNull(oracleScriptParser.getNextStatement());
         }
         assertNull(oracleScriptParser.getNextStatement());
     }
+
 
     /**
      * Test parsing some statements out of a PL-SQL script ending with a comment.
@@ -86,13 +81,12 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_PLSQL_endingWithComment() throws Exception {
-        scriptReader = new FileReader(new File(getClass().getResource("ScriptParserTest/plsql-script-ending-with-comment.sql").toURI()));
-        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
+        OracleScriptParser parser = createScriptParser("ScriptParserTest/plsql-script-ending-with-comment.sql");
 
         for (int i = 0; i < 5; i++) {
-            assertNotNull(oracleScriptParser.getNextStatement());
+            assertNotNull(parser.getNextStatement());
         }
-        assertNull(oracleScriptParser.getNextStatement());
+        assertNull(parser.getNextStatement());
     }
 
     /**
@@ -100,9 +94,13 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_emptyScript() throws Exception {
-        scriptReader = new StringReader("");
-        OracleScriptParser oracleScriptParser = new OracleScriptParser(scriptReader, false);
+        OracleScriptParser oracleScriptParser = new OracleScriptParser(new StringReader(""), false);
         assertNull(oracleScriptParser.getNextStatement());
     }
-    
+
+    private OracleScriptParser createScriptParser(String scriptFileName) throws FileNotFoundException, URISyntaxException {
+        scriptReader = new FileReader(new File(getClass().getResource(scriptFileName).toURI()));
+        return new OracleScriptParser(scriptReader, false);
+    }
+
 }

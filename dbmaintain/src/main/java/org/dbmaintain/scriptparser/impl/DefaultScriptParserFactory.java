@@ -33,11 +33,6 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
     
     protected boolean backSlashEscapingEnabled;
     
-    /**
-     * Constructor for DefaultScriptParserFactory.
-     * @param databaseDialectScriptParserClassMap
-     * @param backSlashEscapingEnabled 
-     */
     public DefaultScriptParserFactory(
             Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap, 
             boolean backSlashEscapingEnabled) {

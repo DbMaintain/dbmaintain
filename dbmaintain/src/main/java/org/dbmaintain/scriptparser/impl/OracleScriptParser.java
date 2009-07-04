@@ -17,6 +17,7 @@ package org.dbmaintain.scriptparser.impl;
 
 import org.dbmaintain.scriptparser.parsingstate.impl.NormalParsingState;
 import org.dbmaintain.scriptparser.parsingstate.impl.OracleNormalParsingState;
+import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 import java.io.Reader;
 
@@ -57,7 +58,7 @@ public class OracleScriptParser extends DefaultScriptParser {
      */
     @Override
     protected StatementBuilder createStatementBuilder() {
-        return new OracleStatementBuilder();
+        return new OracleStatementBuilder(initialParsingState);
     }
 
 
@@ -65,6 +66,10 @@ public class OracleScriptParser extends DefaultScriptParser {
      * A statement builder with special handling for Oracle
      */
     public static class OracleStatementBuilder extends StatementBuilder {
+
+        public OracleStatementBuilder(ParsingState initialParsingState) {
+            super(initialParsingState);
+        }
 
         /**
          * Overridden to add a forward slash (/) as a separator.
