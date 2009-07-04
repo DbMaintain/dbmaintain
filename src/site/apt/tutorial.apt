@@ -36,6 +36,8 @@ Tutorial
 	  * {{{#Update_the_database}Update the database}}
 
 	  * {{{#Mark_the_database_as_up-to-date}Mark the database as up-to-date}}
+	  
+	  * {{{#Check_script_updates}Check script updates}}
 
 	  * {{{#Clear_the_database}Clear the database}}
 
@@ -320,7 +322,7 @@ database.read.schemaNames=read
 *--------+-------------+
 |postProcessingScriptDirectoryName|Name of the directory in which the postprocessing scripts can be found. The default value is 'postprocessing'.|
 *--------+-------------+
-|patchQualifiers|Default qualifiers that can be used in the name of a file to identify a patch script. Multiple qualifier names may be specified, separated by commas. The default is 'patch'.|
+|patchQualifiers|Default qualifiers that can be used in the filename to identify a patch script. Multiple qualifier names may be specified, separated by commas. The default is 'patch'.|
 *--------+-------------+
 |qualifierPrefix|Prefix that can be used in a script file name to identify a qualifier. The default qualifier prefix is #.|
 *--------+-------------+

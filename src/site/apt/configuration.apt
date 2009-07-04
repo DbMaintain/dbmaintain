@@ -82,7 +82,7 @@ dbMaintainer.allowOutOfSequenceExecutionOfPatches=true
 # changed. If it did change, it will first calculate the checksum of the file to verify that the content really
 # changed. Setting this property to true improves performance: if set to false the checksum of every script must
 # be calculated for each run of the dbmaintainer.
-dbMaintainer.useScriptFileLastModificationDates.enabled=true
+dbMaintainer.useScriptFileLastModificationDates=true
 
 # If set to true, all foreign key and not null constraints of the database are automatically disabled after the execution
 # of the scripts.
