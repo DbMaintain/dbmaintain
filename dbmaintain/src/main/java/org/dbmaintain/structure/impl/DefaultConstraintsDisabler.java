@@ -56,7 +56,7 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
     public void disableConstraints() {
         for (DbSupport dbSupport : dbSupports) {
             for (String schemaName : dbSupport.getSchemaNames()) {
-                logger.info("Disabling contraints in database schema " + schemaName);
+                logger.info("Disabling constraints in database schema " + schemaName);
 
                 // first disable referential constraints to avoid conflicts
                 disableReferentialConstraints(schemaName, dbSupport);
