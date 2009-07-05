@@ -16,6 +16,7 @@
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
+import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 /**
@@ -36,8 +37,7 @@ public abstract class BaseParsingState implements ParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    public ParsingState handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
-        statementBuilder.append(currentChar);
+    public HandleNextCharacterResult handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         return getNextParsingState(previousChar, currentChar, nextChar, statementBuilder);
     }
 
@@ -51,6 +51,6 @@ public abstract class BaseParsingState implements ParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected abstract ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
+    protected abstract HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
 
 }

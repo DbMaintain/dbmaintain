@@ -16,6 +16,7 @@
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
+import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 /**
@@ -27,11 +28,6 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 public class InDoubleQuotesParsingState extends BaseParsingState {
 
     /**
-     * The normal parsing state, that should be returned when the quote end is reached.
-     */
-    protected ParsingState normalParsingState;
-
-    /**
      * Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")
      */
     protected boolean backSlashEscapingEnabled;
@@ -40,6 +36,8 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
      * True if the next character should be escaped
      */
     protected boolean escaping;
+    
+    private HandleNextCharacterResult stayInDoubleQuotesStateResult, backToNormalResult;
 
 
     /**
@@ -49,7 +47,8 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
      * @param backSlashEscapingEnabled True if backslashes can be used for escaping
      */
     public void init(ParsingState normalParsingState, boolean backSlashEscapingEnabled) {
-        this.normalParsingState = normalParsingState;
+        this.stayInDoubleQuotesStateResult = new HandleNextCharacterResult(this, false);
+        this.backToNormalResult = new HandleNextCharacterResult(normalParsingState, false);
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
 
@@ -64,27 +63,30 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         // escape current character
         if (escaping) {
             escaping = false;
-            return this;
+            return stayInDoubleQuotesStateResult;
         }
         // check for escaped double quotes
         if (currentChar == '"' && nextChar == '"') {
             escaping = true;
-            return this;
+            return stayInDoubleQuotesStateResult;
         }
         // check for escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
             escaping = true;
-            return this;
+            return stayInDoubleQuotesStateResult;
         }
         // check for ending quote
         if (currentChar == '"') {
-            return normalParsingState;
+            return backToNormalResult;
         }
-        return this;
+        return stayInDoubleQuotesStateResult;
     }
 
+    public boolean isCommentState() {
+        return false;
+    }
 }

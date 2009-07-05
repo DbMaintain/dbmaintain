@@ -16,6 +16,7 @@
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
+import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 /**
@@ -29,7 +30,8 @@ public class InBlockCommentParsingState extends BaseParsingState {
     /**
      * The normal parsing state, that should be returned when the comment end is reached.
      */
-    protected ParsingState normalParsingState;
+    protected HandleNextCharacterResult backToNormalResult;
+    protected HandleNextCharacterResult stayInBlockCommentResult;
 
 
     /**
@@ -38,7 +40,8 @@ public class InBlockCommentParsingState extends BaseParsingState {
      * @param normalParsingState The normal state, not null
      */
     public void init(ParsingState normalParsingState) {
-        this.normalParsingState = normalParsingState;
+        this.backToNormalResult = new HandleNextCharacterResult(normalParsingState, false);
+        this.stayInBlockCommentResult = new HandleNextCharacterResult(this, false);
     }
 
 
@@ -52,12 +55,15 @@ public class InBlockCommentParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         // check for ending chars
         if (previousChar == '*' && currentChar == '/') {
-            return normalParsingState;
+            return backToNormalResult;
         }
-        return this;
+        return stayInBlockCommentResult;
     }
 
+    public boolean isCommentState() {
+        return true;
+    }
 }

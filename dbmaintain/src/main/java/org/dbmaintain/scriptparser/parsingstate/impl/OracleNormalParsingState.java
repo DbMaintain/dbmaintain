@@ -16,6 +16,7 @@
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
+import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 /**
@@ -53,7 +54,7 @@ public class OracleNormalParsingState extends NormalParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         // track lines
         if (currentChar == '\n' || currentChar == '\r') {
             String trimmedLine = lineBuffer.toString().trim();
@@ -63,10 +64,8 @@ public class OracleNormalParsingState extends NormalParsingState {
             if ("/".equals(trimmedLine)) {
                 parsingCodeBlock = false;
                 statementBuffer.setLength(0);
-                return null;
+                return new HandleNextCharacterResult(null, false);
             }
-        } else {
-            lineBuffer.append(currentChar);
         }
 
         // search for the beginning of a code statement
@@ -85,24 +84,27 @@ public class OracleNormalParsingState extends NormalParsingState {
             if (isStartOfCodeStatement(statementBuffer)) {
                 parsingCodeBlock = true;
                 statementBuffer.setLength(0);
-                return this;
+                return new HandleNextCharacterResult(this, true);
             }
         }
 
         // Let the normal state handle the character
-        ParsingState nextParsingState = super.getNextParsingState(previousChar, currentChar, nextChar, statementBuilder);
+        HandleNextCharacterResult result = super.getNextParsingState(previousChar, currentChar, nextChar, statementBuilder);
+        if (result.getNextState() == this) {
+            lineBuffer.append(currentChar);
+        }
 
         // normal state found an end of a statement, i.e. a semi-colon (;)
-        if (nextParsingState == null) {
+        if (result.getNextState() == null) {
             if (parsingCodeBlock) {
                 // parsing a block of code, ignore statement end
-                return this;
+                return new HandleNextCharacterResult(this, true);
             }
             // found end of statement, reset state
             statementBuffer.setLength(0);
             lineBuffer.setLength(0);
         }
-        return nextParsingState;
+        return result;
     }
 
 

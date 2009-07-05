@@ -52,12 +52,17 @@ public class OracleScriptParserTest {
      */
     @Test
     public void testParseStatements_SQL() throws Exception {
-        OracleScriptParser oracleScriptParser = createScriptParser("ScriptParserTest/sql-script.sql");
+        OracleScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script.sql");
 
-        for (int i = 0; i < 13; i++) {
-            assertNotNull(oracleScriptParser.getNextStatement());
+         for (int i = 0; i < 13; i++) {
+            System.out.println("i = " + i);
+            String statement = scriptParser.getNextStatement();
+            System.out.println("statement = " + statement);
+            assertNotNull(statement);
         }
-        assertNull(oracleScriptParser.getNextStatement());
+        String statement = scriptParser.getNextStatement();
+        System.out.println("statement = " + statement);
+        assertNull(statement);
     }
 
     /**

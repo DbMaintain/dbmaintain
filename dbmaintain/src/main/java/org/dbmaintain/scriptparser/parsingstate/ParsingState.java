@@ -16,6 +16,7 @@
 package org.dbmaintain.scriptparser.parsingstate;
 
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
+import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 
 /**
  * A state of a parser that can handle a character and knows when the state ends and is transfered to another state.
@@ -36,6 +37,7 @@ public interface ParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    ParsingState handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
+    HandleNextCharacterResult handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
 
+    boolean isCommentState();
 }

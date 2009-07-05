@@ -16,6 +16,7 @@
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
+import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 /**
@@ -57,6 +58,9 @@ public class NormalParsingState extends BaseParsingState {
      */
     protected boolean escaping;
 
+    private HandleNextCharacterResult endOfStatementResult, stayInNormalNotExecutableResult, stayInNormalExecutableResult,
+        toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult, toInDoubleQuotesStateResult;
+
 
     /**
      * Initializes the state with the given parsing states.
@@ -68,6 +72,14 @@ public class NormalParsingState extends BaseParsingState {
      * @param backSlashEscapingEnabled   True if backslashes can be used for escaping
      */
     public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, boolean backSlashEscapingEnabled) {
+        this.endOfStatementResult = new HandleNextCharacterResult(null, false);
+        this.stayInNormalNotExecutableResult = new HandleNextCharacterResult(this, false);
+        this.stayInNormalExecutableResult = new HandleNextCharacterResult(this, true);
+        this.toInLineCommentResult = new HandleNextCharacterResult(inLineCommentParsingState, false);
+        this.toInBlockCommentResult = new HandleNextCharacterResult(inBlockCommentParsingState, false);
+        this.toInSingleQuotesStateResult = new HandleNextCharacterResult(inSingleQuotesParsingState, false);
+        this.toInDoubleQuotesStateResult = new HandleNextCharacterResult(inDoubleQuotesParsingState, false);
+
         this.inLineCommentParsingState = inLineCommentParsingState;
         this.inBlockCommentParsingState = inBlockCommentParsingState;
         this.inSingleQuotesParsingState = inSingleQuotesParsingState;
@@ -87,44 +99,54 @@ public class NormalParsingState extends BaseParsingState {
      * @return The next parsing state, null if the end of the statement is reached
      */
     @Override
-    protected ParsingState getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
         // check ending of statement
         if (currentChar == ';') {
-            return null;
+            return endOfStatementResult;
         }
         // escape current character
         if (escaping) {
             escaping = false;
-            statementBuilder.setExecutable();
-            return this;
+            //statementBuilder.setExecutable();
+            return stayInNormalExecutableResult;
         }
         // check escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
             escaping = true;
-            statementBuilder.setExecutable();
-            return this;
+            //statementBuilder.setExecutable();
+            return stayInNormalExecutableResult;
         }
         // check line comment
-        if (previousChar == '-' && currentChar == '-') {
-            return inLineCommentParsingState;
+        if (currentChar == '-' && nextChar == '-') {
+            return toInLineCommentResult;
         }
         // check block comment
-        if (previousChar == '/' && currentChar == '*') {
-            return inBlockCommentParsingState;
+        if (currentChar == '/' && nextChar == '*') {
+            return toInBlockCommentResult;
         }
         // check identifier with single quotes
         if (currentChar == '\'') {
-            return inSingleQuotesParsingState;
+            return toInSingleQuotesStateResult;
         }
         // check identifier with double quotes
         if (currentChar == '"') {
-            return inDoubleQuotesParsingState;
+            return toInDoubleQuotesStateResult;
         }
         // flag the statement executable from the second character
-        if (previousChar != 0) {
+        /*if (previousChar != 0) {
             statementBuilder.setExecutable();
+        }*/
+        if (isWhitespace(currentChar)) {
+            return stayInNormalNotExecutableResult;
         }
-        return this;
+        return stayInNormalExecutableResult;
     }
 
+    protected boolean isWhitespace(char character) {
+        return character <= ' ';
+    }
+
+    public boolean isCommentState() {
+        return false;
+    }
 }

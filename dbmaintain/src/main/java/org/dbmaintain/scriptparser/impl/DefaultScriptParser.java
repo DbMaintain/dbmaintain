@@ -111,10 +111,13 @@ public class DefaultScriptParser implements ScriptParser {
         int nextChar;
         while (currentChar != -1) {
             nextChar = scriptReader.read();
-            statementBuilder.addCharacter((char) currentChar, (char) nextChar);
+            statementBuilder.addCharacter(toChar(currentChar), toChar(nextChar));
             currentChar = nextChar;
             if (statementBuilder.isComplete()) {
-                return statementBuilder.createStatement();
+                if (statementBuilder.isExecutable()) {
+                    return statementBuilder.createStatement();
+                }
+                statementBuilder = createStatementBuilder();
             }
         }
         if (!statementBuilder.isComplete() && statementBuilder.isExecutable()) {
@@ -180,6 +183,10 @@ public class DefaultScriptParser implements ScriptParser {
             }
         }
         return null; */
+    }
+
+    protected char toChar(int charAsInt) {
+        return (char) (charAsInt == -1 ? 0 : charAsInt);
     }
 
 
