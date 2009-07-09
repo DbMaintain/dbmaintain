@@ -90,7 +90,7 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
      *
      * @param autoCreateDbMaintainScriptsTable True if the DBMAINTAIN_SCRIPTS table can be created automatically
      */
-    public void setAutoCreateExecutedScriptsTable(boolean autoCreateDbMaintainScriptsTable) {
+    public void setAutoCreateDbMaintainScriptsTable(boolean autoCreateDbMaintainScriptsTable) {
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
     }
 
