@@ -346,9 +346,8 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public ConstraintsDisabler createConstraintsDisabler() {
-        return new DefaultConstraintsDisabler(nameDbSupportMap.values());
+        return new DefaultConstraintsDisabler(getDbSupports());
     }
-
 
     public SequenceUpdater createSequenceUpdater() {
         long lowestAcceptableSequenceValue = PropertyUtils.getLong(PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, configuration);
@@ -399,6 +398,18 @@ public class PropertiesDbMaintainConfigurer {
         Set<String> schemaNames = new HashSet<String>(schemaNamesList);
 
         return createDbSupport(databaseName, databaseDialect, dataSource, defaultSchemaName, schemaNames);
+    }
+
+
+    /**
+     * @return a set with the available DbSupport instances, one for each configured database
+     */
+    protected Set<DbSupport> getDbSupports() {
+        Set<DbSupport> result = new HashSet<DbSupport>();
+        for (DbSupport dbSupport : nameDbSupportMap.values()) {
+            if (dbSupport != null) result.add(dbSupport);
+        }
+        return result;
     }
 
 
