@@ -22,11 +22,6 @@ import java.util.Arrays;
 
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
-import org.dbmaintain.scriptparser.parsingstate.impl.InBlockCommentParsingState;
-import org.dbmaintain.scriptparser.parsingstate.impl.InDoubleQuotesParsingState;
-import org.dbmaintain.scriptparser.parsingstate.impl.InLineCommentParsingState;
-import org.dbmaintain.scriptparser.parsingstate.impl.InSingleQuotesParsingState;
-import org.dbmaintain.scriptparser.parsingstate.impl.NormalParsingState;
 import org.dbmaintain.util.DbMaintainException;
 
 /**
@@ -61,27 +56,22 @@ public class DefaultScriptParser implements ScriptParser {
     protected ParsingState initialParsingState;
 
     /**
-     * The current state.
-     */
-    protected ParsingState currentParsingState;
-
-    /**
      * The current parsed character
      */
-    protected int currentChar;
+    protected Character currentChar, nextChar;
 
 
     /**
      * Constructor for DefaultScriptParser.
      *
-     * @param scriptReader             The reader that will provide the script content, not null
+     * @param scriptReader the reader that will provide the script content, not null
+     * @param initialParsingState the inial state when starting to parse a script, not null
      * @param backSlashEscapingEnabled True if backslash escaping is enabled
      */
-    public DefaultScriptParser(Reader scriptReader, boolean backSlashEscapingEnabled) {
+    public DefaultScriptParser(Reader scriptReader, ParsingState initialParsingState, boolean backSlashEscapingEnabled) {
         this.scriptReader = scriptReader;
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
-        this.initialParsingState = createInitialParsingState();
-        this.currentParsingState = initialParsingState;
+        this.initialParsingState = initialParsingState;
         this.scriptReader = new BufferedReader(scriptReader);
     }
 
@@ -104,116 +94,34 @@ public class DefaultScriptParser implements ScriptParser {
      * Actual implementation of getNextStatement.
      *
      * @return the statements, null if no more statements
-     * @throws IOException
+     * @throws IOException if a problem occurs reading the script from the file system
      */
     protected String getNextStatementImpl() throws IOException {
         StatementBuilder statementBuilder = createStatementBuilder();
-        int nextChar;
-        while (currentChar != -1) {
-            nextChar = scriptReader.read();
-            statementBuilder.addCharacter(toChar(currentChar), toChar(nextChar));
+        // Make sure that we read currentChar when we start reading a new script. If not, currentChar was already set to
+        // the first character of the next statement when we read the previous script.
+        if (currentChar == null) currentChar = readNextCharacter();
+        while (currentChar != null) {
+            nextChar = readNextCharacter();
+            statementBuilder.addCharacter(currentChar, nextChar);
             currentChar = nextChar;
             if (statementBuilder.isComplete()) {
-                if (statementBuilder.isExecutable()) {
-                    return statementBuilder.createStatement();
+                if (statementBuilder.hasExecutableContent()) {
+                    System.out.println("statementBuilder.getStatementWithoutCommentsOrWhitespace() = " + statementBuilder.getStatementWithoutCommentsOrWhitespace());
+                    return statementBuilder.buildStatement();
                 }
                 statementBuilder = createStatementBuilder();
             }
         }
-        if (!statementBuilder.isComplete() && statementBuilder.isExecutable()) {
-            throw new DbMaintainException("Last statement in script was not ended correctly. " +
-                    "Each statement should end with one of " + Arrays.toString(statementBuilder.getTrailingSeparatorCharsToRemove()));
+        if (!statementBuilder.isComplete() && statementBuilder.hasExecutableContent()) {
+            throw new DbMaintainException("Last statement in script was not ended correctly.");
         }
         return null;
-
-        /*currentChar = scriptReader.read();
-        if (currentChar == -1) {
-            // nothing more to read
-            return null;
-        }
-
-        // set initial state
-        char previousChar = 0;
-        currentParsingState = initialParsingState;
-        StatementBuilder statementBuilder = createStatementBuilder();
-
-        // parse script
-        while (currentChar != -1) {
-            // skip leading whitespace (NOTE String.trim uses <= ' ' for whitespace)
-            if (statementBuilder.getLength() == 0 && currentChar <= ' ') {
-                currentChar = scriptReader.read();
-                continue;
-            }
-
-            // peek next char
-            int nextCharInt = scriptReader.read();
-            char nextChar;
-            if (nextCharInt == -1) {
-                nextChar = 0;
-            } else {
-                nextChar = (char) nextCharInt;
-            }
-
-            // handle character
-            currentParsingState = currentParsingState.handleNextChar(previousChar, (char) currentChar, nextChar, statementBuilder);
-            previousChar = (char) currentChar;
-            currentChar = nextCharInt;
-
-            // if parsing state null, a statement end is found
-            if (currentParsingState == null) {
-                String statement = statementBuilder.createStatement();
-
-                // reset initial state
-                previousChar = 0;
-                statementBuilder.clear();
-                currentParsingState = initialParsingState;
-
-                if (statement != null) {
-                    return statement;
-                }
-            }
-        }
-
-        // check whether there was still an executable statement in the script
-        // or only whitespace was left
-        if (statementBuilder.isExecutable()) {
-            String finalStatement = statementBuilder.createStatement();
-            if (finalStatement != null) {
-                throw new DbMaintainException("Last statement in script was not ended correctly. Each statement should end with one of " + Arrays.toString(statementBuilder.getTrailingSeparatorCharsToRemove()));
-            }
-        }
-        return null; */
     }
-
-    protected char toChar(int charAsInt) {
-        return (char) (charAsInt == -1 ? 0 : charAsInt);
-    }
-
-
-    /**
-     * Builds the initial parsing state.
-     * This will create a normal, in-line-comment, in-block-comment, in-double-quotes and in-single-quotes state
-     * and link them together.
-     *
-     * @return The initial parsing state, not null
-     */
-    protected ParsingState createInitialParsingState() {
-        // create states
-        NormalParsingState normalParsingState = createNormalParsingState();
-        InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();
-        InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
-        InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
-        InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
-
-        // initialize and link states
-        inLineCommentParsingState.init(normalParsingState);
-        inBlockCommentParsingState.init(normalParsingState);
-        inSingleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
-        inDoubleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
-        normalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, backSlashEscapingEnabled);
-
-        // the normal state is the begin-state
-        return normalParsingState;
+    
+    protected Character readNextCharacter() throws IOException {
+        int charAsInt = scriptReader.read();
+        return charAsInt == -1 ? null : (char) charAsInt;
     }
 
 
@@ -224,56 +132,6 @@ public class DefaultScriptParser implements ScriptParser {
      */
     protected StatementBuilder createStatementBuilder() {
         return new StatementBuilder(initialParsingState);
-    }
-
-
-    /**
-     * Factory method for the normal parsing state.
-     *
-     * @return The normal state, not null
-     */
-    protected NormalParsingState createNormalParsingState() {
-        return new NormalParsingState();
-    }
-
-
-    /**
-     * Factory method for the in-line comment (-- comment) parsing state.
-     *
-     * @return The normal state, not null
-     */
-    protected InLineCommentParsingState createInLineCommentParsingState() {
-        return new InLineCommentParsingState();
-    }
-
-
-    /**
-     * Factory method for the in-block comment (/ * comment * /) parsing state.
-     *
-     * @return The normal state, not null
-     */
-    protected InBlockCommentParsingState createInBlockCommentParsingState() {
-        return new InBlockCommentParsingState();
-    }
-
-
-    /**
-     * Factory method for the single quotes ('text') parsing state.
-     *
-     * @return The normal state, not null
-     */
-    protected InSingleQuotesParsingState createInSingleQuotesParsingState() {
-        return new InSingleQuotesParsingState();
-    }
-
-
-    /**
-     * Factory method for the double quotes ("text") literal parsing state.
-     *
-     * @return The normal state, not null
-     */
-    protected InDoubleQuotesParsingState createInDoubleQuotesParsingState() {
-        return new InDoubleQuotesParsingState();
     }
 
 }

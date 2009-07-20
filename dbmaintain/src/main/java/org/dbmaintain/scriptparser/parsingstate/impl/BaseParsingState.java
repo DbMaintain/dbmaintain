@@ -25,7 +25,7 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public abstract class BaseParsingState implements ParsingState {
+abstract public class BaseParsingState implements ParsingState {
 
 
     /**
@@ -37,7 +37,7 @@ public abstract class BaseParsingState implements ParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    public HandleNextCharacterResult handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    public HandleNextCharacterResult handleNextChar(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         return getNextParsingState(previousChar, currentChar, nextChar, statementBuilder);
     }
 
@@ -51,6 +51,6 @@ public abstract class BaseParsingState implements ParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected abstract HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
+    protected abstract HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder);
 
 }

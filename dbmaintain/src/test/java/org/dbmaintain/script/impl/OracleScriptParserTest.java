@@ -18,13 +18,15 @@ package org.dbmaintain.script.impl;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.dbmaintain.scriptparser.impl.OracleScriptParser;
-import org.junit.After;
+import org.dbmaintain.scriptparser.ScriptParser;
+import org.dbmaintain.scriptparser.ScriptParserFactory;
+import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
+import org.dbmaintain.scriptparser.impl.OracleScriptParserFactory;
+import org.dbmaintain.util.DbMaintainException;
 import org.junit.Test;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.*;
-import java.net.URISyntaxException;
 
 /**
  * Tests the Oracle SQL and PL-SQL script parser
@@ -32,80 +34,44 @@ import java.net.URISyntaxException;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class OracleScriptParserTest {
+public class OracleScriptParserTest extends DefaultScriptParserTest {
 
-    private Reader scriptReader;
-
-
-    /**
-     * Cleans up the test by closing the streams.
-     */
-    @After
-    public void tearDown() throws Exception {
-        closeQuietly(scriptReader);
+    @Test public void plsqlScript() {
+        assertOneStatementEqualTo("create function function1 statement;\n",
+                "create function function1 statement;\n/\n");
     }
 
-
-    /**
-     * Test parsing some statements out of a script.
-     * 13 statements should have been found in the script.
-     */
-    @Test
-    public void testParseStatements_SQL() throws Exception {
-        OracleScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script.sql");
-
-         for (int i = 0; i < 13; i++) {
-            System.out.println("i = " + i);
-            String statement = scriptParser.getNextStatement();
-            System.out.println("statement = " + statement);
-            assertNotNull(statement);
-        }
-        String statement = scriptParser.getNextStatement();
-        System.out.println("statement = " + statement);
-        assertNull(statement);
+    @Test public void twoScripts() {
+        assertTwoStatements("create or replace function f1\nstatement 1;\n/\n" +
+            "create function f2\nstatement 1;statement 2;\n/\n");
     }
 
-    /**
-     * Test parsing some statements out of a PL-SQL script.
-     * 4 statements should have been found in the script.
-     */
-    @Test
-    public void testParseStatements_PLSQL() throws Exception {
-        OracleScriptParser oracleScriptParser = createScriptParser("ScriptParserTest/plsql-script.sql");
-
-        for (int i = 0; i < 5; i++) {
-            assertNotNull(oracleScriptParser.getNextStatement());
-        }
-        assertNull(oracleScriptParser.getNextStatement());
+    @Test public void scriptWithComments() {
+        assertOneStatement("-- comment before script\n" +
+            "/* block comment before script */\n" +
+            "declare something -- comment in script\n" +
+            "begin dosomething end; /* block comment in script */\n" +
+            "/\n");
     }
 
-
-    /**
-     * Test parsing some statements out of a PL-SQL script ending with a comment.
-     * 4 statements should have been found in the script.
-     */
-    @Test
-    public void testParseStatements_PLSQL_endingWithComment() throws Exception {
-        OracleScriptParser parser = createScriptParser("ScriptParserTest/plsql-script-ending-with-comment.sql");
-
-        for (int i = 0; i < 5; i++) {
-            assertNotNull(parser.getNextStatement());
-        }
-        assertNull(parser.getNextStatement());
+    @Test public void scriptWithQuotes() {
+        assertOneStatement("begin 'within quotes, slashes are ignored:\n/\n' end;\n" +
+                "/\n");
     }
 
-    /**
-     * Test parsing some statements out of an empty script.
-     */
-    @Test
-    public void testParseStatements_emptyScript() throws Exception {
-        OracleScriptParser oracleScriptParser = new OracleScriptParser(new StringReader(""), false);
-        assertNull(oracleScriptParser.getNextStatement());
+    @Test public void commentsOrWhitespaceInStoredProcedureHeader() {
+        assertTwoStatements("create\nor\nreplace\nprocedure\nstatement 1; statement 2;\n/\n" +
+            "create /* comment */ or--another comment\nreplace function\nstatement 1; statement 2;\n/\n");
     }
 
-    private OracleScriptParser createScriptParser(String scriptFileName) throws FileNotFoundException, URISyntaxException {
-        scriptReader = new FileReader(new File(getClass().getResource(scriptFileName).toURI()));
-        return new OracleScriptParser(scriptReader, false);
+    @Test(expected = DbMaintainException.class)
+    public void scriptNotEndingWithSlash() {
+        assertOneStatement("create procedure something;");
     }
 
+    @Override
+     protected ScriptParser createScriptParser(Reader scriptReader) {
+        ScriptParserFactory factory = new OracleScriptParserFactory(false);
+        return factory.createScriptParser(scriptReader);
+    }
 }

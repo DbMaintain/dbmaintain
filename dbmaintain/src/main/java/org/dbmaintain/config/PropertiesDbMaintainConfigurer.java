@@ -127,31 +127,30 @@ public class PropertiesDbMaintainConfigurer {
 
 
     public ScriptRunner createScriptRunner() {
-        ScriptParserFactory scriptParserFactory = createScriptParserFactory();
+        Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap = createDatabaseDialectScriptParserFactoryMap();
         Class<ScriptRunner> clazz = ConfigUtils.getConfiguredClass(ScriptRunner.class, configuration);
         return createInstanceOfType(clazz, false,
-                new Class<?>[]{ScriptParserFactory.class, DbSupport.class, Map.class, SQLHandler.class},
-                new Object[]{scriptParserFactory, getDefaultDbSupport(), getNameDbSupportMap(), sqlHandler});
+                new Class<?>[]{Map.class, DbSupport.class, Map.class, SQLHandler.class},
+                new Object[]{databaseDialectScriptParserFactoryMap, getDefaultDbSupport(), getNameDbSupportMap(), sqlHandler});
     }
 
-    public ScriptParserFactory createScriptParserFactory() {
-        Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap = new HashMap<String, Class<? extends ScriptParser>>();
-        for (String databaseDialect : getDatabaseDialects()) {
-            String scriptParserClassName = ConfigUtils.getConfiguredClassName(ScriptParser.class, configuration, databaseDialect);
-            Class<? extends ScriptParser> scriptParserClass = ReflectionUtils.getClassWithName(scriptParserClassName);
-            databaseDialectScriptParserClassMap.put(databaseDialect, scriptParserClass);
-        }
+
+    public Map<String, ScriptParserFactory> createDatabaseDialectScriptParserFactoryMap() {
+        Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
         boolean backSlashEscapingEnabled = PropertyUtils.getBoolean(PROPERTY_BACKSLASH_ESCAPING_ENABLED, configuration);
-
-        Class<ScriptParserFactory> clazz = ConfigUtils.getConfiguredClass(ScriptParserFactory.class, configuration);
-
-        return createInstanceOfType(clazz, false,
-                new Class<?>[]{Map.class, boolean.class},
-                new Object[]{databaseDialectScriptParserClassMap, backSlashEscapingEnabled});
+        for (String databaseDialect : getDatabaseDialectsInUse()) {
+            Class<? extends ScriptParserFactory> scriptParserFactoryClass = ConfigUtils.getConfiguredClass(ScriptParserFactory.class, configuration, databaseDialect);
+            ScriptParserFactory factory = createInstanceOfType(scriptParserFactoryClass, false,
+                    new Class<?>[]{boolean.class},
+                    new Object[]{backSlashEscapingEnabled}
+            );
+            databaseDialectScriptParserClassMap.put(databaseDialect, factory);
+        }
+        return databaseDialectScriptParserClassMap;
     }
 
 
-    protected Set<String> getDatabaseDialects() {
+    protected Set<String> getDatabaseDialectsInUse() {
         Set<String> dialects = new HashSet<String>();
         for (DbSupport dbSupport : getNameDbSupportMap().values()) {
             if (dbSupport != null) {

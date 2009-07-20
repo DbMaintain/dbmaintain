@@ -16,17 +16,17 @@
 package org.dbmaintain.script.impl;
 
 import org.dbmaintain.scriptparser.ScriptParser;
+import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
+import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.StringReader;
+import java.io.Reader;
 
 /**
  * Tests the SQL script parser
@@ -36,92 +36,99 @@ import java.net.URISyntaxException;
  */
 public class DefaultScriptParserTest {
 
-    private Reader scriptReader;
-
-
-    /**
-     * Cleans up the test by closing the streams.
-     */
-    @After
-    public void tearDown() {
-        closeQuietly(scriptReader);
+    @Test public void simpleStatement() {
+        assertOneStatementEqualTo("statement 1", "statement 1;");
     }
 
-
-    /**
-     * Test parsing some statements out of a script.
-     * 13 statements should have been found in the script.
-     */
-    @Test
-    public void testParseStatements() {
-        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script.sql");
-
-        for (int i = 0; i < 13; i++) {
-            System.out.println("i = " + i);
-            String statement = scriptParser.getNextStatement();
-            System.out.println("statement = " + statement);
-            assertNotNull(statement);
-        }
-        assertNull(scriptParser.getNextStatement());
+    @Test public void twoStatementsOnOneLine() {
+        assertTwoStatementsEqualTo("statement 1", "statement 2", "statement 1;statement 2;");
     }
 
+    @Test public void multilineStatement() {
+        assertTwoStatementsEqualTo("statement\non\r\nmultiple\nlines", "second statement",
+                "statement\non\r\nmultiple\nlines;second statement;");
+    }
 
-    /**
-     * Test parsing statements out of a script but statement does not end with a ;.
-     * This should raise an exception
-     */
+    @Test public void comment() {
+        assertOneStatement("statement 1; -- this is a comment;");
+        assertOneStatement("statement 1 -- with a comment;\nproceeds on the next line;");
+        assertOneStatement("--first a comment\nthen a statement;");
+    }
+
+    @Test public void blockComment() {
+        assertOneStatement("statement /*block comment;*/;");
+        assertOneStatement("statement /*multiline\nblock\ncomment\n*/;");
+        assertOneStatementEqualTo("/*first a block comment*/then a statement", "/*first a block comment*/then a statement;");
+    }
+
+    @Test public void singleQuotes() {
+        assertOneStatement("'Between quotes';");
+        assertOneStatement("'Semicolon ; must be ignored';");
+        assertOneStatement("'Double quotes \" ignored if between single quotes';");
+        assertOneStatement("'--This is not a comment';");
+        assertOneStatement("'/*This is not a block comment*/';");
+    }
+
+    @Test public void doubleQuotes() {
+        assertOneStatement("\"Between double quotes\";");
+        assertOneStatement("\"Semicolon ; must be ignored\";");
+        assertOneStatement("\"Single quotes ' ignored if between double quotes\";");
+        assertOneStatement("\"--This is not a comment\";");
+        assertOneStatement("\"/*This is not a block comment*/\";");
+    }
+
+    @Test public void commentOnly() {
+        assertNoStatement("-- this is a comment\n/* and this is anther comment*/\n");
+    }
+
+    @Test public void whitespaceOnly() {
+        assertNoStatement(";  \n\r;  \r\n;  \t  ;;;");
+    }
+
+    @Test public void emptyScript() {
+        assertNoStatement("");
+    }
+
     @Test(expected = DbMaintainException.class)
-    public void testParseStatements_missingEndingSemiColon() {
-        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script-missing-semicolon.sql");
-        scriptParser.getNextStatement();
+    public void testIncompleteStatement() {
+        assertNoStatement("statement without semicolon");
     }
 
-
-    /**
-     * Test parsing statements out of a script ending with a comment.
-     */
-    @Test
-    public void testParseStatements_endingWithComment() {
-        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script-ending-with-comment.sql");
-        assertNotNull(scriptParser.getNextStatement());
-        assertNull(scriptParser.getNextStatement());
+    protected void assertNoStatement(String script) {
+        ScriptParser parser = createScriptParser(new StringReader(script));
+        assertNull(parser.getNextStatement());
     }
 
-    /**
-     * Test parsing statements out of a script that does not end with a new line.
-     */
-    @Test
-    public void testParseStatements_notEndingWithNewLine() {
-        ScriptParser scriptParser = createScriptParser("ScriptParserTest/sql-script-not-ending-with-new-line.sql");
-        assertNotNull(scriptParser.getNextStatement());
-        assertNull(scriptParser.getNextStatement());
+    protected void assertOneStatement(String script) {
+        assertOneStatementEqualTo(null, script);
     }
 
-
-    /**
-     * Test parsing some statements out of an empty script.
-     */
-    @Test
-    public void testParseStatements_emptyScript() {
-        ScriptParser scriptParser = new DefaultScriptParser(new StringReader(""), false);
-
-        assertNull(scriptParser.getNextStatement());
+    protected void assertOneStatementEqualTo(String expectedStatement, String script) {
+        ScriptParser parser = createScriptParser(new StringReader(script));
+        String statement = parser.getNextStatement();
+        assertNotNull(statement);
+        if (expectedStatement != null) assertEquals(expectedStatement, statement);
+        assertNull(parser.getNextStatement());
     }
 
-
-    private DefaultScriptParser createScriptParser(String scriptName) {
-        scriptReader = getScriptReader(scriptName);
-        return new DefaultScriptParser(scriptReader, false);
+    protected void assertTwoStatements(String script) {
+        assertTwoStatementsEqualTo(null, null, script);
     }
 
-
-    private FileReader getScriptReader(String scriptName) {
-        try {
-            return new FileReader(new File(getClass().getResource(scriptName).toURI()));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+    protected void assertTwoStatementsEqualTo(String expectedStatement1, String expectedStatement2, String script) {
+        ScriptParser parser = createScriptParser(new StringReader(script));
+        String statement1 = parser.getNextStatement();
+        assertNotNull(statement1);
+        if (expectedStatement1 != null) assertEquals(expectedStatement1, statement1);
+        String statement2 = parser.getNextStatement();
+        assertNotNull(statement2);
+        if (expectedStatement2 != null) assertEquals(expectedStatement2, statement2);
+        assertNull(parser.getNextStatement());
     }
+
+    protected ScriptParser createScriptParser(Reader scriptReader) {
+        ScriptParserFactory factory = new DefaultScriptParserFactory(false);
+        return factory.createScriptParser(scriptReader);
+    }
+
 }

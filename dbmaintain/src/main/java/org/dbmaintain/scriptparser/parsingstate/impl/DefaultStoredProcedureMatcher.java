@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright 2008,  Unitils.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.scriptparser;
+package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import java.io.Reader;
-
-
+import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
 
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface ScriptParserFactory {
+public class DefaultStoredProcedureMatcher implements StoredProcedureMatcher {
 
-    public ScriptParser createScriptParser(Reader scriptReader);
-
+    public boolean isStartOfStoredProcedure(String statementWithoutCommentsOrWhitespace) {
+        return false;
+    }
 }

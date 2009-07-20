@@ -15,11 +15,12 @@
  */
 package org.dbmaintain.scriptparser.impl;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
+import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
 
 /**
- * A class for building statements.
+ * Assembles SQL or stored procedure statements by processing characters one by one. It keeps track of the current parsing
+ * state and whether the current statement is complete and contains executable content.
  *
  * @author Stefan Bangels
  * @author Tim Ducheyne
@@ -27,119 +28,121 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  */
 public class StatementBuilder {
 
-    /* The current statement content */
+    /* Content of the statement being built */
     private StringBuilder statement = new StringBuilder();
 
-    /* Executable means that the statement contains other content than comments */
-    private boolean executable = false;
+    private StringBuilder currentLine = new StringBuilder();
 
+    /* Content of the statement being built with comments, newlines and unnecessary whitespace left out */
+    private StringBuilder statementWithoutCommentsAndWhitespace = new StringBuilder();
+
+    private boolean currentLineHasExecutableContent = false;
+
+    /* Executable means that the statement contains other content than comments or whitespace */
+    private boolean hasExecutableContent = false;
+
+    /* The current state of the statement parser */
     private ParsingState currentParsingState;
 
-    private char previousChar;
+    /* The previously processes character */
+    private Character previousChar;
 
+    /**
+     * Creates a new instance with the given parsing state as the initial state
+     * @param initialParsingState the initial state
+     */
     public StatementBuilder(ParsingState initialParsingState) {
         currentParsingState = initialParsingState;
     }
 
 
-    /**
-     * @return True if the statement contains other content than comments
-     */
-    public boolean isExecutable() {
-        return executable;
-    }
-
-
-    /**
-     * Mark the statement as being executable, i.e. that it contains other content than comments
-     */
-    public void setExecutable() {
-        this.executable = true;
-    }
-
-
-    /**
-     * Returns the length (character count) of the statement.
-     *
-     * @return The length (character count) of the statement.
-     */
-    public int getLength() {
-        return statement.length();
-    }
-
-
-    /**
-     * Clear the statement.
-     */
-    public void clear() {
-        statement.setLength(0);
-        executable = false;
-    }
-
-
-    /**
-     * Returns the characters that should be removed from the statements. Semi-colons are not part of a statement and
-     * should therefore be removed from the statement.
-     *
-     * @return The separator characters to remove, not null
-     */
-    public char[] getTrailingSeparatorCharsToRemove() {
-        return new char[]{';'};
-    }
-
-
-    /**
-     * Creates the resulting statement out of the given characters.
-     * This will trim the statement and remove any trailing separtors if needed.
-     *
-     * @return The resulting statement, null if no statement is left
-     */
-    public String createStatement() {
-        // get built statement to return
-        String trimmedStatement = statement.toString().trim();
-
-        // ignore empty statements
-        if (isEmpty(trimmedStatement)) {
-            return null;
-        }
-
-        // remove trailing separator character (eg ;)
-        int lastIndex = trimmedStatement.length() - 1;
-        char lastChar = trimmedStatement.charAt(lastIndex);
-        for (char trailingChar : getTrailingSeparatorCharsToRemove()) {
-            if (lastChar == trailingChar) {
-                trimmedStatement = trimmedStatement.substring(0, lastIndex);
-                break;
-            }
-        }
-
-        // trim and see if anything is left after removing the trailing separator (eg ;)
-        trimmedStatement = trimmedStatement.trim();
-        if (isEmpty(trimmedStatement)) {
-            return null;
-        }
-        return trimmedStatement;
-    }
-
-    public void addCharacter(char currentChar, char nextChar) {
-        statement.append(currentChar);
+    public void addCharacter(Character currentChar, Character nextChar) {
+        // Fetch the next parsing state from the current one
         HandleNextCharacterResult handleNextCharacterResult = currentParsingState.handleNextChar(previousChar, currentChar, nextChar, this);
         currentParsingState = handleNextCharacterResult.getNextState();
-        if (!executable && handleNextCharacterResult.isExecutable()) {
-            executable = true;
+
+        // If the content just processed is 'hasExecutableContent content', i.e. no content or whitespace, the
+        // statement becomes hasExecutableContent if it wasn't already. If
+        if (handleNextCharacterResult.isExecutable()) {
+            currentLineHasExecutableContent = true;
+            hasExecutableContent = true;
         }
+        // We assemble the statement content line by line, to make sure we can always efficiently
+        // return the content of the current line
+        if (currentParsingState != null) {
+            appendToLastLine(currentChar);
+            if (isNewLineCharacter(currentChar)) flushCurrentLine();
+        }
+        appendToStatementWithoutCommentsAndWhitespace(currentChar, handleNextCharacterResult);
+
         previousChar = currentChar;
     }
 
-    protected boolean isWhitespace(char character) {
-        return Character.isWhitespace(character) || character == 0;
+
+    protected void flushCurrentLine() {
+        statement.append(currentLine);
+        currentLine = new StringBuilder();
+        currentLineHasExecutableContent = false;
+    }
+
+    protected void appendToLastLine(Character currentChar) {
+        currentLine.append(currentChar);
+    }
+
+    protected void appendToStatement(Character currentChar, HandleNextCharacterResult handleNextCharacterResult) {
+        if (handleNextCharacterResult.getNextState() != null) statement.append(currentChar);
+    }
+
+    protected void appendToStatementWithoutCommentsAndWhitespace(Character currentChar, HandleNextCharacterResult handleNextCharacterResult) {
+        if (handleNextCharacterResult.isExecutable()) {
+            statementWithoutCommentsAndWhitespace.append(currentChar);
+        } else {
+            if (isWhitespace(currentChar) && statementWithoutCommentsAndWhitespace.length() > 0
+                    && getLastCharacter(statementWithoutCommentsAndWhitespace) != ' ') {
+                statementWithoutCommentsAndWhitespace.append(' ');
+            }
+        }
+    }
+
+    protected char getLastCharacter(StringBuilder statement) {
+        return statement.charAt(statement.length() - 1);
+    }
+
+    protected boolean isWhitespace(Character currentChar) {
+        return currentChar != null && Character.isWhitespace(currentChar);
     }
 
     protected boolean isEndOfStatementChar(char character) {
         return character == ';';
     }
 
+    public String getCurrentLine() {
+        return currentLine.toString();
+    }
+
     public boolean isComplete() {
         return currentParsingState == null;
+    }
+
+    /**
+     * @return true if the statement contains other content than comments
+     */
+    public boolean hasExecutableContent() {
+        return hasExecutableContent;
+    }
+
+    /**
+     * @return The resulting statement, not null
+     */
+    public String buildStatement() {
+        if (currentLineHasExecutableContent) flushCurrentLine();
+        return statement.toString();
+    }
+
+    /**
+     * @return the statement statement with comments, newlines and unnecessary whitespace left out
+     */
+    public String getStatementWithoutCommentsOrWhitespace() {
+        return statementWithoutCommentsAndWhitespace.toString();
     }
 }

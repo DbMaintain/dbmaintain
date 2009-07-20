@@ -15,12 +15,13 @@
  */
 package org.dbmaintain.scriptparser.impl;
 
-import java.io.Reader;
 import java.util.Map;
+import java.io.Reader;
 
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.util.ReflectionUtils;
+import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
+import org.dbmaintain.scriptparser.parsingstate.impl.*;
 
 
 /**
@@ -29,23 +30,134 @@ import org.dbmaintain.util.ReflectionUtils;
  */
 public class DefaultScriptParserFactory implements ScriptParserFactory {
 
-    protected Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap;
-    
     protected boolean backSlashEscapingEnabled;
-    
+
     public DefaultScriptParserFactory(
-            Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap, 
             boolean backSlashEscapingEnabled) {
-        this.databaseDialectScriptParserClassMap = databaseDialectScriptParserClassMap;
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
 
-
-    public ScriptParser createScriptParser(String databaseDialect, Reader scriptContentReader) {
-        Class<? extends ScriptParser> scriptParserClass = databaseDialectScriptParserClassMap.get(databaseDialect);
-        return ReflectionUtils.createInstanceOfType(scriptParserClass, false, 
-                new Class<?>[] {Reader.class, boolean.class}, 
-                new Object[] {scriptContentReader, backSlashEscapingEnabled});
+    public ScriptParser createScriptParser(Reader scriptReader) {
+        return new DefaultScriptParser(scriptReader, createNormalParsingStates(), backSlashEscapingEnabled);
     }
 
+    /**
+     * Creates all the parsing states needed by a script parser when in normal (not stored procedure) state and connects
+     * them together. Returns the initial parsing state. All other parsing states can be reached starting from the initial state.
+     * @return the initial parsing state
+     */
+    protected SqlStatementNormalParsingState createNormalParsingStates() {
+        // create states that are used when in a normal (not stored procedure) state
+        SqlStatementNormalParsingState normalParsingState = createSqlStatementNormalParsingState();
+        InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();
+        InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
+        InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
+        InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
+        StoredProcedureNormalParsingState storedProcedureNormalParsingState = createStoredProcedureParsingStates();
+        StoredProcedureMatcher storedProcedureMatcher = createStoredProcedureMatcher();
+
+        // link normal (not stored procedure) states
+        inLineCommentParsingState.init(normalParsingState);
+        inBlockCommentParsingState.init(normalParsingState);
+        inSingleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
+        inDoubleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
+        normalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState,
+                inDoubleQuotesParsingState, storedProcedureNormalParsingState, storedProcedureMatcher, backSlashEscapingEnabled);
+
+        // the normal state is the begin-state
+        return normalParsingState;
+    }
+
+    /**
+     * Creates all the parsing states needed by a script parser when in stored procedure state and connects them together.
+     * Returns the initial parsing state. All other parsing states can be reached starting from the initial state.
+     * @return the initial parsing state
+     */
+    protected StoredProcedureNormalParsingState createStoredProcedureParsingStates() {
+        // create states that are used when in a stored procedure state
+        StoredProcedureNormalParsingState storedProcedureNormalParsingState = createStoredProcedureNormalParsingState();
+        InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();
+        InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
+        InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
+        InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
+
+        // link normal (not stored procedure) states
+        inLineCommentParsingState.init(storedProcedureNormalParsingState);
+        inBlockCommentParsingState.init(storedProcedureNormalParsingState);
+        inSingleQuotesParsingState.init(storedProcedureNormalParsingState, backSlashEscapingEnabled);
+        inDoubleQuotesParsingState.init(storedProcedureNormalParsingState, backSlashEscapingEnabled);
+        storedProcedureNormalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState,
+                inDoubleQuotesParsingState, backSlashEscapingEnabled);
+
+        return storedProcedureNormalParsingState;
+    }
+
+
+    /**
+     * Factory method for the normal sql statement parsing state.
+     *
+     * @return The normal sql statement state, not null
+     */
+    protected SqlStatementNormalParsingState createSqlStatementNormalParsingState() {
+        return new SqlStatementNormalParsingState();
+    }
+
+
+    /**
+     * Factory method for the normal stored procedure parsing state.
+     *
+     * @return The normal stored procedure state, not null
+     */
+    protected StoredProcedureNormalParsingState createStoredProcedureNormalParsingState() {
+        return new StoredProcedureNormalParsingState();
+    }
+
+
+    /**
+     * Factory method for the in-line comment (-- comment) parsing state.
+     *
+     * @return The normal state, not null
+     */
+    protected InLineCommentParsingState createInLineCommentParsingState() {
+        return new InLineCommentParsingState();
+    }
+
+
+    /**
+     * Factory method for the in-block comment (/ * comment * /) parsing state.
+     *
+     * @return The normal state, not null
+     */
+    protected InBlockCommentParsingState createInBlockCommentParsingState() {
+        return new InBlockCommentParsingState();
+    }
+
+
+    /**
+     * Factory method for the single quotes ('text') parsing state.
+     *
+     * @return The normal state, not null
+     */
+    protected InSingleQuotesParsingState createInSingleQuotesParsingState() {
+        return new InSingleQuotesParsingState();
+    }
+
+
+    /**
+     * Factory method for the double quotes ("text") literal parsing state.
+     *
+     * @return The normal state, not null
+     */
+    protected InDoubleQuotesParsingState createInDoubleQuotesParsingState() {
+        return new InDoubleQuotesParsingState();
+    }
+
+    /**
+     * Factory method that returns the correct implementation of {@link StoredProcedureMatcher}
+     *
+     * @return the stored procedure matcher, not null
+     */
+    protected StoredProcedureMatcher createStoredProcedureMatcher() {
+        return new DefaultStoredProcedureMatcher();
+    }
 }

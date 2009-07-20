@@ -89,10 +89,10 @@ public class TestUtils {
 
 
     public static DefaultScriptRunner getDefaultScriptRunner(DbSupport dbSupport) {
-        Map<String, Class<? extends ScriptParser>> databaseDialectScriptParserClassMap = new HashMap<String, Class<? extends ScriptParser>>();
-        databaseDialectScriptParserClassMap.put("hsqldb", DefaultScriptParser.class);
-        ScriptParserFactory scriptParserFactory = new DefaultScriptParserFactory(databaseDialectScriptParserClassMap, false);
-        return new DefaultScriptRunner(scriptParserFactory, dbSupport, getNameDbSupportMap(dbSupport), new DefaultSQLHandler());
+        Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
+        databaseDialectScriptParserClassMap.put("hsqldb", new DefaultScriptParserFactory(false));
+        return new DefaultScriptRunner(databaseDialectScriptParserClassMap, dbSupport, getNameDbSupportMap(dbSupport),
+                new DefaultSQLHandler());
     }
 
 

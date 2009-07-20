@@ -31,13 +31,12 @@ public interface ParsingState {
     /**
      * Handles the next character in the script.
      *
-     * @param previousChar     The previous char, 0 if none
-     * @param currentChar      The current char
-     * @param nextChar         The next char, 0 if none
+     * @param previousChar the previous char, 0 if none
+     * @param currentChar the current char
+     * @param nextChar the next char, 0 if none
      * @param statementBuilder The statement builder, not null
-     * @return The next parsing state, null if the end of the statement is reached
+     * @return the next parsing state, null if the end of the statement is reached
      */
-    HandleNextCharacterResult handleNextChar(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder);
+    HandleNextCharacterResult handleNextChar(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder);
 
-    boolean isCommentState();
 }

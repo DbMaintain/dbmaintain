@@ -52,7 +52,7 @@ public class InLineCommentParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // check for ending chars
         if (currentChar == '\n' || currentChar == '\r') {
             return backToNormalResult;
@@ -60,7 +60,4 @@ public class InLineCommentParsingState extends BaseParsingState {
         return stayInLineCommentResult;
     }
 
-    public boolean isCommentState() {
-        return true;
-    }
 }

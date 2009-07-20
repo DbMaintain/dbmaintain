@@ -47,8 +47,8 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
      * @param backSlashEscapingEnabled True if backslashes can be used for escaping
      */
     public void init(ParsingState normalParsingState, boolean backSlashEscapingEnabled) {
-        this.stayInDoubleQuotesStateResult = new HandleNextCharacterResult(this, false);
-        this.backToNormalResult = new HandleNextCharacterResult(normalParsingState, false);
+        this.stayInDoubleQuotesStateResult = new HandleNextCharacterResult(this, true);
+        this.backToNormalResult = new HandleNextCharacterResult(normalParsingState, true);
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
 
@@ -63,7 +63,7 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // escape current character
         if (escaping) {
             escaping = false;
@@ -86,7 +86,4 @@ public class InDoubleQuotesParsingState extends BaseParsingState {
         return stayInDoubleQuotesStateResult;
     }
 
-    public boolean isCommentState() {
-        return false;
-    }
 }

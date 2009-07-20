@@ -18,6 +18,7 @@ package org.dbmaintain.scriptparser.parsingstate.impl;
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
+import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
 
 /**
  * The default initial parsing state that is able to recognize the beginning of line comments, block comments,
@@ -26,27 +27,7 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class NormalParsingState extends BaseParsingState {
-
-    /**
-     * The in an in-line comment (-- comment) state.
-     */
-    protected ParsingState inLineCommentParsingState;
-
-    /**
-     * The in a block comment (/ * comment * /) state.
-     */
-    protected ParsingState inBlockCommentParsingState;
-
-    /**
-     * The in single quotes ('text') state.
-     */
-    protected ParsingState inSingleQuotesParsingState;
-
-    /**
-     * The in double quotes ("text") state.
-     */
-    protected ParsingState inDoubleQuotesParsingState;
+abstract public class BaseNormalParsingState extends BaseParsingState {
 
     /**
      * Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")
@@ -58,32 +39,31 @@ public class NormalParsingState extends BaseParsingState {
      */
     protected boolean escaping;
 
-    private HandleNextCharacterResult endOfStatementResult, stayInNormalNotExecutableResult, stayInNormalExecutableResult,
-        toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult, toInDoubleQuotesStateResult;
+    protected StoredProcedureMatcher storedProcedureMatcher;
+
+    protected HandleNextCharacterResult endOfStatementResult, stayInNormalNotExecutableResult, stayInNormalExecutableResult,
+        toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult, toInDoubleQuotesStateResult, toInStoredProcedureStateResult;
 
 
     /**
      * Initializes the state with the given parsing states.
      *
-     * @param inLineCommentParsingState  The inline comment state, not null
-     * @param inBlockCommentParsingState The block comment state, not null
-     * @param inSingleQuotesParsingState The single quote literal state, not null
-     * @param inDoubleQuotesParsingState The double quote literal state, not null
-     * @param backSlashEscapingEnabled   True if backslashes can be used for escaping
+     * @param inLineCommentParsingState the inline comment state, not null
+     * @param inBlockCommentParsingState the block comment state, not null
+     * @param inSingleQuotesParsingState the single quote literal state, not null
+     * @param inDoubleQuotesParsingState the double quote literal state, not null
+     * @param backSlashEscapingEnabled true if backslashes can be used for escaping
      */
-    public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, boolean backSlashEscapingEnabled) {
+    protected void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState,
+                     ParsingState inDoubleQuotesParsingState, boolean backSlashEscapingEnabled) {
         this.endOfStatementResult = new HandleNextCharacterResult(null, false);
         this.stayInNormalNotExecutableResult = new HandleNextCharacterResult(this, false);
         this.stayInNormalExecutableResult = new HandleNextCharacterResult(this, true);
         this.toInLineCommentResult = new HandleNextCharacterResult(inLineCommentParsingState, false);
         this.toInBlockCommentResult = new HandleNextCharacterResult(inBlockCommentParsingState, false);
-        this.toInSingleQuotesStateResult = new HandleNextCharacterResult(inSingleQuotesParsingState, false);
-        this.toInDoubleQuotesStateResult = new HandleNextCharacterResult(inDoubleQuotesParsingState, false);
+        this.toInSingleQuotesStateResult = new HandleNextCharacterResult(inSingleQuotesParsingState, true);
+        this.toInDoubleQuotesStateResult = new HandleNextCharacterResult(inDoubleQuotesParsingState, true);
 
-        this.inLineCommentParsingState = inLineCommentParsingState;
-        this.inBlockCommentParsingState = inBlockCommentParsingState;
-        this.inSingleQuotesParsingState = inSingleQuotesParsingState;
-        this.inDoubleQuotesParsingState = inDoubleQuotesParsingState;
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
 
@@ -99,9 +79,9 @@ public class NormalParsingState extends BaseParsingState {
      * @return The next parsing state, null if the end of the statement is reached
      */
     @Override
-    protected HandleNextCharacterResult getNextParsingState(char previousChar, char currentChar, char nextChar, StatementBuilder statementBuilder) {
+    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // check ending of statement
-        if (currentChar == ';') {
+        if (isEndOfStatement(previousChar, currentChar, statementBuilder)) {
             return endOfStatementResult;
         }
         // escape current character
@@ -132,21 +112,27 @@ public class NormalParsingState extends BaseParsingState {
         if (currentChar == '"') {
             return toInDoubleQuotesStateResult;
         }
-        // flag the statement executable from the second character
-        /*if (previousChar != 0) {
-            statementBuilder.setExecutable();
-        }*/
-        if (isWhitespace(currentChar)) {
+        // check if we're in a stored procedure
+        HandleNextCharacterResult moveToStoredProcedureState = moveToStoredProcedureStateResult(currentChar, statementBuilder);
+        if (moveToStoredProcedureState != null)  {
+            return moveToStoredProcedureState;
+        }
+        // check if non-executable content has been added
+        if (isWhitespace(currentChar) || isStatementSeparator(currentChar)) {
             return stayInNormalNotExecutableResult;
         }
+        // it appears that some normal, executable has been added
         return stayInNormalExecutableResult;
     }
 
-    protected boolean isWhitespace(char character) {
-        return character <= ' ';
+    abstract protected boolean isStatementSeparator(Character currentChar);
+
+    abstract protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder);
+
+    abstract protected HandleNextCharacterResult moveToStoredProcedureStateResult(Character currentChar, StatementBuilder statementBuilder);
+
+    protected boolean isWhitespace(Character character) {
+        return Character.isWhitespace(character);
     }
 
-    public boolean isCommentState() {
-        return false;
-    }
 }

@@ -17,7 +17,6 @@ package org.dbmaintain.script.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.IOUtils;
 import static org.apache.commons.io.IOUtils.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
@@ -47,21 +46,12 @@ public class DefaultScriptRunner implements ScriptRunner {
 
     protected SQLHandler sqlHandler;
 
-    protected ScriptParserFactory scriptParserFactory;
+    protected Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap;
 
 
-    /**
-     * Constructor for DefaultScriptRunner.
-     *
-     * @param scriptParserFactory
-     * @param defaultDbSupport
-     * @param nameDbSupportMap
-     * @param sqlHandler
-     */
-    public DefaultScriptRunner(ScriptParserFactory scriptParserFactory, DbSupport defaultDbSupport,
+    public DefaultScriptRunner(Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap, DbSupport defaultDbSupport,
                                Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {
-
-        this.scriptParserFactory = scriptParserFactory;
+        this.databaseDialectScriptParserFactoryMap = databaseDialectScriptParserFactoryMap;
         this.defaultDbSupport = defaultDbSupport;
         this.nameDbSupportMap = nameDbSupportMap;
         this.sqlHandler = sqlHandler;
@@ -91,8 +81,8 @@ public class DefaultScriptRunner implements ScriptRunner {
             // get content stream
             scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
             // create a script parser for the target database in question 
-            ScriptParser scriptParser = scriptParserFactory.createScriptParser(targetDbSupport
-                    .getDatabaseDialect(), scriptContentReader);
+            ScriptParser scriptParser = databaseDialectScriptParserFactoryMap.get(targetDbSupport.getDatabaseDialect())
+                    .createScriptParser(scriptContentReader);
             // parse and execute the statements
             String statement;
             while ((statement = scriptParser.getNextStatement()) != null) {
