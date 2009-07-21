@@ -35,4 +35,5 @@ Ant tasks
 *-----------------+--------------+
 |<<Child element>>|<<Attributes>>|
 *-----------------+--------------+
-|database|name, enabled, dialect, driverClassName, url, userName, password, defaultSchemaName, schemaNames|
+|database|name, included, dialect, driverClassName, url, userName, password, defaultSchemaName, schemaNames|
+*-----------------+--------------+
