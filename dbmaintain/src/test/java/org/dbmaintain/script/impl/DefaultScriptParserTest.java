@@ -67,6 +67,8 @@ public class DefaultScriptParserTest {
         assertOneStatement("'Double quotes \" ignored if between single quotes';");
         assertOneStatement("'--This is not a comment';");
         assertOneStatement("'/*This is not a block comment*/';");
+        assertOneStatement("'Single quotes '' escaped';");
+        assertOneStatement("'''Surrounded with escaped single quotes''';");
     }
 
     @Test public void doubleQuotes() {
@@ -75,6 +77,12 @@ public class DefaultScriptParserTest {
         assertOneStatement("\"Single quotes ' ignored if between double quotes\";");
         assertOneStatement("\"--This is not a comment\";");
         assertOneStatement("\"/*This is not a block comment*/\";");
+        assertOneStatement("\"Double quotes \"\" escaped\";");
+        assertOneStatement("\"\"\"Surrounded with escaped double quotes\"\"\";");
+    }
+
+    @Test public void backshashEscaping() {
+        //assertOneStatement("\\");
     }
 
     @Test public void commentOnly() {
@@ -90,7 +98,7 @@ public class DefaultScriptParserTest {
     }
 
     @Test(expected = DbMaintainException.class)
-    public void testIncompleteStatement() {
+    public void incompleteStatement() {
         assertNoStatement("statement without semicolon");
     }
 
