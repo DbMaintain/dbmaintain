@@ -58,7 +58,7 @@ public class StatementBuilder {
 
     public void addCharacter(Character currentChar, Character nextChar) {
         // Fetch the next parsing state from the current one
-        HandleNextCharacterResult handleNextCharacterResult = currentParsingState.handleNextChar(previousChar, currentChar, nextChar, this);
+        HandleNextCharacterResult handleNextCharacterResult = currentParsingState.getNextParsingState(previousChar, currentChar, nextChar, this);
         currentParsingState = handleNextCharacterResult.getNextState();
 
         // If the content just processed is 'hasExecutableContent content', i.e. no content or whitespace, the

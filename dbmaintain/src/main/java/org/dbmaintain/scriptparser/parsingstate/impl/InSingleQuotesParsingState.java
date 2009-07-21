@@ -25,7 +25,7 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class InSingleQuotesParsingState extends BaseParsingState {
+public class InSingleQuotesParsingState implements ParsingState {
 
     /**
      * Determines whether backslashes can be used to escape characters, e.g. \' for a single quote (= '')
@@ -63,7 +63,7 @@ public class InSingleQuotesParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
+    public HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // escape current character
         if (escaping) {
             escaping = false;

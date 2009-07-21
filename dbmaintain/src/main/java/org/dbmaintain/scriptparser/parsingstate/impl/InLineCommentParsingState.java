@@ -26,7 +26,7 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class InLineCommentParsingState extends BaseParsingState {
+public class InLineCommentParsingState implements ParsingState {
 
     protected HandleNextCharacterResult stayInLineCommentResult, backToNormalResult;
 
@@ -52,7 +52,7 @@ public class InLineCommentParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
+    public HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // check for ending chars
         if (currentChar == '\n' || currentChar == '\r') {
             return backToNormalResult;

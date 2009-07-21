@@ -29,7 +29,7 @@ public interface ParsingState {
 
 
     /**
-     * Handles the next character in the script.
+     * Calculates the next parsing state from the given characters and the statement being built
      *
      * @param previousChar the previous char, 0 if none
      * @param currentChar the current char
@@ -37,6 +37,6 @@ public interface ParsingState {
      * @param statementBuilder The statement builder, not null
      * @return the next parsing state, null if the end of the statement is reached
      */
-    HandleNextCharacterResult handleNextChar(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder);
+    HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder);
 
 }

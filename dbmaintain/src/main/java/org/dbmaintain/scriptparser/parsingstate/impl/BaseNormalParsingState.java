@@ -27,7 +27,7 @@ import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-abstract public class BaseNormalParsingState extends BaseParsingState {
+abstract public class BaseNormalParsingState implements ParsingState {
 
     /**
      * Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")
@@ -78,8 +78,7 @@ abstract public class BaseNormalParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    @Override
-    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
+    public HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // check ending of statement
         if (isEndOfStatement(previousChar, currentChar, statementBuilder)) {
             return endOfStatementResult;
@@ -87,13 +86,11 @@ abstract public class BaseNormalParsingState extends BaseParsingState {
         // escape current character
         if (escaping) {
             escaping = false;
-            //statementBuilder.setExecutable();
             return stayInNormalExecutableResult;
         }
         // check escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
             escaping = true;
-            //statementBuilder.setExecutable();
             return stayInNormalExecutableResult;
         }
         // check line comment

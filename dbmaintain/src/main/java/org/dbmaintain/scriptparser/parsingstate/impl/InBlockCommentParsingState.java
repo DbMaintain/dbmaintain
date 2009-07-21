@@ -25,7 +25,7 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class InBlockCommentParsingState extends BaseParsingState {
+public class InBlockCommentParsingState implements ParsingState {
 
     /**
      * The normal parsing state, that should be returned when the comment end is reached.
@@ -55,7 +55,7 @@ public class InBlockCommentParsingState extends BaseParsingState {
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
-    protected HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
+    public HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
         // check for ending chars
         if (previousChar == '*' && currentChar == '/') {
             return backToNormalResult;
