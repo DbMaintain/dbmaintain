@@ -107,7 +107,6 @@ public class DefaultScriptParser implements ScriptParser {
             currentChar = nextChar;
             if (statementBuilder.isComplete()) {
                 if (statementBuilder.hasExecutableContent()) {
-                    System.out.println("statementBuilder.getStatementWithoutCommentsOrWhitespace() = " + statementBuilder.getStatementWithoutCommentsOrWhitespace());
                     return statementBuilder.buildStatement();
                 }
                 statementBuilder = createStatementBuilder();
