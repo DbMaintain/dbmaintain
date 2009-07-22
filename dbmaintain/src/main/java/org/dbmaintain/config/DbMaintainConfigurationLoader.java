@@ -121,7 +121,10 @@ public class DbMaintainConfigurationLoader {
 
 
     protected Properties loadPropertiesFromURL(URL propertiesFileUrl) {
-	    InputStream urlStream = null;
+	    if (propertiesFileUrl == null) {
+            return null;
+        }
+        InputStream urlStream = null;
 	    try {
 	        urlStream = propertiesFileUrl.openStream();
 	        return loadPropertiesFromStream(urlStream);
