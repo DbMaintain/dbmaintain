@@ -11,12 +11,20 @@
       <plugin>
         <groupId>org.dbmaintain</groupId>
         <artifactId>dbmaintain-maven-plugin</artifactId>
-        <version>testing</version>
+        <version>@pom.version@</version>
+        <dependencies>
+          <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.10</version>
+            <scope>test</scope>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <phase>integration-test</phase>
             <goals>
-              <goal>cleardatabase</goal>
+              <goal>clearDatabase</goal>
             </goals>
             <configuration>
               <database>
