@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dbmaintain</groupId>
         <artifactId>dbmaintain-parent</artifactId>
-        <version>1.0</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
     <artifactId>dbmaintain</artifactId>
     <!-- Project information -->

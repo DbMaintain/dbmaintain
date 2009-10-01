@@ -4,7 +4,7 @@
   <groupId>org.dbmaintain</groupId>
   <artifactId>dbmaintain-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.0</version>
+  <version>1.0.3-SNAPSHOT</version>
   <!-- Project information -->
   <name>dbmaintain-parent</name>
   <url>http://www.dbmaintain.org/</url>
@@ -13,7 +13,9 @@
     <url>http://sf.net</url>
   </organization>
   <properties>
-    <jdk.level>1.5</jdk.level>
+    <project.build.java.target>1.5</project.build.java.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <parent-basedir>${basedir}</parent-basedir>
   </properties>
   <modules>
@@ -82,8 +84,26 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
-            <source>${jdk.level}</source>
-            <target>${jdk.level}</target>
+            <encoding>${project.build.sourceEncoding}</encoding>
+            <source>${project.build.java.target}</source>
+            <target>${project.build.java.target}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>true</downloadJavadocs>
+        </configuration>
+      </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>2.0</version>
+          <configuration>
+            <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
           </configuration>
         </plugin>
         <plugin>
@@ -132,13 +152,13 @@
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
         <configuration>
-          <targetJdk>${jdk.level}</targetJdk>
+          <targetJdk>${project.build.java.target}</targetJdk>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <source>${jdk.level}</source>
+          <source>${project.build.java.target}</source>
           <aggregate>true</aggregate>
         </configuration>
         <reportSets>
