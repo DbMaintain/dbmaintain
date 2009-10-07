@@ -15,15 +15,16 @@
  */
 package org.dbmaintain.script.impl;
 
-import org.dbmaintain.script.Script;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import org.dbmaintain.util.TestUtils;
 import static org.dbmaintain.util.TestUtils.createScript;
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
+
+import org.dbmaintain.script.Script;
+import org.dbmaintain.util.TestUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Filip Neven
@@ -42,7 +43,7 @@ public class FileSystemScriptLocationTest {
         repeatable1 = createScript("repeatable1.sql");
         postProcessing1 = createScript("postprocessing/01_post1.sql");
 
-        scriptRootLocation = new File(getClass().getResource("testscripts").getFile());
+        scriptRootLocation = new File( getClass().getResource("testscripts").toURI() ); 
         fileSystemScriptLocation = TestUtils.createFileSystemLocation(scriptRootLocation);
     }
 
