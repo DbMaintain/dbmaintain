@@ -5,6 +5,8 @@ import java.io.File;
 import org.dbmaintain.launch.DbMaintain;
 
 /**
+ * Creates a jar containing the SQL scripts. 
+ * 
  * @author tiwe
  * @goal createScriptArchive
  */
