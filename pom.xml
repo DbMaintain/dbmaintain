@@ -161,22 +161,24 @@
           <targetJdk>${project.build.java.target}</targetJdk>
         </configuration>
       </plugin>
+      <!-- FIXME: Avoid broken build for now 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.6</version>
         <configuration>
           <source>${project.build.java.target}</source>
-          <aggregate>true</aggregate>
         </configuration>
         <reportSets>
           <reportSet>
+            <id>aggregate</id>
             <reports>
-              <report>javadoc</report>
+              <report>aggregate</report>
             </reports>
           </reportSet>
         </reportSets>
       </plugin>
+      -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jdepend-maven-plugin</artifactId>
