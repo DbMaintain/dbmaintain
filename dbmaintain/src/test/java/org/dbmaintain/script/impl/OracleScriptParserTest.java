@@ -64,6 +64,10 @@ public class OracleScriptParserTest extends DefaultScriptParserTest {
         assertOneStatement("create procedure something;");
     }
 
+    @Test public void scriptEndingWithSlashWithoutNewline() {
+        assertOneStatement("create procedure s;\n/");
+    }
+
     @Override
      protected ScriptParser createScriptParser(Reader scriptReader) {
         ScriptParserFactory factory = new OracleScriptParserFactory(true);

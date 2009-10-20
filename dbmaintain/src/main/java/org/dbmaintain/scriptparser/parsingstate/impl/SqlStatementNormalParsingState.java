@@ -38,7 +38,7 @@ public class SqlStatementNormalParsingState extends BaseNormalParsingState {
 
     @Override
     protected boolean isStatementSeparator(Character currentChar) {
-        return currentChar == ';';
+        return SEMICOLON.equals(currentChar);
     }
 
     @Override

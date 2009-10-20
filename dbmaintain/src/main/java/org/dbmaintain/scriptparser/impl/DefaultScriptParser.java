@@ -15,14 +15,13 @@
  */
 package org.dbmaintain.scriptparser.impl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Arrays;
-
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 import org.dbmaintain.util.DbMaintainException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * A class for parsing statements out of sql scripts.
@@ -54,6 +53,11 @@ public class DefaultScriptParser implements ScriptParser {
      * The starting state.
      */
     protected ParsingState initialParsingState;
+
+    /**
+     * True if the script has ended
+     */
+    protected boolean endOfScriptReached = false;
 
     /**
      * The current parsed character
@@ -98,10 +102,11 @@ public class DefaultScriptParser implements ScriptParser {
      */
     protected String getNextStatementImpl() throws IOException {
         StatementBuilder statementBuilder = createStatementBuilder();
-        // Make sure that we read currentChar when we start reading a new script. If not, currentChar was already set to
-        // the first character of the next statement when we read the previous script.
+        // Make sure that we read currentChar when we start reading a new script. If not null, currentChar was already
+        // set to the first character of the next statement when we read the previous statement.
         if (currentChar == null) currentChar = readNextCharacter();
-        while (currentChar != null) {
+        while (!endOfScriptReached) {
+            if (currentChar == null) endOfScriptReached = true;
             nextChar = readNextCharacter();
             statementBuilder.addCharacter(currentChar, nextChar);
             currentChar = nextChar;

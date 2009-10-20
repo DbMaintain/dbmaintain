@@ -29,6 +29,9 @@ import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
  */
 abstract public class BaseNormalParsingState implements ParsingState {
 
+    protected static final Character BACKSLASH = '\\', DASH = '-', SLASH = '/', ASTERIX = '*', SINGLE_QUOTE = '\'',
+            DOUBLE_QUOTE = '"', SEMICOLON = ';';
+
     /**
      * Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")
      */
@@ -39,7 +42,6 @@ abstract public class BaseNormalParsingState implements ParsingState {
     protected HandleNextCharacterResult endOfStatementResult, stayInNormalNotExecutableResult, stayInNormalExecutableResult,
         toEscapingParsingStateResult, toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult,
         toInDoubleQuotesStateResult, toInStoredProcedureStateResult;
-
 
     /**
      * Initializes the state with the given parsing states.
@@ -82,23 +84,23 @@ abstract public class BaseNormalParsingState implements ParsingState {
             return endOfStatementResult;
         }
         // check escaped characters
-        if (currentChar == '\\' && backSlashEscapingEnabled) {
+        if (BACKSLASH.equals(currentChar) && backSlashEscapingEnabled) {
             return toEscapingParsingStateResult;
         }
         // check line comment
-        if (currentChar == '-' && nextChar == '-') {
+        if (DASH.equals(currentChar) && DASH.equals(nextChar)) {
             return toInLineCommentResult;
         }
         // check block comment
-        if (currentChar == '/' && nextChar == '*') {
+        if (SLASH.equals(currentChar) && ASTERIX.equals(nextChar)) {
             return toInBlockCommentResult;
         }
         // check identifier with single quotes
-        if (currentChar == '\'') {
+        if (SINGLE_QUOTE.equals(currentChar)) {
             return toInSingleQuotesStateResult;
         }
         // check identifier with double quotes
-        if (currentChar == '"') {
+        if (DOUBLE_QUOTE.equals(currentChar)) {
             return toInDoubleQuotesStateResult;
         }
         // check if we're in a stored procedure
@@ -121,7 +123,7 @@ abstract public class BaseNormalParsingState implements ParsingState {
     abstract protected HandleNextCharacterResult moveToStoredProcedureStateResult(Character currentChar, StatementBuilder statementBuilder);
 
     protected boolean isWhitespace(Character character) {
-        return Character.isWhitespace(character);
+        return character == null || Character.isWhitespace(character);
     }
 
 }

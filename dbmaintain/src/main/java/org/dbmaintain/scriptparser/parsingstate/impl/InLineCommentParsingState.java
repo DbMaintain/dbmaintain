@@ -15,9 +15,10 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
+import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
+import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
 
 
 /**
@@ -53,8 +54,7 @@ public class InLineCommentParsingState implements ParsingState {
      * @return The next parsing state, null if the end of the statement is reached
      */
     public HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
-        // check for ending chars
-        if (currentChar == '\n' || currentChar == '\r') {
+        if (isNewLineCharacter(currentChar)) {
             return backToNormalResult;
         }
         return stayInLineCommentResult;

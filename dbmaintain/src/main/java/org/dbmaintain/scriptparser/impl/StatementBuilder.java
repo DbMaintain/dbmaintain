@@ -70,8 +70,8 @@ public class StatementBuilder {
         // We assemble the statement content line by line, to make sure we can always efficiently
         // return the content of the current line
         if (currentParsingState != null) {
-            appendToLastLine(currentChar);
-            if (isNewLineCharacter(currentChar)) flushCurrentLine();
+            appendToCurrentLine(currentChar);
+            if (currentChar == null || isNewLineCharacter(currentChar)) flushCurrentLine();
         }
         appendToStatementWithoutCommentsAndWhitespace(currentChar, handleNextCharacterResult);
 
@@ -85,12 +85,8 @@ public class StatementBuilder {
         currentLineHasExecutableContent = false;
     }
 
-    protected void appendToLastLine(Character currentChar) {
-        currentLine.append(currentChar);
-    }
-
-    protected void appendToStatement(Character currentChar, HandleNextCharacterResult handleNextCharacterResult) {
-        if (handleNextCharacterResult.getNextState() != null) statement.append(currentChar);
+    protected void appendToCurrentLine(Character currentChar) {
+        if (currentChar != null) currentLine.append(currentChar);
     }
 
     protected void appendToStatementWithoutCommentsAndWhitespace(Character currentChar, HandleNextCharacterResult handleNextCharacterResult) {
@@ -110,10 +106,6 @@ public class StatementBuilder {
 
     protected boolean isWhitespace(Character currentChar) {
         return currentChar != null && Character.isWhitespace(currentChar);
-    }
-
-    protected boolean isEndOfStatementChar(char character) {
-        return character == ';';
     }
 
     public String getCurrentLine() {

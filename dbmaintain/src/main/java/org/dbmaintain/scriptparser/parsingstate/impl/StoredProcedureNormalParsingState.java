@@ -32,11 +32,11 @@ public class StoredProcedureNormalParsingState extends BaseNormalParsingState {
 
     @Override
     protected boolean isStatementSeparator(Character currentChar) {
-        return currentChar == '/';
+        return SLASH.equals(currentChar);
     }
 
     protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder) {
-        return isNewLineCharacter(currentChar) && statementBuilder.getCurrentLine().trim().startsWith("/");
+        return (currentChar == null || isNewLineCharacter(currentChar)) && statementBuilder.getCurrentLine().trim().startsWith("/");
     }
 
     protected HandleNextCharacterResult moveToStoredProcedureStateResult(Character currentChar, StatementBuilder statementBuilder) {
