@@ -203,8 +203,7 @@
                                             <name>dbmaintain</name>
                                         </program>
                                     </programs>
-                                    <includeConfigurationDirectoryInClasspath>true
-                                    </includeConfigurationDirectoryInClasspath>
+                                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
                                     <repositoryLayout>flat</repositoryLayout>
                                 </configuration>
                             </execution>
