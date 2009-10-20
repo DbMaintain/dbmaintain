@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.scriptparser.impl;
 
-import java.util.Map;
 import java.io.Reader;
 
 import org.dbmaintain.scriptparser.ScriptParser;
@@ -53,6 +52,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
         InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
         InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
+        EscapingParsingState escapingParsingState = createEscapingParsingState();
         StoredProcedureNormalParsingState storedProcedureNormalParsingState = createStoredProcedureParsingStates();
         StoredProcedureMatcher storedProcedureMatcher = createStoredProcedureMatcher();
 
@@ -61,8 +61,9 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         inBlockCommentParsingState.init(normalParsingState);
         inSingleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
         inDoubleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
+        escapingParsingState.init(normalParsingState);
         normalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState,
-                inDoubleQuotesParsingState, storedProcedureNormalParsingState, storedProcedureMatcher, backSlashEscapingEnabled);
+                inDoubleQuotesParsingState, escapingParsingState, storedProcedureNormalParsingState, storedProcedureMatcher, backSlashEscapingEnabled);
 
         // the normal state is the begin-state
         return normalParsingState;
@@ -80,18 +81,19 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
         InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
         InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
+        EscapingParsingState escapingParsingState = createEscapingParsingState();
 
         // link normal (not stored procedure) states
         inLineCommentParsingState.init(storedProcedureNormalParsingState);
         inBlockCommentParsingState.init(storedProcedureNormalParsingState);
         inSingleQuotesParsingState.init(storedProcedureNormalParsingState, backSlashEscapingEnabled);
         inDoubleQuotesParsingState.init(storedProcedureNormalParsingState, backSlashEscapingEnabled);
+        escapingParsingState.init(storedProcedureNormalParsingState);
         storedProcedureNormalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState,
-                inDoubleQuotesParsingState, backSlashEscapingEnabled);
+                inDoubleQuotesParsingState, escapingParsingState, backSlashEscapingEnabled);
 
         return storedProcedureNormalParsingState;
     }
-
 
     /**
      * Factory method for the normal sql statement parsing state.
@@ -150,6 +152,11 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      */
     protected InDoubleQuotesParsingState createInDoubleQuotesParsingState() {
         return new InDoubleQuotesParsingState();
+    }
+
+
+    private EscapingParsingState createEscapingParsingState() {
+        return new EscapingParsingState();
     }
 
     /**

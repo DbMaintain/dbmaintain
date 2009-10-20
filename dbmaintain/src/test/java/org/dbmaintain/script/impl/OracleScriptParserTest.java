@@ -15,18 +15,13 @@
  */
 package org.dbmaintain.script.impl;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.scriptparser.impl.OracleScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Test;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.*;
+import java.io.Reader;
 
 /**
  * Tests the Oracle SQL and PL-SQL script parser
@@ -71,7 +66,7 @@ public class OracleScriptParserTest extends DefaultScriptParserTest {
 
     @Override
      protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new OracleScriptParserFactory(false);
+        ScriptParserFactory factory = new OracleScriptParserFactory(true);
         return factory.createScriptParser(scriptReader);
     }
 }

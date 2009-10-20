@@ -34,15 +34,11 @@ abstract public class BaseNormalParsingState implements ParsingState {
      */
     protected boolean backSlashEscapingEnabled;
 
-    /**
-     * True if the next character should be escaped
-     */
-    protected boolean escaping;
-
     protected StoredProcedureMatcher storedProcedureMatcher;
 
     protected HandleNextCharacterResult endOfStatementResult, stayInNormalNotExecutableResult, stayInNormalExecutableResult,
-        toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult, toInDoubleQuotesStateResult, toInStoredProcedureStateResult;
+        toEscapingParsingStateResult, toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult,
+        toInDoubleQuotesStateResult, toInStoredProcedureStateResult;
 
 
     /**
@@ -52,10 +48,11 @@ abstract public class BaseNormalParsingState implements ParsingState {
      * @param inBlockCommentParsingState the block comment state, not null
      * @param inSingleQuotesParsingState the single quote literal state, not null
      * @param inDoubleQuotesParsingState the double quote literal state, not null
+     * @param escapingParsingState the escaping parsing state, not null
      * @param backSlashEscapingEnabled true if backslashes can be used for escaping
      */
     protected void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState,
-                     ParsingState inDoubleQuotesParsingState, boolean backSlashEscapingEnabled) {
+                     ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState, boolean backSlashEscapingEnabled) {
         this.endOfStatementResult = new HandleNextCharacterResult(null, false);
         this.stayInNormalNotExecutableResult = new HandleNextCharacterResult(this, false);
         this.stayInNormalExecutableResult = new HandleNextCharacterResult(this, true);
@@ -63,6 +60,7 @@ abstract public class BaseNormalParsingState implements ParsingState {
         this.toInBlockCommentResult = new HandleNextCharacterResult(inBlockCommentParsingState, false);
         this.toInSingleQuotesStateResult = new HandleNextCharacterResult(inSingleQuotesParsingState, true);
         this.toInDoubleQuotesStateResult = new HandleNextCharacterResult(inDoubleQuotesParsingState, true);
+        this.toEscapingParsingStateResult = new HandleNextCharacterResult(escapingParsingState, false);
 
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
@@ -83,15 +81,9 @@ abstract public class BaseNormalParsingState implements ParsingState {
         if (isEndOfStatement(previousChar, currentChar, statementBuilder)) {
             return endOfStatementResult;
         }
-        // escape current character
-        if (escaping) {
-            escaping = false;
-            return stayInNormalExecutableResult;
-        }
         // check escaped characters
         if (currentChar == '\\' && backSlashEscapingEnabled) {
-            escaping = true;
-            return stayInNormalExecutableResult;
+            return toEscapingParsingStateResult;
         }
         // check line comment
         if (currentChar == '-' && nextChar == '-') {

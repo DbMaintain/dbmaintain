@@ -30,8 +30,8 @@ public class SqlStatementNormalParsingState extends BaseNormalParsingState {
 
     protected HandleNextCharacterResult toStoredProcedureStateResult;
 
-    public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, ParsingState storedProcedureNormalParsingState, StoredProcedureMatcher storedProcedureMatcher, boolean backSlashEscapingEnabled) {
-        super.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, backSlashEscapingEnabled);
+    public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState, ParsingState storedProcedureNormalParsingState, StoredProcedureMatcher storedProcedureMatcher, boolean backSlashEscapingEnabled) {
+        super.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, backSlashEscapingEnabled);
         this.toInStoredProcedureStateResult = new HandleNextCharacterResult(storedProcedureNormalParsingState, true);
         this.storedProcedureMatcher = storedProcedureMatcher;
     }

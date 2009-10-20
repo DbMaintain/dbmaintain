@@ -17,16 +17,13 @@ package org.dbmaintain.script.impl;
 
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
-import java.io.StringReader;
 import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * Tests the SQL script parser
@@ -81,8 +78,14 @@ public class DefaultScriptParserTest {
         assertOneStatement("\"\"\"Surrounded with escaped double quotes\"\"\";");
     }
 
-    @Test public void backshashEscaping() {
-        //assertOneStatement("\\");
+    @Test public void backslashEscaping() {
+        assertOneStatement("Escaped quotes \\' and double quotes\\\";");
+        assertOneStatement("Escaped semicolon \\; ignored;");
+        assertOneStatement("-\\-This is not a comment;");
+        assertOneStatement("\\/*This is not a block comment*/;");
+        assertOneStatement("Ignore two subsequent backslashes \\\\;");
+        assertOneStatement("statement; /*block comment with escaped character \\;*/;");
+        assertOneStatement("\\\\;");
     }
 
     @Test public void commentOnly() {
@@ -135,7 +138,7 @@ public class DefaultScriptParserTest {
     }
 
     protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new DefaultScriptParserFactory(false);
+        ScriptParserFactory factory = new DefaultScriptParserFactory(true);
         return factory.createScriptParser(scriptReader);
     }
 

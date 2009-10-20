@@ -26,8 +26,8 @@ import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
 public class StoredProcedureNormalParsingState extends BaseNormalParsingState {
 
     @Override
-    public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, boolean backSlashEscapingEnabled) {
-        super.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, backSlashEscapingEnabled);
+    public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState,  boolean backSlashEscapingEnabled) {
+        super.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, backSlashEscapingEnabled);
     }
 
     @Override
