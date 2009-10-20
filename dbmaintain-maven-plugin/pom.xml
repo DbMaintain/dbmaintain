@@ -82,13 +82,6 @@
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <templateFile>${basedir}/../src/site/maven-site.vm</templateFile>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
   <reporting>
