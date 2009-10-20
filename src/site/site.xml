@@ -13,7 +13,7 @@
         <groupId>org.apache.maven.skins</groupId>
         <artifactId>maven-stylus-skin</artifactId>
     </skin>
-  
+    <version position="right" />
     <body>
         
         <links>
