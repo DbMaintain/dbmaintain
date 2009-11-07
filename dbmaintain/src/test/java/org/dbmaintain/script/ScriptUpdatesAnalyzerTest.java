@@ -23,6 +23,10 @@ import org.dbmaintain.util.TestUtils;
 import org.dbmaintain.script.impl.ScriptRepository;
 import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.logicalexpression.Expression;
+import org.dbmaintain.logicalexpression.ExpressionParser;
+import org.dbmaintain.logicalexpression.AtomicOperandValidator;
+import org.dbmaintain.logicalexpression.TrivialExpression;
 
 import java.util.*;
 
@@ -140,7 +144,7 @@ public class ScriptUpdatesAnalyzerTest {
         calculateScriptUpdates();
         assertRegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, QUALIFIED_1);
         // If qualifier1 is excluded, the addition of the qualified should not be registered
-        calculateScriptUpdates(QUALIFIER1);
+        calculateScriptUpdates("!qualifier");
         assertNotARegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, QUALIFIED_1);
     }
 
@@ -268,18 +272,30 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void calculateScriptUpdates() {
-        calculateScriptUpdates(true);
+        calculateScriptUpdates(true, null);
     }
 
-    private void calculateScriptUpdates(Qualifier... excludedQualifiers) {
-        calculateScriptUpdates(true, excludedQualifiers);
+    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
+        calculateScriptUpdates(allowOutOfSequenceExecutionOfPatchScripts, null);
     }
 
-    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts, Qualifier... excludedQualifiers) {
-        ScriptRepository scriptRepository = TestUtils.getScriptRepository(scripts);
-        ExecutedScriptInfoSource executedScriptInfoSource = TestUtils.getExecutedScriptInfoSource(executedScripts);
-        scriptUpdates = new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, true,
-                allowOutOfSequenceExecutionOfPatchScripts, asSet(excludedQualifiers)).calculateScriptUpdates();
+    private void calculateScriptUpdates(String qualifierInclusionExpression) {
+        calculateScriptUpdates(true, qualifierInclusionExpression);
+    }
+
+    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts, String qualifierInclusionExpressionStr) {
+        scriptUpdates = new ScriptUpdatesAnalyzer(TestUtils.getScriptRepository(scripts),
+                TestUtils.getExecutedScriptInfoSource(executedScripts), true, allowOutOfSequenceExecutionOfPatchScripts,
+                getQualifierInclusionExpression(qualifierInclusionExpressionStr)).calculateScriptUpdates();
+    }
+
+    private Expression getQualifierInclusionExpression(String qualifierInclusionExpressionStr) {
+        if (qualifierInclusionExpressionStr == null) return new TrivialExpression();
+        AtomicOperandValidator operandValidator = new AtomicOperandValidator() {
+            public void validateOperandName(String operandName) {
+            }
+        };
+        return new ExpressionParser(operandValidator).parse(qualifierInclusionExpressionStr);
     }
 
     private static Script createScript(String scriptName, boolean modified) {

@@ -22,6 +22,7 @@ import static org.apache.commons.lang.StringUtils.substringAfter;
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.DbMaintainException;
 import static org.dbmaintain.util.CollectionUtils.asSet;
+import org.dbmaintain.logicalexpression.OperandResolver;
 
 import java.util.*;
 import static java.util.Collections.unmodifiableSet;
@@ -65,17 +66,18 @@ public class Script implements Comparable<Script> {
     /**
      * Creates a script with the given script fileName, whose content is provided by the given handle.
      *
-     * @param fileName             The name of the script file, not null
-     * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
-     * @param scriptContentHandle  Handle providing access to the contents of the script, not null
-     * @param targetDatabasePrefix The prefix that indicates the target database part in the filename, not null
-     * @param qualifierPrefix      The prefix that identifies a qualifier in the filename, not null
-     * @param patchQualifiers      The qualifiers that indicate that this script is a patch script, not null
-     * @param postProcessingScriptDirName Name of the post processing script dir
+     * @param fileName             the name of the script file, not null
+     * @param fileLastModifiedAt   the time when the file was last modified (in ms), not null
+     * @param scriptContentHandle  handle providing access to the contents of the script, not null
+     * @param targetDatabasePrefix the prefix that indicates the target database part in the filename, not null
+     * @param qualifierPrefix      the prefix that identifies a qualifier in the filename, not null
+     * @param registeredQualifiers the qualifiers that were registered and are thus allowed to be used, not null
+     * @param patchQualifiers      the qualifiers that indicate that this script is a patch script, not null
+     * @param postProcessingScriptDirName name of the post processing script dir
      */
     public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String targetDatabasePrefix, 
-            String qualifierPrefix, Set<Qualifier> allowedQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
-        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, allowedQualifiers, patchQualifiers, postProcessingScriptDirName);
+            String qualifierPrefix, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
+        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
         this.scriptContentHandle = scriptContentHandle;
     }
 
@@ -92,13 +94,13 @@ public class Script implements Comparable<Script> {
      * @param checkSum             checksum calculated for the contents of the file
      * @param targetDatabasePrefix the prefix that indicates the target database part in the filename, not null
      * @param qualifierPrefix      the prefix that identifies a qualifier in the filename, not null
-     * @param allowedQualifiers    all qualifiers that were defined by the user and are thus allowed to be used, not null
+     * @param registeredQualifiers    all qualifiers that were registered and are thus allowed to be used, not null
      * @param patchQualifiers      the qualifiers that indicate that a script is a patch script, not null
      * @param postProcessingScriptDirName Name of the post processing script dir
      */
     public Script(String fileName, Long fileLastModifiedAt, String checkSum, String targetDatabasePrefix, String qualifierPrefix,
-                  Set<Qualifier> allowedQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
-        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, allowedQualifiers, patchQualifiers, postProcessingScriptDirName);
+                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
+        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
         this.checkSum = checkSum;
     }
 
@@ -110,17 +112,17 @@ public class Script implements Comparable<Script> {
      * @param fileLastModifiedAt   the time when the file was last modified (in ms), not null
      * @param targetDatabasePrefix the prefix that indicates the target database part in the filename, not null
      * @param qualifierPrefix      the prefix that identifies a qualifier in the filename, not null
-     * @param allowedQualifiers    all qualifiers that were defined by the user and are thus allowed to be used, not null
+     * @param registeredQualifiers    all qualifiers that were registered and are thus allowed to be used, not null
      * @param patchQualifiers      the qualifiers that indicate that this script is a patch script, not null
      * @param postProcessingScriptDirName name of the post processing script dir
      */
     private Script(String fileName, Long fileLastModifiedAt, String targetDatabasePrefix, String qualifierPrefix,
-                   Set<Qualifier> allowedQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
+                   Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
         this.fileName = fileName;
         this.scriptIndexes = createScriptIndexes(fileName);
         List<String> allTokens = getTokensFromPath(asSet(qualifierPrefix, targetDatabasePrefix));
         this.targetDatabaseName = getTargetDatabaseName(allTokens, targetDatabasePrefix);
-        this.qualifiers = selectQualifiersFromTokens(allTokens, qualifierPrefix, allowedQualifiers, patchQualifiers);
+        this.qualifiers = selectQualifiersFromTokens(allTokens, qualifierPrefix, registeredQualifiers, patchQualifiers);
         this.patchScript = hasQualifierFrom(patchQualifiers);
         this.fileLastModifiedAt = fileLastModifiedAt;
         this.postProcessingScript = isPostProcessingScript(postProcessingScriptDirName);
@@ -340,7 +342,7 @@ public class Script implements Comparable<Script> {
             if (token.startsWith(qualifierPrefix)) {
                 Qualifier qualifier = new Qualifier(substringAfter(token, qualifierPrefix));
                 if (!allowedQualifiers.contains(qualifier) && !patchQualifiers.contains(qualifier)) {
-                    throw new DbMaintainException("Qualifier " + qualifier + " has not been registered.");
+                    throw new DbMaintainException("Qualifier \"" + qualifier.getQualifierName() + "\" has not been registered.");
                 }
                 qualifiers.add(qualifier);
             }
@@ -473,5 +475,24 @@ public class Script implements Comparable<Script> {
     @Override
     public String toString() {
         return fileName;
+    }
+
+    /**
+     * @return {@link OperandResolver} for evaluating the {@link org.dbmaintain.logicalexpression.Expression} that defines
+     * whether this script must be executed or not.
+     */
+    public OperandResolver getQualifierOperandResolver() {
+        return new QualifierOperandResolver();
+    }
+
+    /**
+     * {@link OperandResolver} for evaluating the {@link org.dbmaintain.logicalexpression.Expression}s that defines whether
+     * this script must be executed or not.
+     */
+    private class QualifierOperandResolver implements OperandResolver {
+
+        public boolean resolveOperand(String operandName) {
+            return qualifiers.contains(new Qualifier(operandName));
+        }
     }
 }

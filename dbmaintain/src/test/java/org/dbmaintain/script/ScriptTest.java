@@ -89,7 +89,7 @@ public class ScriptTest {
      * The patch indicator should be case-insensitive.
      */
     @Test
-    public void testIsPatchScript_caseInsensitive() {
+    public void testIsPatchScript_CaseInsensitive() {
         Script script = createScript("incremental/02_sprint2/03_#PaTcH_addUser.sql");
         assertTrue(script.isPatchScript());
     }
@@ -98,6 +98,12 @@ public class ScriptTest {
     @Test
     public void testScriptWithQualifiers() {
         Script script = createScript("#qualifier1_#qualifier2_script.sql");
+        assertEquals(asSet(QUALIFIER1, QUALIFIER2), script.getQualifiers());
+    }
+
+    @Test
+    public void testQualifiers_CaseInsensitive() {
+        Script script = createScript("#QuAlIfIeR1_#QUALIFIER2_script.sql");
         assertEquals(asSet(QUALIFIER1, QUALIFIER2), script.getQualifiers());
     }
 

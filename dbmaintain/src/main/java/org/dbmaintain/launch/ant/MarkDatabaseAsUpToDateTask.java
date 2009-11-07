@@ -35,7 +35,7 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
     private String scriptLocations;
     private Boolean autoCreateDbMaintainScriptsTable;
     private String qualifiers;
-    private String excludedQualifiers;
+    private String qualifierInclusionExpression;
     private String scriptFileExtensions;
 
     protected void performTask(DbMaintain dbMaintain) {
@@ -48,7 +48,7 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         addTaskConfiguration(configuration, PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
-        addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, qualifierInclusionExpression);
         addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
     }
 
@@ -61,8 +61,8 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         this.qualifiers = qualifiers;
     }
 
-    public void setExcludedQualifiers(String excludedQualifiers) {
-        this.excludedQualifiers = excludedQualifiers;
+    public void setQualifierInclusionExpression(String qualifierInclusionExpression) {
+        this.qualifierInclusionExpression = qualifierInclusionExpression;
     }
 
     public void setAutoCreateDbMaintainScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {

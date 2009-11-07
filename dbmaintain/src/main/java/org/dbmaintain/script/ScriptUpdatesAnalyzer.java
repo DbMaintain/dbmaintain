@@ -18,6 +18,7 @@ package org.dbmaintain.script;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.script.impl.ScriptRepository;
+import org.dbmaintain.logicalexpression.Expression;
 
 import java.util.*;
 
@@ -33,23 +34,23 @@ import java.util.*;
 public class ScriptUpdatesAnalyzer {
 
     /* Initialization data */
-    private ScriptRepository scriptRepository;
-    private ExecutedScriptInfoSource executedScriptInfoSource;
-    private boolean useScriptFileLastModificationDates;
-    private boolean allowOutOfSequenceExecutionOfPatchScripts;
-    private Set<Qualifier> excludedQualifiers;
+    private final ScriptRepository scriptRepository;
+    private final ExecutedScriptInfoSource executedScriptInfoSource;
+    private final boolean useScriptFileLastModificationDates;
+    private final boolean allowOutOfSequenceExecutionOfPatchScripts;
+    private final Expression qualifierInclusionExpression;
 
     /* Sets that contain the result of the analysis: each set contains a specific type of script updates */
-    private SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
-    private SortedSet<ScriptUpdate> irregularlyUpdatedScripts = new TreeSet<ScriptUpdate>();
-    private SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts = new TreeSet<ScriptUpdate>();
-    private SortedSet<ScriptUpdate> regularlyAddedPatchScripts = new TreeSet<ScriptUpdate>();
-    private SortedSet<ScriptUpdate> regularlyUpdatedPostprocessingScripts = new TreeSet<ScriptUpdate>();
-    private SortedSet<ScriptUpdate> regularlyRenamedScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> irregularlyUpdatedScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyAddedPatchScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyUpdatedPostprocessingScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyRenamedScripts = new TreeSet<ScriptUpdate>();
 
     /* Sets that contain working data that is assembled during the analysis */
-    private Map<ExecutedScript, Script> renamedIndexedScripts = new HashMap<ExecutedScript, Script>();
-    private Map<Script, ExecutedScript> scriptExecutedScriptMap = new HashMap<Script, ExecutedScript>();
+    private final Map<ExecutedScript, Script> renamedIndexedScripts = new HashMap<ExecutedScript, Script>();
+    private final Map<Script, ExecutedScript> scriptExecutedScriptMap = new HashMap<Script, ExecutedScript>();
 
     /* Lazily initialized data, that is cached during analysis to avoid repeated calculation of the contents */
     private Map<String, Script> scriptNameScriptMap;
@@ -64,16 +65,16 @@ public class ScriptUpdatesAnalyzer {
      * @param useScriptFileLastModificationDates whether the last modification date of the scripts can be used to determine
      * if a script has changed.
      * @param allowOutOfSequenceExecutionOfPatchScripts whether scripts marked as patch scripts may be executed out-of-sequence
-     * @param excludedQualifiers scripts with one of these qualifiers are excluded from the analyzed scripts
+     * @param qualifierInclusionExpression expression that defines whether scripts are executed or not according to their qualifiers
      */
     public ScriptUpdatesAnalyzer(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                          boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-                         Set<Qualifier> excludedQualifiers) {
+                         Expression qualifierInclusionExpression) {
         this.scriptRepository = scriptRepository;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
-        this.excludedQualifiers = excludedQualifiers;
+        this.qualifierInclusionExpression = qualifierInclusionExpression;
     }
 
     /**
@@ -351,7 +352,7 @@ public class ScriptUpdatesAnalyzer {
     protected SortedSet<Script> getAllIncludedScripts() {
         SortedSet<Script> scripts = new TreeSet<Script>();
         for (Script script : scriptRepository.getAllScripts()) {
-            if (!script.hasQualifierFrom(excludedQualifiers)) {
+            if (qualifierInclusionExpression.evaluate(script.getQualifierOperandResolver())) {
                 scripts.add(script);
             }
         }

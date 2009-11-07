@@ -59,6 +59,9 @@ public class DbMaintainIntegrationTest {
 
         INCREMENTAL_2_SPECIAL_QUALIFIER("01_incremental/02_#special.sql"),
         INCREMENTAL_2_UNKNOWN_QUALIFIER("01_incremental/02_#unknown.sql"),
+        INCREMENTAL_1_QUALIFIER1("01_incremental/01_#q1.sql"),
+        INCREMENTAL_2_QUALIFIER2("01_incremental/02_#q2.sql"),
+        INCREMENTAL_3_QUALIFIER1_QUALIFIER2("01_incremental/03_#q1_q2.sql"),
 
         REPEATABLE("repeatable/repeatable.sql"),
         REPEATABLE_RENAMED("repeatable/repeatable_renamed.sql"),
@@ -550,18 +553,33 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testQualifiers() {
-        disableFromScratch();
-        createScripts(INCREMENTAL_1, INCREMENTAL_2_SPECIAL_QUALIFIER);
-        // Verify that the script with the special qualifier is not executed if it is excluded
-        excludeSpecialQualifier();
+    public void testQualifiers1() {
+        enableFromScratch();
+        createScripts(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+
+        setQualifierInclusionExpression("Q1 || Q2");
         updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_1);
-        assertScriptsNotExecuted(INCREMENTAL_2_SPECIAL_QUALIFIER);
-        // Verify that the script with the special qualifier is executed if it is not excluded
-        includeSpecialQualifier();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+
+        setQualifierInclusionExpression("Q1 && Q2");
         updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_2_SPECIAL_QUALIFIER);
+        assertScriptsCorrectlyExecuted(INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+
+        setQualifierInclusionExpression("Q1 && !Q2");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1);
+
+        setQualifierInclusionExpression("Q1 && Q2 || Q2");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+
+        setQualifierInclusionExpression("Q1 || Q1 && Q2");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+
+        setQualifierInclusionExpression("Q1 && (Q1 || Q2)");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2);
     }
 
     @Test(expected = DbMaintainException.class)
@@ -600,12 +618,8 @@ public class DbMaintainIntegrationTest {
         configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
     }
 
-    private void excludeSpecialQualifier() {
-        configuration.put(DbMaintainProperties.PROPERTY_EXCLUDED_QUALIFIERS, "special");
-    }
-
-    private void includeSpecialQualifier() {
-        configuration.put(DbMaintainProperties.PROPERTY_EXCLUDED_QUALIFIERS, "");
+    private void setQualifierInclusionExpression(String qualifierInclusionExpression) {
+        configuration.put(DbMaintainProperties.PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, qualifierInclusionExpression);
     }
 
     private void assertMessageContains(String message, String... subStrings) {
@@ -844,7 +858,7 @@ public class DbMaintainIntegrationTest {
         configuration.put(PROPERTY_SCRIPT_LOCATIONS, scriptsLocation.getAbsolutePath());
         configuration.put(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, "false");
         configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "false");
-        configuration.put(PROPERTY_QUALIFIERS, "special");
+        configuration.put(PROPERTY_QUALIFIERS, "special,q1,q2");
 
         dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, new DefaultSQLHandler());
         dbSupport = dbMaintainConfigurer.getDefaultDbSupport();

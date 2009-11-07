@@ -29,6 +29,7 @@ import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.logicalexpression.Expression;
 
 import java.util.*;
 
@@ -116,7 +117,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     /**
      * Scripts with one of these qualifiers are not executed
      */
-    protected Set<Qualifier> excludedQualifiers;
+    protected Expression qualifierInclusionExpression;
 
     /**
      * Indicates if foreign key and not null constraints should removed after updating the database
@@ -148,7 +149,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param useScriptFileLastModificationDates if true, the dbmaintainer decides that a script hasn't changed if the
      * last modification date is identical to the one of the last update, without looking at the contents of the script
      * @param allowOutOfSequenceExecutionOfPatchScripts if true, patch scripts can be executed out-of-sequence
-     * @param excludedQualifiers scripts with one of these qualifiers are not executed
+     * @param qualifierInclusionExpression expression that defines whether scripts are executed or not according to their qualifiers  
      * @param cleanDb If true, the data from all tables will be removed before performing any updates
      * @param disableConstraints If true, all foreign key and not null constraints will be automatically disabled
      * or removed after each update
@@ -160,7 +161,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-               Set<Qualifier> excludedQualifiers, boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
+               Expression qualifierInclusionExpression, boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
                SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
 
         this.scriptRunner = scriptRunner;
@@ -170,7 +171,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.hasItemsToPreserve = hasItemsToPreserve;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
-        this.excludedQualifiers = excludedQualifiers;
+        this.qualifierInclusionExpression = qualifierInclusionExpression;
         this.cleanDb = cleanDb;
         this.disableConstraints = disableConstraints;
         this.updateSequences = updateSequences;
@@ -300,7 +301,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public ScriptUpdates getScriptUpdates() {
         return new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates,
-                allowOutOfSequenceExecutionOfPatchScripts, excludedQualifiers).calculateScriptUpdates();
+                allowOutOfSequenceExecutionOfPatchScripts, qualifierInclusionExpression).calculateScriptUpdates();
     }
 
 

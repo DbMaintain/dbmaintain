@@ -18,7 +18,6 @@ package org.dbmaintain.config;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.format.ScriptUpdatesFormatter;
 import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
@@ -26,21 +25,24 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.config.PropertyUtils.*;
 import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.format.ScriptUpdatesFormatter;
+import org.dbmaintain.logicalexpression.AtomicOperandValidator;
+import org.dbmaintain.logicalexpression.Expression;
+import org.dbmaintain.logicalexpression.ExpressionParser;
+import org.dbmaintain.logicalexpression.TrivialExpression;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptRunner;
-import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.impl.ArchiveScriptLocation;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
 import org.dbmaintain.script.impl.ScriptRepository;
-import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.ReflectionUtils;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
 import javax.sql.DataSource;
@@ -105,7 +107,9 @@ public class PropertiesDbMaintainConfigurer {
         boolean hasItemsToPreserve = getItemsToPreserve().size() > 0 || getSchemasToPreserve().size() > 0;
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
-        Set<Qualifier> excludedQualifiers = createQualifiers(PropertyUtils.getStringList(PROPERTY_EXCLUDED_QUALIFIERS, configuration));
+        String qualifierInclusionExpressionStr = PropertyUtils.getString(PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, null, configuration);
+        Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+        Expression qualifierInclusionExpression = getQualifierInclusionExpression(qualifierInclusionExpressionStr, registeredQualifiers);
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, configuration);
 
@@ -117,12 +121,28 @@ public class PropertiesDbMaintainConfigurer {
 
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
-                new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class, boolean.class,
-                        Set.class, boolean.class, boolean.class, boolean.class, DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class,
-                        ScriptUpdatesFormatter.class, SQLHandler.class},
+                new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class,
+                        boolean.class, Expression.class, boolean.class, boolean.class, boolean.class, 
+                        DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class, ScriptUpdatesFormatter.class, SQLHandler.class},
                 new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
-                        allowOutOfSequenceExecutionOfPatchScripts, excludedQualifiers, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
+                        allowOutOfSequenceExecutionOfPatchScripts, qualifierInclusionExpression, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
                         dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
+    }
+
+    private Expression getQualifierInclusionExpression(String qualifierInclusionExpressionStr, final Set<Qualifier> registeredQualifiers) {
+        if (qualifierInclusionExpressionStr == null) {
+            return new TrivialExpression();
+        } else {
+            AtomicOperandValidator operandValidator = new AtomicOperandValidator() {
+                public void validateOperandName(String operandName) {
+                    if (!registeredQualifiers.contains(new Qualifier(operandName))) {
+                        throw new IllegalArgumentException("Qualifier " + operandName + " in the qualifier inclusion expression is not registered");
+                    }
+                }
+            };
+            ExpressionParser parser = new ExpressionParser(operandValidator);
+            return parser.parse(qualifierInclusionExpressionStr);
+        }
     }
 
 
@@ -330,7 +350,8 @@ public class PropertiesDbMaintainConfigurer {
      * makes it case sensitive. If requested, the identifiers will be qualified with the default schema name if no
      * schema name is used as prefix.
      *
-     * @param propertyName The name of the property that defines the items, not null
+     * @param dbItemType the type of database items to preserve, not null
+     * @param propertyName the name of the property that defines the items, not null
      * @return The set of items, not null
      */
     protected Set<DbItemIdentifier> getItemsToPreserve(DbItemType dbItemType, String propertyName) {
@@ -412,14 +433,6 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    /**
-     * @param databaseName
-     * @param databaseDialect
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @return
-     */
     public DbSupport createDbSupport(String databaseName, String databaseDialect, DataSource dataSource, String defaultSchemaName, Set<String> schemaNames) {
         String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
         StoredIdentifierCase customStoredIdentifierCase = getCustomStoredIdentifierCase(databaseDialect);

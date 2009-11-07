@@ -35,11 +35,11 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     private Boolean autoCreateDbMaintainScriptsTable;
     private Boolean allowOutOfSequenceExecutionOfPatches;
     private String qualifiers;
-    private String excludedQualifiers;
+    private String qualifierInclusionExpression;
     private Boolean useLastModificationDates;
     private String scriptFileExtensions;
 
-    
+
     protected void performTask(DbMaintain dbMaintain) {
         dbMaintain.checkScriptUpdates();
     }
@@ -52,7 +52,7 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
         addTaskConfiguration(configuration, PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
-        addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, qualifierInclusionExpression);
         addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         addTaskConfiguration(configuration, PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
     }
@@ -116,10 +116,10 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     /**
      * Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the
      * qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed.
-     * @param excludedQualifiers the excluded script qualifiers
+     * @param qualifierInclusionExpression the excluded script qualifiers
      */
-    public void setExcludedQualifiers(String excludedQualifiers) {
-        this.excludedQualifiers = excludedQualifiers;
+    public void setQualifierInclusionExpression(String qualifierInclusionExpression) {
+        this.qualifierInclusionExpression = qualifierInclusionExpression;
     }
 
     /**

@@ -17,14 +17,10 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.config.DbMaintainProperties;
 import static org.dbmaintain.config.DbMaintainProperties.*;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXCLUDED_QUALIFIERS;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION;
 import org.dbmaintain.launch.DbMaintain;
 
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Task that updates the database to the latest version.
@@ -39,7 +35,7 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     private Boolean autoCreateDbMaintainScriptsTable;
     private Boolean allowOutOfSequenceExecutionOfPatches;
     private String qualifiers;
-    private String excludedQualifiers;
+    private String qualifierInclusionExpression;
     private Boolean cleanDb;
     private Boolean disableConstraints;
     private Boolean updateSequences;
@@ -57,7 +53,7 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
         addTaskConfiguration(configuration, PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
-        addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, qualifierInclusionExpression);
         addTaskConfiguration(configuration, PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
         addTaskConfiguration(configuration, PROPERTY_CLEANDB, cleanDb);
         addTaskConfiguration(configuration, PROPERTY_DISABLE_CONSTRAINTS, disableConstraints);
@@ -116,10 +112,10 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     /**
      * Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the
      * qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed.
-     * @param excludedQualifiers the excluded script qualifiers
+     * @param qualifierInclusionExpression the excluded script qualifiers
      */
-    public void setExcludedQualifiers(String excludedQualifiers) {
-        this.excludedQualifiers = excludedQualifiers;
+    public void setQualifierInclusionExpression(String qualifierInclusionExpression) {
+        this.qualifierInclusionExpression = qualifierInclusionExpression;
     }
 
     /**
