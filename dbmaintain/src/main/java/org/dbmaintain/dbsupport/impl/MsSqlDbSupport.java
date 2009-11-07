@@ -267,9 +267,9 @@ public class MsSqlDbSupport extends DbSupport {
             statement = connection.createStatement();
 
             // get all not-null columns but not row-guid, identity and computed columns (these cannot be altered in MS-Sql)
-            resultSet = statement.executeQuery("select c.name column_name, upper(y.name) data_type, c.max_length, c.precision from sys.types y, sys.columns c, sys.tables t, sys.schemas s " +
+            resultSet = statement.executeQuery("select c.name column_name, upper(y.name) data_type, c.max_length, c.precision, c.scale from sys.types y, sys.columns c, sys.tables t, sys.schemas s " +
                     "where c.is_nullable = 0 and c.is_rowguidcol = 0 and c.is_identity = 0 and c.is_computed = 0 " +
-                    "  and y.user_type_id = c.user_type_id and c.object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+                    "and y.user_type_id = c.user_type_id and c.object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
 
             while (resultSet.next()) {
                 String columnName = resultSet.getString("column_name");
@@ -286,9 +286,10 @@ public class MsSqlDbSupport extends DbSupport {
 
                 // handle data types that require a length and precision
                 if ("NUMERIC".equals(dataType) || "DECIMAL".equals(dataType)) {
-                    String maxLength = resultSet.getString("max_length");
                     String precision = resultSet.getString("precision");
-                    dataType += "(" + maxLength + ", " + precision + ")";
+                    /* Patch provided by Jan Ischebeck */
+                    String scale = resultSet.getString("scale");
+                    dataType += "(" + precision + ", " + scale + ")";
                 } else if (dataType.contains("CHAR")) {
                     String maxLength = resultSet.getString("max_length");
                     /* Patch provided by Thomas Queste */
