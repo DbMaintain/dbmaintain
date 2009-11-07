@@ -15,12 +15,11 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 import org.dbmaintain.util.DbMaintainException;
-import org.apache.commons.dbutils.DbUtils;
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -40,17 +39,6 @@ import java.util.Set;
 public class MsSqlDbSupport extends DbSupport {
 
 
-    /**
-     * Creates support for a MsSql database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
-     */
     public MsSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
                           Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
         super(databaseName, "mssql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
@@ -259,7 +247,7 @@ public class MsSqlDbSupport extends DbSupport {
      * <p/>
      * For primary keys, row-guid, identity and computed columns not-null constrains cannot be disabled in MS-Sql.
      *
-     * @param schemaName
+     * @param schemaName the schema name, not null
      * @param tableName  The table, not null
      */
     protected void disableNotNullConstraints(String schemaName, String tableName) {
@@ -295,6 +283,7 @@ public class MsSqlDbSupport extends DbSupport {
                     // timestamp columns cannot be altered in MS-Sql
                     continue;
                 }
+
                 // handle data types that require a length and precision
                 if ("NUMERIC".equals(dataType) || "DECIMAL".equals(dataType)) {
                     String maxLength = resultSet.getString("max_length");
@@ -302,6 +291,12 @@ public class MsSqlDbSupport extends DbSupport {
                     dataType += "(" + maxLength + ", " + precision + ")";
                 } else if (dataType.contains("CHAR")) {
                     String maxLength = resultSet.getString("max_length");
+                    /* Patch provided by Thomas Queste */
+                    // NChar or NVarchar always count as the double of their real size in the sys.columns table
+                    // that means we should divide this value by two to have a correct size.
+                    if (dataType.equals("NCHAR") || dataType.equals("NVARCHAR")) {
+                        maxLength = String.valueOf(Integer.parseInt(maxLength) / 2);
+                    }
                     dataType += "(" + maxLength + ")";
                 }
                 // remove the not-null constraint
