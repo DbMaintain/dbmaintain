@@ -70,7 +70,7 @@
   <distributionManagement>
     <repository>
       <id>dbmaintain-sourceforge-repository</id>
-      <url>sftp://shell.sourceforge.net/home/groups/d/db/dbmaintain/htdocs/m2-repo</url>
+      <url>sftp://web.sourceforge.net/home/groups/d/db/dbmaintain/htdocs/m2-repo</url>
     </repository>
     <site>
       <id>dbmaintain-sourceforge-repository</id>
