@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Implementation of {@link DbSupport} for a MsSQL database.
  * <p/>
- * Special thanks to Niki Driessen who donated the initial version of the Derby support code.
+ * Special thanks to Niki Driessen who donated the initial version of the MsSql support code.
  *
  * @author Tim Ducheyne
  * @author Niki Driessen
