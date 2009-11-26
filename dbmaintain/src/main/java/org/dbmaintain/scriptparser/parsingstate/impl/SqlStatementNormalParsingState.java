@@ -47,7 +47,7 @@ public class SqlStatementNormalParsingState extends BaseNormalParsingState {
     }
 
     protected HandleNextCharacterResult moveToStoredProcedureStateResult(Character currentChar, StatementBuilder statementBuilder) {
-        if (isWhitespace(currentChar) && storedProcedureMatcher.isStartOfStoredProcedure(statementBuilder.getStatementWithoutCommentsOrWhitespace())) {
+        if (isWhitespace(currentChar) && storedProcedureMatcher.isStartOfStoredProcedure(statementBuilder.getStatementInUppercaseWithoutCommentsOrWhitespace())) {
             return toInStoredProcedureStateResult;
         }
         return null;

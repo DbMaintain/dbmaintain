@@ -28,23 +28,29 @@ import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
  */
 public class StatementBuilder {
 
+    private static final Character CARRIAGE_RETURN = '\r', NEWLINE = '\n';
+
     /* Content of the statement being built */
     private StringBuilder statement = new StringBuilder();
 
+    /* Content of the current line of the statement being built */
     private StringBuilder currentLine = new StringBuilder();
 
     /* Content of the statement being built with comments, newlines and unnecessary whitespace left out */
-    private StringBuilder statementWithoutCommentsAndWhitespace = new StringBuilder();
+    private StringBuilder statementInUppercaseWithoutCommentsAndWhitespace = new StringBuilder();
 
+    /* Whether the current line has content other than comments or whitespace, which must be sent to the database
+       for execution */
     private boolean currentLineHasExecutableContent = false;
 
-    /* Executable means that the statement contains other content than comments or whitespace */
+    /* Whether the statement has content other than comments or whitespace, which must be sent to the database
+       for execution */
     private boolean hasExecutableContent = false;
 
     /* The current state of the statement parser */
     private ParsingState currentParsingState;
 
-    /* The previously processes character */
+    /* The previously processed character */
     private Character previousChar;
 
     /**
@@ -61,8 +67,8 @@ public class StatementBuilder {
         HandleNextCharacterResult handleNextCharacterResult = currentParsingState.getNextParsingState(previousChar, currentChar, nextChar, this);
         currentParsingState = handleNextCharacterResult.getNextState();
 
-        // If the content just processed is 'hasExecutableContent content', i.e. no content or whitespace, the
-        // statement becomes hasExecutableContent if it wasn't already. If
+        // If the content just processed is 'executable content', i.e. no comments or whitespace, the
+        // statement becomes executable if it wasn't already.
         if (handleNextCharacterResult.isExecutable()) {
             currentLineHasExecutableContent = true;
             hasExecutableContent = true;
@@ -86,16 +92,24 @@ public class StatementBuilder {
     }
 
     protected void appendToCurrentLine(Character currentChar) {
-        if (currentChar != null) currentLine.append(currentChar);
+        if (currentChar == null) {}
+        // Replace \r by \n
+        else if (CARRIAGE_RETURN.equals(currentChar))
+            currentLine.append(NEWLINE);
+        // Replace \r\n by \n
+        else if (CARRIAGE_RETURN.equals(previousChar) && NEWLINE.equals(currentChar))
+            {} // \n was already added when processing the previous character
+        else
+            currentLine.append(currentChar);
     }
 
     protected void appendToStatementWithoutCommentsAndWhitespace(Character currentChar, HandleNextCharacterResult handleNextCharacterResult) {
         if (handleNextCharacterResult.isExecutable()) {
-            statementWithoutCommentsAndWhitespace.append(currentChar);
+            statementInUppercaseWithoutCommentsAndWhitespace.append(Character.toUpperCase(currentChar));
         } else {
-            if (isWhitespace(currentChar) && statementWithoutCommentsAndWhitespace.length() > 0
-                    && getLastCharacter(statementWithoutCommentsAndWhitespace) != ' ') {
-                statementWithoutCommentsAndWhitespace.append(' ');
+            if (isWhitespace(currentChar) && statementInUppercaseWithoutCommentsAndWhitespace.length() > 0
+                    && getLastCharacter(statementInUppercaseWithoutCommentsAndWhitespace) != ' ') {
+                statementInUppercaseWithoutCommentsAndWhitespace.append(' ');
             }
         }
     }
@@ -134,7 +148,7 @@ public class StatementBuilder {
     /**
      * @return the statement statement with comments, newlines and unnecessary whitespace left out
      */
-    public String getStatementWithoutCommentsOrWhitespace() {
-        return statementWithoutCommentsAndWhitespace.toString();
+    public StringBuilder getStatementInUppercaseWithoutCommentsOrWhitespace() {
+        return statementInUppercaseWithoutCommentsAndWhitespace;
     }
 }

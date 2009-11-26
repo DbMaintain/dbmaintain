@@ -105,6 +105,11 @@ public class DefaultScriptParserTest {
         assertNoStatement("statement without semicolon");
     }
 
+    @Test public void replaceCarriageReturnsByNewLines() {
+        assertOneStatementEqualTo("statement\non\nmultiple\nlines",
+                "statement\ron\r\nmultiple\nlines;");
+    }
+
     protected void assertNoStatement(String script) {
         ScriptParser parser = createScriptParser(new StringReader(script));
         assertNull(parser.getNextStatement());
