@@ -33,6 +33,6 @@ public interface StoredProcedureMatcher {
      * @return true if the given start of an SQL statement indicates the begin of a
      * stored procedure definition
      */
-    boolean isStartOfStoredProcedure(String statementWithoutCommentsOrWhitespace);
+    boolean isStartOfStoredProcedure(StringBuilder statementWithoutCommentsOrWhitespace);
     
 }

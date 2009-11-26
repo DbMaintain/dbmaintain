@@ -23,7 +23,7 @@ import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
  */
 public class DefaultStoredProcedureMatcher implements StoredProcedureMatcher {
 
-    public boolean isStartOfStoredProcedure(String statementWithoutCommentsOrWhitespace) {
+    public boolean isStartOfStoredProcedure(StringBuilder statementWithoutCommentsOrWhitespace) {
         return false;
     }
 }

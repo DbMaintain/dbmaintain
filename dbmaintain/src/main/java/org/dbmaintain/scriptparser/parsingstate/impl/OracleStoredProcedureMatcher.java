@@ -28,8 +28,8 @@ public class OracleStoredProcedureMatcher implements StoredProcedureMatcher {
     private static final Pattern STORED_PROC_PATTERN = Pattern.compile(
         "^(CREATE (OR REPLACE )?(PACKAGE|LIBRARY|FUNCTION|PROCEDURE|TRIGGER|TYPE)|DECLARE|BEGIN)");
 
-    public boolean isStartOfStoredProcedure(String statementWithoutCommentsOrWhitespace) {
-        return STORED_PROC_PATTERN.matcher(statementWithoutCommentsOrWhitespace.toUpperCase()).matches();
+    public boolean isStartOfStoredProcedure(StringBuilder statementWithoutCommentsOrWhitespace) {
+        return STORED_PROC_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();
     }
 
 }

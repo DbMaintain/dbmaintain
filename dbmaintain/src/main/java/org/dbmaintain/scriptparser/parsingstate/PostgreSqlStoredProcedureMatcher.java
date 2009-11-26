@@ -11,7 +11,7 @@ public class PostgreSqlStoredProcedureMatcher implements StoredProcedureMatcher 
 
     private static final Pattern STORED_PROC_PATTERN = Pattern.compile("^CREATE (OR REPLACE )?FUNCTION");
 
-    public boolean isStartOfStoredProcedure(String statementWithoutCommentsOrWhitespace) {
-        return STORED_PROC_PATTERN.matcher(statementWithoutCommentsOrWhitespace.toUpperCase()).matches();
+    public boolean isStartOfStoredProcedure(StringBuilder statementWithoutCommentsOrWhitespace) {
+        return STORED_PROC_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();
     }
 }
