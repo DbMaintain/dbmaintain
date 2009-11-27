@@ -42,7 +42,7 @@ public class DefaultScriptParserTest {
     }
 
     @Test public void multilineStatement() {
-        assertTwoStatementsEqualTo("statement\non\r\nmultiple\nlines", "second statement",
+        assertTwoStatementsEqualTo("statement\non\nmultiple\nlines", "second statement",
                 "statement\non\r\nmultiple\nlines;second statement;");
     }
 
