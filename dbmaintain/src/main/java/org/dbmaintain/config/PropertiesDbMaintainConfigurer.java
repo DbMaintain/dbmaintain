@@ -107,9 +107,7 @@ public class PropertiesDbMaintainConfigurer {
         boolean hasItemsToPreserve = getItemsToPreserve().size() > 0 || getSchemasToPreserve().size() > 0;
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
-        String qualifierInclusionExpressionStr = PropertyUtils.getString(PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, null, configuration);
-        Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
-        Expression qualifierInclusionExpression = getQualifierInclusionExpression(qualifierInclusionExpressionStr, registeredQualifiers);
+        Expression qualifierInclusionExpression = createQualifierExpression();
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, configuration);
 
@@ -129,20 +127,21 @@ public class PropertiesDbMaintainConfigurer {
                         dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
     }
 
-    private Expression getQualifierInclusionExpression(String qualifierInclusionExpressionStr, final Set<Qualifier> registeredQualifiers) {
+    public Expression createQualifierExpression() {
+        String qualifierInclusionExpressionStr = PropertyUtils.getString(PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, null, configuration);
         if (qualifierInclusionExpressionStr == null) {
             return new TrivialExpression();
-        } else {
-            AtomicOperandValidator operandValidator = new AtomicOperandValidator() {
-                public void validateOperandName(String operandName) {
-                    if (!registeredQualifiers.contains(new Qualifier(operandName))) {
-                        throw new IllegalArgumentException("Qualifier " + operandName + " in the qualifier inclusion expression is not registered");
-                    }
-                }
-            };
-            ExpressionParser parser = new ExpressionParser(operandValidator);
-            return parser.parse(qualifierInclusionExpressionStr);
         }
+        final Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+        AtomicOperandValidator operandValidator = new AtomicOperandValidator() {
+            public void validateOperandName(String operandName) {
+                if (!registeredQualifiers.contains(new Qualifier(operandName))) {
+                    throw new IllegalArgumentException("Qualifier " + operandName + " in the qualifier inclusion expression is not registered");
+                }
+            }
+        };
+        ExpressionParser parser = new ExpressionParser(operandValidator);
+        return parser.parse(qualifierInclusionExpressionStr);
     }
 
 
