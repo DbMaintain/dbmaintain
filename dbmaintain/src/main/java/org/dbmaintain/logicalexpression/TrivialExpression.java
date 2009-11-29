@@ -6,7 +6,13 @@ package org.dbmaintain.logicalexpression;
  */
 public class TrivialExpression implements Expression {
 
+    private final boolean outcome;
+
+    public TrivialExpression(boolean outcome) {
+        this.outcome = outcome;
+    }
+
     public boolean evaluate(OperandResolver operandResolver) {
-        return true;
+        return outcome;
     }
 }

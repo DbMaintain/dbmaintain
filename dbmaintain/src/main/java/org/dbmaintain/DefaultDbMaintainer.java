@@ -29,7 +29,6 @@ import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.logicalexpression.Expression;
 
 import java.util.*;
 
@@ -115,11 +114,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected boolean allowOutOfSequenceExecutionOfPatchScripts;
 
     /**
-     * Scripts with one of these qualifiers are not executed
-     */
-    protected Expression qualifierInclusionExpression;
-
-    /**
      * Indicates if foreign key and not null constraints should removed after updating the database
      * structure
      */
@@ -149,19 +143,20 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param useScriptFileLastModificationDates if true, the dbmaintainer decides that a script hasn't changed if the
      * last modification date is identical to the one of the last update, without looking at the contents of the script
      * @param allowOutOfSequenceExecutionOfPatchScripts if true, patch scripts can be executed out-of-sequence
-     * @param qualifierInclusionExpression expression that defines whether scripts are executed or not according to their qualifiers  
-     * @param cleanDb If true, the data from all tables will be removed before performing any updates
-     * @param disableConstraints If true, all foreign key and not null constraints will be automatically disabled
+     * @param cleanDb if true, the data from all tables is removed before performing any updates
+     * @param disableConstraints if true, all foreign key and not null constraints are automatically disabled
      * or removed after each update
-     * @param updateSequences If true, the value of all sequences will be set to a minimal value after each update
-     * @param dbClearer Helper object that can clear the database, i.e. drop all database objects
-     * @param dbCleaner Helper object that can clean the database, i.e. remove the data from all tables
-     * @param constraintsDisabler Helper object that can disable or remove all foreign key or not null constraints
-     * @param sequenceUpdater Helper object that can update all sequences to a minimal value
+     * @param updateSequences if true, the value of all sequences is set to a minimal value after each update
+     * @param dbClearer helper object that clears the database, i.e. drop all database objects
+     * @param dbCleaner helper object that cleans the database, i.e. remove the data from all tables
+     * @param constraintsDisabler helper object that disables or removes all foreign key or not null constraints
+     * @param sequenceUpdater helper object that updates all sequences to a minimal value
+     * @param scriptUpdatesFormatter helper object that formats the script updates in a well-readable format for the user
+     * @param sqlHandler helper object that performs sql statements on the database
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-               Expression qualifierInclusionExpression, boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
+               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
                SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
 
         this.scriptRunner = scriptRunner;
@@ -171,7 +166,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.hasItemsToPreserve = hasItemsToPreserve;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
-        this.qualifierInclusionExpression = qualifierInclusionExpression;
         this.cleanDb = cleanDb;
         this.disableConstraints = disableConstraints;
         this.updateSequences = updateSequences;
@@ -301,7 +295,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public ScriptUpdates getScriptUpdates() {
         return new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates,
-                allowOutOfSequenceExecutionOfPatchScripts, qualifierInclusionExpression).calculateScriptUpdates();
+                allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
     }
 
 
@@ -455,7 +449,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * as successful. If a script execution fails, the script execution is registered in the database
      * and marked as unsuccessful.
      *
-     * @param scriptUpdates
+     * @param scriptUpdates the script updates to be executed
      */
     protected void executeScriptUpdates(SortedSet<ScriptUpdate> scriptUpdates) {
         for (ScriptUpdate scriptUpdate : scriptUpdates) {
@@ -471,7 +465,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * as successful. If a script execution fails, the script execution is registered in the database
      * and marked as unsuccessful.
      *
-     * @param scripts
+     * @param scripts the scripts to be executed on the database
      */
     protected void executeScripts(SortedSet<Script> scripts) {
         for (Script script : scripts) {

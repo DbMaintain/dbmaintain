@@ -35,7 +35,9 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     private Boolean autoCreateDbMaintainScriptsTable;
     private Boolean allowOutOfSequenceExecutionOfPatches;
     private String qualifiers;
-    private String qualifierInclusionExpression;
+    private String includedQualifiers;
+    private String excludedQualifiers;
+    private String qualifierExpression;
     private Boolean cleanDb;
     private Boolean disableConstraints;
     private Boolean updateSequences;
@@ -53,7 +55,9 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
         addTaskConfiguration(configuration, PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
-        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, qualifierInclusionExpression);
+        addTaskConfiguration(configuration, PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_EXPRESSION, qualifierExpression);
         addTaskConfiguration(configuration, PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
         addTaskConfiguration(configuration, PROPERTY_CLEANDB, cleanDb);
         addTaskConfiguration(configuration, PROPERTY_DISABLE_CONSTRAINTS, disableConstraints);
@@ -110,12 +114,30 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     }
 
     /**
+     * Optional comma-separated list of script qualifiers. All included qualifiers must be registered using the
+     * qualifiers property. Only scripts which are qualified with one of the included qualifiers will be executed.
+     * @param includedQualifiers the included script qualifiers
+     */
+    public void setIncludedQualifiers(String includedQualifiers) {
+        this.includedQualifiers = includedQualifiers;
+    }
+
+    /**
      * Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the
      * qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed.
-     * @param qualifierInclusionExpression the excluded script qualifiers
+     * @param excludedQualifiers the excluded script qualifiers
      */
-    public void setQualifierInclusionExpression(String qualifierInclusionExpression) {
-        this.qualifierInclusionExpression = qualifierInclusionExpression;
+    public void setExcludedQualifiers(String excludedQualifiers) {
+        this.excludedQualifiers = excludedQualifiers;
+    }
+
+    /**
+     * Optional logical expression using &&, ||, ! operators and brackets (), that uses qualifiers as literals. e.g.
+     * (q1 || q2) && ! q3
+     * @param qualifierExpression the qualifier expression
+     */
+    public void setQualifierExpression(String qualifierExpression) {
+        this.qualifierExpression = qualifierExpression;
     }
 
     /**

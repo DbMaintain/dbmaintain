@@ -20,6 +20,7 @@ import static junit.framework.Assert.assertTrue;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang.StringUtils.*;
+import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
@@ -36,6 +37,7 @@ import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,12 +58,13 @@ public class DbMaintainIntegrationTest {
         INCREMENTAL_1_RENAMED("01_incremental/01_incremental_1_renamed.sql"),
         INCREMENTAL_2("01_incremental/02_incremental_2.sql"),
         INCREMENTAL_3("01_incremental/03_incremental_3.sql"),
+        INCREMENTAL_4("02_incremental/04_incremental_4.sql"),
 
         INCREMENTAL_2_SPECIAL_QUALIFIER("01_incremental/02_#special.sql"),
         INCREMENTAL_2_UNKNOWN_QUALIFIER("01_incremental/02_#unknown.sql"),
         INCREMENTAL_1_QUALIFIER1("01_incremental/01_#q1.sql"),
         INCREMENTAL_2_QUALIFIER2("01_incremental/02_#q2.sql"),
-        INCREMENTAL_3_QUALIFIER1_QUALIFIER2("01_incremental/03_#q1_q2.sql"),
+        INCREMENTAL_3_QUALIFIER1_QUALIFIER2("01_incremental/03_#q1_#q2.sql"),
 
         REPEATABLE("repeatable/repeatable.sql"),
         REPEATABLE_RENAMED("repeatable/repeatable_renamed.sql"),
@@ -553,33 +556,59 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testQualifiers1() {
+    public void testIncludedAndExcludedQualifiers() {
+        enableFromScratch();
+        createScripts(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2, INCREMENTAL_4);
+
+        setIncludedAndExcludedQualifiers("", "Q1");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_4);
+        assertScriptsNotExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+
+        setIncludedAndExcludedQualifiers("Q1", "");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+        assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_4);
+
+        setIncludedAndExcludedQualifiers("Q1", "Q2");
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1);
+        assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2, INCREMENTAL_4);
+    }
+
+    @Test @Ignore // The qualifier expression functionality has been removed
+    public void testQualifiersWithQualifierExpression() {
         enableFromScratch();
         createScripts(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
 
-        setQualifierInclusionExpression("Q1 || Q2");
+        setQualifierExpression("Q1 || Q2");
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
 
-        setQualifierInclusionExpression("Q1 && Q2");
+        setQualifierExpression("Q1 && Q2");
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+        assertScriptsNotExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2);
 
-        setQualifierInclusionExpression("Q1 && !Q2");
+        setQualifierExpression("Q1 && !Q2");
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1);
+        assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
 
-        setQualifierInclusionExpression("Q1 && Q2 || Q2");
+        setQualifierExpression("(Q1 && Q2) || Q2");
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+        assertScriptsNotExecuted(INCREMENTAL_1_QUALIFIER1);
 
-        setQualifierInclusionExpression("Q1 || Q1 && Q2");
+        setQualifierExpression("Q1 || Q1 && Q2");
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
+        assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2);
 
-        setQualifierInclusionExpression("Q1 && (Q1 || Q2)");
+        setQualifierExpression("Q1 && (Q1 || Q2)");
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2);
+        assertScriptsNotExecuted(INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
     }
 
     @Test(expected = DbMaintainException.class)
@@ -618,8 +647,13 @@ public class DbMaintainIntegrationTest {
         configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
     }
 
-    private void setQualifierInclusionExpression(String qualifierInclusionExpression) {
-        configuration.put(DbMaintainProperties.PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, qualifierInclusionExpression);
+    private void setQualifierExpression(String qualifierExpression) {
+        configuration.put(DbMaintainProperties.PROPERTY_QUALIFIER_EXPRESSION, qualifierExpression);
+    }
+
+    private void setIncludedAndExcludedQualifiers(String includedQualifiers, String excludedQualifiers) {
+        configuration.put(DbMaintainProperties.PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        configuration.put(DbMaintainProperties.PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
     }
 
     private void assertMessageContains(String message, String... subStrings) {
@@ -776,8 +810,7 @@ public class DbMaintainIntegrationTest {
         String shortFileName = getShortFileName(scriptName);
         if (isIndexedFileName(shortFileName))
             shortFileName = substringAfter(shortFileName, "_");
-        if (shortFileName.startsWith("#"))
-            shortFileName = substringAfter(shortFileName, "#");
+        shortFileName = StringUtils.remove(shortFileName, "#");
         return shortFileName;
     }
 
@@ -811,6 +844,7 @@ public class DbMaintainIntegrationTest {
 
     private void createScript(String scriptName, String scriptContent) {
         File scriptFile = new File(scriptsLocation.getAbsolutePath(), scriptName);
+        //noinspection ResultOfMethodCallIgnored
         scriptFile.getParentFile().mkdirs();
         writeContentToFile(scriptFile, scriptContent);
     }
@@ -825,6 +859,7 @@ public class DbMaintainIntegrationTest {
 
     private void removeScript(TestScript script) {
         File scriptFile = new File(scriptsLocation.getAbsolutePath(), script.scriptName);
+        //noinspection ResultOfMethodCallIgnored
         scriptFile.delete();
     }
 

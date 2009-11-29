@@ -1,6 +1,7 @@
 package org.dbmaintain.script.impl;
 
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.QualifierEvaluator;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
@@ -12,11 +13,14 @@ import java.util.*;
  */
 public class ScriptRepository {
 
-    protected SortedSet<Script> indexedScripts;
-    protected SortedSet<Script> repeatableScripts;
-    protected SortedSet<Script> postProcessingScripts;
+    protected final SortedSet<Script> indexedScripts = new TreeSet<Script>();
+    protected final SortedSet<Script> repeatableScripts = new TreeSet<Script>();
+    protected final SortedSet<Script> postProcessingScripts = new TreeSet<Script>();
 
-    public ScriptRepository(Set<ScriptLocation> scriptLocations) {
+    private final QualifierEvaluator qualifierEvaluator;
+
+    public ScriptRepository(Set<ScriptLocation> scriptLocations, QualifierEvaluator qualifierEvaluator) {
+        this.qualifierEvaluator = qualifierEvaluator;
         initScripts(scriptLocations);
     }
 
@@ -54,23 +58,25 @@ public class ScriptRepository {
     protected void initScripts(Set<ScriptLocation> scriptLocations) {
         assertNoDuplicateScripts(scriptLocations);
 
-        indexedScripts = new TreeSet<Script>();
-        repeatableScripts = new TreeSet<Script>();
-        postProcessingScripts = new TreeSet<Script>();
-
         for (ScriptLocation scriptLocation : scriptLocations) {
             for (Script script : scriptLocation.getScripts()) {
-                if (script.isPostProcessingScript()) {
-                    postProcessingScripts.add(script);
-                } else if (script.isIncremental()) {
-                    indexedScripts.add(script);
-                } else { // Repeatable script
-                    repeatableScripts.add(script);
+                if (qualifierEvaluator.evaluate(script.getQualifiers())) {
+                    initScript(script);
                 }
             }
         }
 
         assertNoDuplicateScriptIndexes();
+    }
+
+    private void initScript(Script script) {
+        if (script.isPostProcessingScript()) {
+            postProcessingScripts.add(script);
+        } else if (script.isIncremental()) {
+            indexedScripts.add(script);
+        } else { // Repeatable script
+            repeatableScripts.add(script);
+        }
     }
 
 

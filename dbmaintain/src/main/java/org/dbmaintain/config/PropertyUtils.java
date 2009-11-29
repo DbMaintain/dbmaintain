@@ -17,6 +17,7 @@ package org.dbmaintain.config;
 
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReflectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +100,7 @@ public class PropertyUtils {
             }
             return new ArrayList<String>(0);
         }
-        String[] splitValues = values.split(",");
+        String[] splitValues = StringUtils.split(values, ",");
         List<String> result = new ArrayList<String>(splitValues.length);
         for (String value : splitValues) {
             result.add(value.trim());

@@ -18,7 +18,6 @@ package org.dbmaintain.script;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.script.impl.ScriptRepository;
-import org.dbmaintain.logicalexpression.Expression;
 
 import java.util.*;
 
@@ -38,7 +37,6 @@ public class ScriptUpdatesAnalyzer {
     private final ExecutedScriptInfoSource executedScriptInfoSource;
     private final boolean useScriptFileLastModificationDates;
     private final boolean allowOutOfSequenceExecutionOfPatchScripts;
-    private final Expression qualifierInclusionExpression;
 
     /* Sets that contain the result of the analysis: each set contains a specific type of script updates */
     private final SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
@@ -65,16 +63,13 @@ public class ScriptUpdatesAnalyzer {
      * @param useScriptFileLastModificationDates whether the last modification date of the scripts can be used to determine
      * if a script has changed.
      * @param allowOutOfSequenceExecutionOfPatchScripts whether scripts marked as patch scripts may be executed out-of-sequence
-     * @param qualifierInclusionExpression expression that defines whether scripts are executed or not according to their qualifiers
      */
     public ScriptUpdatesAnalyzer(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-                         boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-                         Expression qualifierInclusionExpression) {
+                         boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts) {
         this.scriptRepository = scriptRepository;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
-        this.qualifierInclusionExpression = qualifierInclusionExpression;
     }
 
     /**
@@ -130,7 +125,7 @@ public class ScriptUpdatesAnalyzer {
 
         // Look for newly added scripts. A script is new if it's not mapped to an executed script in the scriptExecuteScriptMap,
         // which also contains the scripts that were renamed
-        for (Script script : getAllIncludedScripts()) {
+        for (Script script : scriptRepository.getAllScripts()) {
             if (!scriptExecutedScriptMap.containsKey(script)) {
                 registerScriptAddition(script);
             }
@@ -309,7 +304,7 @@ public class ScriptUpdatesAnalyzer {
     protected Map<String, Script> getScriptNameScriptMap() {
         if (scriptNameScriptMap == null) {
             scriptNameScriptMap = new HashMap<String, Script>();
-            for (Script script : getAllIncludedScripts()) {
+            for (Script script : scriptRepository.getAllScripts()) {
                 scriptNameScriptMap.put(script.getFileName(), script);
             }
         }
@@ -322,7 +317,7 @@ public class ScriptUpdatesAnalyzer {
     protected Map<String, Set<Script>> getCheckSumScriptMap() {
         if (checkSumScriptMap == null) {
             checkSumScriptMap = new HashMap<String, Set<Script>>();
-            for (Script script : getAllIncludedScripts()) {
+            for (Script script : scriptRepository.getAllScripts()) {
                 Set<Script> scriptsWithCheckSum = checkSumScriptMap.get(script.getCheckSum());
                 if (scriptsWithCheckSum == null) {
                     scriptsWithCheckSum = new HashSet<Script>();
@@ -346,17 +341,6 @@ public class ScriptUpdatesAnalyzer {
             }
         }
         return result;
-    }
-
-
-    protected SortedSet<Script> getAllIncludedScripts() {
-        SortedSet<Script> scripts = new TreeSet<Script>();
-        for (Script script : scriptRepository.getAllScripts()) {
-            if (qualifierInclusionExpression.evaluate(script.getQualifierOperandResolver())) {
-                scripts.add(script);
-            }
-        }
-        return scripts;
     }
 
 

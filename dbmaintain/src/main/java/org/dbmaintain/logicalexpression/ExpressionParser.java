@@ -21,7 +21,7 @@ public class ExpressionParser {
     }
 
     private Expression parse(List<String> expressionTokens) {
-        return evaluate(new TrivialExpression(), expressionTokens);
+        return evaluate(new TrivialExpression(true), expressionTokens);
     }
 
     private Expression evaluate(Expression currentExpression, List<String> expressionTokens) {

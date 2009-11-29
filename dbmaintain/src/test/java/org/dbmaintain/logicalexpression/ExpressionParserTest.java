@@ -1,6 +1,7 @@
 package org.dbmaintain.logicalexpression;
 
 import org.junit.Test;
+import org.junit.Ignore;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertFalse;
 
@@ -45,6 +46,14 @@ public class ExpressionParserTest {
     @Test
     public void notExpression() {
         assertTrue(evaluate("!F"));
+    }
+
+    @Test @Ignore
+    // TODO an expression with multiple parts not organized with brackets is evaluated right-to-left: the opposite of
+    // TODO what users reasonably expect. This test expects evaluation left-to-right.
+    // TODO Solve this either by changing the evaluation order or, even better, by making sure && takes preference over ||
+    public void combinedExpression() {
+        assertFalse(evaluate("T || T && F"));
     }
 
     @Test

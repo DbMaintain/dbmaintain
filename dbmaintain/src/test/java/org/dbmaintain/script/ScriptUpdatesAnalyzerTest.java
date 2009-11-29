@@ -15,20 +15,16 @@
  */
 package org.dbmaintain.script;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import org.junit.Test;
+import static org.dbmaintain.script.ScriptUpdateType.*;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.dbmaintain.util.TestUtils;
-import org.dbmaintain.script.impl.ScriptRepository;
-import static org.dbmaintain.script.ScriptUpdateType.*;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.logicalexpression.Expression;
-import org.dbmaintain.logicalexpression.ExpressionParser;
-import org.dbmaintain.logicalexpression.AtomicOperandValidator;
-import org.dbmaintain.logicalexpression.TrivialExpression;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * @author Filip Neven
@@ -49,14 +45,11 @@ public class ScriptUpdatesAnalyzerTest {
     private static final Script REPEATABLE_2 = createScript("repeatable2.sql", false);
     private static final Script REPEATABLE_2_UPDATED = createScript("repeatable2.sql", true);
     private static final Script PATCH_1 = createScript("1_#PATCH_patch1.sql", false);
-    private static final Script QUALIFIED_1 = createScript("2_#QUALIFIER.sql", false);
     private static final Script POSTPROCESSING_1 = createScript("postprocessing/1_postprocessing1.sql", false);
     private static final Script POSTPROCESSING_2 = createScript("postprocessing/2_postprocessing2.sql", false);
     private static final Script POSTPROCESSING_3 = createScript("postprocessing/3_postprocessing3.sql", false);
     private static final Script POSTPROCESSING_3_RENAMED_WITH_INDEX_1 = createRenamedScript(POSTPROCESSING_3, "postprocessing/1_postprocessing3.sql");
     private static final Script POSTPROCESSING_1_UPDATED = createScript("postprocessing/1_postprocessing1.sql", true);
-
-    private static final Qualifier QUALIFIER1 = new Qualifier("qualifier");
 
     ScriptUpdates scriptUpdates;
 
@@ -137,18 +130,6 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void newScriptWithExcludedQualifier() {
-        executedScripts(INDEXED_1);
-        scripts(INDEXED_1, QUALIFIED_1);
-        // If qualifier1 is not excluded, the addition of the qualified script should be registered
-        calculateScriptUpdates();
-        assertRegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, QUALIFIED_1);
-        // If qualifier1 is excluded, the addition of the qualified should not be registered
-        calculateScriptUpdates("!qualifier");
-        assertNotARegularScriptUpdate(HIGHER_INDEX_SCRIPT_ADDED, QUALIFIED_1);
-    }
-
-    @Test
     public void newPostprocessingScript() {
         executedScripts(POSTPROCESSING_2);
         scripts(POSTPROCESSING_1, POSTPROCESSING_2);
@@ -216,9 +197,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void scripts(Script... scripts) {
-        for (Script script : scripts) {
-            this.scripts.add(script);
-        }
+        this.scripts.addAll(Arrays.asList(scripts));
     }
 
     private void executedScripts(Script... scripts) {
@@ -229,10 +208,6 @@ public class ScriptUpdatesAnalyzerTest {
 
     private void assertRegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
         assertTrue(scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
-    }
-
-    private void assertNotARegularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
-        assertFalse(scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
     }
 
     private void assertIrregularScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
@@ -272,30 +247,13 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void calculateScriptUpdates() {
-        calculateScriptUpdates(true, null);
+        calculateScriptUpdates(true);
     }
 
     private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
-        calculateScriptUpdates(allowOutOfSequenceExecutionOfPatchScripts, null);
-    }
-
-    private void calculateScriptUpdates(String qualifierInclusionExpression) {
-        calculateScriptUpdates(true, qualifierInclusionExpression);
-    }
-
-    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts, String qualifierInclusionExpressionStr) {
         scriptUpdates = new ScriptUpdatesAnalyzer(TestUtils.getScriptRepository(scripts),
-                TestUtils.getExecutedScriptInfoSource(executedScripts), true, allowOutOfSequenceExecutionOfPatchScripts,
-                getQualifierInclusionExpression(qualifierInclusionExpressionStr)).calculateScriptUpdates();
-    }
-
-    private Expression getQualifierInclusionExpression(String qualifierInclusionExpressionStr) {
-        if (qualifierInclusionExpressionStr == null) return new TrivialExpression();
-        AtomicOperandValidator operandValidator = new AtomicOperandValidator() {
-            public void validateOperandName(String operandName) {
-            }
-        };
-        return new ExpressionParser(operandValidator).parse(qualifierInclusionExpressionStr);
+                TestUtils.getExecutedScriptInfoSource(executedScripts), true, allowOutOfSequenceExecutionOfPatchScripts
+        ).calculateScriptUpdates();
     }
 
     private static Script createScript(String scriptName, boolean modified) {

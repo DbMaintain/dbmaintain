@@ -17,15 +17,14 @@ package org.dbmaintain.script;
 
 import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringUtils.*;
-import static org.apache.commons.lang.StringUtils.substringAfter;
-
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.util.DbMaintainException;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import org.dbmaintain.logicalexpression.OperandResolver;
+import org.dbmaintain.util.DbMaintainException;
 
-import java.util.*;
-import static java.util.Collections.unmodifiableSet;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A class representing a script file and it's content.
@@ -137,10 +136,6 @@ public class Script implements Comparable<Script> {
     }
 
 
-    /**
-     *
-     * @param fileName
-     */
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -214,10 +209,8 @@ public class Script implements Comparable<Script> {
      * @return True if the contents of this script are equal to the given one, false otherwise
      */
     public boolean isScriptContentEqualTo(Script other, boolean useLastModificationDates) {
-        if (useLastModificationDates && this.getFileLastModifiedAt().equals(other.getFileLastModifiedAt())) {
-            return true;
-        }
-        return this.getCheckSum().equals(other.getCheckSum());
+        return useLastModificationDates && this.getFileLastModifiedAt().equals(other.getFileLastModifiedAt())
+                || this.getCheckSum().equals(other.getCheckSum());
     }
 
 
@@ -400,10 +393,9 @@ public class Script implements Comparable<Script> {
      *
      * @param pathPart             The name to check, not null
      * @param targetDatabasePrefix The prefix to look for, not null
-     * @param fixScriptSuffix      The suffix to look for, not null
      * @return The target database name, null if none found
      */
-    protected String extractTargetDatabase(String pathPart, String targetDatabasePrefix, String fixScriptSuffix) {
+    protected String extractTargetDatabase(String pathPart, String targetDatabasePrefix) {
         Long index = extractIndex(pathPart);
         String pathPartAfterIndex;
         if (index == null) {
@@ -424,10 +416,8 @@ public class Script implements Comparable<Script> {
      * @return True if the given script is a post processing script according to the script source configuration
      */
     protected boolean isPostProcessingScript(String postProcessingScriptDirName) {
-        if (isEmpty(postProcessingScriptDirName)) {
-            return false;
-        }
-        return fileName.startsWith(postProcessingScriptDirName + '/') || fileName.startsWith(postProcessingScriptDirName + '\\');
+        return !isEmpty(postProcessingScriptDirName) &&
+                (fileName.startsWith(postProcessingScriptDirName + '/') || fileName.startsWith(postProcessingScriptDirName + '\\'));
     }
 
 
@@ -477,22 +467,4 @@ public class Script implements Comparable<Script> {
         return fileName;
     }
 
-    /**
-     * @return {@link OperandResolver} for evaluating the {@link org.dbmaintain.logicalexpression.Expression} that defines
-     * whether this script must be executed or not.
-     */
-    public OperandResolver getQualifierOperandResolver() {
-        return new QualifierOperandResolver();
-    }
-
-    /**
-     * {@link OperandResolver} for evaluating the {@link org.dbmaintain.logicalexpression.Expression}s that defines whether
-     * this script must be executed or not.
-     */
-    private class QualifierOperandResolver implements OperandResolver {
-
-        public boolean resolveOperand(String operandName) {
-            return qualifiers.contains(new Qualifier(operandName));
-        }
-    }
 }

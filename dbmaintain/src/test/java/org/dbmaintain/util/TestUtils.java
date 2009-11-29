@@ -25,17 +25,12 @@ import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
-import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContentHandle;
-import org.dbmaintain.script.Qualifier;
+import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.DefaultScriptRunner;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
 import org.dbmaintain.script.impl.ScriptRepository;
-import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.scriptparser.impl.DefaultScriptParser;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
@@ -163,7 +158,17 @@ public class TestUtils {
                 return scriptsToReturn;
             }
         };
-        return new ScriptRepository(asSet(scriptLocation));
+        QualifierEvaluator qualifierEvaluator = getTrivialQualifierEvaluator();
+        return new ScriptRepository(asSet(scriptLocation), qualifierEvaluator);
+    }
+
+    public static QualifierEvaluator getTrivialQualifierEvaluator() {
+        return new QualifierEvaluator() {
+            @Override
+            public boolean evaluate(Set<Qualifier> qualifiers) {
+                return true;
+            }
+        };
     }
 
     public static ExecutedScriptInfoSource getExecutedScriptInfoSource(final SortedSet<ExecutedScript> executedScripts) {

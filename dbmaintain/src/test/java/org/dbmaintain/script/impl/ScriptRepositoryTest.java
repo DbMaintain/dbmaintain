@@ -15,14 +15,15 @@
  */
 package org.dbmaintain.script.impl;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertEquals;
 import org.dbmaintain.script.Script;
-import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.dbmaintain.util.TestUtils.createScript;
+import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import org.dbmaintain.util.DbMaintainException;
+import static org.dbmaintain.util.TestUtils.createScript;
+import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.SortedSet;
 
@@ -71,7 +72,7 @@ public class ScriptRepositoryTest {
 
     @Test
     public void getScripts() {
-        ScriptRepository scriptRepository = new ScriptRepository(asSet(scriptLocation1, scriptLocation2));
+        ScriptRepository scriptRepository = new ScriptRepository(asSet(scriptLocation1, scriptLocation2), getTrivialQualifierEvaluator());
 
         assertEquals(asSortedSet(indexed1, indexed2), scriptRepository.getIndexedScripts());
         assertEquals(asSortedSet(repeatable1, repeatable2), scriptRepository.getRepeatableScripts());
@@ -91,7 +92,7 @@ public class ScriptRepositoryTest {
             }
         };
 
-        new ScriptRepository(asSet(scriptLocation1, location));
+        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
     }
 
     @Test(expected = DbMaintainException.class)
@@ -108,7 +109,7 @@ public class ScriptRepositoryTest {
             }
         };
 
-        new ScriptRepository(asSet(scriptLocation1, location));
+        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
     }
     
 }

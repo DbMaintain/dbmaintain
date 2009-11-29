@@ -23,16 +23,11 @@ import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.config.PropertyUtils.*;
+import static org.dbmaintain.config.PropertyUtils.getStringList;
 import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.format.ScriptUpdatesFormatter;
-import org.dbmaintain.logicalexpression.AtomicOperandValidator;
-import org.dbmaintain.logicalexpression.Expression;
-import org.dbmaintain.logicalexpression.ExpressionParser;
-import org.dbmaintain.logicalexpression.TrivialExpression;
-import org.dbmaintain.script.Qualifier;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptRunner;
+import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.ArchiveScriptLocation;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
@@ -69,6 +64,8 @@ public class PropertiesDbMaintainConfigurer {
     protected Map<String, DbSupport> nameDbSupportMap;
 
     protected DbSupport defaultDbSupport;
+
+    protected Set<Qualifier> registeredQualifiers;
 
     /**
      * @param configuration the properties that define the entire configuration of dbmaintain
@@ -107,7 +104,6 @@ public class PropertiesDbMaintainConfigurer {
         boolean hasItemsToPreserve = getItemsToPreserve().size() > 0 || getSchemasToPreserve().size() > 0;
         boolean useScriptFileLastModificationDates = PropertyUtils.getBoolean(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, configuration);
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
-        Expression qualifierInclusionExpression = createQualifierExpression();
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, configuration);
 
@@ -120,30 +116,41 @@ public class PropertiesDbMaintainConfigurer {
         Class<DbMaintainer> clazz = ConfigUtils.getConfiguredClass(DbMaintainer.class, configuration);
         return createInstanceOfType(clazz, false,
                 new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class,
-                        boolean.class, Expression.class, boolean.class, boolean.class, boolean.class, 
+                        boolean.class, boolean.class, boolean.class, boolean.class,
                         DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class, ScriptUpdatesFormatter.class, SQLHandler.class},
                 new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
-                        allowOutOfSequenceExecutionOfPatchScripts, qualifierInclusionExpression, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
+                        allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
                         dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
     }
 
-    public Expression createQualifierExpression() {
-        String qualifierInclusionExpressionStr = PropertyUtils.getString(PROPERTY_QUALIFIER_INCLUSION_EXPRESSION, null, configuration);
-        if (qualifierInclusionExpressionStr == null) {
-            return new TrivialExpression();
-        }
-        final Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
-        AtomicOperandValidator operandValidator = new AtomicOperandValidator() {
-            public void validateOperandName(String operandName) {
-                if (!registeredQualifiers.contains(new Qualifier(operandName))) {
-                    throw new IllegalArgumentException("Qualifier " + operandName + " in the qualifier inclusion expression is not registered");
-                }
-            }
-        };
-        ExpressionParser parser = new ExpressionParser(operandValidator);
-        return parser.parse(qualifierInclusionExpressionStr);
+    public QualifierEvaluator createQualifierEvaluator() {
+        Set<Qualifier> includedQualifiers = createQualifiers(getStringList(PROPERTY_INCLUDED_QUALIFIERS, configuration, false));
+        ensureQualifiersRegistered(includedQualifiers);
+        Set<Qualifier> excludedQualifiers = createQualifiers(getStringList(PROPERTY_EXCLUDED_QUALIFIERS, configuration, false));
+        ensureQualifiersRegistered(excludedQualifiers);
+        return new IncludeExcludeQualifierEvaluator(includedQualifiers, excludedQualifiers);
     }
 
+    protected Set<Qualifier> createQualifiers(List<String> qualifierNames) {
+        Set<Qualifier> qualifiers = new HashSet<Qualifier>(qualifierNames.size());
+        for (String qualifierName : qualifierNames) {
+            qualifiers.add(new Qualifier(qualifierName));
+        }
+        return qualifiers;
+    }
+
+    protected void ensureQualifiersRegistered(Set<Qualifier> qualifiers) {
+        for (Qualifier qualifier : qualifiers)
+            if (!getRegisteredQualifiers().contains(qualifier))
+                throw new IllegalArgumentException("Qualifier " + qualifier + " is not registered");
+    }
+
+    protected Set<Qualifier> getRegisteredQualifiers() {
+        if (registeredQualifiers == null) {
+            registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+        }
+        return registeredQualifiers;
+    }
 
     public ScriptRunner createScriptRunner() {
         Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap = createDatabaseDialectScriptParserFactoryMap();
@@ -186,7 +193,8 @@ public class PropertiesDbMaintainConfigurer {
         for (String scriptLocationIndicator : scriptLocationIndicators) {
             scriptLocations.add(createScriptLocation(scriptLocationIndicator));
         }
-        return new ScriptRepository(scriptLocations);
+        QualifierEvaluator qualifierEvaluator = createQualifierEvaluator();
+        return new ScriptRepository(scriptLocations, qualifierEvaluator);
     }
 
 
@@ -220,9 +228,7 @@ public class PropertiesDbMaintainConfigurer {
         }
     }
 
-
     public ExecutedScriptInfoSource createExecutedScriptInfoSource() {
-
         boolean autoCreateExecutedScriptsTable = PropertyUtils.getBoolean(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, configuration);
         String executedScriptsTableName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration));
         String fileNameColumnName = getDefaultDbSupport().toCorrectCaseIdentifier(getString(PROPERTY_FILE_NAME_COLUMN_NAME, configuration));
@@ -250,16 +256,6 @@ public class PropertiesDbMaintainConfigurer {
                         executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, getDefaultDbSupport(),
                         sqlHandler, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptsDirname});
     }
-
-
-    protected Set<Qualifier> createQualifiers(List<String> qualifierNames) {
-        Set<Qualifier> qualifiers = new HashSet<Qualifier>(qualifierNames.size());
-        for (String qualifierName : qualifierNames) {
-            qualifiers.add(new Qualifier(qualifierName));
-        }
-        return qualifiers;
-    }
-
 
     public DBCleaner createDbCleaner() {
         Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve();
@@ -345,7 +341,7 @@ public class PropertiesDbMaintainConfigurer {
 
 
     /**
-     * Gets the list of items to preserve. The case is correct if necesSary. Quoting an identifier
+     * Gets the list of items to preserve. The case is corrected if necessary. Quoting an identifier
      * makes it case sensitive. If requested, the identifiers will be qualified with the default schema name if no
      * schema name is used as prefix.
      *
