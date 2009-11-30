@@ -163,8 +163,7 @@ public class TestUtils {
     }
 
     public static QualifierEvaluator getTrivialQualifierEvaluator() {
-        return new QualifierEvaluator() {
-            @Override
+        return new QualifierEvaluator() {     
             public boolean evaluate(Set<Qualifier> qualifiers) {
                 return true;
             }
