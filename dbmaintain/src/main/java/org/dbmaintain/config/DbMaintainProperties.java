@@ -226,6 +226,11 @@ public class DbMaintainProperties {
     public static final String PROPERTY_QUALIFIER_EXPRESSION = "dbMaintainer.qualifierExpression";
 
     /**
+     * Property indicating if updating the database from scratch is enabled
+     */
+    public static final String PROPERTY_SQL_PLUS_COMMAND = "dbMaintainer.sqlPlusScriptRunner.sqlPlusCommand";
+
+    /**
      * Private constructor to prevent instantiation
      */
     private DbMaintainProperties() {}

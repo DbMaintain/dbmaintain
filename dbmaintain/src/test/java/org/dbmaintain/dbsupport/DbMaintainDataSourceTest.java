@@ -15,15 +15,18 @@
  */
 package org.dbmaintain.dbsupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import org.junit.Test;
+import org.dbmaintain.launch.ant.Database;
 import org.junit.Before;
+import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import static org.dbmaintain.dbsupport.DbMaintainDataSource.createDataSource;
+import static org.dbmaintain.util.TestUtils.getHsqlDatabase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Filip Neven
@@ -32,33 +35,31 @@ import java.sql.SQLException;
  */
 public class DbMaintainDataSourceTest {
 
-    String url = "jdbc:hsqldb:mem:dbmaintain";
-    String driverClassName = "org.hsqldb.jdbcDriver";
-    String userName = "sa";
-    String password = "";
-    DataSource dataSource;
+    private Database database;
+    private DataSource dataSource;
 
 
     @Before
     public void setUp() {
-        dataSource = DbMaintainDataSource.createDataSource(driverClassName, url, userName, password);
+        database = getHsqlDatabase();
+        dataSource = createDataSource(database);
     }
 
     @Test
     public void testGetConnection() throws SQLException {
         Connection conn = dataSource.getConnection();
-        assertEquals(url, conn.getMetaData().getURL());        
+        assertEquals(database.getUrl(), conn.getMetaData().getURL());
     }
 
 
     @Test
     public void testDataSourceEqualsHashcode() {
-        DataSource otherDataSource = DbMaintainDataSource.createDataSource(driverClassName, url, userName, password);
+        DataSource otherDataSource = createDataSource(database);
         assertFalse(dataSource.equals(otherDataSource));
 
         // Check that the hashcode of two different instances differs. We check this with two other datasource instances,
         // since in very rare cases the hashcodes could be equal by coincidence.
-        DataSource yetAnotherDataSource = DbMaintainDataSource.createDataSource(driverClassName, url, userName, password);
+        DataSource yetAnotherDataSource = createDataSource(database);
         assertFalse(dataSource.hashCode() == otherDataSource.hashCode() && dataSource.hashCode() == yetAnotherDataSource.hashCode());
     }
 }

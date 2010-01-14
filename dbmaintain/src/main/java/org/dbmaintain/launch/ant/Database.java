@@ -19,10 +19,10 @@ package org.dbmaintain.launch.ant;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.util.List;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author Filip Neven
@@ -30,85 +30,97 @@ import java.util.Set;
  */
 public class Database {
 
-	private String name;
-	private boolean included = true;
-	private String dialect;
-	private String driverClassName;
-	private String url;
-	private String userName;
-	private String password;
-	private List<String> schemaNames;
+    private String name;
+    private boolean included = true;
+    private String dialect;
+    private String driverClassName;
+    private String url;
+    private String userName;
+    private String password;
+    private List<String> schemaNames;
 
     public Database() {
-	}
+        // needed for ant
+    }
 
-	public String getName() {
-		return name;
-	}
-	
+    public Database(String name, boolean included, String dialect, String driverClassName, String url, String userName, String password, List<String> schemaNames) {
+        this.name = name;
+        this.included = included;
+        this.dialect = dialect;
+        this.driverClassName = driverClassName;
+        this.url = url;
+        this.userName = userName;
+        this.password = password;
+        this.schemaNames = schemaNames;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public boolean getIncluded() {
         return included;
     }
 
     public String getDialect() {
-		return dialect;
-	}
+        return dialect;
+    }
 
-	public String getDriverClassName() {
-		return driverClassName;
-	}
+    public String getDriverClassName() {
+        return driverClassName;
+    }
 
-	public String getUrl() {
-		return url;
-	}
+    public String getUrl() {
+        return url;
+    }
 
-	public String getUserName() {
-		return userName;
-	}
+    public String getUserName() {
+        return userName;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public List<String> getSchemaNames() {
-		return schemaNames;
-	}
+    public List<String> getSchemaNames() {
+        return schemaNames;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
-	
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setIncluded(boolean included) {
         this.included = included;
     }
 
     public void setDialect(String dialect) {
-		this.dialect = dialect;
-	}
+        this.dialect = dialect;
+    }
 
-	public void setDriverClassName(String driverClassName) {
-		this.driverClassName = driverClassName;
-	}
+    public void setDriverClassName(String driverClassName) {
+        this.driverClassName = driverClassName;
+    }
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	
-	public void setSchemaNames(String schemaNamesCommaSeparated) {
-		if (schemaNamesCommaSeparated == null) {
-			schemaNames = emptyList();
-		} else {
-			String[] schemas = StringUtils.split(schemaNamesCommaSeparated, ',');
-			schemaNames = asList(schemas);
-		}
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setSchemaNames(String schemaNamesCommaSeparated) {
+        if (schemaNamesCommaSeparated == null) {
+            schemaNames = emptyList();
+        } else {
+            String[] schemas = StringUtils.split(schemaNamesCommaSeparated, ',');
+            schemaNames = asList(schemas);
+        }
+    }
 
 }

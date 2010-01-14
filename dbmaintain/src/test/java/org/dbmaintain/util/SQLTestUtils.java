@@ -15,16 +15,15 @@
  */
 package org.dbmaintain.util;
 
+import org.dbmaintain.dbsupport.DbSupport;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
-import org.dbmaintain.dbsupport.DbSupport;
-import org.apache.commons.dbutils.DbUtils;
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
@@ -160,8 +159,8 @@ public class SQLTestUtils {
             }
         }
     }
-    
-    
+
+
     /**
      * Executes the given update statement.
      *
@@ -299,6 +298,20 @@ public class SQLTestUtils {
      */
     public static boolean isEmpty(String tableName, DataSource dataSource) {
         return getItemAsLong("select count(1) from " + tableName, dataSource) == 0;
+    }
+
+    /**
+     * Asserts that a given table exists. An AssertionError is raised if it doesn't exist.
+     *
+     * @param tableName  The table name, not null
+     * @param dataSource The data source, not null
+     */
+    public static void assertTableExists(String tableName, DataSource dataSource) {
+        try {
+            getItemAsLong("select count(1) from " + tableName, dataSource);
+        } catch (Exception e) {
+            throw new AssertionError("Table " + tableName + " does not exist.");
+        }
     }
 
 

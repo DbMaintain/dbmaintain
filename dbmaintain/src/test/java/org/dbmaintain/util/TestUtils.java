@@ -19,12 +19,12 @@ import org.dbmaintain.clean.impl.DefaultDBCleaner;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbItemType;
-import org.dbmaintain.dbsupport.DbMaintainDataSource;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
+import org.dbmaintain.launch.ant.Database;
 import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.DefaultScriptRunner;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
@@ -34,41 +34,34 @@ import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.impl.DefaultSequenceUpdater;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 
 import javax.sql.DataSource;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import static java.util.Collections.singleton;
+import static org.dbmaintain.dbsupport.DbMaintainDataSource.createDataSource;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
- * todo javadoc
- *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class TestUtils {
+public abstract class TestUtils {
 
-    /**
-     * Private constructor to prevent instantiation
-     */
-    private TestUtils() {
-    }
 
     public static DbSupport getDbSupport() {
         return getDbSupport("PUBLIC");
     }
 
-
-    public static DbSupport getDbSupport(String... schemaNames) {
-        DataSource dataSource = getDataSource();
-        return new HsqldbDbSupport(null, dataSource, schemaNames[0], asSet(schemaNames), new DefaultSQLHandler(), null, null);
+    public static Database getHsqlDatabase() {
+        return new Database(null, true, null, "org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "", new ArrayList<String>());
     }
 
-
-    protected static DataSource getDataSource() {
-        return DbMaintainDataSource.createDataSource("org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "");
+    public static DbSupport getDbSupport(String... schemaNames) {
+        DataSource dataSource = createDataSource(getHsqlDatabase());
+        return new HsqldbDbSupport(null, dataSource, schemaNames[0], asSet(schemaNames), new DefaultSQLHandler(), null, null);
     }
 
 
@@ -78,16 +71,14 @@ public class TestUtils {
 
 
     public static DefaultDBCleaner getDefaultDBCleaner(DbSupport dbSupport) {
-        return new DefaultDBCleaner(getNameDbSupportMap(dbSupport),
-                Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), new DefaultSQLHandler());
+        return new DefaultDBCleaner(getNameDbSupportMap(dbSupport), Collections.<DbItemIdentifier>emptySet(), Collections.<DbItemIdentifier>emptySet(), new DefaultSQLHandler());
     }
 
 
     public static DefaultScriptRunner getDefaultScriptRunner(DbSupport dbSupport) {
         Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
         databaseDialectScriptParserClassMap.put("hsqldb", new DefaultScriptParserFactory(false));
-        return new DefaultScriptRunner(databaseDialectScriptParserClassMap, dbSupport, getNameDbSupportMap(dbSupport),
-                new DefaultSQLHandler());
+        return new DefaultScriptRunner(databaseDialectScriptParserClassMap, dbSupport, getNameDbSupportMap(dbSupport), new DefaultSQLHandler());
     }
 
 
@@ -114,7 +105,6 @@ public class TestUtils {
         dbNameDbSupportMap.put(null, dbSupport);
         return dbNameDbSupportMap;
     }
-
 
     public static Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType dbItemType, Set<String> itemsAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
         Set<DbItemIdentifier> itemIdentifiers = new HashSet<DbItemIdentifier>();
@@ -163,7 +153,7 @@ public class TestUtils {
     }
 
     public static QualifierEvaluator getTrivialQualifierEvaluator() {
-        return new QualifierEvaluator() {     
+        return new QualifierEvaluator() {
             public boolean evaluate(Set<Qualifier> qualifiers) {
                 return true;
             }

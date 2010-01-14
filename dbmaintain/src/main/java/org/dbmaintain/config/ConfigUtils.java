@@ -15,12 +15,10 @@
  */
 package org.dbmaintain.config;
 
-import java.util.Properties;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReflectionUtils;
+
+import java.util.Properties;
 
 /**
  * Class containing configuration related utilities
@@ -30,10 +28,6 @@ import org.dbmaintain.util.ReflectionUtils;
  */
 public class ConfigUtils {
 
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(ConfigUtils.class);
-
-    
     /**
      * Retrieves the concrete instance of the class with the given type as configured by the given <code>Configuration</code>.
      * Tries to retrieve a specific implementation first (propery key = fully qualified name of the interface

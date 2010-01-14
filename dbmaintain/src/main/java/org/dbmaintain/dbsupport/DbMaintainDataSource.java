@@ -15,6 +15,9 @@
  */
 package org.dbmaintain.dbsupport;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.launch.ant.Database;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
@@ -35,21 +38,24 @@ import java.sql.SQLException;
  */
 public class DbMaintainDataSource {
 
+    /* The logger instance for this class */
+    private static final Log logger = LogFactory.getLog(DbMaintainDataSource.class);
+
 
     /**
-     * Static factory that returns a datasource providing access to the database using the driver with the given driver
-     * classname, the given connection url, username and password
+     * Static factory that returns a data source providing access to the database using the driver with the given driver
+     * class name, the given connection url, user name and password
      *
-     * @param driverClassName The name of the JDBC driver
-     * @param url URL that points to the database
-     * @param userName database userName
-     * @param password database password
+     * @param database The database connection parameters, not null
      * @return a DataSource that gives access to the database
      */
-    public static DataSource createDataSource(String driverClassName, String url, String userName, String password) {
-        return (DataSource) Proxy.newProxyInstance(DbMaintainDataSource.class.getClassLoader(),
-                new Class<?>[] {DataSource.class},
-                new DbMaintainDataSourceInvocationHandler(driverClassName, url, userName, password));
+    public static DataSource createDataSource(Database database) {
+        String driverClassName = database.getDriverClassName();
+        String url = database.getUrl();
+        String userName = database.getUserName();
+        String password = database.getPassword();
+        logger.info("Creating data source. Driver: " + driverClassName + ", url: " + url + ", user: " + userName + ", password: <not shown>");
+        return (DataSource) Proxy.newProxyInstance(DbMaintainDataSource.class.getClassLoader(), new Class<?>[]{DataSource.class}, new DbMaintainDataSourceInvocationHandler(driverClassName, url, userName, password));
     }
 
 
@@ -78,8 +84,8 @@ public class DbMaintainDataSource {
          * is the only method used in dbmaintain
          *
          * @param dataSourceProxy The proxy that represents the datasource
-         * @param method The method invoked on the datasource
-         * @param args The arguments of the invoked method
+         * @param method          The method invoked on the datasource
+         * @param args            The arguments of the invoked method
          * @return The return object
          * @throws Throwable
          */

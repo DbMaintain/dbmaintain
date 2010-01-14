@@ -15,12 +15,15 @@
  */
 package org.dbmaintain.util;
 
-import java.io.File;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 
-// todo javadoc
+/**
+ * @author Tim Ducheyne
+ * @author Filip Neven
+ */
 public class FileUtils {
 
 
@@ -37,6 +40,49 @@ public class FileUtils {
             return file.toURI().toURL();
         } catch (MalformedURLException e) {
             throw new DbMaintainException("Unable to create URL for file " + file.getName(), e);
+        }
+    }
+
+
+    /**
+     * Creates a file and write the given content to it.
+     * Note: the content reader is not closed.
+     *
+     * @param file          The new file to create, not null
+     * @param contentReader The stream with the content for the file, not null
+     */
+    public static void createFile(File file, Reader contentReader) throws IOException {
+        Writer writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file, false));
+
+            char[] buffer = new char[8192];
+            int nrOfChars;
+            while ((nrOfChars = contentReader.read(buffer)) != -1) {
+                writer.write(buffer, 0, nrOfChars);
+            }
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+    }
+
+    /**
+     * Creates a file and write the given content to it.
+     *
+     * @param file    The new file to create, not null
+     * @param content The content for the file, not null
+     */
+    public static void createFile(File file, String content) throws IOException {
+        Writer writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file, false));
+            writer.write(content);
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
         }
     }
 }
