@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
@@ -26,6 +26,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Set;
+
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Implementation of {@link DbSupport} for a MsSQL database.
@@ -39,9 +41,17 @@ import java.util.Set;
 public class MsSqlDbSupport extends DbSupport {
 
 
-    public MsSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
-                          Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "mssql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    public MsSqlDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    }
+
+
+    /**
+     * @return the database dialect supported by this db support class, not null
+     */
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "mssql";
     }
 
 
@@ -55,7 +65,6 @@ public class MsSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select t.name from sys.tables t, sys.schemas s where t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -67,7 +76,6 @@ public class MsSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select c.name from sys.columns c, sys.tables t, sys.schemas s where c.object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -77,7 +85,6 @@ public class MsSqlDbSupport extends DbSupport {
     public Set<String> getViewNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select v.name from sys.views v, sys.schemas s where v.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all synonyms in the database schema.
@@ -89,7 +96,6 @@ public class MsSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select o.name from sys.synonyms o, sys.schemas s where o.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the triggers in the database schema.
      *
@@ -99,7 +105,6 @@ public class MsSqlDbSupport extends DbSupport {
     public Set<String> getTriggerNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select t.name from sys.triggers t, sys.all_objects o, sys.schemas s where t.parent_id = o.object_id and o.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the types in the database schema.
@@ -123,6 +128,20 @@ public class MsSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select i.name from sys.identity_columns i, sys.tables t, sys.schemas s where i.object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
 
+    /**
+     * Increments the identity value for the specified identity column on the specified table to the given value. If
+     * there is no identity specified on the given primary key, the method silently finishes without effect.
+     *
+     * @param tableName          The table with the identity column, not null
+     * @param identityColumnName The column, not null
+     * @param identityValue      The new value
+     */
+    @Override
+    public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
+        // there can only be 1 identity column per table
+        getSQLHandler().executeUpdate("DBCC CHECKIDENT ('" + qualified(schemaName, tableName) + "', reseed, " + identityValue + ")", getDataSource());
+    }
+
 
     /**
      * Disables all referential constraints (e.g. foreign keys) on all table in the schema
@@ -137,8 +156,8 @@ public class MsSqlDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select f.name from sys.foreign_keys f, sys.tables t, sys.schemas s where f.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
@@ -146,7 +165,6 @@ public class MsSqlDbSupport extends DbSupport {
             sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
-
 
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
@@ -161,8 +179,8 @@ public class MsSqlDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
@@ -184,21 +202,6 @@ public class MsSqlDbSupport extends DbSupport {
 
 
     /**
-     * Increments the identity value for the specified identity column on the specified table to the given value. If
-     * there is no identity specified on the given primary key, the method silently finishes without effect.
-     *
-     * @param tableName          The table with the identity column, not null
-     * @param identityColumnName The column, not null
-     * @param identityValue      The new value
-     */
-    @Override
-    public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
-        // there can only be 1 identity column per table 
-        getSQLHandler().executeUpdate("DBCC CHECKIDENT ('" + qualified(schemaName, tableName) + "', reseed, " + identityValue + ")", getDataSource());
-    }
-
-
-    /**
      * Synonyms are supported.
      *
      * @return True
@@ -207,7 +210,6 @@ public class MsSqlDbSupport extends DbSupport {
     public boolean supportsSynonyms() {
         return true;
     }
-
 
     /**
      * Triggers are supported.
@@ -219,7 +221,6 @@ public class MsSqlDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Types are supported
      *
@@ -229,7 +230,6 @@ public class MsSqlDbSupport extends DbSupport {
     public boolean supportsTypes() {
         return true;
     }
-
 
     /**
      * Identity columns are supported.

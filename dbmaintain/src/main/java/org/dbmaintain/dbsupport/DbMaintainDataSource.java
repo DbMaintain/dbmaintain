@@ -17,7 +17,6 @@ package org.dbmaintain.dbsupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.launch.ant.Database;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
@@ -46,14 +45,14 @@ public class DbMaintainDataSource {
      * Static factory that returns a data source providing access to the database using the driver with the given driver
      * class name, the given connection url, user name and password
      *
-     * @param database The database connection parameters, not null
+     * @param databaseInfo The database connection parameters, not null
      * @return a DataSource that gives access to the database
      */
-    public static DataSource createDataSource(Database database) {
-        String driverClassName = database.getDriverClassName();
-        String url = database.getUrl();
-        String userName = database.getUserName();
-        String password = database.getPassword();
+    public static DataSource createDataSource(DatabaseInfo databaseInfo) {
+        String driverClassName = databaseInfo.getDriverClassName();
+        String url = databaseInfo.getUrl();
+        String userName = databaseInfo.getUserName();
+        String password = databaseInfo.getPassword();
         logger.info("Creating data source. Driver: " + driverClassName + ", url: " + url + ", user: " + userName + ", password: <not shown>");
         return (DataSource) Proxy.newProxyInstance(DbMaintainDataSource.class.getClassLoader(), new Class<?>[]{DataSource.class}, new DbMaintainDataSourceInvocationHandler(driverClassName, url, userName, password));
     }

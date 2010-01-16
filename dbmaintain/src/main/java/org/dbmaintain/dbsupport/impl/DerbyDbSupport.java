@@ -15,12 +15,11 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 import org.dbmaintain.util.DbMaintainException;
-import org.apache.commons.dbutils.DbUtils;
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -29,6 +28,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 
 /**
@@ -43,19 +44,17 @@ import java.util.Set;
 public class DerbyDbSupport extends DbSupport {
 
 
+    public DerbyDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    }
+
+
     /**
-     * Creates support for a Derby database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
+     * @return the database dialect supported by this db support class, not null
      */
-    public DerbyDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName, Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "derby", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "derby";
     }
 
 
@@ -69,7 +68,6 @@ public class DerbyDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select t.TABLENAME from SYS.SYSTABLES t, SYS.SYSSCHEMAS  s where t.TABLETYPE = 'T' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -81,7 +79,6 @@ public class DerbyDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select c.COLUMNNAME from SYS.SYSCOLUMNS c, SYS.SYSTABLES t, SYS.SYSSCHEMAS s where c.REFERENCEID = t.TABLEID and t.TABLENAME = '" + tableName + "' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -92,7 +89,6 @@ public class DerbyDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select t.TABLENAME from SYS.SYSTABLES t, SYS.SYSSCHEMAS s where t.TABLETYPE = 'V' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the synonyms in the database schema.
      *
@@ -101,7 +97,6 @@ public class DerbyDbSupport extends DbSupport {
     public Set<String> getSynonymNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select t.TABLENAME from SYS.SYSTABLES t, SYS.SYSSCHEMAS s where t.TABLETYPE = 'A' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the triggers in the database schema.
@@ -126,7 +121,6 @@ public class DerbyDbSupport extends DbSupport {
     public Set<String> getIdentityColumnNames(String schemaName, String tableName) {
         return getPrimaryKeyColumnNames(schemaName, tableName);
     }
-
 
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value.
@@ -154,8 +148,8 @@ public class DerbyDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select c.CONSTRAINTNAME from SYS.SYSCONSTRAINTS c, SYS.SYSTABLES t, SYS.SYSSCHEMAS s where c.TYPE = 'F' AND c.TABLEID = t.TABLEID  AND t.TABLENAME = '" + tableName + "' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
@@ -163,7 +157,6 @@ public class DerbyDbSupport extends DbSupport {
             sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
-
 
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
@@ -178,8 +171,8 @@ public class DerbyDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
@@ -205,6 +198,16 @@ public class DerbyDbSupport extends DbSupport {
 
 
     /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    @Override
+    public void setDatabaseDefaultSchema() {
+        getSQLHandler().executeUpdate("set schema " + getDefaultSchemaName(), getDataSource());
+    }
+
+
+    /**
      * Synonyms are supported.
      *
      * @return True
@@ -213,7 +216,6 @@ public class DerbyDbSupport extends DbSupport {
     public boolean supportsSynonyms() {
         return true;
     }
-
 
     /**
      * Triggers are supported.
@@ -225,7 +227,6 @@ public class DerbyDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Identity columns are supported.
      *
@@ -236,13 +237,22 @@ public class DerbyDbSupport extends DbSupport {
         return true;
     }
 
+    /**
+     * Setting the default schema is supported.
+     *
+     * @return True
+     */
+    @Override
+    public boolean supportsSetDatabaseDefaultSchema() {
+        return true;
+    }
 
     /**
      * Gets the names of all primary columns of the given table.
      * <p/>
      * This info is not available in the Derby sys tables. The database meta data is used instead to retrieve it.
      *
-     * @param schemaName
+     * @param schemaName The schema, not null
      * @param tableName  The table, not null
      * @return The names of the primary key columns of the table with the given name
      */
@@ -271,7 +281,7 @@ public class DerbyDbSupport extends DbSupport {
      * <p/>
      * This info is not available in the Derby sys tables. The database meta data is used instead to retrieve it.
      *
-     * @param schemaName
+     * @param schemaName The schema, not null
      * @param tableName  The table, not null
      * @return The set of column names, not null
      */

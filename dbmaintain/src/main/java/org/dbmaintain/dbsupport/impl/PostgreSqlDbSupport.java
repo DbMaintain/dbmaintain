@@ -8,6 +8,7 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
@@ -25,20 +26,18 @@ import java.util.Set;
  */
 public class PostgreSqlDbSupport extends DbSupport {
 
+
+    public PostgreSqlDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    }
+
+
     /**
-     * Creates support for a postgresql database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
+     * @return the database dialect supported by this db support class, not null
      */
-    public PostgreSqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
-                               Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "postgresql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "postgresql";
     }
 
 
@@ -52,7 +51,6 @@ public class PostgreSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -64,7 +62,6 @@ public class PostgreSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select column_name from information_schema.columns where table_name = '" + tableName + "' and table_schema = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -74,7 +71,6 @@ public class PostgreSqlDbSupport extends DbSupport {
     public Set<String> getViewNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select table_name from information_schema.tables where table_type = 'VIEW' and table_schema = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the sequences in the database schema.
@@ -89,7 +85,6 @@ public class PostgreSqlDbSupport extends DbSupport {
         // This is the original query: getItemsAsStringSet("select sequence_name from information_schema.sequences where sequence_schema = '" + schemaName + "'", getDataSource());
         return getSQLHandler().getItemsAsStringSet("select c.relname from pg_class c join pg_namespace n on (c.relnamespace = n.oid) where c.relkind = 'S' and n.nspname = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the triggers in the database schema.
@@ -130,7 +125,6 @@ public class PostgreSqlDbSupport extends DbSupport {
         getSQLHandler().executeUpdate("drop sequence " + qualified(schemaName, sequenceName) + " cascade", getDataSource());
     }
 
-
     /**
      * Drops the trigger with the given name from the database.
      * <p/>
@@ -146,7 +140,6 @@ public class PostgreSqlDbSupport extends DbSupport {
     public void dropTrigger(String schemaName, String triggerName) {
         getSQLHandler().executeUpdate("drop trigger " + triggerName + " cascade", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all user-defined types in the database schema.
@@ -172,8 +165,8 @@ public class PostgreSqlDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints con where con.table_name = '" + tableName + "' and constraint_type = 'FOREIGN KEY' and constraint_schema = '" + schemaName + "'", getDataSource());
@@ -181,7 +174,6 @@ public class PostgreSqlDbSupport extends DbSupport {
             sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
-
 
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
@@ -196,8 +188,8 @@ public class PostgreSqlDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
@@ -235,7 +227,6 @@ public class PostgreSqlDbSupport extends DbSupport {
         return getSQLHandler().getItemAsLong("select last_value from " + qualified(schemaName, sequenceName), getDataSource());
     }
 
-
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
      *
@@ -245,6 +236,16 @@ public class PostgreSqlDbSupport extends DbSupport {
     @Override
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
         getSQLHandler().getItemAsLong("select setval('" + qualified(schemaName, sequenceName) + "', " + newSequenceValue + ")", getDataSource());
+    }
+
+
+    /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    @Override
+    public void setDatabaseDefaultSchema() {
+        getSQLHandler().executeUpdate("SET search_path TO " + getDefaultSchemaName(), getDataSource());
     }
 
 
@@ -278,7 +279,6 @@ public class PostgreSqlDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Cascade are supported.
      *
@@ -289,4 +289,13 @@ public class PostgreSqlDbSupport extends DbSupport {
         return true;
     }
 
+    /**
+     * Setting the default schema is supported.
+     *
+     * @return True
+     */
+    @Override
+    public boolean supportsSetDatabaseDefaultSchema() {
+        return true;
+    }
 }

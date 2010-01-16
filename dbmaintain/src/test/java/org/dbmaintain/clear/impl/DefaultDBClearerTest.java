@@ -149,7 +149,7 @@ public class DefaultDBClearerTest {
      * Creates all test database structures (view, tables...)
      */
     private void createTestDatabase() throws Exception {
-        String dialect = dbSupport.getDatabaseDialect();
+        String dialect = dbSupport.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             createTestDatabaseHsqlDb();
         } else if ("mysql".equals(dialect)) {
@@ -174,7 +174,7 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabase() throws Exception {
-        String dialect = dbSupport.getDatabaseDialect();
+        String dialect = dbSupport.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             cleanupTestDatabaseHsqlDb();
         } else if ("mysql".equals(dialect)) {

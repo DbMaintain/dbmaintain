@@ -15,18 +15,19 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
 import org.dbmaintain.util.DbMaintainException;
-import org.apache.commons.dbutils.DbUtils;
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Set;
+
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Implementation of {@link DbSupport} for a hsqldb database
@@ -36,22 +37,19 @@ import java.util.Set;
  */
 public class HsqldbDbSupport extends DbSupport {
 
-    /**
-     * Creates support for a HsqlDb database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
-     */
-    public HsqldbDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
-                           Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "hsqldb", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+
+    public HsqldbDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
+
+    /**
+     * @return the database dialect supported by this db support class, not null
+     */
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "hsqldb";
+    }
 
     /**
      * Returns the names of all tables in the database.
@@ -62,7 +60,6 @@ public class HsqldbDbSupport extends DbSupport {
     public Set<String> getTableNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.SYSTEM_TABLES where TABLE_TYPE = 'TABLE' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Gets the names of all columns of the given table.
@@ -75,7 +72,6 @@ public class HsqldbDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS where TABLE_NAME = '" + tableName + "' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -86,7 +82,6 @@ public class HsqldbDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.SYSTEM_TABLES where TABLE_TYPE = 'VIEW' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the sequences in the database schema.
      *
@@ -96,7 +91,6 @@ public class HsqldbDbSupport extends DbSupport {
     public Set<String> getSequenceNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select SEQUENCE_NAME from INFORMATION_SCHEMA.SYSTEM_SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the triggers in the database schema.
@@ -139,7 +133,6 @@ public class HsqldbDbSupport extends DbSupport {
         }
     }
 
-
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
      *
@@ -150,7 +143,6 @@ public class HsqldbDbSupport extends DbSupport {
         disableCheckAndUniqueConstraints(schemaName);
         disableNotNullConstraints(schemaName);
     }
-
 
     /**
      * Disables all check and unique constraints on all tables in the schema
@@ -180,7 +172,6 @@ public class HsqldbDbSupport extends DbSupport {
             closeQuietly(connection, alterStatement, resultSet);
         }
     }
-
 
     /**
      * Disables all not null constraints on all tables in the schema
@@ -227,7 +218,6 @@ public class HsqldbDbSupport extends DbSupport {
         return getSQLHandler().getItemAsLong("select START_WITH from INFORMATION_SCHEMA.SYSTEM_SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "' and SEQUENCE_NAME = '" + sequenceName + "'", getDataSource());
     }
 
-
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
      *
@@ -238,7 +228,6 @@ public class HsqldbDbSupport extends DbSupport {
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
         getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " restart with " + newSequenceValue, getDataSource());
     }
-
 
     /**
      * Gets the names of all identity columns of the given table.
@@ -252,7 +241,6 @@ public class HsqldbDbSupport extends DbSupport {
     public Set<String> getIdentityColumnNames(String schemaName, String tableName) {
         return getSQLHandler().getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS where TABLE_NAME = '" + tableName + "' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value.
@@ -268,6 +256,16 @@ public class HsqldbDbSupport extends DbSupport {
 
 
     /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    @Override
+    public void setDatabaseDefaultSchema() {
+        getSQLHandler().executeUpdate("set schema " + getDefaultSchemaName(), getDataSource());
+    }
+
+
+    /**
      * Sequences are supported.
      *
      * @return True
@@ -276,7 +274,6 @@ public class HsqldbDbSupport extends DbSupport {
     public boolean supportsSequences() {
         return true;
     }
-
 
     /**
      * Triggers are supported.
@@ -288,7 +285,6 @@ public class HsqldbDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Identity columns are supported.
      *
@@ -299,7 +295,6 @@ public class HsqldbDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Cascade are supported.
      *
@@ -307,6 +302,16 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public boolean supportsCascade() {
+        return true;
+    }
+
+    /**
+     * Setting the default schema is supported.
+     *
+     * @return True
+     */
+    @Override
+    public boolean supportsSetDatabaseDefaultSchema() {
         return true;
     }
 }

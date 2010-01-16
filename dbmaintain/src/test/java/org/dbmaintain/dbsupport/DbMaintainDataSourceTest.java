@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.dbsupport;
 
-import org.dbmaintain.launch.ant.Database;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import static org.dbmaintain.dbsupport.DbMaintainDataSource.createDataSource;
-import static org.dbmaintain.util.TestUtils.getHsqlDatabase;
+import static org.dbmaintain.util.TestUtils.getHsqlDatabaseInfo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -35,31 +34,31 @@ import static org.junit.Assert.assertFalse;
  */
 public class DbMaintainDataSourceTest {
 
-    private Database database;
+    private DatabaseInfo databaseInfo;
     private DataSource dataSource;
 
 
     @Before
     public void setUp() {
-        database = getHsqlDatabase();
-        dataSource = createDataSource(database);
+        databaseInfo = getHsqlDatabaseInfo();
+        dataSource = createDataSource(databaseInfo);
     }
 
     @Test
     public void testGetConnection() throws SQLException {
         Connection conn = dataSource.getConnection();
-        assertEquals(database.getUrl(), conn.getMetaData().getURL());
+        assertEquals(databaseInfo.getUrl(), conn.getMetaData().getURL());
     }
 
 
     @Test
     public void testDataSourceEqualsHashcode() {
-        DataSource otherDataSource = createDataSource(database);
+        DataSource otherDataSource = createDataSource(databaseInfo);
         assertFalse(dataSource.equals(otherDataSource));
 
         // Check that the hashcode of two different instances differs. We check this with two other datasource instances,
         // since in very rare cases the hashcodes could be equal by coincidence.
-        DataSource yetAnotherDataSource = createDataSource(database);
+        DataSource yetAnotherDataSource = createDataSource(databaseInfo);
         assertFalse(dataSource.hashCode() == otherDataSource.hashCode() && dataSource.hashCode() == yetAnotherDataSource.hashCode());
     }
 }

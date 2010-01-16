@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
@@ -33,23 +34,18 @@ import java.util.Set;
 public class Db2DbSupport extends DbSupport {
 
 
-    /**
-     * Creates support for a Db2 database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
-     */
-    public Db2DbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
-                        Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "db2", dataSource, defaultSchemaName, schemaNames, sqlHandler,
-                customIdentifierQuoteString, customStoredIdentifierCase);
+    public Db2DbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
+
+    /**
+     * @return the database dialect supported by this db support class, not null
+     */
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "db2";
+    }
 
     /**
      * Returns the names of all tables in the database. <p/> TODO check table types A = Alias G = Global temporary table
@@ -63,7 +59,6 @@ public class Db2DbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select TABNAME from SYSCAT.TABLES where TABSCHEMA = '" + schemaName + "' and TYPE = 'T'", getDataSource());
     }
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -74,7 +69,6 @@ public class Db2DbSupport extends DbSupport {
     public Set<String> getColumnNames(String schemaName, String tableName) {
         return getSQLHandler().getItemsAsStringSet("select COLNAME from SYSCAT.COLUMNS where TABNAME = '" + tableName + "' and TABSCHEMA = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the views in the database schema. <p/>
@@ -87,7 +81,6 @@ public class Db2DbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select TABNAME from SYSCAT.TABLES where TABSCHEMA = '" + schemaName + "' and TYPE = 'V'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the sequences in the database schema.
      *
@@ -98,7 +91,6 @@ public class Db2DbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select SEQNAME from SYSCAT.SEQUENCES where SEQTYPE = 'S' AND SEQSCHEMA = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the triggers in the database schema.
      *
@@ -108,7 +100,6 @@ public class Db2DbSupport extends DbSupport {
     public Set<String> getTriggerNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select TRIGNAME from SYSCAT.TRIGGERS where TRIGSCHEMA = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the types in the database schema.
@@ -134,8 +125,8 @@ public class Db2DbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select CONSTNAME from SYSCAT.TABCONST where TYPE = 'F' and TABNAME = '" + tableName + "' and TABSCHEMA = '" + schemaName + "'", getDataSource());
@@ -143,7 +134,6 @@ public class Db2DbSupport extends DbSupport {
             sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
-
 
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
@@ -158,8 +148,8 @@ public class Db2DbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
@@ -197,7 +187,6 @@ public class Db2DbSupport extends DbSupport {
         return getSQLHandler().getItemAsLong("select next value for " + qualified(schemaName, sequenceName) + " from SYSIBM.SYSDUMMY1", getDataSource());
     }
 
-
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
      *
@@ -208,7 +197,6 @@ public class Db2DbSupport extends DbSupport {
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
         getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " restart with " + newSequenceValue, getDataSource());
     }
-
 
     /**
      * Gets the names of all identity columns of the given table.
@@ -222,7 +210,6 @@ public class Db2DbSupport extends DbSupport {
     public Set<String> getIdentityColumnNames(String schemaName, String tableName) {
         return getSQLHandler().getItemsAsStringSet("select COLNAME from SYSCAT.COLUMNS where KEYSEQ is not null and TABNAME = '" + tableName + "' and TABSCHEMA = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value. If
@@ -239,6 +226,16 @@ public class Db2DbSupport extends DbSupport {
 
 
     /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    @Override
+    public void setDatabaseDefaultSchema() {
+        getSQLHandler().executeUpdate("set schema " + getDefaultSchemaName(), getDataSource());
+    }
+
+
+    /**
      * Sequences are supported.
      *
      * @return True
@@ -247,7 +244,6 @@ public class Db2DbSupport extends DbSupport {
     public boolean supportsSequences() {
         return true;
     }
-
 
     /**
      * Triggers are supported.
@@ -259,7 +255,6 @@ public class Db2DbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Identity columns are supported.
      *
@@ -269,7 +264,6 @@ public class Db2DbSupport extends DbSupport {
     public boolean supportsIdentityColumns() {
         return true;
     }
-
 
     /**
      * Types are supported
@@ -281,4 +275,13 @@ public class Db2DbSupport extends DbSupport {
         return true;
     }
 
+    /**
+     * Setting the default schema is supported.
+     *
+     * @return True
+     */
+    @Override
+    public boolean supportsSetDatabaseDefaultSchema() {
+        return true;
+    }
 }

@@ -15,10 +15,8 @@
  */
 package org.dbmaintain.dbsupport;
 
-import org.dbmaintain.util.DbMaintainException;
-import org.apache.commons.dbutils.DbUtils;
-import static org.apache.commons.dbutils.DbUtils.*;
 import org.apache.commons.lang.StringUtils;
+import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -26,6 +24,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
+import static org.dbmaintain.dbsupport.StoredIdentifierCase.*;
 
 /**
  * Helper class that implements a number of common operations on a database schema. Operations that can be implemented
@@ -38,11 +39,7 @@ import java.util.Set;
  */
 abstract public class DbSupport {
 
-
-    /* The name of the DBMS implementation that is supported by this implementation */
-    private String databaseDialect;
-
-    private String databaseName;
+    private DatabaseInfo databaseInfo;
 
     private DataSource dataSource;
 
@@ -60,32 +57,35 @@ abstract public class DbSupport {
     private String identifierQuoteString;
 
 
-    protected DbSupport(String databaseName, String databaseDialect, DataSource dataSource, String defaultSchemaName, Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        this.databaseName = databaseName;
-        this.databaseDialect = databaseDialect;
+    protected DbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        this.databaseInfo = databaseInfo;
         this.dataSource = dataSource;
         this.identifierQuoteString = determineIdentifierQuoteString(customIdentifierQuoteString);
         this.storedIdentifierCase = determineStoredIdentifierCase(customStoredIdentifierCase);
-        this.defaultSchemaName = toCorrectCaseIdentifier(defaultSchemaName);
+        this.defaultSchemaName = toCorrectCaseIdentifier(databaseInfo.getDefaultSchemaName());
         this.schemaNames = new HashSet<String>();
-        for (String schemaName : schemaNames) {
+        for (String schemaName : databaseInfo.getSchemaNames()) {
             this.schemaNames.add(toCorrectCaseIdentifier(schemaName));
         }
         this.sqlHandler = sqlHandler;
+        if (supportsSetDatabaseDefaultSchema()) {
+            setDatabaseDefaultSchema();
+        }
     }
+
 
     /**
-     * Gets the database dialect.
-     *
-     * @return the supported dialect, not null
+     * @return the database dialect supported by this db support class, not null
      */
-    public String getDatabaseDialect() {
-        return databaseDialect;
+    public abstract String getSupportedDatabaseDialect();
+
+
+    public DatabaseInfo getDatabaseInfo() {
+        return databaseInfo;
     }
 
-
     public String getDatabaseName() {
-        return databaseName;
+        return databaseInfo.getName();
     }
 
 
@@ -103,7 +103,6 @@ abstract public class DbSupport {
         return defaultSchemaName;
     }
 
-
     public Set<String> getSchemaNames() {
         return schemaNames;
     }
@@ -117,7 +116,6 @@ abstract public class DbSupport {
     public String getIdentifierQuoteString() {
         return identifierQuoteString;
     }
-
 
     /**
      * Gets the stored identifier case.
@@ -147,7 +145,6 @@ abstract public class DbSupport {
      */
     public abstract Set<String> getTableNames(String schemaName);
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -157,7 +154,6 @@ abstract public class DbSupport {
      */
     public abstract Set<String> getColumnNames(String schemaName, String tableName);
 
-
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -166,7 +162,6 @@ abstract public class DbSupport {
      */
     public abstract Set<String> getViewNames(String schemaName);
 
-
     /**
      * Retrieves the names of all materialized views in the database schema.
      *
@@ -174,9 +169,8 @@ abstract public class DbSupport {
      * @return The names of all materialized views in the database
      */
     public Set<String> getMaterializedViewNames(String schemaName) {
-        throw new UnsupportedOperationException("Materialized views not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Materialized views not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Retrieves the names of all synonyms in the database schema.
@@ -185,9 +179,8 @@ abstract public class DbSupport {
      * @return The names of all synonyms in the database
      */
     public Set<String> getSynonymNames(String schemaName) {
-        throw new UnsupportedOperationException("Synonyms not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Synonyms not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Retrieves the names of all sequences in the database schema.
@@ -196,9 +189,8 @@ abstract public class DbSupport {
      * @return The names of all sequences in the database, not null
      */
     public Set<String> getSequenceNames(String schemaName) {
-        throw new UnsupportedOperationException("Sequences not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Retrieves the names of all triggers in the database schema.
@@ -207,9 +199,8 @@ abstract public class DbSupport {
      * @return The names of all triggers in the database, not null
      */
     public Set<String> getTriggerNames(String schemaName) {
-        throw new UnsupportedOperationException("Triggers not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Triggers not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Retrieves the names of all types in the database schema.
@@ -218,7 +209,7 @@ abstract public class DbSupport {
      * @return The names of all types in the database, not null
      */
     public Set<String> getTypeNames(String schemaName) {
-        throw new UnsupportedOperationException("Types are not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Types are not supported for " + getSupportedDatabaseDialect());
     }
 
 
@@ -233,7 +224,6 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop table " + qualified(schemaName, tableName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
-
     /**
      * Removes the view with the given name from the database
      * Note: the view name is surrounded with quotes, making it case-sensitive.
@@ -245,7 +235,6 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop view " + qualified(schemaName, viewName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
-
     /**
      * Removes the materialized view with the given name from the database
      * Note: the view name is surrounded with quotes, making it case-sensitive.
@@ -254,9 +243,8 @@ abstract public class DbSupport {
      * @param viewName   The view to drop (case-sensitive), not null
      */
     public void dropMaterializedView(String schemaName, String viewName) {
-        throw new UnsupportedOperationException("Materialized views are not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Materialized views are not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Removes the synonym with the given name from the database
@@ -269,7 +257,6 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop synonym " + qualified(schemaName, synonymName), getDataSource());
     }
 
-
     /**
      * Drops the sequence with the given name from the database
      * Note: the sequence name is surrounded with quotes, making it case-sensitive.
@@ -281,7 +268,6 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop sequence " + qualified(schemaName, sequenceName), getDataSource());
     }
 
-
     /**
      * Drops the trigger with the given name from the database
      * Note: the trigger name is surrounded with quotes, making it case-sensitive.
@@ -292,7 +278,6 @@ abstract public class DbSupport {
     public void dropTrigger(String schemaName, String triggerName) {
         getSQLHandler().executeUpdate("drop trigger " + qualified(schemaName, triggerName), getDataSource());
     }
-
 
     /**
      * Drops the type with the given name from the database
@@ -313,7 +298,6 @@ abstract public class DbSupport {
      */
     public abstract void disableReferentialConstraints(String schemaName);
 
-
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
      *
@@ -332,9 +316,8 @@ abstract public class DbSupport {
      * @return The value of the sequence with the given name
      */
     public long getSequenceValue(String schemaName, String sequenceName) {
-        throw new UnsupportedOperationException("Sequences not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
@@ -344,9 +327,8 @@ abstract public class DbSupport {
      * @param newSequenceValue The value to set
      */
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
-        throw new UnsupportedOperationException("Sequences not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Gets the names of all identity columns of the given table.
@@ -356,9 +338,8 @@ abstract public class DbSupport {
      * @return The names of the identity columns of the table with the given name
      */
     public Set<String> getIdentityColumnNames(String schemaName, String tableName) {
-        throw new UnsupportedOperationException("Identity columns not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Identity columns not supported for " + getSupportedDatabaseDialect());
     }
-
 
     /**
      * Increments the identity value for the specified identity column on the specified table to the given value. If there
@@ -370,7 +351,15 @@ abstract public class DbSupport {
      * @param identityValue      The new value
      */
     public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
-        throw new UnsupportedOperationException("Identity columns not supported for " + getDatabaseDialect());
+        throw new UnsupportedOperationException("Identity columns not supported for " + getSupportedDatabaseDialect());
+    }
+
+    /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    public void setDatabaseDefaultSchema() {
+        throw new UnsupportedOperationException("Setting the current schema is not supported for " + getSupportedDatabaseDialect());
     }
 
 
@@ -382,7 +371,6 @@ abstract public class DbSupport {
     public String getLongDataType() {
         return "BIGINT";
     }
-
 
     /**
      * Gets the column type suitable to store text values.
@@ -408,7 +396,6 @@ abstract public class DbSupport {
     public String qualified(String schemaName, String databaseObjectName) {
         return quoted(schemaName) + "." + quoted(databaseObjectName);
     }
-
 
     /**
      * Put quotes around the given databaseObjectName, if the underlying DBMS supports quoted database object names.
@@ -454,15 +441,14 @@ abstract public class DbSupport {
         if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
             return identifier.substring(1, identifier.length() - 1);
         }
-        if (storedIdentifierCase == StoredIdentifierCase.UPPER_CASE) {
+        if (storedIdentifierCase == UPPER_CASE) {
             return identifier.toUpperCase();
-        } else if (storedIdentifierCase == StoredIdentifierCase.LOWER_CASE) {
+        } else if (storedIdentifierCase == LOWER_CASE) {
             return identifier.toLowerCase();
         } else {
             return identifier;
         }
     }
-
 
     /**
      * Determines the case the database uses to store non-quoted identifiers. This will use the connections
@@ -482,11 +468,11 @@ abstract public class DbSupport {
 
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             if (databaseMetaData.storesUpperCaseIdentifiers()) {
-                return StoredIdentifierCase.UPPER_CASE;
+                return UPPER_CASE;
             } else if (databaseMetaData.storesLowerCaseIdentifiers()) {
-                return StoredIdentifierCase.LOWER_CASE;
+                return LOWER_CASE;
             } else {
-                return StoredIdentifierCase.MIXED_CASE;
+                return MIXED_CASE;
             }
         } catch (SQLException e) {
             throw new DbMaintainException("Unable to determine stored identifier case.", e);
@@ -495,13 +481,12 @@ abstract public class DbSupport {
         }
     }
 
-
     /**
      * Determines the string used to quote identifiers to make them case-sensitive. This will use the connections
      * database metadata to determine the quote string.
      *
      * @param customIdentifierQuoteString If not null, it specifies a custom identifier quote string that replaces the one
-     * specified by the JDBC DatabaseMetaData object
+     *                                    specified by the JDBC DatabaseMetaData object
      * @return The quote string, null if quoting is not supported
      */
     protected String determineIdentifierQuoteString(String customIdentifierQuoteString) {
@@ -534,7 +519,6 @@ abstract public class DbSupport {
         return false;
     }
 
-
     /**
      * Indicates whether the underlying DBMS supports sequences
      *
@@ -543,7 +527,6 @@ abstract public class DbSupport {
     public boolean supportsSequences() {
         return false;
     }
-
 
     /**
      * Indicates whether the underlying DBMS supports triggers
@@ -554,7 +537,6 @@ abstract public class DbSupport {
         return false;
     }
 
-
     /**
      * Indicates whether the underlying DBMS supports database types
      *
@@ -563,7 +545,6 @@ abstract public class DbSupport {
     public boolean supportsTypes() {
         return false;
     }
-
 
     /**
      * Indicates whether the underlying DBMS supports identity columns
@@ -574,7 +555,6 @@ abstract public class DbSupport {
         return false;
     }
 
-
     /**
      * Indicates whether the underlying DBMS supports materialized views
      *
@@ -584,13 +564,22 @@ abstract public class DbSupport {
         return false;
     }
 
-
     /**
      * Indicates whether the underlying DBMS supports the cascade option for dropping tables and views.
      *
      * @return True if cascade is supported, false otherwise
      */
     public boolean supportsCascade() {
+        return false;
+    }
+
+    /**
+     * Indicates whether the underlying DBMS supports the setting of the current schema.
+     * If a current schema is set, it does not need to be explicitly specified in the scripts.
+     *
+     * @return True if setting the current schema is supported, false otherwise
+     */
+    public boolean supportsSetDatabaseDefaultSchema() {
         return false;
     }
 

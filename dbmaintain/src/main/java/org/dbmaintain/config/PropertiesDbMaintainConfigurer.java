@@ -22,7 +22,6 @@ import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.format.ScriptUpdatesFormatter;
-import org.dbmaintain.launch.ant.Database;
 import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.*;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
@@ -41,6 +40,7 @@ import java.util.*;
 import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.config.PropertyUtils.*;
+import static org.dbmaintain.dbsupport.DbItemType.*;
 import static org.dbmaintain.dbsupport.DbMaintainDataSource.createDataSource;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
@@ -56,9 +56,6 @@ public class PropertiesDbMaintainConfigurer {
 
     protected SQLHandler sqlHandler;
 
-    protected Database defaultDatabase;
-    protected Map<String, Database> databasesMap;
-
     protected DbSupport defaultDbSupport;
     protected Map<String, DbSupport> nameDbSupportMap;
 
@@ -72,21 +69,22 @@ public class PropertiesDbMaintainConfigurer {
     public PropertiesDbMaintainConfigurer(Properties configuration, SQLHandler sqlHandler) {
         this.configuration = configuration;
         this.sqlHandler = sqlHandler;
-        initDatabasesFromProperties();
+        initDbSupportsFromProperties();
     }
 
 
     /**
      * Constructor for PropertiesDbMaintainConfigurer that passes in a custom defaultDbSupport and nameDbSupportMap
      *
-     * @param configuration the properties that define the rest of the configuration of dbmaintain
-     * @param databases     the databases, the first database is considered to be the default one, not null
-     * @param sqlHandler    handles all queries and updates to the database
+     * @param configuration       the properties that define the rest of the configuration of dbmaintain
+     * @param defaultDatabaseName the default database, not null
+     * @param nameDatabaseInfoMap the databases in a map with its name as key and the database info as value (null value if the database is disabled), not null
+     * @param sqlHandler          handles all queries and updates to the database
      */
-    public PropertiesDbMaintainConfigurer(Properties configuration, List<Database> databases, SQLHandler sqlHandler) {
+    public PropertiesDbMaintainConfigurer(Properties configuration, String defaultDatabaseName, Map<String, DatabaseInfo> nameDatabaseInfoMap, SQLHandler sqlHandler) {
         this.configuration = configuration;
         this.sqlHandler = sqlHandler;
-        initDatabases(databases);
+        initDbSupports(defaultDatabaseName, nameDatabaseInfoMap);
     }
 
 
@@ -161,7 +159,7 @@ public class PropertiesDbMaintainConfigurer {
 
     protected ScriptRunner createSqlPlusScriptRunner(Class<ScriptRunner> clazz) {
         String sqlPlusCommand = PropertyUtils.getString(PROPERTY_SQL_PLUS_COMMAND, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{Database.class, Map.class, String.class}, new Object[]{defaultDatabase, databasesMap, sqlPlusCommand});
+        return createInstanceOfType(clazz, false, new Class<?>[]{DbSupport.class, Map.class, String.class}, new Object[]{defaultDbSupport, nameDbSupportMap, sqlPlusCommand});
     }
 
 
@@ -181,7 +179,7 @@ public class PropertiesDbMaintainConfigurer {
         Set<String> dialects = new HashSet<String>();
         for (DbSupport dbSupport : getNameDbSupportMap().values()) {
             if (dbSupport != null) {
-                dialects.add(dbSupport.getDatabaseDialect());
+                dialects.add(dbSupport.getSupportedDatabaseDialect());
             }
         }
         return dialects;
@@ -207,8 +205,7 @@ public class PropertiesDbMaintainConfigurer {
         String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
-        return new ArchiveScriptLocation(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers,
-                patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
+        return new ArchiveScriptLocation(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
     }
 
     public ScriptLocation createScriptLocation(String scriptLocation) {
@@ -221,11 +218,9 @@ public class PropertiesDbMaintainConfigurer {
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
         File scriptLocationFile = new File(scriptLocation);
         if (scriptLocationFile.isDirectory()) {
-            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
-                    registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
+            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
         } else {
-            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName,
-                    registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
+            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
         }
     }
 
@@ -263,7 +258,7 @@ public class PropertiesDbMaintainConfigurer {
         Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve();
 
         String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
-        itemsToPreserve.add(DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
+        itemsToPreserve.add(DbItemIdentifier.getItemIdentifier(TABLE, getDefaultDbSupport().getDefaultSchemaName(), executedScriptsTableName, getDefaultDbSupport()));
 
         Class<DBCleaner> clazz = getConfiguredClass(DBCleaner.class, configuration);
 
@@ -274,8 +269,8 @@ public class PropertiesDbMaintainConfigurer {
 
 
     protected Set<DbItemIdentifier> getItemsToPreserve() {
-        Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve(DbItemType.TABLE, PROPERTY_PRESERVE_TABLES);
-        itemsToPreserve.addAll(getItemsToPreserve(DbItemType.TABLE, PROPERTY_PRESERVE_DATA_TABLES));
+        Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve(TABLE, PROPERTY_PRESERVE_TABLES);
+        itemsToPreserve.addAll(getItemsToPreserve(TABLE, PROPERTY_PRESERVE_DATA_TABLES));
         return itemsToPreserve;
     }
 
@@ -288,24 +283,21 @@ public class PropertiesDbMaintainConfigurer {
 
     public DBClearer createDbClearer() {
         Class<DefaultDBClearer> clazz = getConfiguredClass(DefaultDBClearer.class, configuration);
-        DefaultDBClearer dbClearer = createInstanceOfType(clazz, false,
-                new Class<?>[]{Map.class},
-                new Object[]{getNameDbSupportMap()});
+        DefaultDBClearer dbClearer = createInstanceOfType(clazz, false, new Class<?>[]{Map.class}, new Object[]{getNameDbSupportMap()});
 
         Set<DbItemIdentifier> schemasToPreserve = getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
         for (DbItemIdentifier schemaToPreserve : schemasToPreserve) {
             dbClearer.addItemToPreserve(schemaToPreserve, true);
         }
         String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
-        dbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, executedScriptsTableName, defaultDbSupport, nameDbSupportMap), false);
-        addItemsToPreserve(dbClearer, DbItemType.TABLE, PROPERTY_PRESERVE_TABLES);
-        addItemsToPreserve(dbClearer, DbItemType.VIEW, PROPERTY_PRESERVE_VIEWS);
-        addItemsToPreserve(dbClearer, DbItemType.MATERIALZED_VIEW, PROPERTY_PRESERVE_MATERIALIZED_VIEWS);
-        addItemsToPreserve(dbClearer, DbItemType.SYNONYM, PROPERTY_PRESERVE_SYNONYMS);
-        addItemsToPreserve(dbClearer, DbItemType.SEQUENCE, PROPERTY_PRESERVE_SEQUENCES);
-        addItemsToPreserve(dbClearer, DbItemType.TRIGGER, PROPERTY_PRESERVE_TRIGGERS);
-        addItemsToPreserve(dbClearer, DbItemType.TYPE, PROPERTY_PRESERVE_TYPES);
-
+        dbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(TABLE, executedScriptsTableName, defaultDbSupport, nameDbSupportMap), false);
+        addItemsToPreserve(dbClearer, TABLE, PROPERTY_PRESERVE_TABLES);
+        addItemsToPreserve(dbClearer, VIEW, PROPERTY_PRESERVE_VIEWS);
+        addItemsToPreserve(dbClearer, MATERIALZED_VIEW, PROPERTY_PRESERVE_MATERIALIZED_VIEWS);
+        addItemsToPreserve(dbClearer, SYNONYM, PROPERTY_PRESERVE_SYNONYMS);
+        addItemsToPreserve(dbClearer, SEQUENCE, PROPERTY_PRESERVE_SEQUENCES);
+        addItemsToPreserve(dbClearer, TRIGGER, PROPERTY_PRESERVE_TRIGGERS);
+        addItemsToPreserve(dbClearer, TYPE, PROPERTY_PRESERVE_TYPES);
         return dbClearer;
     }
 
@@ -339,7 +331,6 @@ public class PropertiesDbMaintainConfigurer {
         }
         return result;
     }
-
 
     /**
      * Gets the list of items to preserve. The case is corrected if necessary. Quoting an identifier
@@ -377,25 +368,24 @@ public class PropertiesDbMaintainConfigurer {
     protected Set<DbSupport> getDbSupports() {
         Set<DbSupport> result = new HashSet<DbSupport>();
         for (DbSupport dbSupport : nameDbSupportMap.values()) {
-            if (dbSupport != null) result.add(dbSupport);
+            if (dbSupport != null) {
+                result.add(dbSupport);
+            }
         }
         return result;
     }
 
 
-    public DbSupport createDbSupport(Database database) {
-        DataSource dataSource = createDataSource(database);
-        Set<String> schemaNames = new HashSet<String>(database.getSchemaNames());
-        String defaultSchemaName = database.getSchemaNames().get(0);
-        String databaseName = database.getName();
-        String databaseDialect = database.getDialect();
+    public DbSupport createDbSupport(DatabaseInfo databaseInfo) {
+        DataSource dataSource = createDataSource(databaseInfo);
+        String databaseDialect = databaseInfo.getDialect();
         String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
         StoredIdentifierCase customStoredIdentifierCase = getCustomStoredIdentifierCase(databaseDialect);
 
         Class<DbSupport> clazz = getConfiguredClass(DbSupport.class, configuration, databaseDialect);
         return createInstanceOfType(clazz, false,
-                new Class<?>[]{String.class, DataSource.class, String.class, Set.class, SQLHandler.class, String.class, StoredIdentifierCase.class},
-                new Object[]{databaseName, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase}
+                new Class<?>[]{DatabaseInfo.class, DataSource.class, SQLHandler.class, String.class, StoredIdentifierCase.class},
+                new Object[]{databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase}
         );
     }
 
@@ -427,7 +417,7 @@ public class PropertiesDbMaintainConfigurer {
     }
 
 
-    public Database getUnnamedDatabase() {
+    public DatabaseInfo getUnnamedDatabaseInfo() {
         String driverClassName = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END, configuration);
         String url = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_URL_END, configuration);
         String userName = getString(PROPERTY_DATABASE_START + '.' + PROPERTY_USERNAME_END, configuration);
@@ -437,14 +427,14 @@ public class PropertiesDbMaintainConfigurer {
         if (schemaNames.isEmpty()) {
             throw new DbMaintainException("No value found for property " + PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END);
         }
-        return new Database("<no-name>", true, databaseDialect, driverClassName, url, userName, password, schemaNames);
+        return new DatabaseInfo("<no-name>", databaseDialect, driverClassName, url, userName, password, schemaNames);
     }
 
     /**
      * @param databaseName The name that identifies the database, not null
      * @return a DataSource that connects with the database as configured for the given database name
      */
-    public Database getDatabase(String databaseName) {
+    public DatabaseInfo getDatabaseInfo(String databaseName) {
         String driverClassNamePropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
         String urlPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
         String userNamePropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
@@ -475,66 +465,44 @@ public class PropertiesDbMaintainConfigurer {
         if (schemaNames.isEmpty()) {
             throw new DbMaintainException("No value found for property " + schemaNamesListPropertyName);
         }
-        return new Database(databaseName, true, databaseDialect, driverClassName, url, userName, password, schemaNames);
+        return new DatabaseInfo(databaseName, databaseDialect, driverClassName, url, userName, password, schemaNames);
     }
 
 
-    protected void initDbSupports() {
+    protected void initDbSupportsFromProperties() {
         nameDbSupportMap = new HashMap<String, DbSupport>();
-        if (databasesMap.isEmpty()) {
-            defaultDbSupport = createDbSupport(getUnnamedDatabase());
+
+        List<String> databaseNames = getStringList(PROPERTY_DATABASE_NAMES, configuration);
+        if (databaseNames.isEmpty()) {
+            defaultDbSupport = createDbSupport(getUnnamedDatabaseInfo());
             nameDbSupportMap.put(null, defaultDbSupport);
         } else {
-            for (Map.Entry<String, Database> databaseEntry : databasesMap.entrySet()) {
-                String databaseName = databaseEntry.getKey();
-                Database database = databaseEntry.getValue();
-                DbSupport dbSupport = null;
-                if (database != null) {
-                    dbSupport = createDbSupport(database);
+            for (String databaseName : databaseNames) {
+                DatabaseInfo databaseInfo = null;
+                if (isDatabaseIncluded(databaseName)) {
+                    databaseInfo = getDatabaseInfo(databaseName);
                 }
+                DbSupport dbSupport = createDbSupport(databaseInfo);
                 nameDbSupportMap.put(databaseName, dbSupport);
-                if (defaultDatabase == database) {
+                if (defaultDbSupport == null) {
                     defaultDbSupport = dbSupport;
                 }
             }
         }
     }
 
-    protected void initDatabasesFromProperties() {
-        databasesMap = new HashMap<String, Database>();
-        List<String> databaseNames = getStringList(PROPERTY_DATABASE_NAMES, configuration);
-        if (databaseNames.isEmpty()) {
-            defaultDatabase = getUnnamedDatabase();
-            databasesMap.put(null, defaultDatabase);
-
-        } else {
-            for (String databaseName : databaseNames) {
-                Database database = null;
-                if (isDatabaseIncluded(databaseName)) {
-                    database = getDatabase(databaseName);
-                }
-                databasesMap.put(databaseName, database);
-                if (defaultDatabase == null) {
-                    defaultDatabase = database;
-                }
-            }
-        }
-    }
-
-    protected void initDatabases(List<Database> databases) {
-        if (databases == null || databases.isEmpty()) {
-            throw new DbMaintainException("No database configuration found. At least one database should be defined.");
-        }
-
-        this.defaultDatabase = databases.get(0);
-        this.databasesMap = new HashMap<String, Database>();
-        for (Database database : databases) {
-            if (database.getIncluded()) {
-                databasesMap.put(database.getName(), database);
+    protected void initDbSupports(String defaultDatabaseName, Map<String, DatabaseInfo> nameDatabaseInfoMap) {
+        nameDbSupportMap = new HashMap<String, DbSupport>();
+        for (Map.Entry<String, DatabaseInfo> entry : nameDatabaseInfoMap.entrySet()) {
+            String name = entry.getKey();
+            DatabaseInfo databaseInfo = entry.getValue();
+            if (databaseInfo == null) {
+                nameDbSupportMap.put(name, null);
             } else {
-                databasesMap.put(database.getName(), null);
+                nameDbSupportMap.put(name, createDbSupport(databaseInfo));
             }
         }
+        defaultDbSupport = nameDbSupportMap.get(defaultDatabaseName);
     }
 
 
@@ -561,7 +529,7 @@ public class PropertiesDbMaintainConfigurer {
 
     public DbSupport getDefaultDbSupport() {
         if (defaultDbSupport == null) {
-            initDbSupports();
+            initDbSupportsFromProperties();
         }
         return defaultDbSupport;
     }
@@ -569,7 +537,7 @@ public class PropertiesDbMaintainConfigurer {
 
     public Map<String, DbSupport> getNameDbSupportMap() {
         if (nameDbSupportMap == null) {
-            initDbSupports();
+            initDbSupportsFromProperties();
         }
         return nameDbSupportMap;
     }

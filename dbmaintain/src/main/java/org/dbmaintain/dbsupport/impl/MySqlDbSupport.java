@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
@@ -39,20 +40,17 @@ import java.util.Set;
 public class MySqlDbSupport extends DbSupport {
 
 
+    public MySqlDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    }
+
+
     /**
-     * Creates support for a mysql database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
+     * @return the database dialect supported by this db support class, not null
      */
-    public MySqlDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
-                          Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, "mysql", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "mysql";
     }
 
 
@@ -66,7 +64,6 @@ public class MySqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select table_name from information_schema.tables where table_schema = '" + schemaName + "' and table_type = 'BASE TABLE'", getDataSource());
     }
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -78,7 +75,6 @@ public class MySqlDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select column_name from information_schema.columns where table_name = '" + tableName + "' and table_schema = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -88,7 +84,6 @@ public class MySqlDbSupport extends DbSupport {
     public Set<String> getViewNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select table_name from information_schema.tables where table_schema = '" + schemaName + "' and table_type = 'VIEW'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the triggers in the database schema.
@@ -114,8 +109,8 @@ public class MySqlDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableReferentialConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints where constraint_type = 'FOREIGN KEY' AND table_name = '" + tableName + "' and constraint_schema = '" + schemaName + "'", getDataSource());
@@ -123,7 +118,6 @@ public class MySqlDbSupport extends DbSupport {
             sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop foreign key " + quoted(constraintName), getDataSource());
         }
     }
-
 
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
@@ -138,8 +132,8 @@ public class MySqlDbSupport extends DbSupport {
         }
     }
 
-
     // todo refactor (see oracle)
+
     protected void disableValueConstraints(String schemaName, String tableName) {
         SQLHandler sqlHandler = getSQLHandler();
 
@@ -170,7 +164,6 @@ public class MySqlDbSupport extends DbSupport {
         //  todo check, at this moment the PK columns are returned
         return getSQLHandler().getItemsAsStringSet("select column_name from information_schema.columns where table_name = '" + tableName + "' and column_key = 'PRI' and table_schema = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Increments the identity value for the specified primary key on the specified table to the given value.
@@ -216,6 +209,16 @@ public class MySqlDbSupport extends DbSupport {
 
 
     /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    @Override
+    public void setDatabaseDefaultSchema() {
+        getSQLHandler().executeUpdate("use " + getDefaultSchemaName(), getDataSource());
+    }
+
+
+    /**
      * Triggers are supported.
      *
      * @return True
@@ -224,7 +227,6 @@ public class MySqlDbSupport extends DbSupport {
     public boolean supportsTriggers() {
         return true;
     }
-
 
     /**
      * Identity columns are supported.
@@ -236,7 +238,6 @@ public class MySqlDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Cascade are supported.
      *
@@ -244,6 +245,16 @@ public class MySqlDbSupport extends DbSupport {
      */
     @Override
     public boolean supportsCascade() {
+        return true;
+    }
+
+    /**
+     * Setting the default schema is supported.
+     *
+     * @return True
+     */
+    @Override
+    public boolean supportsSetDatabaseDefaultSchema() {
         return true;
     }
 

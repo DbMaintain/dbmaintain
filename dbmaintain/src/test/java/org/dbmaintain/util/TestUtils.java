@@ -17,6 +17,7 @@ package org.dbmaintain.util;
 
 import org.dbmaintain.clean.impl.DefaultDBCleaner;
 import org.dbmaintain.clear.impl.DefaultDBClearer;
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.DbSupport;
@@ -24,7 +25,6 @@ import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
-import org.dbmaintain.launch.ant.Database;
 import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.DefaultScriptRunner;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
@@ -40,6 +40,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.dbmaintain.dbsupport.DbMaintainDataSource.createDataSource;
 import static org.dbmaintain.util.CollectionUtils.asSet;
@@ -55,13 +56,17 @@ public abstract class TestUtils {
         return getDbSupport("PUBLIC");
     }
 
-    public static Database getHsqlDatabase() {
-        return new Database(null, true, null, "org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "", new ArrayList<String>());
+    public static DatabaseInfo getHsqlDatabaseInfo(String... schemaNames) {
+        if (schemaNames == null || schemaNames.length == 0) {
+            schemaNames = new String[]{"PUBLIC"};
+        }
+        return new DatabaseInfo(null, null, "org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "", asList(schemaNames));
     }
 
     public static DbSupport getDbSupport(String... schemaNames) {
-        DataSource dataSource = createDataSource(getHsqlDatabase());
-        return new HsqldbDbSupport(null, dataSource, schemaNames[0], asSet(schemaNames), new DefaultSQLHandler(), null, null);
+        DatabaseInfo databaseInfo = getHsqlDatabaseInfo(schemaNames);
+        DataSource dataSource = createDataSource(databaseInfo);
+        return new HsqldbDbSupport(databaseInfo, dataSource, new DefaultSQLHandler(), null, null);
     }
 
 

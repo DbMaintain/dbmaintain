@@ -23,14 +23,15 @@ import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.format.ScriptUpdatesFormatter;
 import org.dbmaintain.script.*;
-import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
-import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
+
+import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
+import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 
 /**
  * Class that offers operations for automatically maintaining a database.
@@ -110,7 +111,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     /**
      * If this property is set to true, a patch script is allowed to be executed even if another script with a higher index
      * was already executed.
-      */
+     */
     protected boolean allowOutOfSequenceExecutionOfPatchScripts;
 
     /**
@@ -129,35 +130,38 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected ScriptUpdatesFormatter scriptUpdatesFormatter;
 
+
     protected DefaultDbMaintainer() {
     }
 
     /**
      * Creates a new instance
      *
-     * @param scriptRunner runner that executes the database scripts
-     * @param scriptRepository provides access to all database scripts
+     * @param scriptRunner             runner that executes the database scripts
+     * @param scriptRepository         provides access to all database scripts
      * @param executedScriptInfoSource provides information about which scripts were already executed on the database
-     * @param fromScratchEnabled if true, the database will be cleared and recreated from scratch if needed
-     * @param hasItemsToPreserve if true, there are items in the database that must be preserved when performing a from-scratch update
-     * @param useScriptFileLastModificationDates if true, the dbmaintainer decides that a script hasn't changed if the
-     * last modification date is identical to the one of the last update, without looking at the contents of the script
-     * @param allowOutOfSequenceExecutionOfPatchScripts if true, patch scripts can be executed out-of-sequence
-     * @param cleanDb if true, the data from all tables is removed before performing any updates
-     * @param disableConstraints if true, all foreign key and not null constraints are automatically disabled
-     * or removed after each update
-     * @param updateSequences if true, the value of all sequences is set to a minimal value after each update
-     * @param dbClearer helper object that clears the database, i.e. drop all database objects
-     * @param dbCleaner helper object that cleans the database, i.e. remove the data from all tables
-     * @param constraintsDisabler helper object that disables or removes all foreign key or not null constraints
-     * @param sequenceUpdater helper object that updates all sequences to a minimal value
-     * @param scriptUpdatesFormatter helper object that formats the script updates in a well-readable format for the user
-     * @param sqlHandler helper object that performs sql statements on the database
+     * @param fromScratchEnabled       if true, the database will be cleared and recreated from scratch if needed
+     * @param hasItemsToPreserve       if true, there are items in the database that must be preserved when performing a from-scratch update
+     * @param useScriptFileLastModificationDates
+     *                                 if true, the dbmaintainer decides that a script hasn't changed if the
+     *                                 last modification date is identical to the one of the last update, without looking at the contents of the script
+     * @param allowOutOfSequenceExecutionOfPatchScripts
+     *                                 if true, patch scripts can be executed out-of-sequence
+     * @param cleanDb                  if true, the data from all tables is removed before performing any updates
+     * @param disableConstraints       if true, all foreign key and not null constraints are automatically disabled
+     *                                 or removed after each update
+     * @param updateSequences          if true, the value of all sequences is set to a minimal value after each update
+     * @param dbClearer                helper object that clears the database, i.e. drop all database objects
+     * @param dbCleaner                helper object that cleans the database, i.e. remove the data from all tables
+     * @param constraintsDisabler      helper object that disables or removes all foreign key or not null constraints
+     * @param sequenceUpdater          helper object that updates all sequences to a minimal value
+     * @param scriptUpdatesFormatter   helper object that formats the script updates in a well-readable format for the user
+     * @param sqlHandler               helper object that performs sql statements on the database
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-               boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
-               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
+                               boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
+                               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
+                               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
 
         this.scriptRunner = scriptRunner;
         this.scriptRepository = scriptRepository;
@@ -186,7 +190,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * at the end.
      *
      * @param dryRun if true, no updates have to be performed on the database - we do a simulation of the database update
-     * instead of actually performing the database update.
+     *               instead of actually performing the database update.
      * @return whether updates were performed on the database
      */
     public boolean updateDatabase(boolean dryRun) {
@@ -195,8 +199,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
             if (!getIncrementalScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
                 throw new DbMaintainException("During the latest update, the execution of the following incremental script failed: " +
-                    getIncrementalScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed before any other " +
-                    "updates can be performed.");
+                        getIncrementalScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed before any other " +
+                        "updates can be performed.");
             }
 
             if (!getRepeatableScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
@@ -204,8 +208,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 if (!scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
                         && !scriptUpdates.getRegularlyDeletedRepeatableScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
                     throw new DbMaintainException("During the latest update, the execution of the following repeatable script failed: " +
-                        getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
-                        "before any other updates can be performed: This can be the failed script itself or an incremental script.");
+                            getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
+                            "before any other updates can be performed: This can be the failed script itself or an incremental script.");
                 }
             }
 
@@ -223,15 +227,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
             if (scriptUpdates.hasIrregularScriptUpdates()) {
                 if (fromScratchEnabled) {
                     // Recreate the database from scratch
-                    logger.info("The database is recreated from scratch, since following irregular script updates were detected:\n" +
-                            scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()));
+                    logger.info("The database is recreated from scratch, since following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()));
                     recreateFromScratch = true;
                 } else {
                     throw new DbMaintainException("Following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()) +
-                        "\nBecause of this, dbmaintain can't perform the update. To solve this problem, you can do one of the following:\n" +
-                        "  1: Revert the irregular updates and use regular script updates instead\n" +
-                        "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
-                        "  3: Perform the updates manually on the database and invoke the markDatabaseAsUpToDate operation (error prone)\n");
+                            "\nBecause of this, dbmaintain can't perform the update. To solve this problem, you can do one of the following:\n" +
+                            "  1: Revert the irregular updates and use regular script updates instead\n" +
+                            "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
+                            "  3: Perform the updates manually on the database and invoke the markDatabaseAsUpToDate operation (error prone)\n");
                 }
             }
 
@@ -242,8 +245,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
                     executeScripts(scriptRepository.getAllUpdateScripts());
                 }
             } else {
-                logger.info("The database is updated incrementally, since following regular script updates were detected:\n" +
-                        scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
+                logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
                 if (!dryRun) {
                     // If cleandb is enabled, remove all data from the database.
                     if (cleanDb) {
@@ -261,8 +263,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 }
             }
             if (scriptUpdates.noUpdatesOtherThanRepeatableScriptDeletionsOrRenames()) {
-                logger.info("No script updates were detected, except for repeatable script deletions and script renames" +
-                        ". Therefore, actions such as the execution of postprocessing scripts and disabling the constraints are skipped.");
+                logger.info("No script updates were detected, except for repeatable script deletions and script renames. Therefore, actions such as the execution of postprocessing scripts and disabling the constraints are skipped.");
                 return false;
             }
 
@@ -281,7 +282,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 logger.info("The database has been updated successfully.");
             }
             return true;
-            
+
         } finally {
             sqlHandler.closeAllConnections();
         }
@@ -301,7 +302,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
     /**
      * @return Whether we are running dbmaintain for the first time. If there are no scripts available yet, this method
-     * returns false.
+     *         returns false.
      */
     protected boolean isInitialDatabaseUpdate() {
         return executedScriptInfoSource.getExecutedScripts().size() == 0 && scriptRepository.areScriptsAvailable();
@@ -353,7 +354,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         }
     }
 
-    
+
     /**
      * This operation updates the state of the database to indicate that all scripts have been executed, without actually
      * executing them. This can be useful when you want to start using DbMaintain on an existing database, or after having
@@ -380,7 +381,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * is also called when a from-scratch update is performed. The table dbmaintain_scripts is not dropped but all data in
      * it is removed. It's possible to exclude certain database objects to make sure they are not dropped, like described
      * in {@link org.dbmaintain.clear.DBClearer}
-     *
      */
     public void clearDatabase() {
         try {
@@ -397,7 +397,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * is also called when a from-scratch update is performed. The table dbmaintain_scripts is not dropped but all data in
      * it is removed. It's possible to exclude certain database objects to make sure they are not dropped, like described
      * in {@link org.dbmaintain.clear.DBClearer}
-     *
      */
     protected void doClearDatabase() {
         // Constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables

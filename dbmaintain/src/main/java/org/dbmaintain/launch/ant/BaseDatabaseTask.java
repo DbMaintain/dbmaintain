@@ -5,12 +5,16 @@ package org.dbmaintain.launch.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.util.DbMaintainException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -35,6 +39,15 @@ abstract public class BaseDatabaseTask extends BaseTask {
         }
     }
 
+    /**
+     * Registers a target database on which a task (e.g. update) can be executed.
+     *
+     * @param database The configuration of the database
+     */
+    public void addDatabase(Database database) {
+        databases.add(database);
+    }
+
 
     /**
      * Executes the database operation
@@ -49,7 +62,13 @@ abstract public class BaseDatabaseTask extends BaseTask {
      */
     @Override
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        return new PropertiesDbMaintainConfigurer(getConfiguration(), databases, getSQLHandler());
+        if (databases == null || databases.isEmpty()) {
+            throw new DbMaintainException("No database configuration found. At least one database should be defined.");
+        }
+
+        String defaultDatabaseName = databases.get(0).getName();
+        Map<String, DatabaseInfo> nameDatabaseInfoMap = createNameDatabaseInfoMap(databases);
+        return new PropertiesDbMaintainConfigurer(getConfiguration(), defaultDatabaseName, nameDatabaseInfoMap, getSQLHandler());
     }
 
 
@@ -61,13 +80,17 @@ abstract public class BaseDatabaseTask extends BaseTask {
     }
 
 
-    /**
-     * Registers a target database on which a task (e.g. update) can be executed.
-     *
-     * @param database The configuration of the database
-     */
-    public void addDatabase(Database database) {
-        databases.add(database);
+    protected Map<String, DatabaseInfo> createNameDatabaseInfoMap(List<Database> databases) {
+        Map<String, DatabaseInfo> nameDatabaseInfoMap = new HashMap<String, DatabaseInfo>();
+        for (Database database : databases) {
+            if (database.isIncluded()) {
+                DatabaseInfo databaseInfo = database.createDatabaseInfo();
+                nameDatabaseInfoMap.put(database.getName(), databaseInfo);
+            } else {
+                nameDatabaseInfoMap.put(database.getName(), null);
+            }
+        }
+        return nameDatabaseInfoMap;
     }
 
 }

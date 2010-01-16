@@ -16,7 +16,6 @@
 package org.dbmaintain.script;
 
 
-
 /**
  * Runs a given database script.
  *
@@ -24,7 +23,6 @@ package org.dbmaintain.script;
  * @author Tim Ducheyne
  */
 public interface ScriptRunner {
-
 
     /**
      * Executes the given script

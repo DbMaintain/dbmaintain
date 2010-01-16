@@ -17,7 +17,6 @@ package org.dbmaintain.script.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import static org.apache.commons.io.IOUtils.*;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.Script;
@@ -28,6 +27,8 @@ import org.dbmaintain.util.DbMaintainException;
 
 import java.io.Reader;
 import java.util.Map;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * Default implementation of a script runner.
@@ -49,8 +50,7 @@ public class DefaultScriptRunner implements ScriptRunner {
     protected Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap;
 
 
-    public DefaultScriptRunner(Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap, DbSupport defaultDbSupport,
-                               Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {
+    public DefaultScriptRunner(Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap, SQLHandler sqlHandler) {
         this.databaseDialectScriptParserFactoryMap = databaseDialectScriptParserFactoryMap;
         this.defaultDbSupport = defaultDbSupport;
         this.nameDbSupportMap = nameDbSupportMap;
@@ -67,22 +67,19 @@ public class DefaultScriptRunner implements ScriptRunner {
      * @param script The script, not null
      */
     public void execute(Script script) {
-
         Reader scriptContentReader = null;
         try {
             // Define the target database on which to execute the script
             DbSupport targetDbSupport = getTargetDatabaseDbSupport(script);
             if (targetDbSupport == null) {
-                logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() +
-                        ". This database is disabled, so the script is not executed.");
+                logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() + ". This database is disabled, so the script is not executed.");
                 return;
             }
 
             // get content stream
             scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
             // create a script parser for the target database in question 
-            ScriptParser scriptParser = databaseDialectScriptParserFactoryMap.get(targetDbSupport.getDatabaseDialect())
-                    .createScriptParser(scriptContentReader);
+            ScriptParser scriptParser = databaseDialectScriptParserFactoryMap.get(targetDbSupport.getSupportedDatabaseDialect()).createScriptParser(scriptContentReader);
             // parse and execute the statements
             String statement;
             while ((statement = scriptParser.getNextStatement()) != null) {
@@ -93,18 +90,16 @@ public class DefaultScriptRunner implements ScriptRunner {
         }
     }
 
-
     /**
-     * @param script
-     * @return
+     * @param script The script, not null
+     * @return The db support to use for the script, not null
      */
     protected DbSupport getTargetDatabaseDbSupport(Script script) {
         if (script.getTargetDatabaseName() == null) {
             return defaultDbSupport;
         }
         if (!nameDbSupportMap.containsKey(script.getTargetDatabaseName())) {
-            throw new DbMaintainException("Error executing script " + script.getFileName() +
-                    ". No database initialized with the name " + script.getTargetDatabaseName());
+            throw new DbMaintainException("Error executing script " + script.getFileName() + ". No database initialized with the name " + script.getTargetDatabaseName());
         }
         return nameDbSupportMap.get(script.getTargetDatabaseName());
     }

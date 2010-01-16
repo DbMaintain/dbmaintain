@@ -18,11 +18,12 @@
 package org.dbmaintain.launch.ant;
 
 import org.apache.commons.lang.StringUtils;
+import org.dbmaintain.dbsupport.DatabaseInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 
 /**
  * @author Filip Neven
@@ -37,13 +38,13 @@ public class Database {
     private String url;
     private String userName;
     private String password;
-    private List<String> schemaNames;
+    private String schemaNamesCommaSeparated;
 
     public Database() {
         // needed for ant
     }
 
-    public Database(String name, boolean included, String dialect, String driverClassName, String url, String userName, String password, List<String> schemaNames) {
+    public Database(String name, boolean included, String dialect, String driverClassName, String url, String userName, String password, String schemaNamesCommaSeparated) {
         this.name = name;
         this.included = included;
         this.dialect = dialect;
@@ -51,48 +52,26 @@ public class Database {
         this.url = url;
         this.userName = userName;
         this.password = password;
-        this.schemaNames = schemaNames;
+        this.schemaNamesCommaSeparated = schemaNamesCommaSeparated;
     }
+
 
     public String getName() {
         return name;
-    }
-
-    public boolean getIncluded() {
-        return included;
-    }
-
-    public String getDialect() {
-        return dialect;
-    }
-
-    public String getDriverClassName() {
-        return driverClassName;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public List<String> getSchemaNames() {
-        return schemaNames;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
+    public boolean isIncluded() {
+        return included;
+    }
+
     public void setIncluded(boolean included) {
         this.included = included;
     }
+
 
     public void setDialect(String dialect) {
         this.dialect = dialect;
@@ -115,12 +94,22 @@ public class Database {
     }
 
     public void setSchemaNames(String schemaNamesCommaSeparated) {
-        if (schemaNamesCommaSeparated == null) {
-            schemaNames = emptyList();
-        } else {
-            String[] schemas = StringUtils.split(schemaNamesCommaSeparated, ',');
-            schemaNames = asList(schemas);
-        }
+        this.schemaNamesCommaSeparated = schemaNamesCommaSeparated;
     }
+
+
+    public DatabaseInfo createDatabaseInfo() {
+        List<String> schemaNames = getSchemaNames();
+        return new DatabaseInfo(name, dialect, driverClassName, url, userName, password, schemaNames);
+    }
+
+    protected List<String> getSchemaNames() {
+        if (schemaNamesCommaSeparated == null) {
+            return new ArrayList<String>();
+        }
+        String[] schemaNamesArray = StringUtils.split(schemaNamesCommaSeparated, ',');
+        return asList(schemaNamesArray);
+    }
+
 
 }

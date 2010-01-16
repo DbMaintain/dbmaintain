@@ -17,7 +17,8 @@ package org.dbmaintain.script.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.launch.ant.Database;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
@@ -41,14 +42,14 @@ public class SqlPlusScriptRunner implements ScriptRunner {
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(SqlPlusScriptRunner.class);
 
-    protected Database defaultDatabase;
-    protected Map<String, Database> databasesMap;
+    protected DbSupport defaultDbSupport;
+    protected Map<String, DbSupport> nameDbSupportMap;
     protected String sqlPlusCommand;
 
 
-    public SqlPlusScriptRunner(Database defaultDatabase, Map<String, Database> databasesMap, String sqlPlusCommand) {
-        this.defaultDatabase = defaultDatabase;
-        this.databasesMap = databasesMap;
+    public SqlPlusScriptRunner(DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap, String sqlPlusCommand) {
+        this.defaultDbSupport = defaultDbSupport;
+        this.nameDbSupportMap = nameDbSupportMap;
         this.sqlPlusCommand = sqlPlusCommand;
     }
 
@@ -61,14 +62,14 @@ public class SqlPlusScriptRunner implements ScriptRunner {
     public void execute(Script script) {
         try {
             // Define the target database on which to execute the script
-            Database targetDatabase = getTargetDatabase(script);
-            if (targetDatabase == null) {
+            DbSupport targetDbSupport = getTargetDatabaseDbSupport(script);
+            if (targetDbSupport == null) {
                 logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() + ". This database is disabled, so the script is not executed.");
                 return;
             }
 
             File scriptFile = createTemporaryScriptFile(script);
-            File wrapperScriptFile = generateWrapperScriptFile(targetDatabase, scriptFile);
+            File wrapperScriptFile = generateWrapperScriptFile(targetDbSupport.getDatabaseInfo(), scriptFile);
             createSqlPlusExecutor().executeScript(wrapperScriptFile);
 
         } catch (Exception e) {
@@ -77,7 +78,7 @@ public class SqlPlusScriptRunner implements ScriptRunner {
     }
 
 
-    protected File generateWrapperScriptFile(Database database, File targetScriptFile) throws IOException {
+    protected File generateWrapperScriptFile(DatabaseInfo databaseInfo, File targetScriptFile) throws IOException {
         File temporaryScriptsDir = createTemporaryScriptsDir();
         File temporaryScriptWrapperFile = new File(temporaryScriptsDir, "wrapper-" + currentTimeMillis() + targetScriptFile.getName());
         temporaryScriptWrapperFile.deleteOnExit();
@@ -85,11 +86,14 @@ public class SqlPlusScriptRunner implements ScriptRunner {
         String lineSeparator = System.getProperty("line.separator");
         StringBuilder content = new StringBuilder();
         content.append("CONNECT ");
-        content.append(database.getUserName());
+        content.append(databaseInfo.getUserName());
         content.append('/');
-        content.append(database.getPassword());
+        content.append(databaseInfo.getPassword());
         content.append('@');
-        content.append(getDatabaseConfigFromJdbcUrl(database.getUrl()));
+        content.append(getDatabaseConfigFromJdbcUrl(databaseInfo.getUrl()));
+        content.append(lineSeparator);
+        content.append("alter session set current_schema=");
+        content.append(databaseInfo.getDefaultSchemaName());
         content.append(lineSeparator);
         content.append("@@");
         content.append(targetScriptFile.getName());
@@ -125,14 +129,14 @@ public class SqlPlusScriptRunner implements ScriptRunner {
         return new SqlPlusExecutor(sqlPlusCommand);
     }
 
-    protected Database getTargetDatabase(Script script) {
+    protected DbSupport getTargetDatabaseDbSupport(Script script) {
         if (script.getTargetDatabaseName() == null) {
-            return defaultDatabase;
+            return defaultDbSupport;
         }
-        if (!databasesMap.containsKey(script.getTargetDatabaseName())) {
+        if (!nameDbSupportMap.containsKey(script.getTargetDatabaseName())) {
             throw new DbMaintainException("Error executing script " + script.getFileName() + ". No database initialized with the name " + script.getTargetDatabaseName());
         }
-        return databasesMap.get(script.getTargetDatabaseName());
+        return nameDbSupportMap.get(script.getTargetDatabaseName());
     }
 
     protected String getDatabaseConfigFromJdbcUrl(String url) {

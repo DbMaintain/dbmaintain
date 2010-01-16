@@ -16,8 +16,6 @@
 package org.dbmaintain.dbsupport;
 
 import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.StoredIdentifierCase;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.Map;
@@ -28,159 +26,159 @@ import java.util.Map;
  */
 public class DbItemIdentifier {
 
-	private String databaseName;
-	
-	private String schemaName;
-	
-	private String itemName;
-	
-	private boolean caseSensitive;
+    private String databaseName;
+
+    private String schemaName;
+
+    private String itemName;
+
+    private boolean caseSensitive;
 
     private DbItemType type;
-	
-	private DbItemIdentifier(String databaseName, String schemaName, String itemName, boolean caseSensitive, DbItemType type) {
-		this.databaseName = databaseName;
-		this.schemaName = schemaName;
-		this.itemName = itemName;
-		this.caseSensitive = caseSensitive;
+
+    private DbItemIdentifier(String databaseName, String schemaName, String itemName, boolean caseSensitive, DbItemType type) {
+        this.databaseName = databaseName;
+        this.schemaName = schemaName;
+        this.itemName = itemName;
+        this.caseSensitive = caseSensitive;
         this.type = type;
     }
 
-	public String getDatabaseName() {
-		return databaseName;
-	}
+    public String getDatabaseName() {
+        return databaseName;
+    }
 
-	public String getSchemaName() {
-		return schemaName;
-	}
+    public String getSchemaName() {
+        return schemaName;
+    }
 
-	public String getItemName() {
-		return itemName;
-	}
+    public String getItemName() {
+        return itemName;
+    }
 
-	public boolean isCaseSensitive() {
-		return caseSensitive;
-	}
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
 
     public DbItemType getType() {
         return type;
     }
 
     public DbItemIdentifier getSchema() {
-		return new DbItemIdentifier(databaseName, schemaName, null, caseSensitive, type);
-	}
+        return new DbItemIdentifier(databaseName, schemaName, null, caseSensitive, type);
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((databaseName == null) ? 0 : databaseName.hashCode());
-		result = prime * result + ((itemName == null) ? 0 : (caseSensitive ? itemName.hashCode() : itemName.toUpperCase().hashCode()));
-		result = prime * result + ((schemaName == null) ? 0 : (caseSensitive ? schemaName.hashCode() : schemaName.toUpperCase().hashCode()));
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((databaseName == null) ? 0 : databaseName.hashCode());
+        result = prime * result + ((itemName == null) ? 0 : (caseSensitive ? itemName.hashCode() : itemName.toUpperCase().hashCode()));
+        result = prime * result + ((schemaName == null) ? 0 : (caseSensitive ? schemaName.hashCode() : schemaName.toUpperCase().hashCode()));
         result = prime * result + ((type == null) ? 0 : (caseSensitive ? type.hashCode() : type.hashCode()));
-		return result;
-	}
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final DbItemIdentifier other = (DbItemIdentifier) obj;
-		if (databaseName == null) {
-			if (other.databaseName != null)
-				return false;
-		} else if (!databaseName.equals(other.databaseName))
-			return false;
-		if (itemName == null) {
-			if (other.itemName != null)
-				return false;
-		} else if (!((caseSensitive && itemName.equals(other.itemName)) || (!caseSensitive && itemName.equalsIgnoreCase(itemName))))
-			return false;
-		if (schemaName == null) {
-			if (other.schemaName != null)
-				return false;
-		} else if (!((caseSensitive && schemaName.equals(other.schemaName)) || (!caseSensitive && schemaName.equalsIgnoreCase(schemaName))))
-			return false;
-		return true;
-	}
-	
-	
-	public static DbItemIdentifier parseItemIdentifier(DbItemType type, String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
-		String[] identifierParts = StringUtils.split(identifierAsString, '.');
-    	String databaseName, schemaName, itemName;
-    	DbSupport dbSupport;
-    	if (identifierParts.length == 3) {
-    		databaseName = identifierParts[0];
-    		dbSupport = nameDbSupportMap.get(databaseName);
-    		if (dbSupport == null) {
-    			throw new DbMaintainException("No database configured with the name " + databaseName);
-    		}
-    		schemaName = identifierParts[1];
-    		itemName = identifierParts[2];
-    	} else if (identifierParts.length == 2) {
-    		dbSupport = defaultDbSupport;
-    		databaseName = dbSupport.getDatabaseName();
-    		schemaName = identifierParts[0];
-    		itemName = identifierParts[1];
-    	} else if (identifierParts.length == 1) {
-    		dbSupport = defaultDbSupport;
-    		databaseName = dbSupport.getDatabaseName();
-    		schemaName = dbSupport.getDefaultSchemaName();
-    		itemName = identifierParts[0];
-    	} else {
-    		throw new DbMaintainException("Incorrectly formatted db item identifier " + identifierAsString);
-    	}
-    	
-    	return getItemIdentifier(type, schemaName, itemName, dbSupport);
-	}
-	
-	
-	public static DbItemIdentifier getItemIdentifier(DbItemType type, String schemaName, String itemName, DbSupport dbSupport) {
-		boolean caseSenstve = dbSupport.getStoredIdentifierCase() != StoredIdentifierCase.MIXED_CASE;
-		if (!caseSenstve) {
-    		schemaName = schemaName.toUpperCase();
-    		itemName = itemName.toUpperCase();
-    	} else {
-    		schemaName = dbSupport.toCorrectCaseIdentifier(schemaName);
-    		itemName = dbSupport.toCorrectCaseIdentifier(itemName);
-    	}
-    	return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName), 
-    			dbSupport.toCorrectCaseIdentifier(itemName), caseSenstve, type);
-	}
-	
-	
-	public static DbItemIdentifier parseSchemaIdentifier(String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> dbNameDbSupportMap) {
-		String[] identifierParts = StringUtils.split(identifierAsString, '.');
-    	String databaseName, schemaName;
-    	DbSupport dbSupport;
-    	if (identifierParts.length == 2) {
-    		databaseName = identifierParts[0];
-    		dbSupport = dbNameDbSupportMap.get(databaseName);
-    		if (dbSupport == null) {
-    			throw new DbMaintainException("No database configured with the name " + databaseName);
-    		}
-    		schemaName = identifierParts[1];
-    	} else if (identifierParts.length == 1) {
-    		dbSupport = defaultDbSupport;
-    		databaseName = dbSupport.getDatabaseName();
-    		schemaName = identifierParts[0];
-    	} else {
-    		throw new DbMaintainException("Incorrectly formatted db schema identifier " + identifierAsString);
-    	}
-    	
-    	return getSchemaIdentifier(schemaName, dbSupport);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final DbItemIdentifier other = (DbItemIdentifier) obj;
+        if (databaseName == null) {
+            if (other.databaseName != null)
+                return false;
+        } else if (!databaseName.equals(other.databaseName))
+            return false;
+        if (itemName == null) {
+            if (other.itemName != null)
+                return false;
+        } else if (!((caseSensitive && itemName.equals(other.itemName)) || (!caseSensitive && itemName.equalsIgnoreCase(itemName))))
+            return false;
+        if (schemaName == null) {
+            if (other.schemaName != null)
+                return false;
+        } else if (!((caseSensitive && schemaName.equals(other.schemaName)) || (!caseSensitive && schemaName.equalsIgnoreCase(schemaName))))
+            return false;
+        return true;
+    }
 
-	
-	public static DbItemIdentifier getSchemaIdentifier(String schemaName, DbSupport dbSupport) {
-		boolean caseSenstve = dbSupport.getStoredIdentifierCase() != StoredIdentifierCase.MIXED_CASE;
-		if (!caseSenstve) {
-    		schemaName = schemaName.toUpperCase();
-    	}
-    	return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName), null, caseSenstve, DbItemType.SCHEMA);
-	}
+
+    public static DbItemIdentifier parseItemIdentifier(DbItemType type, String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
+        String[] identifierParts = StringUtils.split(identifierAsString, '.');
+        String databaseName, schemaName, itemName;
+        DbSupport dbSupport;
+        if (identifierParts.length == 3) {
+            databaseName = identifierParts[0];
+            dbSupport = nameDbSupportMap.get(databaseName);
+            if (dbSupport == null) {
+                throw new DbMaintainException("No database configured with the name " + databaseName);
+            }
+            schemaName = identifierParts[1];
+            itemName = identifierParts[2];
+        } else if (identifierParts.length == 2) {
+            dbSupport = defaultDbSupport;
+            databaseName = dbSupport.getDatabaseName();
+            schemaName = identifierParts[0];
+            itemName = identifierParts[1];
+        } else if (identifierParts.length == 1) {
+            dbSupport = defaultDbSupport;
+            databaseName = dbSupport.getDatabaseName();
+            schemaName = dbSupport.getDefaultSchemaName();
+            itemName = identifierParts[0];
+        } else {
+            throw new DbMaintainException("Incorrectly formatted db item identifier " + identifierAsString);
+        }
+
+        return getItemIdentifier(type, schemaName, itemName, dbSupport);
+    }
+
+
+    public static DbItemIdentifier getItemIdentifier(DbItemType type, String schemaName, String itemName, DbSupport dbSupport) {
+        boolean caseSensitive = dbSupport.getStoredIdentifierCase() != StoredIdentifierCase.MIXED_CASE;
+        if (!caseSensitive) {
+            schemaName = schemaName.toUpperCase();
+            itemName = itemName.toUpperCase();
+        } else {
+            schemaName = dbSupport.toCorrectCaseIdentifier(schemaName);
+            itemName = dbSupport.toCorrectCaseIdentifier(itemName);
+        }
+        return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName),
+                dbSupport.toCorrectCaseIdentifier(itemName), caseSensitive, type);
+    }
+
+
+    public static DbItemIdentifier parseSchemaIdentifier(String identifierAsString, DbSupport defaultDbSupport, Map<String, DbSupport> dbNameDbSupportMap) {
+        String[] identifierParts = StringUtils.split(identifierAsString, '.');
+        String databaseName, schemaName;
+        DbSupport dbSupport;
+        if (identifierParts.length == 2) {
+            databaseName = identifierParts[0];
+            dbSupport = dbNameDbSupportMap.get(databaseName);
+            if (dbSupport == null) {
+                throw new DbMaintainException("No database configured with the name " + databaseName);
+            }
+            schemaName = identifierParts[1];
+        } else if (identifierParts.length == 1) {
+            dbSupport = defaultDbSupport;
+            databaseName = dbSupport.getDatabaseName();
+            schemaName = identifierParts[0];
+        } else {
+            throw new DbMaintainException("Incorrectly formatted db schema identifier " + identifierAsString);
+        }
+
+        return getSchemaIdentifier(schemaName, dbSupport);
+    }
+
+
+    public static DbItemIdentifier getSchemaIdentifier(String schemaName, DbSupport dbSupport) {
+        boolean caseSenstve = dbSupport.getStoredIdentifierCase() != StoredIdentifierCase.MIXED_CASE;
+        if (!caseSenstve) {
+            schemaName = schemaName.toUpperCase();
+        }
+        return new DbItemIdentifier(dbSupport.getDatabaseName(), dbSupport.toCorrectCaseIdentifier(schemaName), null, caseSenstve, DbItemType.SCHEMA);
+    }
 }

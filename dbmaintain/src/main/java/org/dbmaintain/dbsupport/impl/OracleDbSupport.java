@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
+import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.StoredIdentifierCase;
@@ -24,6 +24,8 @@ import org.dbmaintain.util.DbMaintainException;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Set;
+
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Implementation of {@link DbSupport} for an Oracle database.
@@ -37,38 +39,17 @@ public class OracleDbSupport extends DbSupport {
     private Integer oracleMajorVersionNumber;
 
 
-    /**
-     * Creates support for a Oracle database.
-     *
-     * @param databaseName
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
-     */
-    public OracleDbSupport(String databaseName, DataSource dataSource, String defaultSchemaName,
-                           Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        this(databaseName, "oracle", dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    public OracleDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+        super(databaseInfo, dataSource, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
     }
 
 
     /**
-     * Creates support for a Oracle database.
-     *
-     * @param databaseName
-     * @param dialect
-     * @param dataSource
-     * @param defaultSchemaName
-     * @param schemaNames
-     * @param sqlHandler
-     * @param customIdentifierQuoteString
-     * @param customStoredIdentifierCase
+     * @return the database dialect supported by this db support class, not null
      */
-    protected OracleDbSupport(String databaseName, String dialect, DataSource dataSource, String defaultSchemaName,
-                              Set<String> schemaNames, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseName, dialect, dataSource, defaultSchemaName, schemaNames, sqlHandler, customIdentifierQuoteString, customStoredIdentifierCase);
+    @Override
+    public String getSupportedDatabaseDialect() {
+        return "oracle";
     }
 
 
@@ -84,7 +65,6 @@ public class OracleDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from ALL_TABLES where OWNER = '" + schemaName + "' and TABLE_NAME not like 'BIN$%' minus select MVIEW_NAME from ALL_MVIEWS where OWNER = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Gets the names of all columns of the given table.
      *
@@ -96,7 +76,6 @@ public class OracleDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select COLUMN_NAME from ALL_TAB_COLUMNS where TABLE_NAME = '" + tableName + "' and OWNER = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all views in the database schema.
      *
@@ -106,7 +85,6 @@ public class OracleDbSupport extends DbSupport {
     public Set<String> getViewNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select VIEW_NAME from ALL_VIEWS where OWNER = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all materialized views in the database schema.
@@ -118,7 +96,6 @@ public class OracleDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select MVIEW_NAME from ALL_MVIEWS where OWNER = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all synonyms in the database schema.
      *
@@ -128,7 +105,6 @@ public class OracleDbSupport extends DbSupport {
     public Set<String> getSynonymNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select SYNONYM_NAME from ALL_SYNONYMS where OWNER = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all sequences in the database schema.
@@ -140,7 +116,6 @@ public class OracleDbSupport extends DbSupport {
         return getSQLHandler().getItemsAsStringSet("select SEQUENCE_NAME from ALL_SEQUENCES where SEQUENCE_OWNER = '" + schemaName + "'", getDataSource());
     }
 
-
     /**
      * Retrieves the names of all triggers in the database schema.
      *
@@ -151,7 +126,6 @@ public class OracleDbSupport extends DbSupport {
         // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
         return getSQLHandler().getItemsAsStringSet("select TRIGGER_NAME from ALL_TRIGGERS where OWNER = '" + schemaName + "' and TRIGGER_NAME not like 'BIN$%'", getDataSource());
     }
-
 
     /**
      * Retrieves the names of all the types in the database schema.
@@ -175,7 +149,6 @@ public class OracleDbSupport extends DbSupport {
         getSQLHandler().executeUpdate("drop table " + qualified(schemaName, tableName) + " cascade constraints" + (supportsPurge() ? " purge" : ""), getDataSource());
     }
 
-
     /**
      * Removes the view with the given name from the database
      * Note: the view name is surrounded with quotes, making it case-sensitive.
@@ -187,7 +160,6 @@ public class OracleDbSupport extends DbSupport {
         getSQLHandler().executeUpdate("drop view " + qualified(schemaName, viewName) + " cascade constraints", getDataSource());
     }
 
-
     /**
      * Removes the materialized view with the given name from the database
      * Note: the view name is surrounded with quotes, making it case-sensitive.
@@ -198,7 +170,6 @@ public class OracleDbSupport extends DbSupport {
     public void dropMaterializedView(String schemaName, String materializedViewName) {
         getSQLHandler().executeUpdate("drop materialized view " + qualified(schemaName, materializedViewName), getDataSource());
     }
-
 
     /**
      * Drops the type with the given name from the database
@@ -245,7 +216,6 @@ public class OracleDbSupport extends DbSupport {
         }
     }
 
-
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
      *
@@ -279,6 +249,7 @@ public class OracleDbSupport extends DbSupport {
         }
     }
 
+
     /**
      * Returns the value of the sequence with the given name.
      * <p/>
@@ -291,7 +262,6 @@ public class OracleDbSupport extends DbSupport {
     public long getSequenceValue(String schemaName, String sequenceName) {
         return getSQLHandler().getItemAsLong("select LAST_NUMBER from ALL_SEQUENCES where SEQUENCE_NAME = '" + sequenceName + "' and SEQUENCE_OWNER = '" + schemaName + "'", getDataSource());
     }
-
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value.
@@ -327,6 +297,16 @@ public class OracleDbSupport extends DbSupport {
 
 
     /**
+     * Sets the current schema of the database. If a current schema is set, it does not need to be specified
+     * explicitly in the scripts.
+     */
+    @Override
+    public void setDatabaseDefaultSchema() {
+        getSQLHandler().executeUpdate("alter session set current_schema=" + getDefaultSchemaName(), getDataSource());
+    }
+
+
+    /**
      * Gets the column type suitable to store values of the Java <code>java.lang.Long</code> type.
      *
      * @return The column type
@@ -335,7 +315,6 @@ public class OracleDbSupport extends DbSupport {
     public String getLongDataType() {
         return "INTEGER";
     }
-
 
     /**
      * Gets the column type suitable to store text values.
@@ -359,7 +338,6 @@ public class OracleDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Sequences are supported.
      *
@@ -369,7 +347,6 @@ public class OracleDbSupport extends DbSupport {
     public boolean supportsSequences() {
         return true;
     }
-
 
     /**
      * Triggers are supported.
@@ -381,7 +358,6 @@ public class OracleDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Types are supported
      *
@@ -391,7 +367,6 @@ public class OracleDbSupport extends DbSupport {
     public boolean supportsTypes() {
         return true;
     }
-
 
     /**
      * Materialized views are supported
@@ -403,7 +378,6 @@ public class OracleDbSupport extends DbSupport {
         return true;
     }
 
-
     /**
      * Cascade are supported.
      *
@@ -411,6 +385,16 @@ public class OracleDbSupport extends DbSupport {
      */
     @Override
     public boolean supportsCascade() {
+        return true;
+    }
+
+    /**
+     * Setting the default schema is supported.
+     *
+     * @return True
+     */
+    @Override
+    public boolean supportsSetDatabaseDefaultSchema() {
         return true;
     }
 
@@ -442,4 +426,5 @@ public class OracleDbSupport extends DbSupport {
         }
         return oracleMajorVersionNumber;
     }
+
 }
