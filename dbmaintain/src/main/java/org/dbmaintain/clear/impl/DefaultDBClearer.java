@@ -55,6 +55,7 @@ public class DefaultDBClearer implements DBClearer {
 
     protected Map<String, DbSupport> nameDbSupportMap;
 
+    private MultiPassErrorHandler multiPassErrorHandler;
 
     /**
      * @param nameDbSupportMap
@@ -75,21 +76,25 @@ public class DefaultDBClearer implements DBClearer {
         for (DbSupport dbSupport : nameDbSupportMap.values()) {
             if (dbSupport != null) {
             	for (String schemaName : dbSupport.getSchemaNames()) {
+                    multiPassErrorHandler = new MultiPassErrorHandler();
             	
     	            // check whether schema needs to be preserved
     	            if (itemsToPreserve.containsKey(DbItemIdentifier.getSchemaIdentifier(schemaName, dbSupport))) {
     	                continue;
     	            }
     	            logger.info("Clearing database schema " + schemaName);
-                    
-    	            dropSynonyms(dbSupport, schemaName);
-    	            dropViews(dbSupport, schemaName);
-    	            dropMaterializedViews(dbSupport, schemaName);
-    	            dropSequences(dbSupport, schemaName);
-    	            dropTables(dbSupport, schemaName);
-    	
-    	            dropTriggers(dbSupport, schemaName);
-    	            dropTypes(dbSupport, schemaName);
+    	            do{
+        	            dropSynonyms(dbSupport, schemaName);
+        	            dropViews(dbSupport, schemaName);
+        	            dropMaterializedViews(dbSupport, schemaName);
+        	            dropSequences(dbSupport, schemaName);
+        	            dropTables(dbSupport, schemaName);
+        	
+        	            dropTriggers(dbSupport, schemaName);
+        	            dropTypes(dbSupport, schemaName);
+    	            }
+    	            while ( multiPassErrorHandler.continueExecutionAfterPass() );
+    	            
     	            // todo drop functions, stored procedures.
             	}
             }
@@ -111,7 +116,11 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping table " + tableName + " in database schema " + schemaName);
-            dbSupport.dropTable(schemaName, tableName);
+            try {
+                dbSupport.dropTable(schemaName, tableName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
         }
     }
 
@@ -130,7 +139,11 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping view " + viewName + " in database schema " + schemaName);
-            dbSupport.dropView(schemaName, viewName);
+            try {
+                dbSupport.dropView(schemaName, viewName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
         }
     }
 
@@ -152,7 +165,11 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping materialized view " + materializedViewName + " in database schema " + schemaName);
-            dbSupport.dropMaterializedView(schemaName, materializedViewName);
+            try {
+                dbSupport.dropMaterializedView(schemaName, materializedViewName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
         }
     }
 
@@ -174,7 +191,12 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping synonym " + synonymName + " in database schema " + schemaName);
-            dbSupport.dropSynonym(schemaName, synonymName);
+            try {
+                dbSupport.dropSynonym(schemaName, synonymName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
+            
         }
     }
 
@@ -196,7 +218,11 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping sequence " + sequenceName + " in database schema " + schemaName);
-            dbSupport.dropSequence(schemaName, sequenceName);
+            try {
+                dbSupport.dropSequence(schemaName, sequenceName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
         }
     }
 
@@ -218,7 +244,11 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping trigger " + triggerName + " in database schema " + schemaName);
-            dbSupport.dropTrigger(schemaName, triggerName);
+            try {
+                dbSupport.dropTrigger(schemaName, triggerName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
         }
     }
 
@@ -240,7 +270,11 @@ public class DefaultDBClearer implements DBClearer {
                 continue;
             }
             logger.debug("Dropping type " + typeName + " in database schema " + schemaName);
-            dbSupport.dropType(schemaName, typeName);
+            try {
+                dbSupport.dropType(schemaName, typeName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
         }
     }
 
