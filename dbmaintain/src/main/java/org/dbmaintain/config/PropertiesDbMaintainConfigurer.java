@@ -69,7 +69,6 @@ public class PropertiesDbMaintainConfigurer {
     public PropertiesDbMaintainConfigurer(Properties configuration, SQLHandler sqlHandler) {
         this.configuration = configuration;
         this.sqlHandler = sqlHandler;
-        initDbSupportsFromProperties();
     }
 
 
@@ -159,7 +158,7 @@ public class PropertiesDbMaintainConfigurer {
 
     protected ScriptRunner createSqlPlusScriptRunner(Class<ScriptRunner> clazz) {
         String sqlPlusCommand = PropertyUtils.getString(PROPERTY_SQL_PLUS_COMMAND, configuration);
-        return createInstanceOfType(clazz, false, new Class<?>[]{DbSupport.class, Map.class, String.class}, new Object[]{defaultDbSupport, nameDbSupportMap, sqlPlusCommand});
+        return createInstanceOfType(clazz, false, new Class<?>[]{DbSupport.class, Map.class, String.class}, new Object[]{getDefaultDbSupport(), getNameDbSupportMap(), sqlPlusCommand});
     }
 
 
@@ -290,7 +289,7 @@ public class PropertiesDbMaintainConfigurer {
             dbClearer.addItemToPreserve(schemaToPreserve, true);
         }
         String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, configuration);
-        dbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(TABLE, executedScriptsTableName, defaultDbSupport, nameDbSupportMap), false);
+        dbClearer.addItemToPreserve(DbItemIdentifier.parseItemIdentifier(TABLE, executedScriptsTableName, getDefaultDbSupport(), getNameDbSupportMap()), false);
         addItemsToPreserve(dbClearer, TABLE, PROPERTY_PRESERVE_TABLES);
         addItemsToPreserve(dbClearer, VIEW, PROPERTY_PRESERVE_VIEWS);
         addItemsToPreserve(dbClearer, MATERIALZED_VIEW, PROPERTY_PRESERVE_MATERIALIZED_VIEWS);
@@ -367,7 +366,7 @@ public class PropertiesDbMaintainConfigurer {
      */
     protected Set<DbSupport> getDbSupports() {
         Set<DbSupport> result = new HashSet<DbSupport>();
-        for (DbSupport dbSupport : nameDbSupportMap.values()) {
+        for (DbSupport dbSupport : getNameDbSupportMap().values()) {
             if (dbSupport != null) {
                 result.add(dbSupport);
             }
