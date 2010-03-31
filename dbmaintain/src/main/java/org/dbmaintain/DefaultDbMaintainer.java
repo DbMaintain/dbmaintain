@@ -131,9 +131,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
     protected ScriptUpdatesFormatter scriptUpdatesFormatter;
 
 
-    protected DefaultDbMaintainer() {
-    }
-
     /**
      * Creates a new instance
      *
@@ -495,7 +492,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executedScriptInfoSource.updateExecutedScript(executedScript);
 
         } catch (DbMaintainException e) {
-            throw new DbMaintainException("Error while executing script " + script.getFileName() + ": " + e.getMessage(), e);
+            throw new DbMaintainException("Error while executing script " + script.getFileName() + "\n" + e.getMessage(), e);
         }
     }
 
@@ -525,19 +522,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
             }
         }
         return failedExecutedScripts;
-    }
-
-
-    /**
-     * @return whether during the last database update, an error occured while executing an incremental script
-     */
-    protected boolean errorInIncrementalScriptDuringLastUpdate() {
-        for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
-            if (script.getScript().isIncremental() && !script.isSuccessful()) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

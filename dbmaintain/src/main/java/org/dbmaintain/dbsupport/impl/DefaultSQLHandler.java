@@ -116,7 +116,7 @@ public class DefaultSQLHandler implements SQLHandler {
             return nbChanges;
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while performing database update: " + sql, e);
+            throw new DbMaintainException("Error while performing database update: " + sql + "\n" + e.getMessage(), e);
         } finally {
             closeQuietly(statement);
         }
