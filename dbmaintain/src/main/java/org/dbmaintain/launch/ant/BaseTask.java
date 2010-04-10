@@ -15,19 +15,19 @@
  */
 package org.dbmaintain.launch.ant;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Properties;
-
 import org.apache.tools.ant.Task;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.FileUtils;
 
+import java.io.File;
+import java.net.URL;
+import java.util.Properties;
+
 /**
  * Base DbMaintain task
- * 
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
@@ -39,7 +39,7 @@ abstract public class BaseTask extends Task {
      */
     private String configFile;
 
-    
+
     /**
      * @return The {@link DbMaintain} instance for this task
      */
@@ -47,24 +47,26 @@ abstract public class BaseTask extends Task {
         PropertiesDbMaintainConfigurer dbMaintainConfigurer = getDbMaintainConfigurer();
         return new DbMaintain(dbMaintainConfigurer);
     }
-    
-    
+
+
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
         return new PropertiesDbMaintainConfigurer(getConfiguration(), null);
     }
-    
-    
+
+
     /**
      * @return The DbMaintain configuration for this task
      */
+    @SuppressWarnings({"unchecked"})
     protected Properties getConfiguration() {
         URL configFileUrl = null;
         if (configFile != null) {
             configFileUrl = FileUtils.getUrl(new File(configFile));
         }
         Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration(configFileUrl);
+        configuration.putAll(getProject().getProperties()); // add ants properties
         addTaskConfiguration(configuration);
-        
+
         return configuration;
     }
 
@@ -76,9 +78,10 @@ abstract public class BaseTask extends Task {
         return new DbMaintainConfigurationLoader().loadDefaultConfiguration();
     }
 
-    
+
     /**
      * Hook method for adding specific configuration for this ant task
+     *
      * @param configuration the configuration object that assembles all dbmaintain property values, not null
      */
     protected void addTaskConfiguration(Properties configuration) {

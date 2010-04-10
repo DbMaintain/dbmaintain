@@ -222,16 +222,16 @@ public class DbMaintainProperties {
     public static final String PROPERTY_EXCLUDED_QUALIFIERS = "dbMaintainer.excludedQualifiers";
 
     public static final String PROPERTY_INCLUDED_QUALIFIERS = "dbMaintainer.includedQualifiers";
-    
+
     public static final String PROPERTY_QUALIFIER_EXPRESSION = "dbMaintainer.qualifierExpression";
 
-    /**
-     * Property indicating if updating the database from scratch is enabled
-     */
     public static final String PROPERTY_SQL_PLUS_COMMAND = "dbMaintainer.sqlPlusScriptRunner.sqlPlusCommand";
+
+    public static final String PROPERTY_DB2_COMMAND = "dbMaintainer.db2ScriptRunner.db2Command";
 
     /**
      * Private constructor to prevent instantiation
      */
-    private DbMaintainProperties() {}
+    private DbMaintainProperties() {
+    }
 }
