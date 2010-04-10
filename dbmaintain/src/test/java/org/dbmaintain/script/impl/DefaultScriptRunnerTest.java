@@ -24,6 +24,7 @@ import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
+import org.dbmaintain.scriptrunner.impl.DefaultScriptRunner;
 import org.dbmaintain.util.SQLTestUtils;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDbSupport;

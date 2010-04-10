@@ -22,9 +22,18 @@ import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.dbsupport.*;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.format.ScriptUpdatesFormatter;
-import org.dbmaintain.script.*;
-import org.dbmaintain.script.impl.*;
+import org.dbmaintain.script.IncludeExcludeQualifierEvaluator;
+import org.dbmaintain.script.Qualifier;
+import org.dbmaintain.script.QualifierEvaluator;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.script.impl.ArchiveScriptLocation;
+import org.dbmaintain.script.impl.FileSystemScriptLocation;
+import org.dbmaintain.script.impl.ScriptLocation;
+import org.dbmaintain.script.impl.ScriptRepository;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
+import org.dbmaintain.scriptrunner.ScriptRunner;
+import org.dbmaintain.scriptrunner.impl.SqlPlusScriptRunner;
+import org.dbmaintain.scriptrunner.impl.db2.Db2ScriptRunner;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
@@ -153,12 +162,20 @@ public class PropertiesDbMaintainConfigurer {
         if (clazz.equals(SqlPlusScriptRunner.class)) {
             return createSqlPlusScriptRunner(clazz);
         }
+        if (clazz.equals(Db2ScriptRunner.class)) {
+            return createDb2ScriptRunner(clazz);
+        }
         return createInstanceOfType(clazz, false, new Class<?>[]{Map.class, DbSupport.class, Map.class, SQLHandler.class}, new Object[]{databaseDialectScriptParserFactoryMap, getDefaultDbSupport(), getNameDbSupportMap(), sqlHandler});
     }
 
     protected ScriptRunner createSqlPlusScriptRunner(Class<ScriptRunner> clazz) {
         String sqlPlusCommand = PropertyUtils.getString(PROPERTY_SQL_PLUS_COMMAND, configuration);
         return createInstanceOfType(clazz, false, new Class<?>[]{DbSupport.class, Map.class, String.class}, new Object[]{getDefaultDbSupport(), getNameDbSupportMap(), sqlPlusCommand});
+    }
+
+    protected ScriptRunner createDb2ScriptRunner(Class<ScriptRunner> clazz) {
+        String db2Command = PropertyUtils.getString(PROPERTY_DB2_COMMAND, configuration);
+        return createInstanceOfType(clazz, false, new Class<?>[]{DbSupport.class, Map.class, String.class}, new Object[]{getDefaultDbSupport(), getNameDbSupportMap(), db2Command});
     }
 
 

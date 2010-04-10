@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script.impl;
+package org.dbmaintain.scriptrunner.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptRunner;
+import org.dbmaintain.scriptrunner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;
@@ -32,27 +31,33 @@ import static java.lang.System.currentTimeMillis;
 import static org.dbmaintain.util.FileUtils.createFile;
 
 /**
- * Implementation of a script runner that uses Oracle's SQL plus.
+ * Implementation of a script runner that uses the db's native
+ * command line support, e.g. Oracle's SQL plus.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class SqlPlusScriptRunner implements ScriptRunner {
+public abstract class BaseNativeScriptRunner implements ScriptRunner {
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(SqlPlusScriptRunner.class);
+    private static Log logger = LogFactory.getLog(BaseNativeScriptRunner.class);
 
     protected DbSupport defaultDbSupport;
     protected Map<String, DbSupport> nameDbSupportMap;
-    protected String sqlPlusCommand;
 
 
-    public SqlPlusScriptRunner(DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap, String sqlPlusCommand) {
+    public BaseNativeScriptRunner(DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
         this.defaultDbSupport = defaultDbSupport;
         this.nameDbSupportMap = nameDbSupportMap;
-        this.sqlPlusCommand = sqlPlusCommand;
     }
 
+    public void initialize() {
+        // override to perform extra initialization
+    }
+
+    public void close() {
+        // override to perform extra finalization
+    }
 
     /**
      * Executes the given script.
@@ -69,40 +74,16 @@ public class SqlPlusScriptRunner implements ScriptRunner {
             }
 
             File scriptFile = createTemporaryScriptFile(script);
-            File wrapperScriptFile = generateWrapperScriptFile(targetDbSupport.getDatabaseInfo(), scriptFile);
-            createSqlPlusExecutor().executeScript(wrapperScriptFile);
+            executeScript(scriptFile, targetDbSupport);
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error executing script " + script.getFileName() + ". Unable to execute script using SQL*Plus.", e);
+            throw new DbMaintainException("Error executing script " + script.getFileName(), e);
         }
     }
 
 
-    protected File generateWrapperScriptFile(DatabaseInfo databaseInfo, File targetScriptFile) throws IOException {
-        File temporaryScriptsDir = createTemporaryScriptsDir();
-        File temporaryScriptWrapperFile = new File(temporaryScriptsDir, "wrapper-" + currentTimeMillis() + targetScriptFile.getName());
-        temporaryScriptWrapperFile.deleteOnExit();
+    protected abstract void executeScript(File scriptFile, DbSupport targetDbSupport) throws Exception;
 
-        String lineSeparator = System.getProperty("line.separator");
-        StringBuilder content = new StringBuilder();
-        content.append("CONNECT ");
-        content.append(databaseInfo.getUserName());
-        content.append('/');
-        content.append(databaseInfo.getPassword());
-        content.append('@');
-        content.append(getDatabaseConfigFromJdbcUrl(databaseInfo.getUrl()));
-        content.append(lineSeparator);
-        content.append("alter session set current_schema=");
-        content.append(databaseInfo.getDefaultSchemaName());
-        content.append(lineSeparator);
-        content.append("@@");
-        content.append(targetScriptFile.getName());
-        content.append(lineSeparator);
-        content.append("EXIT");
-        content.append(lineSeparator);
-        createFile(temporaryScriptWrapperFile, content.toString());
-        return temporaryScriptWrapperFile;
-    }
 
     protected File createTemporaryScriptFile(Script script) throws IOException {
         File temporaryScriptsDir = createTemporaryScriptsDir();
@@ -125,10 +106,6 @@ public class SqlPlusScriptRunner implements ScriptRunner {
         return temporaryScriptsDir;
     }
 
-    protected SqlPlusExecutor createSqlPlusExecutor() {
-        return new SqlPlusExecutor(sqlPlusCommand);
-    }
-
     protected DbSupport getTargetDatabaseDbSupport(Script script) {
         if (script.getTargetDatabaseName() == null) {
             return defaultDbSupport;
@@ -137,13 +114,5 @@ public class SqlPlusScriptRunner implements ScriptRunner {
             throw new DbMaintainException("Error executing script " + script.getFileName() + ". No database initialized with the name " + script.getTargetDatabaseName());
         }
         return nameDbSupportMap.get(script.getTargetDatabaseName());
-    }
-
-    protected String getDatabaseConfigFromJdbcUrl(String url) {
-        int index = url.indexOf('@');
-        if (index == -1) {
-            return url;
-        }
-        return url.substring(index + 1);
     }
 }

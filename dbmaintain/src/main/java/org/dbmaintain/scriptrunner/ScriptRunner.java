@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script;
+package org.dbmaintain.scriptrunner;
+
+import org.dbmaintain.script.Script;
 
 
 /**
  * Runs a given database script.
+ * <p/>
+ * Make sure to call initialize() before and close() after usage.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -31,4 +35,13 @@ public interface ScriptRunner {
      */
     void execute(Script script);
 
+    /**
+     * Initializes the script runner.
+     */
+    void initialize();
+
+    /**
+     * Stops the script runner, closing and cleaning up all open resources.
+     */
+    void close();
 }

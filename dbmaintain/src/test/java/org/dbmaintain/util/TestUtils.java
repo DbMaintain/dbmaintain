@@ -26,7 +26,7 @@ import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.script.*;
-import org.dbmaintain.script.impl.DefaultScriptRunner;
+import org.dbmaintain.scriptrunner.impl.DefaultScriptRunner;
 import org.dbmaintain.script.impl.FileSystemScriptLocation;
 import org.dbmaintain.script.impl.ScriptLocation;
 import org.dbmaintain.script.impl.ScriptRepository;

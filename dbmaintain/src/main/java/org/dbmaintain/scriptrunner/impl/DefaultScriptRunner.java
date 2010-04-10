@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script.impl;
+package org.dbmaintain.scriptrunner.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptRunner;
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
+import org.dbmaintain.scriptrunner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.Reader;
@@ -31,7 +31,7 @@ import java.util.Map;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
- * Default implementation of a script runner.
+ * Default implementation of a script runner that uses JDBC to execute the script.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -88,6 +88,14 @@ public class DefaultScriptRunner implements ScriptRunner {
         } finally {
             closeQuietly(scriptContentReader);
         }
+    }
+
+    public void initialize() {
+        // nothing to initialize
+    }
+
+    public void close() {
+        // nothing to close
     }
 
     /**

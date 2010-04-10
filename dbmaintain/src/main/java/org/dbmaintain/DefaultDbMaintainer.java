@@ -24,6 +24,7 @@ import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.format.ScriptUpdatesFormatter;
 import org.dbmaintain.script.*;
 import org.dbmaintain.script.impl.ScriptRepository;
+import org.dbmaintain.scriptrunner.ScriptRunner;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
@@ -448,9 +449,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param scriptUpdates the script updates to be executed
      */
     protected void executeScriptUpdates(SortedSet<ScriptUpdate> scriptUpdates) {
-        for (ScriptUpdate scriptUpdate : scriptUpdates) {
-            logger.info("Executing " + scriptUpdatesFormatter.formatScriptUpdate(scriptUpdate));
-            executeScript(scriptUpdate.getScript());
+        scriptRunner.initialize();
+        try {
+            for (ScriptUpdate scriptUpdate : scriptUpdates) {
+                logger.info("Executing " + scriptUpdatesFormatter.formatScriptUpdate(scriptUpdate));
+                executeScript(scriptUpdate.getScript());
+            }
+        } finally {
+            scriptRunner.close();
         }
     }
 
@@ -464,9 +470,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param scripts the scripts to be executed on the database
      */
     protected void executeScripts(SortedSet<Script> scripts) {
-        for (Script script : scripts) {
-            logger.info("Executing script " + script.getFileName());
-            executeScript(script);
+        scriptRunner.initialize();
+        try {
+            for (Script script : scripts) {
+                logger.info("Executing script " + script.getFileName());
+                executeScript(script);
+            }
+        } finally {
+            scriptRunner.close();
         }
     }
 
