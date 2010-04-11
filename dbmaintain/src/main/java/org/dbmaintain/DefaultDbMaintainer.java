@@ -503,7 +503,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executedScriptInfoSource.updateExecutedScript(executedScript);
 
         } catch (DbMaintainException e) {
-            throw new DbMaintainException("Error while executing script " + script.getFileName() + "\n" + e.getMessage(), e);
+            String scriptContents = script.getScriptContentHandle().getScriptContents();
+            String message = "Error while executing script " + script.getFileName() + ":\n" + e.getMessage() + "\n\n";
+            message += "Full contents of failed script " + script.getFileName() + ":\n";
+            message += "----------------------------------------------------\n";
+            message += scriptContents + "\n";
+            message += "----------------------------------------------------\n";
+            throw new DbMaintainException(message, e.getCause());
         }
     }
 

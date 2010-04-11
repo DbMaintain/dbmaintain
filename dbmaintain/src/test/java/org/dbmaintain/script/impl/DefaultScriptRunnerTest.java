@@ -15,25 +15,24 @@
  */
 package org.dbmaintain.script.impl;
 
-import static junit.framework.Assert.assertTrue;
-
-import java.util.Collections;
-import static java.util.Collections.singleton;
-
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.script.Script;
 import org.dbmaintain.script.Qualifier;
+import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
 import org.dbmaintain.scriptrunner.impl.DefaultScriptRunner;
 import org.dbmaintain.util.SQLTestUtils;
-import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
-import static org.dbmaintain.util.TestUtils.getDbSupport;
-import static org.dbmaintain.util.TestUtils.getDefaultScriptRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.util.Collections;
+
+import static java.util.Collections.singleton;
+import static junit.framework.Assert.assertTrue;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
+import static org.dbmaintain.util.TestUtils.getDbSupport;
+import static org.dbmaintain.util.TestUtils.getDefaultScriptRunner;
 
 /**
  * Test class for the DefaultScriptRunner.

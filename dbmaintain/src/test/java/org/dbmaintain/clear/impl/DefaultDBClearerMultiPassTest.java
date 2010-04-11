@@ -15,25 +15,24 @@
  */
 package org.dbmaintain.clear.impl;
 
+import org.dbmaintain.dbsupport.DbSupport;
+import org.junit.Before;
+import org.junit.Test;
+import org.unitils.UnitilsJUnit4;
+import org.unitils.mock.Mock;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.dbmaintain.dbsupport.DbSupport;
-import static org.dbmaintain.util.CollectionUtils.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.unitils.UnitilsJUnit4;
-import org.unitils.dbmaintainer.clean.DBClearer;
-import org.unitils.mock.Mock;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
- * Test class for the {@link DBClearer} to verify that we will keep trying to
+ * Test class for the {@link DefaultDBClearer} to verify that we will keep trying to
  * drop database objects even if we get exceptions (until we make no more progress).
- *  
- * @see MultiPassErrorHandler
- * 
+ *
  * @author Mark Jeffrey
+ * @see MultiPassErrorHandler
  */
 public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
 
@@ -41,7 +40,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     private DefaultDBClearer defaultDbClearer;
 
     /* The DbSupport object */
-    private Mock<DbSupport> dbSupportMock;
+    protected Mock<DbSupport> dbSupportMock;
 
     private static final String SCHEMA = "MYSCHEMA";
     private final Set<String> tableNames = asSet("TABLE1", "TABLE2", "TABLE3");
@@ -53,7 +52,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     public void setUp() throws Exception {
         Map<String, DbSupport> dbNameDbSupportMap = new HashMap<String, DbSupport>();
         dbNameDbSupportMap.put(null, dbSupportMock.getMock());
-        
+
         defaultDbClearer = new DefaultDBClearer(dbNameDbSupportMap);
         dbSupportMock.returns(tableNames).getTableNames(SCHEMA);
         dbSupportMock.returns(asSet(SCHEMA)).getSchemaNames();

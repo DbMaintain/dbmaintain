@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.dbsupport.impl;
 
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.SQLHandler;
@@ -30,6 +29,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Class to which database updates and queries are passed. Is in fact a utility class, but is a concrete instance to
@@ -64,6 +65,7 @@ public class DefaultSQLHandler implements SQLHandler {
 
     /**
      * Constructs a new instance that connects to the given DataSource
+     *
      * @param doExecuteUpdates Boolean indicating whether updates should effectively be executed on the underlying
      *                         database
      */
@@ -72,9 +74,6 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#executeUpdate(java.lang.String)
-	 */
     public int executeUpdate(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -86,7 +85,7 @@ public class DefaultSQLHandler implements SQLHandler {
         try {
             statement = getConnection(dataSource).createStatement();
             return statement.executeUpdate(sql);
-            
+
         } catch (Exception e) {
             throw new DbMaintainException("Error while performing database update: " + sql, e);
         } finally {
@@ -95,9 +94,6 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.dbmaintain.dbsupport.SQLHandler#executeUpdateAndCommit(java.lang.String)
-     */
     public int executeUpdateAndCommit(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -116,39 +112,13 @@ public class DefaultSQLHandler implements SQLHandler {
             return nbChanges;
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while performing database update: " + sql + "\n" + e.getMessage(), e);
+            throw new DbMaintainException("Error while performing database update:\n" + sql + "\n" + e.getMessage(), e);
         } finally {
             closeQuietly(statement);
         }
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#executeCodeUpdate(java.lang.String)
-	 */
-    public int executeCodeUpdate(String sql, DataSource dataSource) {
-        logger.debug(sql);
-
-        if (!doExecuteUpdates) {
-            // skip update
-            return 0;
-        }
-        Statement statement = null;
-        try {
-            statement = getConnection(dataSource).createStatement();
-            return statement.executeUpdate(sql);
-
-        } catch (Exception e) {
-            throw new DbMaintainException("Error while performing database update: " + sql, e);
-        } finally {
-            closeQuietly(statement);
-        }
-    }
-
-
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#getItemAsLong(java.lang.String)
-	 */
     public long getItemAsLong(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -171,9 +141,6 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#getItemAsString(java.lang.String)
-	 */
     public String getItemAsString(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -196,9 +163,6 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#getItemsAsStringSet(java.lang.String)
-	 */
     public Set<String> getItemsAsStringSet(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -221,9 +185,6 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#exists(java.lang.String)
-	 */
     public boolean exists(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -242,9 +203,6 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    /* (non-Javadoc)
-	 * @see org.dbmaintain.dbsupport.SQLHandler#isDoExecuteUpdates()
-	 */
     public boolean isDoExecuteUpdates() {
         return doExecuteUpdates;
     }
