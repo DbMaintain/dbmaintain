@@ -15,12 +15,12 @@
  */
 package org.dbmaintain.scriptparser.impl;
 
-import java.io.Reader;
-
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
+import org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher;
 import org.dbmaintain.scriptparser.parsingstate.impl.*;
+
+import java.io.Reader;
 
 
 /**
@@ -31,18 +31,21 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
 
     protected boolean backSlashEscapingEnabled;
 
-    public DefaultScriptParserFactory(
-            boolean backSlashEscapingEnabled) {
+
+    public DefaultScriptParserFactory(boolean backSlashEscapingEnabled) {
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
+
 
     public ScriptParser createScriptParser(Reader scriptReader) {
         return new DefaultScriptParser(scriptReader, createNormalParsingStates(), backSlashEscapingEnabled);
     }
 
+
     /**
      * Creates all the parsing states needed by a script parser when in normal (not stored procedure) state and connects
      * them together. Returns the initial parsing state. All other parsing states can be reached starting from the initial state.
+     *
      * @return the initial parsing state
      */
     protected SqlStatementNormalParsingState createNormalParsingStates() {
@@ -53,17 +56,15 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
         InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
         EscapingParsingState escapingParsingState = createEscapingParsingState();
-        StoredProcedureNormalParsingState storedProcedureNormalParsingState = createStoredProcedureParsingStates();
-        StoredProcedureMatcher storedProcedureMatcher = createStoredProcedureMatcher();
+        PlSqlBlockNormalParsingState plSqlBlockNormalParsingState = createStoredProcedureParsingStates();
 
         // link normal (not stored procedure) states
-        inLineCommentParsingState.init(normalParsingState);
-        inBlockCommentParsingState.init(normalParsingState);
-        inSingleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
-        inDoubleQuotesParsingState.init(normalParsingState, backSlashEscapingEnabled);
-        escapingParsingState.init(normalParsingState);
-        normalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState,
-                inDoubleQuotesParsingState, escapingParsingState, storedProcedureNormalParsingState, storedProcedureMatcher, backSlashEscapingEnabled);
+        inLineCommentParsingState.linkParsingStates(normalParsingState);
+        inBlockCommentParsingState.linkParsingStates(normalParsingState);
+        inSingleQuotesParsingState.linkParsingStates(normalParsingState);
+        inDoubleQuotesParsingState.linkParsingStates(normalParsingState);
+        escapingParsingState.linkParsingStates(normalParsingState);
+        normalParsingState.linkParsingStates(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, plSqlBlockNormalParsingState);
 
         // the normal state is the begin-state
         return normalParsingState;
@@ -72,11 +73,12 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
     /**
      * Creates all the parsing states needed by a script parser when in stored procedure state and connects them together.
      * Returns the initial parsing state. All other parsing states can be reached starting from the initial state.
+     *
      * @return the initial parsing state
      */
-    protected StoredProcedureNormalParsingState createStoredProcedureParsingStates() {
+    protected PlSqlBlockNormalParsingState createStoredProcedureParsingStates() {
         // create states that are used when in a stored procedure state
-        StoredProcedureNormalParsingState storedProcedureNormalParsingState = createStoredProcedureNormalParsingState();
+        PlSqlBlockNormalParsingState plSqlBlockNormalParsingState = createStoredProcedureNormalParsingState();
         InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();
         InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
         InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
@@ -84,15 +86,14 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         EscapingParsingState escapingParsingState = createEscapingParsingState();
 
         // link normal (not stored procedure) states
-        inLineCommentParsingState.init(storedProcedureNormalParsingState);
-        inBlockCommentParsingState.init(storedProcedureNormalParsingState);
-        inSingleQuotesParsingState.init(storedProcedureNormalParsingState, backSlashEscapingEnabled);
-        inDoubleQuotesParsingState.init(storedProcedureNormalParsingState, backSlashEscapingEnabled);
-        escapingParsingState.init(storedProcedureNormalParsingState);
-        storedProcedureNormalParsingState.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState,
-                inDoubleQuotesParsingState, escapingParsingState, backSlashEscapingEnabled);
+        inLineCommentParsingState.linkParsingStates(plSqlBlockNormalParsingState);
+        inBlockCommentParsingState.linkParsingStates(plSqlBlockNormalParsingState);
+        inSingleQuotesParsingState.linkParsingStates(plSqlBlockNormalParsingState);
+        inDoubleQuotesParsingState.linkParsingStates(plSqlBlockNormalParsingState);
+        escapingParsingState.linkParsingStates(plSqlBlockNormalParsingState);
+        plSqlBlockNormalParsingState.linkParsingStates(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, plSqlBlockNormalParsingState);
 
-        return storedProcedureNormalParsingState;
+        return plSqlBlockNormalParsingState;
     }
 
     /**
@@ -101,7 +102,8 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      * @return The normal sql statement state, not null
      */
     protected SqlStatementNormalParsingState createSqlStatementNormalParsingState() {
-        return new SqlStatementNormalParsingState();
+        PlSqlBlockMatcher plSqlBlockMatcher = createStoredProcedureMatcher();
+        return new SqlStatementNormalParsingState(backSlashEscapingEnabled, plSqlBlockMatcher);
     }
 
 
@@ -110,8 +112,8 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      *
      * @return The normal stored procedure state, not null
      */
-    protected StoredProcedureNormalParsingState createStoredProcedureNormalParsingState() {
-        return new StoredProcedureNormalParsingState();
+    protected PlSqlBlockNormalParsingState createStoredProcedureNormalParsingState() {
+        return new PlSqlBlockNormalParsingState(backSlashEscapingEnabled);
     }
 
 
@@ -141,7 +143,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      * @return The normal state, not null
      */
     protected InSingleQuotesParsingState createInSingleQuotesParsingState() {
-        return new InSingleQuotesParsingState();
+        return new InSingleQuotesParsingState(backSlashEscapingEnabled);
     }
 
 
@@ -151,7 +153,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      * @return The normal state, not null
      */
     protected InDoubleQuotesParsingState createInDoubleQuotesParsingState() {
-        return new InDoubleQuotesParsingState();
+        return new InDoubleQuotesParsingState(backSlashEscapingEnabled);
     }
 
 
@@ -160,11 +162,11 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
     }
 
     /**
-     * Factory method that returns the correct implementation of {@link StoredProcedureMatcher}
+     * Factory method that returns the correct implementation of {@link org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher}
      *
      * @return the stored procedure matcher, not null
      */
-    protected StoredProcedureMatcher createStoredProcedureMatcher() {
-        return new DefaultStoredProcedureMatcher();
+    protected PlSqlBlockMatcher createStoredProcedureMatcher() {
+        return new NeverMatchingPlSqlBlockMatcher();
     }
 }

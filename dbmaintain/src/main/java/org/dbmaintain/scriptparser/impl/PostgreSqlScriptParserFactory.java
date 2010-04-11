@@ -1,7 +1,7 @@
 package org.dbmaintain.scriptparser.impl;
 
-import org.dbmaintain.scriptparser.parsingstate.PostgreSqlStoredProcedureMatcher;
-import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
+import org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher;
+import org.dbmaintain.scriptparser.parsingstate.PostgreSqlPlSqlBlockMatcher;
 
 /**
  * @author Filip Neven
@@ -14,7 +14,7 @@ public class PostgreSqlScriptParserFactory extends DefaultScriptParserFactory {
     }
 
     @Override
-    protected StoredProcedureMatcher createStoredProcedureMatcher() {
-        return new PostgreSqlStoredProcedureMatcher();
+    protected PlSqlBlockMatcher createStoredProcedureMatcher() {
+        return new PostgreSqlPlSqlBlockMatcher();
     }
 }

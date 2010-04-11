@@ -15,26 +15,15 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher;
 
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class SqlStatementNormalParsingState extends BaseNormalParsingState {
+public class NeverMatchingPlSqlBlockMatcher implements PlSqlBlockMatcher {
 
-
-    public SqlStatementNormalParsingState(boolean backSlashEscapingEnabled, PlSqlBlockMatcher plSqlBlockMatcher) {
-        super(backSlashEscapingEnabled, plSqlBlockMatcher);
-    }
-
-
-    protected boolean isStatementSeparator(Character currentChar) {
-        return SEMICOLON.equals(currentChar);
-    }
-
-    protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder) {
-        return isStatementSeparator(currentChar);
+    public boolean isStartOfPlSqlBlock(StringBuilder statementWithoutCommentsOrWhitespace) {
+        return false;
     }
 }

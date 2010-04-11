@@ -21,7 +21,7 @@ public class EscapingParsingState implements ParsingState {
      *
      * @param normalParsingState The normal state, not null
      */
-    public void init(ParsingState normalParsingState) {
+    public void linkParsingStates(ParsingState normalParsingState) {
         this.backToNormalResult = new HandleNextCharacterResult(normalParsingState, true);
     }
 

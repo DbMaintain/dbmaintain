@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
+import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
 
 /**
@@ -27,29 +27,34 @@ import org.dbmaintain.scriptparser.parsingstate.ParsingState;
  */
 public class InSingleQuotesParsingState implements ParsingState {
 
-    /**
-     * Determines whether backslashes can be used to escape characters, e.g. \' for a single quote (= '')
-     */
+    /* Determines whether backslashes can be used to escape characters, e.g. \' for a single quote (= '') */
     protected boolean backSlashEscapingEnabled;
 
-    /**
-     * True if the next character should be escaped
-     */
+    /* True if the next character should be escaped */
     protected boolean escaping;
 
-    private HandleNextCharacterResult stayInSingleQuotesStateResult, backToNormalResult;
+    /* Still in single quotes */
+    protected HandleNextCharacterResult stayInSingleQuotesStateResult;
+    /* End of single quotes reached, go back to normal state */
+    protected HandleNextCharacterResult backToNormalResult;
+
+
+    /**
+     * @param backSlashEscapingEnabled True if backslashes can be used for escaping
+     */
+    public InSingleQuotesParsingState(boolean backSlashEscapingEnabled) {
+        this.backSlashEscapingEnabled = backSlashEscapingEnabled;
+    }
 
 
     /**
      * Initializes the state with the normal parsing state, that should be returned when the end of the literal is reached..
      *
-     * @param normalParsingState       The normal state, not null
-     * @param backSlashEscapingEnabled True if backslashes can be used for escaping
+     * @param normalParsingState The normal state, not null
      */
-    public void init(ParsingState normalParsingState, boolean backSlashEscapingEnabled) {
+    public void linkParsingStates(ParsingState normalParsingState) {
         this.stayInSingleQuotesStateResult = new HandleNextCharacterResult(this, true);
         this.backToNormalResult = new HandleNextCharacterResult(normalParsingState, true);
-        this.backSlashEscapingEnabled = backSlashEscapingEnabled;
     }
 
 

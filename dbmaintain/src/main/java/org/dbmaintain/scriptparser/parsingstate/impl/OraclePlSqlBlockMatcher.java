@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
+import org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher;
 
 import java.util.regex.Pattern;
 
@@ -23,13 +23,12 @@ import java.util.regex.Pattern;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class OracleStoredProcedureMatcher implements StoredProcedureMatcher {
+public class OraclePlSqlBlockMatcher implements PlSqlBlockMatcher {
 
-    private static final Pattern STORED_PROC_PATTERN = Pattern.compile(
-        "^(CREATE (OR REPLACE )?(PACKAGE|LIBRARY|FUNCTION|PROCEDURE|TRIGGER|TYPE)|DECLARE|BEGIN)");
+    private static final Pattern PL_SQL_PATTERN = Pattern.compile("^(CREATE (OR REPLACE )?(PACKAGE|LIBRARY|FUNCTION|PROCEDURE|TRIGGER|TYPE)|DECLARE|BEGIN)");
 
-    public boolean isStartOfStoredProcedure(StringBuilder statementWithoutCommentsOrWhitespace) {
-        return STORED_PROC_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();
+    public boolean isStartOfPlSqlBlock(StringBuilder statementWithoutCommentsOrWhitespace) {
+        return PL_SQL_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();
     }
 
 }

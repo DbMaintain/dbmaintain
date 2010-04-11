@@ -15,10 +15,10 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
+import org.dbmaintain.scriptparser.impl.StatementBuilder;
 import org.dbmaintain.scriptparser.parsingstate.ParsingState;
-import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
+import org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher;
 
 /**
  * The default initial parsing state that is able to recognize the beginning of line comments, block comments,
@@ -29,32 +29,58 @@ import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
  */
 abstract public class BaseNormalParsingState implements ParsingState {
 
-    protected static final Character BACKSLASH = '\\', DASH = '-', SLASH = '/', ASTERIX = '*', SINGLE_QUOTE = '\'',
-            DOUBLE_QUOTE = '"', SEMICOLON = ';';
+    protected static final Character BACKSLASH = '\\';
+    protected static final Character DASH = '-';
+    protected static final Character SLASH = '/';
+    protected static final Character ASTERIX = '*';
+    protected static final Character SINGLE_QUOTE = '\'';
+    protected static final Character DOUBLE_QUOTE = '"';
+    protected static final Character SEMICOLON = ';';
 
-    /**
-     * Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")
-     */
+    /* Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")    */
     protected boolean backSlashEscapingEnabled;
 
-    protected StoredProcedureMatcher storedProcedureMatcher;
+    /* Determines whether a string indicates a start of a pl-sql block */
+    protected PlSqlBlockMatcher plSqlBlockMatcher;
 
-    protected HandleNextCharacterResult endOfStatementResult, stayInNormalNotExecutableResult, stayInNormalExecutableResult,
-        toEscapingParsingStateResult, toInLineCommentResult, toInBlockCommentResult, toInSingleQuotesStateResult,
-        toInDoubleQuotesStateResult, toInStoredProcedureStateResult;
+    /* The end of the statement was reached */
+    protected HandleNextCharacterResult endOfStatementResult;
+    /* A regular SQL statement is being parsed, but no valid content to execute was found yet (e.g. only white space or comments) */
+    protected HandleNextCharacterResult stayInNormalNotExecutableResult;
+    /* A regular SQL statement is being parsed and there is also something to execute */
+    protected HandleNextCharacterResult stayInNormalExecutableResult;
+    /* Escape the next character */
+    protected HandleNextCharacterResult toEscapingParsingStateResult;
+    /* Found the start of an inline comment */
+    protected HandleNextCharacterResult toInLineCommentResult;
+    /* Found the start of a block comment */
+    protected HandleNextCharacterResult toInBlockCommentResult;
+    /* Found the start of a '' value */
+    protected HandleNextCharacterResult toInSingleQuotesStateResult;
+    /* Found the start of a "" value */
+    protected HandleNextCharacterResult toInDoubleQuotesStateResult;
+    /* Found the start of a PL-SQL block, e.g. create procedure */
+    protected HandleNextCharacterResult toInPlSqlBlockStateResult;
+
+
+    protected BaseNormalParsingState(boolean backSlashEscapingEnabled, PlSqlBlockMatcher plSqlBlockMatcher) {
+        this.backSlashEscapingEnabled = backSlashEscapingEnabled;
+        this.plSqlBlockMatcher = plSqlBlockMatcher;
+    }
 
     /**
      * Initializes the state with the given parsing states.
      *
-     * @param inLineCommentParsingState the inline comment state, not null
-     * @param inBlockCommentParsingState the block comment state, not null
-     * @param inSingleQuotesParsingState the single quote literal state, not null
-     * @param inDoubleQuotesParsingState the double quote literal state, not null
-     * @param escapingParsingState the escaping parsing state, not null
-     * @param backSlashEscapingEnabled true if backslashes can be used for escaping
+     * @param inLineCommentParsingState    the inline comment state, not null
+     * @param inBlockCommentParsingState   the block comment state, not null
+     * @param inSingleQuotesParsingState   the single quote literal state, not null
+     * @param inDoubleQuotesParsingState   the double quote literal state, not null
+     * @param escapingParsingState         the escaping parsing state, not null
+     * @param plSqlBlockNormalParsingState the pl-sql block parsing state, not null
      */
-    protected void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState,
-                     ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState, boolean backSlashEscapingEnabled) {
+    public void linkParsingStates(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState,
+                                  ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState, ParsingState plSqlBlockNormalParsingState) {
+
         this.endOfStatementResult = new HandleNextCharacterResult(null, false);
         this.stayInNormalNotExecutableResult = new HandleNextCharacterResult(this, false);
         this.stayInNormalExecutableResult = new HandleNextCharacterResult(this, true);
@@ -63,8 +89,7 @@ abstract public class BaseNormalParsingState implements ParsingState {
         this.toInSingleQuotesStateResult = new HandleNextCharacterResult(inSingleQuotesParsingState, true);
         this.toInDoubleQuotesStateResult = new HandleNextCharacterResult(inDoubleQuotesParsingState, true);
         this.toEscapingParsingStateResult = new HandleNextCharacterResult(escapingParsingState, false);
-
-        this.backSlashEscapingEnabled = backSlashEscapingEnabled;
+        this.toInPlSqlBlockStateResult = new HandleNextCharacterResult(plSqlBlockNormalParsingState, true);
     }
 
 
@@ -103,10 +128,9 @@ abstract public class BaseNormalParsingState implements ParsingState {
         if (DOUBLE_QUOTE.equals(currentChar)) {
             return toInDoubleQuotesStateResult;
         }
-        // check if we're in a stored procedure
-        HandleNextCharacterResult moveToStoredProcedureState = moveToStoredProcedureStateResult(currentChar, statementBuilder);
-        if (moveToStoredProcedureState != null)  {
-            return moveToStoredProcedureState;
+        // check if we're in a PL-SQL block
+        if (isWhitespace(currentChar) && plSqlBlockMatcher.isStartOfPlSqlBlock(statementBuilder.getStatementInUppercaseWithoutCommentsOrWhitespace())) {
+            return toInPlSqlBlockStateResult;
         }
         // check if non-executable content has been added
         if (isWhitespace(currentChar) || isStatementSeparator(currentChar)) {
@@ -119,8 +143,6 @@ abstract public class BaseNormalParsingState implements ParsingState {
     abstract protected boolean isStatementSeparator(Character currentChar);
 
     abstract protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder);
-
-    abstract protected HandleNextCharacterResult moveToStoredProcedureStateResult(Character currentChar, StatementBuilder statementBuilder);
 
     protected boolean isWhitespace(Character character) {
         return character == null || Character.isWhitespace(character);

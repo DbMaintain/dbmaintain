@@ -22,7 +22,7 @@ public class OracleStoredProcedureMatcherTest {
                 "CREATE OR REPLACE PROCEDURE", "CREATE TRIGGER", "CREATE OR REPLACE TRIGGER", "CREATE TYPE",
                 "CREATE OR REPLACE TYPE", "DECLARE", "BEGIN"};
 
-    OracleStoredProcedureMatcher matcher = new OracleStoredProcedureMatcher();
+    OraclePlSqlBlockMatcher matcher = new OraclePlSqlBlockMatcher();
     Random rnd = new Random();
 
     @Test
@@ -36,13 +36,13 @@ public class OracleStoredProcedureMatcherTest {
 
     private void assertIsStartOfStoredProcedure(String... testStrings) {
         for (String testString : testStrings) {
-            assertTrue(matcher.isStartOfStoredProcedure(new StringBuilder(testString)));
+            assertTrue(matcher.isStartOfPlSqlBlock(new StringBuilder(testString)));
         }
     }
 
     private void assertIsNotStartOfStoredProcedure(String... testStrings) {
         for (String testString : testStrings) {
-            assertFalse(matcher.isStartOfStoredProcedure(new StringBuilder(testString)));
+            assertFalse(matcher.isStartOfPlSqlBlock(new StringBuilder(testString)));
         }
     }
 
@@ -129,7 +129,7 @@ public class OracleStoredProcedureMatcherTest {
     }
 
     private boolean isStartOfStoredProcedureRegex(StringBuilder stringBuilder) {
-        return matcher.isStartOfStoredProcedure(stringBuilder);
+        return matcher.isStartOfPlSqlBlock(stringBuilder);
     }
 
     private boolean isStartOfStoredProcedureOrig(StringBuilder statement) {

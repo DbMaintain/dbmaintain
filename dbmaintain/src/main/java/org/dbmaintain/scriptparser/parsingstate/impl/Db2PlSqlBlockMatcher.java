@@ -15,15 +15,20 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.parsingstate.StoredProcedureMatcher;
+import org.dbmaintain.scriptparser.parsingstate.PlSqlBlockMatcher;
+
+import java.util.regex.Pattern;
 
 /**
- * @author Filip Neven
  * @author Tim Ducheyne
+ * @author Filip Neven
  */
-public class DefaultStoredProcedureMatcher implements StoredProcedureMatcher {
+public class Db2PlSqlBlockMatcher implements PlSqlBlockMatcher {
 
-    public boolean isStartOfStoredProcedure(StringBuilder statementWithoutCommentsOrWhitespace) {
-        return false;
+    private static final Pattern PL_SQL_PATTERN = Pattern.compile("^(CREATE (OR REPLACE )?(FUNCTION|PROCEDURE|TRIGGER|TYPE)|BEGIN)");
+
+    public boolean isStartOfPlSqlBlock(StringBuilder statementWithoutCommentsOrWhitespace) {
+        return PL_SQL_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();
     }
+
 }

@@ -15,22 +15,21 @@
  */
 package org.dbmaintain.scriptparser.parsingstate.impl;
 
-import org.dbmaintain.scriptparser.impl.HandleNextCharacterResult;
 import org.dbmaintain.scriptparser.impl.StatementBuilder;
-import org.dbmaintain.scriptparser.parsingstate.ParsingState;
+
 import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
 
 /**
  * @author Filip Neven
  */
-public class StoredProcedureNormalParsingState extends BaseNormalParsingState {
+public class PlSqlBlockNormalParsingState extends BaseNormalParsingState {
 
-    @Override
-    public void init(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState,  boolean backSlashEscapingEnabled) {
-        super.init(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, backSlashEscapingEnabled);
+
+    public PlSqlBlockNormalParsingState(boolean backSlashEscapingEnabled) {
+        super(backSlashEscapingEnabled, new NeverMatchingPlSqlBlockMatcher());
     }
 
-    @Override
+
     protected boolean isStatementSeparator(Character currentChar) {
         return SLASH.equals(currentChar);
     }
@@ -39,7 +38,4 @@ public class StoredProcedureNormalParsingState extends BaseNormalParsingState {
         return (currentChar == null || isNewLineCharacter(currentChar)) && statementBuilder.getCurrentLine().trim().startsWith("/");
     }
 
-    protected HandleNextCharacterResult moveToStoredProcedureStateResult(Character currentChar, StatementBuilder statementBuilder) {
-        return null;
-    }
 }

@@ -17,38 +17,61 @@ package org.dbmaintain.script.impl;
 
 import org.dbmaintain.scriptparser.ScriptParser;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
-import org.dbmaintain.scriptparser.impl.OracleScriptParserFactory;
+import org.dbmaintain.scriptparser.impl.Db2ScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Test;
 
 import java.io.Reader;
 
 /**
- * Tests the Oracle SQL and PL-SQL script parser
+ * Tests the DB2 SQL and PL-SQL script parsing
  *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class OracleScriptParserTest extends ScriptParserTestBase {
+public class Db2ScriptParserTest extends ScriptParserTestBase {
 
     @Test
-    public void plsqlScript() {
+    public void plSqlShouldEndWithASlash() {
         assertOneStatementEqualTo("create function function1 statement;\n",
-                "create function function1 statement;\n/\n");
+                "create function function1 statement;\n" +
+                        "/\n");
     }
 
     @Test
-    public void twoScripts() {
-        assertTwoStatements("create or replace function f1\nstatement 1;\n/\n" +
-                "create function f2\nstatement 1;statement 2;\n/\n");
+    public void compoundStatement() {
+        assertOneStatement("-- comment \n" +
+                "BEGIN ATOMIC\n" +
+                "        DECLARE A BIGINT;\n" +
+                "        FOR c AS\n" +
+                "            SELECT ID \n" +
+                "            FROM\n" +
+                "                MY_TABLE o\n" +
+                "        DO\n" +
+                "            INSERT INTO OTHER_TABLE (ID) VALUES (c.id); \n" +
+                "            IF (c.id IS NOT null) THEN\n" +
+                "                insert into OTHER_TABLE (ID) \n" +
+                "                values (1);\n" +
+                "            END IF;\n" +
+                "    END FOR;\n" +
+                "END\n" +
+                "/");
+    }
+
+    @Test
+    public void twoStatements() {
+        assertTwoStatements("create or replace function f1\nstatement 1;\n" +
+                "/\n" +
+                "create function f2\nstatement 1;statement 2;\n" +
+                "/\n");
     }
 
     @Test
     public void scriptWithComments() {
         assertOneStatement("-- comment before script\n" +
                 "/* block comment before script */\n" +
-                "declare something -- comment in script\n" +
-                "begin dosomething end; /* block comment in script */\n" +
+                "begin dosomething  /* block comment in script */\n" +
+                "declare something end;-- comment in script\n" +
                 "/\n");
     }
 
@@ -60,8 +83,16 @@ public class OracleScriptParserTest extends ScriptParserTestBase {
 
     @Test
     public void commentsOrWhitespaceInStoredProcedureHeader() {
-        assertTwoStatements("create\nor\nreplace\nprocedure\nstatement 1; statement 2;\n/\n" +
-                "create /* comment */ or--another comment\nreplace function\nstatement 1; statement 2;\n/\n");
+        assertTwoStatements("create\n" +
+                "or\n" +
+                "replace\n" +
+                "procedure\n" +
+                "statement 1; statement 2;\n" +
+                "/\n" +
+                "create /* comment */ or--another comment\n" +
+                "replace function\n" +
+                "statement 1; statement 2;\n" +
+                "/\n");
     }
 
     @Test(expected = DbMaintainException.class)
@@ -74,9 +105,10 @@ public class OracleScriptParserTest extends ScriptParserTestBase {
         assertOneStatement("create procedure s;\n/");
     }
 
+
     @Override
     protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new OracleScriptParserFactory(true);
+        ScriptParserFactory factory = new Db2ScriptParserFactory(true);
         return factory.createScriptParser(scriptReader);
     }
 }
