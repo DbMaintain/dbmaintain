@@ -125,11 +125,11 @@ public class PropertiesDbMaintainConfigurer {
                         dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
     }
 
-    public QualifierEvaluator createQualifierEvaluator() {
+    public QualifierEvaluator createQualifierEvaluator(Set<ScriptLocation> scriptLocations) {
         Set<Qualifier> includedQualifiers = createQualifiers(getStringList(PROPERTY_INCLUDED_QUALIFIERS, configuration, false));
-        ensureQualifiersRegistered(includedQualifiers);
+        ensureQualifiersRegistered(includedQualifiers, scriptLocations);
         Set<Qualifier> excludedQualifiers = createQualifiers(getStringList(PROPERTY_EXCLUDED_QUALIFIERS, configuration, false));
-        ensureQualifiersRegistered(excludedQualifiers);
+        ensureQualifiersRegistered(excludedQualifiers, scriptLocations);
         return new IncludeExcludeQualifierEvaluator(includedQualifiers, excludedQualifiers);
     }
 
@@ -141,17 +141,20 @@ public class PropertiesDbMaintainConfigurer {
         return qualifiers;
     }
 
-    protected void ensureQualifiersRegistered(Set<Qualifier> qualifiers) {
+    protected void ensureQualifiersRegistered(Set<Qualifier> qualifiers, Set<ScriptLocation> scriptLocations) {
         for (Qualifier qualifier : qualifiers) {
-            if (!getRegisteredQualifiers().contains(qualifier)) {
-                throw new IllegalArgumentException("Qualifier " + qualifier + " is not registered");
+            if (!getRegisteredQualifiers(scriptLocations).contains(qualifier)) {
+                throw new IllegalArgumentException(qualifier + " is not registered");
             }
         }
     }
 
-    protected Set<Qualifier> getRegisteredQualifiers() {
+    protected Set<Qualifier> getRegisteredQualifiers(Set<ScriptLocation> scriptLocations) {
         if (registeredQualifiers == null) {
             registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
+            for (ScriptLocation scriptLocation : scriptLocations) {
+                registeredQualifiers.addAll(scriptLocation.getRegisteredQualifiers());
+            }
         }
         return registeredQualifiers;
     }
@@ -208,7 +211,7 @@ public class PropertiesDbMaintainConfigurer {
         for (String scriptLocationIndicator : scriptLocationIndicators) {
             scriptLocations.add(createScriptLocation(scriptLocationIndicator));
         }
-        QualifierEvaluator qualifierEvaluator = createQualifierEvaluator();
+        QualifierEvaluator qualifierEvaluator = createQualifierEvaluator(scriptLocations);
         return new ScriptRepository(scriptLocations, qualifierEvaluator);
     }
 
