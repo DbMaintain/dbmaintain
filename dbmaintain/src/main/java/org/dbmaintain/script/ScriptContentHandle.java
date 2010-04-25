@@ -78,11 +78,15 @@ public abstract class ScriptContentHandle {
     }
 
 
-    public String getScriptContents() {
+    public String getScriptContentAsString() {
+        InputStream inputStream = null;
         try {
-            return IOUtils.toString(this.getScriptInputStream());
+            inputStream = this.getScriptInputStream();
+            return IOUtils.toString(inputStream);
         } catch (IOException e) {
             return "";
+        } finally {
+            IOUtils.closeQuietly(inputStream);
         }
     }
 
@@ -102,13 +106,18 @@ public abstract class ScriptContentHandle {
 
     protected String getHexPresentation(byte[] byteArray) {
         StringBuffer result = new StringBuffer();
-        for (int i = 0; i < byteArray.length; i++) {
-            result.append(Integer.toString((byteArray[i] & 0xff) + 0x100, 16).substring(1));
+        for (byte b : byteArray) {
+            result.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
         }
         return result.toString();
     }
 
 
+    /**
+     * NOTE: Make sure you don't forget to close the stream!
+     *
+     * @return stream providing access to the script content, not null
+     */
     protected abstract InputStream getScriptInputStream();
 
 
