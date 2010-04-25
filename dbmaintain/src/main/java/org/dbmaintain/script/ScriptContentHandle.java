@@ -112,9 +112,14 @@ public abstract class ScriptContentHandle {
     }
 
     protected void readScript() throws IOException {
-        Reader scriptContentReader = openScriptContentReader();
-        IOUtils.copy(scriptContentReader, new NullWriter());
-        scriptContentReader.close();
+        Reader scriptContentReader = null;
+        try {                             
+            scriptContentReader = openScriptContentReader();
+            IOUtils.copy(scriptContentReader, new NullWriter());
+            scriptContentReader.close();
+        } finally {
+            IOUtils.closeQuietly(scriptContentReader);
+        }
     }
 
     protected String getHexPresentation(byte[] byteArray) {
