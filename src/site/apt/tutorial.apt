@@ -11,11 +11,13 @@ Tutorial
 	
 	  * {{{#Incremental_and_repeatable_scripts}Incremental and repeatable scripts}}
 	  
-	  * {{{#Postprocessing_scripts}Postprocessing cripts}}
+	  * {{{#Postprocessing_scripts}Postprocessing scripts}}
 	  
 	  * {{{#Multi-database__user_support}Multi-database / user support}}
 	  
 	  * {{{#Patches}Patches}}
+	  
+	  * {{{#Qualifier_inclusion__exclusion}Qualifier inclusion / exclusion}}
 	  
 	* {{{#The_DBMAINTAIN_SCRIPTS_table}The DBMAINTAIN_SCRIPTS table}}
 
@@ -149,6 +151,32 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 +----+
 	
 	DbMaintain offers an option called <allowOutOfSequenceExecutionOfPatches>. If set to <true>, DbMaintain will start executing all patch scripts that weren't executed yet, before executing any other scripts. Note that you should never enable this option when deploying to the production database!
+	
+	The #PATCH token in the script file name is in fact a script qualifier, which can also be used for other purposes. The following section discusses the usage of qualifiers for inclusion and exclusion of scripts.
+	
+** {Qualifier inclusion / exclusion}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Scripts can be annotated with qualifiers by including # + the qualifier name in the filename. These qualifiers can be used to in- or exclude scripts from execution. This can serve a number of purposes: a typical use-case is to qualify scripts as containing test-data and exclude them from execution when updating a production database. Scripts can contain multiple qualifiers. The #PATCH indication as described in the previous section is also a qualifier - but with a special meaning. 
+	
+	Qualifiers can also be used when different DBMS-es are supported. For example:
+
++----+
+    01_#REFDATA_#POSTGRES_products.sql
++----+
+
+    This is a reference data script to be executed only on postgres databases.
+	
+	Inclusion or exclusion of qualified scripts can be performed using the properties excludedQualifiers and includedQualifiers. Multiple qualifiers can be specified, separated by commas. If you don't specify anything for the includedQualifiers property, all scripts are executed unless excluded by using the excludedQualifiers property. If includedQualifiers is not empty, scripts are not executed unless they have at least one included qualifier. When included qualifiers are specified, scripts without a qualifier will never be executed. 	
+	All qualifiers have to be declared using the qualifiers property (to avoid problems due to typing errors).
+	
+	Following example uses ant to execute scripts that are targeted for postgres or for every supported dbms (qualifier everydbms), while excluding all refdata files:
+
++----+
+<updateDatabase scriptLocations="${database.archive}" qualifiers="postgres,mysql,everydbms,refdata" includedQualifiers="postgres,everydbms" excludedQualifiers="refdata">
+     <database dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
++----+
+
+    When using a properties file to configure dbmaintain (e.g. for command-line use), the properties to use are dbMaintainer.qualifiers, dbmaintainer.includedQualifiers and dbmaintainer.excludedQualifiers.
 	
 * {The DBMAINTAIN_SCRIPTS table}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -318,6 +346,8 @@ database.read.schemaNames=read
 *--------+-------------+
 |scriptLocations (required)|Specifies the locations of the scripts that must be included in the archive. Multiple locations may be configured, separated by comma's. A script location can be a folder or a script archive.|
 *--------+-------------+
+|qualifiers|Comma separated list of tokes that can be used as a qualifier in scripts. All qualifiers must be declared using this attribute.
+*--------+-------------+
 |scriptEncoding|Encoding used to interpret the script files. ISO-8859-1 (latin 1) is the default.|
 *--------+-------------+
 |postProcessingScriptDirectoryName|Name of the directory in which the postprocessing scripts can be found. The default value is 'postprocessing'.|
@@ -350,6 +380,12 @@ database.read.schemaNames=read
 *--------+-------------+
 |fromScratchEnabled|Indicates whether the database can be recreated from scratch if needed. Is disabled by default.|
 *--------+-------------+
+|qualifiers|Comma separated list of qualifiers that can be used for scripts. All qualifiers must be declared using this property. If a script archive is used, this property is defined in META-INF/dbmaintain.properties and can therefore be left out.
+*--------+-------------+
+|includedQualifiers|Comma separated list of qualifiers that are included.
+*--------+-------------+
+|excludedQualifiers|Comma separated list of qualifiers that are excluded.
+*--------+-------------+
 |autoCreateDbMaintainScriptsTable|If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually. False by default.|
 *--------+-------------+
 |allowOutOfSequenceExecutionOfPatches|If this property is set to true, a patch script is allowed to be executed even if another script with a higher index was already executed. False by default.|
@@ -374,6 +410,12 @@ database.read.schemaNames=read
 *--------+-------------+
 |scriptLocations (required)|Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a script archive.|
 *--------+-------------+
+|qualifiers|Comma separated list of qualifiers that can be used for scripts. All qualifiers must be declared using this property. If a script archive is used, this property is defined in META-INF/dbmaintain.properties and can therefore be left out.
+*--------+-------------+
+|includedQualifiers|Comma separated list of qualifiers that are included.
+*--------+-------------+
+|excludedQualifiers|Comma separated list of qualifiers that are excluded.
+*--------+-------------+
 |autoCreateDbMaintainScriptsTable|If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually. False by default.|
 *--------+-------------+
 |scriptFileExtensions|Defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl'.|
@@ -387,6 +429,12 @@ database.read.schemaNames=read
 
 *--------+-------------+
 |scriptLocations (required)|Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a script archive.|
+*--------+-------------+
+|qualifiers|Comma separated list of qualifiers that can be used for scripts. All qualifiers must be declared using this property. If a script archive is used, this property is defined in META-INF/dbmaintain.properties and can therefore be left out.
+*--------+-------------+
+|includedQualifiers|Comma separated list of qualifiers that are included.
+*--------+-------------+
+|excludedQualifiers|Comma separated list of qualifiers that are excluded.
 *--------+-------------+
 |fromScratchEnabled|Indicates whether the database can be recreated from scratch if needed. Is disabled by default.|
 *--------+-------------+

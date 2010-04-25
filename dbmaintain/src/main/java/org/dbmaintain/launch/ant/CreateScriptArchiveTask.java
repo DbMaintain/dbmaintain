@@ -17,6 +17,8 @@
  */
 package org.dbmaintain.launch.ant;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.BuildException;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 
@@ -34,7 +36,11 @@ import java.util.Properties;
  * @author Tim Ducheyne
  * @author Alexander Snaps <alex.snaps@gmail.com>
  */
+@SuppressWarnings("UnusedDeclaration")
 public class CreateScriptArchiveTask extends BaseTask {
+
+    /* The logger instance for this class */
+    private static Log logger = LogFactory.getLog(CreateScriptArchiveTask.class);
 
     private String archiveFileName;
     private String scriptLocations;
@@ -50,9 +56,10 @@ public class CreateScriptArchiveTask extends BaseTask {
     public void execute() throws BuildException {
         try {
             getDbMaintain().createScriptArchive(archiveFileName);
+            logger.info("Script archive created: " + archiveFileName);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BuildException("Error creating jar file " + archiveFileName, e);
+            throw new BuildException("Error creating archive " + archiveFileName, e);
         }
     }
 

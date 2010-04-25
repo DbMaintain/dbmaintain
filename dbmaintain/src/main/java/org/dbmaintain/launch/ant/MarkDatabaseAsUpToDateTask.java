@@ -30,6 +30,7 @@ import java.util.Properties;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
+@SuppressWarnings("UnusedDeclaration")
 public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
 
     private String scriptLocations;
@@ -37,7 +38,6 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
     private String qualifiers;
     private String includedQualifiers;
     private String excludedQualifiers;
-    private String qualifierExpression;
     private String scriptFileExtensions;
 
     protected void performTask(DbMaintain dbMaintain) {
@@ -52,7 +52,6 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
         addTaskConfiguration(configuration, PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
         addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
-        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_EXPRESSION, qualifierExpression);
         addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
     }
 
@@ -81,15 +80,6 @@ public class MarkDatabaseAsUpToDateTask extends BaseDatabaseTask {
      */
     public void setExcludedQualifiers(String excludedQualifiers) {
         this.excludedQualifiers = excludedQualifiers;
-    }
-
-    /**
-     * Optional logical expression using &&, ||, ! operators and brackets (), that uses qualifiers as literals. e.g.
-     * (q1 || q2) && ! q3
-     * @param qualifierExpression the qualifier expression
-     */
-    public void setQualifierExpression(String qualifierExpression) {
-        this.qualifierExpression = qualifierExpression;
     }
 
     public void setAutoCreateDbMaintainScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {

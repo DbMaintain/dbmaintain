@@ -99,11 +99,8 @@ public class DbMaintainProperties {
     public static final String PROPERTY_UPDATE_SEQUENCES = "dbMaintainer.updateSequences";
 
     /**
-     * Property that indicates if a data set DTD or XSD is to be generated or not
+     * Property key for the lowest acceptable sequence value
      */
-    public static final String PROPERTY_GENERATE_DATA_SET_STRUCTURE = "dbMaintainer.generateDataSetStructure";
-
-    /* Property key for the lowest acceptable sequence value */
     public static final String PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE = "sequenceUpdater.lowestAcceptableSequenceValue";
 
     /**
@@ -222,8 +219,6 @@ public class DbMaintainProperties {
     public static final String PROPERTY_EXCLUDED_QUALIFIERS = "dbMaintainer.excludedQualifiers";
 
     public static final String PROPERTY_INCLUDED_QUALIFIERS = "dbMaintainer.includedQualifiers";
-
-    public static final String PROPERTY_QUALIFIER_EXPRESSION = "dbMaintainer.qualifierExpression";
 
     public static final String PROPERTY_SQL_PLUS_COMMAND = "dbMaintainer.sqlPlusScriptRunner.sqlPlusCommand";
 

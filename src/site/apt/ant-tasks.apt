@@ -14,11 +14,13 @@ Ant tasks
 *--------+--------------+-------------------+
 |<<Task>>|<<Attributes>>|<<Child elements>>|
 *--------+--------------+-------------------+
-|createScriptArchive|archiveFileName (required), scriptLocations (required), scriptEncoding, postProcessingScriptDirectoryName, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, configFile|
+|createScriptArchive|archiveFileName (required), scriptLocations (required), qualifiers, scriptEncoding, postProcessingScriptDirectoryName, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, configFile|
 *--------+--------------+-------------------+
-|updateDatabase|scriptLocations (required), fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, configFile|database|
+|updateDatabase|scriptLocations (required), fromScratchEnabled, qualifiers, includedQualifiers, excludedQualifiers, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, configFile|database|
 *--------+--------------+-------------------+
-|markDatabaseAsUpToDate|scriptLocations (required), autoCreateDbMaintainScriptsTable, scriptFileExtensions, configFile|database|
+|markDatabaseAsUpToDate|scriptLocations (required), qualifiers, includedQualifiers, excludedQualifiers, autoCreateDbMaintainScriptsTable, scriptFileExtensions, configFile|database|
+*--------+--------------+-------------------+
+|checkScriptUpdates|scriptLocations (required), fromScratchEnabled, qualifiers, includedQualifiers, excludedQualifiers, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, useLastModificationDates, scriptFileExtensions, configFile|database|
 *--------+--------------+-------------------+
 |clearDatabase|configFile|database|
 *--------+--------------+-------------------+

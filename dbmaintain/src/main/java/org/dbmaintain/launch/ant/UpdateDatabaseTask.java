@@ -28,6 +28,7 @@ import java.util.Properties;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
+@SuppressWarnings({"UnusedDeclaration"})
 public class UpdateDatabaseTask extends BaseDatabaseTask {
 
     private String scriptLocations;
@@ -37,7 +38,6 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
     private String qualifiers;
     private String includedQualifiers;
     private String excludedQualifiers;
-    private String qualifierExpression;
     private Boolean cleanDb;
     private Boolean disableConstraints;
     private Boolean updateSequences;
@@ -57,7 +57,6 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
         addTaskConfiguration(configuration, PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
         addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
-        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_EXPRESSION, qualifierExpression);
         addTaskConfiguration(configuration, PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
         addTaskConfiguration(configuration, PROPERTY_CLEANDB, cleanDb);
         addTaskConfiguration(configuration, PROPERTY_DISABLE_CONSTRAINTS, disableConstraints);
@@ -129,15 +128,6 @@ public class UpdateDatabaseTask extends BaseDatabaseTask {
      */
     public void setExcludedQualifiers(String excludedQualifiers) {
         this.excludedQualifiers = excludedQualifiers;
-    }
-
-    /**
-     * Optional logical expression using &&, ||, ! operators and brackets (), that uses qualifiers as literals. e.g.
-     * (q1 || q2) && ! q3
-     * @param qualifierExpression the qualifier expression
-     */
-    public void setQualifierExpression(String qualifierExpression) {
-        this.qualifierExpression = qualifierExpression;
     }
 
     /**

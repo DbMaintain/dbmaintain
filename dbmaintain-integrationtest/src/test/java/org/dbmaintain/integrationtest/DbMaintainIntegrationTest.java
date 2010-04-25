@@ -60,10 +60,9 @@ public class DbMaintainIntegrationTest {
         INCREMENTAL_3("01_incremental/03_incremental_3.sql"),
         INCREMENTAL_4("02_incremental/04_incremental_4.sql"),
 
-        INCREMENTAL_2_SPECIAL_QUALIFIER("01_incremental/02_#special.sql"),
-        INCREMENTAL_2_UNKNOWN_QUALIFIER("01_incremental/02_#unknown.sql"),
         INCREMENTAL_1_QUALIFIER1("01_incremental/01_#q1.sql"),
         INCREMENTAL_2_QUALIFIER2("01_incremental/02_#q2.sql"),
+        INCREMENTAL_2_UNKNOWN_QUALIFIER("01_incremental/02_#unknown.sql"),
         INCREMENTAL_3_QUALIFIER1_QUALIFIER2("01_incremental/03_#q1_#q2.sql"),
 
         REPEATABLE("repeatable/repeatable.sql"),
@@ -90,7 +89,6 @@ public class DbMaintainIntegrationTest {
     @Before
     public void init() {
         scriptsLocation = new File("target", "dbmaintain-integrationtest/scripts");
-        System.out.println("scriptsLocation.getAbsolutePath() = " + scriptsLocation.getAbsolutePath());
         initConfiguration();
         clearScriptsDirectory();
         clearTestDatabase();
@@ -648,7 +646,8 @@ public class DbMaintainIntegrationTest {
     }
 
     private void setQualifierExpression(String qualifierExpression) {
-        configuration.put(DbMaintainProperties.PROPERTY_QUALIFIER_EXPRESSION, qualifierExpression);
+        // Note: this call has no effect, because qualifier expression support has been removed
+        configuration.put("dbMaintainer.qualifierExpression", qualifierExpression);
     }
 
     private void setIncludedAndExcludedQualifiers(String includedQualifiers, String excludedQualifiers) {

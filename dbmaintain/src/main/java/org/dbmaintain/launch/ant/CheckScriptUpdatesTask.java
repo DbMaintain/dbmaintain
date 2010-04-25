@@ -28,6 +28,7 @@ import java.util.Properties;
  * @author Tim Ducheyne
  * @since 10-feb-2009
  */
+@SuppressWarnings("UnusedDeclaration")
 public class CheckScriptUpdatesTask extends BaseDatabaseTask {
 
     private String scriptLocations;
@@ -37,7 +38,6 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     private String qualifiers;
     private String includedQualifiers;
     private String excludedQualifiers;
-    private String qualifierExpression;
     private Boolean useLastModificationDates;
     private String scriptFileExtensions;
 
@@ -56,7 +56,6 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
         addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
         addTaskConfiguration(configuration, PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
         addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
-        addTaskConfiguration(configuration, PROPERTY_QUALIFIER_EXPRESSION, qualifierExpression);
         addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         addTaskConfiguration(configuration, PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
     }
@@ -133,15 +132,6 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
      */
     public void setExcludedQualifiers(String excludedQualifiers) {
         this.excludedQualifiers = excludedQualifiers;
-    }
-
-    /**
-     * Optional logical expression using &&, ||, ! operators and brackets (), that uses qualifiers as literals. e.g.
-     * (q1 || q2) && ! q3
-     * @param qualifierExpression the qualifier expression
-     */
-    public void setQualifierExpression(String qualifierExpression) {
-        this.qualifierExpression = qualifierExpression;
     }
 
     /**

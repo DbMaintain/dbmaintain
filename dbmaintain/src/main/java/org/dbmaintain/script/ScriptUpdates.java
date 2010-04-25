@@ -15,9 +15,9 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.util.CollectionUtils;
-
 import java.util.SortedSet;
+
+import static org.dbmaintain.util.CollectionUtils.unionSortedSet;
 
 /**
  * @author Filip Neven
@@ -76,13 +76,8 @@ public class ScriptUpdates {
     
 
     public SortedSet<ScriptUpdate> getRegularScriptUpdates() {
-        return CollectionUtils.unionSortedSet(regularlyAddedOrModifiedScripts, regularlyAddedPatchScripts, regularlyRenamedScripts,
+        return unionSortedSet(regularlyAddedOrModifiedScripts, regularlyAddedPatchScripts, regularlyRenamedScripts,
                 regularlyDeletedRepeatableScripts, regularPostprocessingScriptUpdates);
-    }
-
-
-    public boolean hasRegularScriptUpdates() {
-        return getRegularScriptUpdates().size() != 0; 
     }
 
 
