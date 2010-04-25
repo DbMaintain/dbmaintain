@@ -131,6 +131,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     protected ScriptUpdatesFormatter scriptUpdatesFormatter;
 
+    /**
+     * The maximum length of a script that is logged in an exception, 0 to not log any script content
+     */
+    protected long maxNrOfCharsWhenLoggingScriptContent;
+
 
     /**
      * Creates a new instance
@@ -155,11 +160,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param sequenceUpdater          helper object that updates all sequences to a minimal value
      * @param scriptUpdatesFormatter   helper object that formats the script updates in a well-readable format for the user
      * @param sqlHandler               helper object that performs sql statements on the database
+     * @param maxNrOfCharsWhenLoggingScriptContent
+     *                                 The maximum length of a script that is logged in an exception, 0 to not log any script content
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                                boolean fromScratchEnabled, boolean hasItemsToPreserve, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
                                boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
-                               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler) {
+                               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler, long maxNrOfCharsWhenLoggingScriptContent) {
 
         this.scriptRunner = scriptRunner;
         this.scriptRepository = scriptRepository;
@@ -177,6 +184,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.sequenceUpdater = sequenceUpdater;
         this.scriptUpdatesFormatter = scriptUpdatesFormatter;
         this.sqlHandler = sqlHandler;
+        this.maxNrOfCharsWhenLoggingScriptContent = maxNrOfCharsWhenLoggingScriptContent;
     }
 
 
@@ -503,12 +511,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executedScriptInfoSource.updateExecutedScript(executedScript);
 
         } catch (DbMaintainException e) {
-            String scriptContents = script.getScriptContentHandle().getScriptContentAsString();
             String message = "Error while executing script " + script.getFileName() + ":\n" + e.getMessage() + "\n\n";
-            message += "Full contents of failed script " + script.getFileName() + ":\n";
-            message += "----------------------------------------------------\n";
-            message += scriptContents + "\n";
-            message += "----------------------------------------------------\n";
+            if (maxNrOfCharsWhenLoggingScriptContent > 0) {
+                String scriptContents = script.getScriptContentHandle().getScriptContentsAsString(maxNrOfCharsWhenLoggingScriptContent);
+                message += "Full contents of failed script " + script.getFileName() + ":\n";
+                message += "----------------------------------------------------\n";
+                message += scriptContents + "\n";
+                message += "----------------------------------------------------\n";
+            }
             throw new DbMaintainException(message, e.getCause());
         }
     }

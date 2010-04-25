@@ -108,6 +108,7 @@ public class PropertiesDbMaintainConfigurer {
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, configuration);
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS, configuration);
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, configuration);
+        long maxNrOfCharsWhenLoggingScriptContent = PropertyUtils.getLong(PROPERTY_MAX_NR_CHARS_WHEN_LOGGING_SCRIPT_CONTENT, configuration);
 
         DBCleaner dbCleaner = createDbCleaner();
         DBClearer dbClearer = createDbClearer();
@@ -119,10 +120,10 @@ public class PropertiesDbMaintainConfigurer {
         return createInstanceOfType(clazz, false,
                 new Class<?>[]{ScriptRunner.class, ScriptRepository.class, ExecutedScriptInfoSource.class, boolean.class, boolean.class, boolean.class,
                         boolean.class, boolean.class, boolean.class, boolean.class,
-                        DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class, ScriptUpdatesFormatter.class, SQLHandler.class},
+                        DBClearer.class, DBCleaner.class, ConstraintsDisabler.class, SequenceUpdater.class, ScriptUpdatesFormatter.class, SQLHandler.class, long.class},
                 new Object[]{scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, hasItemsToPreserve, useScriptFileLastModificationDates,
                         allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled,
-                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler});
+                        dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, sqlHandler, maxNrOfCharsWhenLoggingScriptContent});
     }
 
     public QualifierEvaluator createQualifierEvaluator(Set<ScriptLocation> scriptLocations) {

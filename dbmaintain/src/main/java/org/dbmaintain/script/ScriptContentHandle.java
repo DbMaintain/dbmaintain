@@ -78,17 +78,30 @@ public abstract class ScriptContentHandle {
     }
 
 
-    public String getScriptContentAsString() {
-        InputStream inputStream = null;
+    public String getScriptContentsAsString(long maxNrChars) {
         try {
-            inputStream = this.getScriptInputStream();
-            return IOUtils.toString(inputStream);
+            InputStream inputStream = this.getScriptInputStream();
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));
+                StringWriter stringWriter = new StringWriter();
+                long count = 0;
+                int c;
+                while ((c = bufferedReader.read()) != -1) {
+                    stringWriter.write(c);
+                    if (++count >= maxNrChars) {
+                        stringWriter.write("... <remainder of script is omitted>");
+                        break;
+                    }
+                }
+                return stringWriter.toString();
+            } finally {
+                inputStream.close();
+            }
         } catch (IOException e) {
-            return "";
-        } finally {
-            IOUtils.closeQuietly(inputStream);
+            return "<script content could not be retrieved>";
         }
     }
+
 
     protected MessageDigest getScriptDigest() {
         try {

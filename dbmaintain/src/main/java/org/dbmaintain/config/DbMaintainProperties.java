@@ -99,6 +99,11 @@ public class DbMaintainProperties {
     public static final String PROPERTY_UPDATE_SEQUENCES = "dbMaintainer.updateSequences";
 
     /**
+     * Property for the maximum nr of chars of the script content to log when exception occurs, 0 to not log any script content
+     */
+    public static final String PROPERTY_MAX_NR_CHARS_WHEN_LOGGING_SCRIPT_CONTENT = "dbMaintainer.maxNrOfCharsWhenLoggingScriptContent";
+
+    /**
      * Property key for the lowest acceptable sequence value
      */
     public static final String PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE = "sequenceUpdater.lowestAcceptableSequenceValue";
