@@ -154,7 +154,7 @@ goto Win9xApp
 :endInit
 SET DBMAINTAIN_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
 
-SET DBMAINTAIN_CLASSPATH="%DBMAINTAIN_HOME%\lib\dbmaintain-1.0.jar";"%DBMAINTAIN_HOME%\lib\commons-logging-1.1.1.jar";%JDBC_DRIVER%
+SET DBMAINTAIN_CLASSPATH="%DBMAINTAIN_HOME%\lib\dbmaintain-1.1.jar";"%DBMAINTAIN_HOME%\lib\commons-logging-1.1.1.jar";%JDBC_DRIVER%
 
 @REM Start DBMAINTAIN
 :runm2

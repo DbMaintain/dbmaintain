@@ -145,7 +145,7 @@ if [ -z "$JAVA_HOME" ] ; then
 fi
 
 DBMAINTAIN_LAUNCHER="org.dbmaintain.launch.commandline.CommandLine"
-DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.0.jar"
+DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.1.jar"
 COMMONS_LOGGING_JAR="${DBMAINTAIN_HOME}/lib/commons-logging-1.1.1.jar"
 
 # Check if $DBMAINTAIN_JDBC_DRIVER is set. If not, call setJdbcDriver.sh.
