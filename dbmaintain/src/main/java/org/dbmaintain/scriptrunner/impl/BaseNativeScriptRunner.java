@@ -87,7 +87,7 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
 
     protected File createTemporaryScriptFile(Script script) throws IOException {
         File temporaryScriptsDir = createTemporaryScriptsDir();
-        File temporaryScriptFile = new File(temporaryScriptsDir, currentTimeMillis() + script.getFileNameWithoutPath());
+        File temporaryScriptFile = new File(temporaryScriptsDir, getTemporaryScriptName(script));
         temporaryScriptFile.deleteOnExit();
 
         Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
@@ -97,6 +97,10 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
             scriptContentReader.close();
         }
         return temporaryScriptFile;
+    }
+
+    protected String getTemporaryScriptName(Script script) {
+        return currentTimeMillis() + script.getFileNameWithoutPath();
     }
 
     protected File createTemporaryScriptsDir() {

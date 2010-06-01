@@ -17,6 +17,7 @@ package org.dbmaintain.scriptrunner.impl;
 
 import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
+import static org.apache.commons.lang.StringUtils.deleteWhitespace;
 import static org.dbmaintain.util.FileUtils.createFile;
 
 /**
@@ -82,7 +84,7 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         content.append(";");
         content.append(lineSeparator);
         content.append("set echo on");
-        content.append(lineSeparator);                
+        content.append(lineSeparator);
         content.append("@@");
         content.append(targetScriptFile.getName());
         content.append(lineSeparator);
@@ -92,6 +94,18 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         return temporaryScriptWrapperFile;
     }
 
+
+    /**
+     * Oracle does not support blanks in file names, so remove them from the temp file name.
+     *
+     * @param script The script that is going to be executed, not null
+     * @return The file name without spaces, not null
+     */
+    @Override
+    protected String getTemporaryScriptName(Script script) {
+        String temporaryScriptName = super.getTemporaryScriptName(script);
+        return deleteWhitespace(temporaryScriptName);
+    }
 
     protected Application createApplication(String sqlPlusCommand) {
         return new Application("SQL*Plus", sqlPlusCommand);
