@@ -17,6 +17,7 @@ package org.dbmaintain.scriptrunner.impl;
 
 import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,11 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
     protected void executeScript(File scriptFile, DbSupport targetDbSupport) throws Exception {
         File wrapperScriptFile = generateWrapperScriptFile(targetDbSupport.getDatabaseInfo(), scriptFile);
         String[] arguments = {"/nolog", "@" + wrapperScriptFile.getPath()};
-        application.execute(arguments);
+        Application.ProcessOutput processOutput = application.execute(arguments);
+        int exitValue = processOutput.getExitValue();
+        if (exitValue != 0) {
+            throw new DbMaintainException("Failed to execute command. SQL*Plus returned an error.\n" + processOutput.getOutput());
+        }
     }
 
 
@@ -59,7 +64,13 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
 
         String lineSeparator = System.getProperty("line.separator");
         StringBuilder content = new StringBuilder();
-        content.append("CONNECT ");
+        content.append("set echo off");
+        content.append(lineSeparator);
+        content.append("whenever sqlerror exit sql.sqlcode rollback");
+        content.append(lineSeparator);
+        content.append("whenever oserror exit sql.sqlcode rollback");
+        content.append(lineSeparator);
+        content.append("connect ");
         content.append(databaseInfo.getUserName());
         content.append('/');
         content.append(databaseInfo.getPassword());
@@ -68,11 +79,14 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         content.append(lineSeparator);
         content.append("alter session set current_schema=");
         content.append(databaseInfo.getDefaultSchemaName());
+        content.append(";");
         content.append(lineSeparator);
+        content.append("set echo on");
+        content.append(lineSeparator);                
         content.append("@@");
         content.append(targetScriptFile.getName());
         content.append(lineSeparator);
-        content.append("EXIT");
+        content.append("exit sql.sqlcode");
         content.append(lineSeparator);
         createFile(temporaryScriptWrapperFile, content.toString());
         return temporaryScriptWrapperFile;
