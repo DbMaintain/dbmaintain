@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dbmaintain</groupId>
         <artifactId>dbmaintain-parent</artifactId>
-        <version>1.1</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     <artifactId>dbmaintain</artifactId>
     <!-- Project information -->
@@ -22,13 +22,6 @@
             </testResource>
         </testResources>
         <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -50,45 +43,43 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.pyx4me</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>proguard</goal></goals>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <assembly>
-                        <inclusions>
-                            <inclusion>
-                                <groupId>commons-lang</groupId>
-                                <artifactId>commons-lang</artifactId>
-                                <filter>!META-INF/**</filter>
-                            </inclusion>
-                            <inclusion>
-                                <groupId>commons-dbutils</groupId>
-                                <artifactId>commons-dbutils</artifactId>
-                                <filter>!META-INF/**</filter>
-                            </inclusion>
-                            <inclusion>
-                                <groupId>commons-io</groupId>
-                                <artifactId>commons-io</artifactId>
-                                <filter>!META-INF/**</filter>
-                            </inclusion>
-                        </inclusions>
-                    </assembly>
-                    <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
-                    </libs>
-                    <options>
-                        <option>-keep class org.dbmaintain.** {public protected *;}</option>
-                        <option>-flattenpackagehierarchy org.dbmaintain.thirdpartyobfuscated</option>
-                        <option>-dontusemixedcaseclassnames</option>
-                        <option>-keepattributes SourceFile,LineNumberTable</option>
-                        <option>-dontoptimize</option>
-                        <option>-ignorewarnings</option>
-                    </options>
+                    <artifactSet>
+                        <includes>
+                            <include>commons-lang:commons-lang</include>
+                            <include>commons-dbutils:commons-dbutils</include>
+                            <include>commons-io:commons-io</include>
+                            <include>commons-logging:commons-logging</include>
+                        </includes>
+                    </artifactSet>
+                    <relocations>
+                        <relocation>
+                            <pattern>org.apache.commons.lang</pattern>
+                            <shadedPattern>thirdparty.org.apache.commons.lang</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.apache.commons.dbutils</pattern>
+                            <shadedPattern>thirdparty.org.apache.commons.dbutils</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.apache.commons.io</pattern>
+                            <shadedPattern>thirdparty.org.apache.commons.io</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.apache.commons.logging</pattern>
+                            <shadedPattern>thirdparty.org.apache.commons.logging</shadedPattern>
+                        </relocation>
+                    </relocations>
                 </configuration>
             </plugin>
         </plugins>
