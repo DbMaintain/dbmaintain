@@ -15,6 +15,17 @@
  */
 package org.dbmaintain.executedscriptinfo.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.SQLHandler;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Qualifier;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.util.DbMaintainException;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,16 +34,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.script.Qualifier;
-import org.dbmaintain.util.DbMaintainException;
 
 /**
  * Implementation of <code>VersionSource</code> that stores the version in the database.
@@ -46,86 +48,47 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     private static Log logger = LogFactory.getLog(DefaultExecutedScriptInfoSource.class);
 
     protected DbSupport defaultDbSupport;
-
     protected SQLHandler sqlHandler;
-
     protected SortedSet<ExecutedScript> executedScripts;
-
-    /**
-     * The name of the database table in which the executed script info is stored
-     */
+    /* The name of the database table in which the executed script info is stored */
     protected String executedScriptsTableName;
-
-    /**
-     * The name of the database column in which the script name is stored
-     */
+    /* The name of the database column in which the script name is stored */
     protected String fileNameColumnName;
     protected int fileNameColumnSize;
-
-    /**
-     * The name of the database column in which the file last modification timestamp is stored
-     */
+    /* The name of the database column in which the file last modification timestamp is stored */
     protected String fileLastModifiedAtColumnName;
-
-    /**
-     * The name of the database column in which the checksum calculated on the script content is stored
-     */
+    /* The name of the database column in which the checksum calculated on the script content is stored */
     protected String checksumColumnName;
     protected int checksumColumnSize;
-
-    /**
-     * The name of the database column in which the script execution timestamp is stored
-     */
+    /* The name of the database column in which the script execution timestamp is stored */
     protected String executedAtColumnName;
     protected int executedAtColumnSize;
-
-    /**
-     * The name of the database column in which the script name is stored
-     */
+    /* The name of the database column in which the script name is stored */
     protected String succeededColumnName;
-
-    /**
-     * True if the scripts table should be created automatically if it does not exist yet
-     */
+    /* True if the scripts table should be created automatically if it does not exist yet */
     protected boolean autoCreateExecutedScriptsTable;
-
-    /**
-     * Format of the contents of the executed_at column
-     */
+    /* Format of the contents of the executed_at column */
     protected DateFormat timestampFormat;
-
-
-    /**
-     * The prefix to use for locating the target database part in the filename, not null
-     */
+    /* The prefix to use for locating the target database part in the filename, not null */
     protected String targetDatabasePrefix;
-    
-    /**
-     * The prefix that can be used in the filename to identify qualifiers 
-     */
+    /* The prefix that can be used in the filename to identify qualifiers */
     protected String qualifierPefix;
-
-    /**
-     * The registered (allowed) custom qualifiers
-     */
+    /* The registered (allowed) custom qualifiers */
     protected Set<Qualifier> registeredQualifiers;
-
-    /**
-     * The qualifiers that identify a script as a patch script, not null
-     */
+    /* The qualifiers that identify a script as a patch script, not null */
     protected Set<Qualifier> patchQualifiers;
-    
-    /**
-     * The name of the post processing dir
-     */
+    /* The name of the post processing dir*/
     protected String postProcessingScriptDirName;
+    /* The baseline revision. If set, all scripts with a lower revision will be ignored */
+    protected ScriptIndexes baseLineRevision;
 
 
     public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName,
-            int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize,
-            String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat,
-            DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix,
-            Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
+                                           int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize,
+                                           String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat,
+                                           DbSupport defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix,
+                                           Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName,
+                                           ScriptIndexes baseLineRevision) {
 
         this.defaultDbSupport = defaultSupport;
         this.sqlHandler = sqlHandler;
@@ -145,9 +108,10 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
+        this.baseLineRevision = baseLineRevision;
     }
-    
-    
+
+
     /**
      * @return All scripts that were registered as executed on the database
      */
@@ -162,7 +126,6 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
             // try again, executed scripts table was not ok
             return doGetExecutedScripts();
         }
-
     }
 
 
@@ -199,11 +162,12 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                ExecutedScript executedScript = new ExecutedScript(new Script(fileName, fileLastModifiedAt, checkSum,
-                        targetDatabasePrefix, qualifierPefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName), executedAt, succeeded);
-                executedScripts.add(executedScript);
+                Script script = new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
+                if (!script.isIgnored(baseLineRevision)) {
+                    ExecutedScript executedScript = new ExecutedScript(script, executedAt, succeeded);
+                    executedScripts.add(executedScript);
+                }
             }
-
         } catch (SQLException e) {
             throw new DbMaintainException("Error while retrieving database version", e);
         } finally {
@@ -231,7 +195,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * Saves the given registered script
      * Precondition: The table db_executed_scripts must exist
      *
-     * @param executedScript
+     * @param executedScript The script that needs to be saved, not null
      */
     protected void insertExecutedScript(ExecutedScript executedScript) {
         getExecutedScripts().add(executedScript);
@@ -249,7 +213,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     /**
      * Updates the given registered script
      *
-     * @param executedScript
+     * @param executedScript The script that needs to be updated, not null
      */
     public void updateExecutedScript(ExecutedScript executedScript) {
         getExecutedScripts().add(executedScript);
@@ -282,7 +246,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     /**
      * Registers the fact that the script that was originally executed has been renamed.
      *
-     * @param executedScript the original executed script that still refers to the original script
+     * @param executedScript  the original executed script that still refers to the original script
      * @param renamedToScript the script to which the original script has been renamed
      */
     public void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript) {
@@ -297,12 +261,12 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
 
     public void deleteAllExecutedPostprocessingScripts() {
-        for (Iterator<ExecutedScript> executedScriptsIterator = getExecutedScripts().iterator(); executedScriptsIterator.hasNext(); ) {
+        for (Iterator<ExecutedScript> executedScriptsIterator = getExecutedScripts().iterator(); executedScriptsIterator.hasNext();) {
             ExecutedScript executedScript = executedScriptsIterator.next();
             if (executedScript.getScript().isPostProcessingScript()) {
                 executedScriptsIterator.remove();
                 String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
-                    " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
+                        " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
                 sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
             }
         }

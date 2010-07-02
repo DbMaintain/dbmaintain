@@ -7,6 +7,6 @@ package org.dbmaintain.dbsupport;
  */
 public enum DbItemType {
 
-    SCHEMA, TABLE, VIEW, MATERIALZED_VIEW, SYNONYM, SEQUENCE, TRIGGER, TYPE;
-    
+    SCHEMA, TABLE, VIEW, MATERIALIZED_VIEW, SYNONYM, SEQUENCE, TRIGGER, TYPE
+
 }

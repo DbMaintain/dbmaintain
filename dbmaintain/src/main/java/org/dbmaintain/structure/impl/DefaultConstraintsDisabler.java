@@ -18,9 +18,8 @@ package org.dbmaintain.structure.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.structure.ConstraintsDisabler;
-
-import java.util.Collection;
 
 /**
  * Default implementation of {@link ConstraintsDisabler}.
@@ -37,7 +36,7 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
     private static Log logger = LogFactory.getLog(DefaultConstraintsDisabler.class);
 
     /* The database supports to disable the constraints for */
-    protected Collection<DbSupport> dbSupports;
+    protected DbSupports dbSupports;
 
 
     /**
@@ -45,7 +44,7 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
      *
      * @param dbSupports The database supports to disable the constraints for, not null
      */
-    public DefaultConstraintsDisabler(Collection<DbSupport> dbSupports) {
+    public DefaultConstraintsDisabler(DbSupports dbSupports) {
         this.dbSupports = dbSupports;
     }
 
@@ -54,7 +53,7 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
      * Disable every foreign key or not-null constraint
      */
     public void disableConstraints() {
-        for (DbSupport dbSupport : dbSupports) {
+        for (DbSupport dbSupport : dbSupports.getDbSupports()) {
             for (String schemaName : dbSupport.getSchemaNames()) {
                 logger.info("Disabling constraints in database schema " + schemaName);
 

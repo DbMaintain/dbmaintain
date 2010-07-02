@@ -16,16 +16,15 @@
 package org.dbmaintain.script.impl;
 
 import org.dbmaintain.script.Script;
-import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import org.dbmaintain.util.DbMaintainException;
-import static org.dbmaintain.util.TestUtils.createScript;
-import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.SortedSet;
+import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.dbmaintain.util.CollectionUtils.asSortedSet;
+import static org.dbmaintain.util.TestUtils.createScript;
+import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Filip Neven
@@ -48,31 +47,13 @@ public class ScriptRepositoryTest {
         postProcessing1 = createScript("postprocessing/01_post1.sql");
         postProcessing2 = createScript("postprocessing/02_post2.sql");
 
-        scriptLocation1 = new ScriptLocation() {
-            public String getLocationName() {
-                return "location1";
-            }
-
-            @Override
-            public SortedSet<Script> getScripts() {
-                return asSortedSet(indexed1, repeatable1, postProcessing1);
-            }
-        };
-        scriptLocation2 = new ScriptLocation() {
-            public String getLocationName() {
-                return "location2";
-            }
-
-            @Override
-            public SortedSet<Script> getScripts() {
-                return asSortedSet(indexed2, repeatable2, postProcessing2);
-            }
-        };
+        scriptLocation1 = new ArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1), null, null, null, null, null, null, null);
+        scriptLocation2 = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2), null, null, null, null, null, null, null);
     }
 
     @Test
     public void getScripts() {
-        ScriptRepository scriptRepository = new ScriptRepository(asSet(scriptLocation1, scriptLocation2), getTrivialQualifierEvaluator());
+        ScriptRepository scriptRepository = new ScriptRepository(asSet(scriptLocation1, scriptLocation2), getTrivialQualifierEvaluator(), null);
 
         assertEquals(asSortedSet(indexed1, indexed2), scriptRepository.getIndexedScripts());
         assertEquals(asSortedSet(repeatable1, repeatable2), scriptRepository.getRepeatableScripts());
@@ -81,35 +62,14 @@ public class ScriptRepositoryTest {
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateScript() {
-        ScriptLocation location = new ScriptLocation() {
-            public String getLocationName() {
-                return "locationWithDuplicateScript";
-            }
-
-            @Override
-            public SortedSet<Script> getScripts() {
-                return asSortedSet(indexed2, repeatable1, postProcessing2);
-            }
-        };
-
-        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
+        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null, null, null, null, null, null, null);
+        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator(), null);
     }
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateIndex() {
-        ScriptLocation location = new ScriptLocation() {
-            @Override
-            public String getLocationName() {
-                return "locationWithDuplicateIndexScript";
-            }
-
-            @Override
-            public SortedSet<Script> getScripts() {
-                return asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2);
-            }
-        };
-
-        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
+        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null, null, null, null, null, null, null);
+        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator(), null);
     }
-    
+
 }

@@ -1,7 +1,8 @@
 package org.dbmaintain.script.impl;
 
-import org.dbmaintain.script.Script;
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.QualifierEvaluator;
+import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
@@ -13,14 +14,17 @@ import java.util.*;
  */
 public class ScriptRepository {
 
-    protected final SortedSet<Script> indexedScripts = new TreeSet<Script>();
-    protected final SortedSet<Script> repeatableScripts = new TreeSet<Script>();
-    protected final SortedSet<Script> postProcessingScripts = new TreeSet<Script>();
+    protected SortedSet<Script> indexedScripts = new TreeSet<Script>();
+    protected SortedSet<Script> repeatableScripts = new TreeSet<Script>();
+    protected SortedSet<Script> postProcessingScripts = new TreeSet<Script>();
 
-    private final QualifierEvaluator qualifierEvaluator;
+    protected QualifierEvaluator qualifierEvaluator;
+    protected ScriptIndexes baseLineRevision;
 
-    public ScriptRepository(Set<ScriptLocation> scriptLocations, QualifierEvaluator qualifierEvaluator) {
+
+    public ScriptRepository(Set<ScriptLocation> scriptLocations, QualifierEvaluator qualifierEvaluator, ScriptIndexes baseLineRevision) {
         this.qualifierEvaluator = qualifierEvaluator;
+        this.baseLineRevision = baseLineRevision;
         initScripts(scriptLocations);
     }
 
@@ -65,7 +69,6 @@ public class ScriptRepository {
                 }
             }
         }
-
         assertNoDuplicateScriptIndexes();
     }
 
@@ -73,7 +76,9 @@ public class ScriptRepository {
         if (script.isPostProcessingScript()) {
             postProcessingScripts.add(script);
         } else if (script.isIncremental()) {
-            indexedScripts.add(script);
+            if (!script.isIgnored(baseLineRevision)) {
+                indexedScripts.add(script);
+            }
         } else { // Repeatable script
             repeatableScripts.add(script);
         }
@@ -129,7 +134,7 @@ public class ScriptRepository {
         private Script duplicateScript;
         private ScriptLocation location1;
         private ScriptLocation location2;
-              
+
         public DuplicateScript(Script duplicateScript, ScriptLocation location1, ScriptLocation location2) {
             this.duplicateScript = duplicateScript;
             this.location1 = location1;

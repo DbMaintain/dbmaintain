@@ -35,9 +35,10 @@ public class DatabaseInfo {
     private String password;
     private String defaultSchemaName;
     private Set<String> schemaNames;
+    private boolean disabled;
 
 
-    public DatabaseInfo(String name, String dialect, String driverClassName, String url, String userName, String password, List<String> schemaNames) {
+    public DatabaseInfo(String name, String dialect, String driverClassName, String url, String userName, String password, List<String> schemaNames, boolean disabled) {
         this.name = name;
         this.dialect = dialect;
         this.driverClassName = driverClassName;
@@ -46,7 +47,9 @@ public class DatabaseInfo {
         this.password = password;
         this.defaultSchemaName = schemaNames.get(0);
         this.schemaNames = new HashSet<String>(schemaNames);
+        this.disabled = disabled;
     }
+
 
     public String getName() {
         return name;
@@ -79,5 +82,8 @@ public class DatabaseInfo {
     public Set<String> getSchemaNames() {
         return schemaNames;
     }
-    
+
+    public boolean isDisabled() {
+        return disabled;
+    }
 }

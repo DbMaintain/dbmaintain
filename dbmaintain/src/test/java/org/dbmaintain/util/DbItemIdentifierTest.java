@@ -15,59 +15,54 @@
  */
 package org.dbmaintain.util;
 
-import static junit.framework.Assert.assertEquals;
-
-import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
-import org.dbmaintain.dbsupport.DbItemType;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import static junit.framework.Assert.assertEquals;
+import static org.dbmaintain.dbsupport.DbItemIdentifier.*;
+import static org.dbmaintain.dbsupport.DbItemType.TABLE;
+import static org.dbmaintain.util.TestUtils.getDbSupports;
 
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public final class DbItemIdentifierTest {
+public class DbItemIdentifierTest {
 
-	DbSupport dbSupport;
-	
-	Map<String, DbSupport> dbNameDbSupportMap;
+    private DbSupports dbSupports;
 
-	@Before
-	public void init() {
-		dbSupport = TestUtils.getDbSupport();
-		dbNameDbSupportMap = new HashMap<String, DbSupport>();
-		dbNameDbSupportMap.put("mydatabase", dbSupport);
-	}
-	
-	@Test
-	public void parseItemIdentifier_itemOnly() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "test", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, "public", "test", dbSupport);
-		assertEquals(identifier, parsedIdentifier);
-	}
-	
-	@Test
-	public void parseItemIdentifier_schemaAndItem() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "myschema.test", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, "myschema", "test", dbSupport);
-		assertEquals(identifier, parsedIdentifier);
-	}
-	
-	@Test
-	public void parseItemIdentifier_databaseSchemaAndItem() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseItemIdentifier(DbItemType.TABLE, "mydatabase.myschema.test", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getItemIdentifier(DbItemType.TABLE, "myschema", "test", dbSupport);
-		assertEquals(identifier, parsedIdentifier);
-	}
-	
-	@Test
-	public void parseSchemaschemaOnly() throws Exception {
-		DbItemIdentifier parsedIdentifier = DbItemIdentifier.parseSchemaIdentifier("public", dbSupport, dbNameDbSupportMap);
-		DbItemIdentifier identifier = DbItemIdentifier.getSchemaIdentifier("public", dbSupport);
-		assertEquals(identifier, parsedIdentifier);
-	}
+    @Before
+    public void init() {
+        dbSupports = getDbSupports();
+    }
+
+    @Test
+    public void parseItemIdentifier_itemOnly() throws Exception {
+        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "test", dbSupports);
+        DbItemIdentifier identifier = getItemIdentifier(TABLE, "public", "test", dbSupports.getDefaultDbSupport());
+        assertEquals(identifier, parsedIdentifier);
+    }
+
+    @Test
+    public void parseItemIdentifier_schemaAndItem() throws Exception {
+        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "myschema.test", dbSupports);
+        DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", dbSupports.getDefaultDbSupport());
+        assertEquals(identifier, parsedIdentifier);
+    }
+
+    @Test
+    public void parseItemIdentifier_databaseSchemaAndItem() throws Exception {
+        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "mydatabase.myschema.test", dbSupports);
+        DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", dbSupports.getDefaultDbSupport());
+        assertEquals(identifier, parsedIdentifier);
+    }
+
+    @Test
+    public void parseSchemaOnly() throws Exception {
+        DbItemIdentifier parsedIdentifier = parseSchemaIdentifier("public", dbSupports);
+        DbItemIdentifier identifier = getSchemaIdentifier("public", dbSupports.getDefaultDbSupport());
+        assertEquals(identifier, parsedIdentifier);
+    }
 }

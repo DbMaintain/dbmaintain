@@ -15,16 +15,19 @@
  */
 package org.dbmaintain.clear.impl;
 
+import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.junit.Before;
 import org.junit.Test;
 import org.unitils.UnitilsJUnit4;
 import org.unitils.mock.Mock;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
@@ -50,10 +53,9 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Before
     public void setUp() throws Exception {
-        Map<String, DbSupport> dbNameDbSupportMap = new HashMap<String, DbSupport>();
-        dbNameDbSupportMap.put(null, dbSupportMock.getMock());
+        DbSupports dbSupports = new DbSupports(asList(dbSupportMock.getMock()), new ArrayList<String>());
 
-        defaultDbClearer = new DefaultDBClearer(dbNameDbSupportMap);
+        defaultDbClearer = new DefaultDBClearer(dbSupports, new HashSet<DbItemIdentifier>());
         dbSupportMock.returns(tableNames).getTableNames(SCHEMA);
         dbSupportMock.returns(asSet(SCHEMA)).getSchemaNames();
     }

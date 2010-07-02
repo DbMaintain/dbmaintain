@@ -4,7 +4,7 @@
   <groupId>org.dbmaintain</groupId>
   <artifactId>dbmaintain-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.1</version>
+  <version>1.1-SNAPSHOT</version>
   <!-- Project information -->
   <name>dbmaintain-parent</name>
   <url>http://www.dbmaintain.org/</url>

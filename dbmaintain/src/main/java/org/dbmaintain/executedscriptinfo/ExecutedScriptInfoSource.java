@@ -15,44 +15,44 @@
  */
 package org.dbmaintain.executedscriptinfo;
 
-import java.util.Set;
-
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 
+import java.util.Set;
+
 
 /**
- * Interface that enables registering which scripts were executed on the database and retrieving this information afterwards. 
+ * Interface that enables registering which scripts were executed on the database and retrieving this information afterwards.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public interface ExecutedScriptInfoSource {
 
-    
+
     /**
      * Registers the fact that the given script has been executed on the database
-     * 
+     *
      * @param executedScript The script that was executed on the database
      */
     void registerExecutedScript(ExecutedScript executedScript);
 
-    
+
     /**
      * Updates the given registered script
-     * 
-     * @param executedScript
+     *
+     * @param executedScript The script to update, not null
      */
     void updateExecutedScript(ExecutedScript executedScript);
-    
-    
+
+
     /**
-     * Clears all script executions that have been registered. After having invoked this method, 
+     * Clears all script executions that have been registered. After having invoked this method,
      * {@link #getExecutedScripts()} will return an empty set.
      */
     void clearAllExecutedScripts();
-    
-    
+
+
     /**
      * @return All scripts that were registered as being executed on the database
      */
@@ -70,7 +70,7 @@ public interface ExecutedScriptInfoSource {
     /**
      * Registers the fact that the script that was originally executed has been renamed.
      *
-     * @param executedScript the original executed script that still refers to the original script
+     * @param executedScript  the original executed script that still refers to the original script
      * @param renamedToScript the script to which the original script has been renamed
      */
     void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript);

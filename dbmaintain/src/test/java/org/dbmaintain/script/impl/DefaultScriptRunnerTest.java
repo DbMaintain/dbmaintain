@@ -15,10 +15,13 @@
  */
 package org.dbmaintain.script.impl;
 
-import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
+import org.dbmaintain.scriptparser.ScriptParserFactory;
+import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.scriptrunner.impl.DefaultScriptRunner;
 import org.dbmaintain.util.SQLTestUtils;
 import org.junit.After;
@@ -27,12 +30,13 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Collections.singleton;
 import static junit.framework.Assert.assertTrue;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
-import static org.dbmaintain.util.TestUtils.getDbSupport;
-import static org.dbmaintain.util.TestUtils.getDefaultScriptRunner;
+import static org.dbmaintain.util.TestUtils.getDbSupports;
 
 /**
  * Test class for the DefaultScriptRunner.
@@ -61,9 +65,12 @@ public class DefaultScriptRunnerTest {
      */
     @Before
     public void setUp() throws Exception {
-        DbSupport dbSupport = getDbSupport();
-        dataSource = dbSupport.getDataSource();
-        defaultScriptRunner = getDefaultScriptRunner(dbSupport);
+        DbSupports dbSupports = getDbSupports();
+        dataSource = dbSupports.getDefaultDbSupport().getDataSource();
+
+        Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
+        databaseDialectScriptParserClassMap.put("hsqldb", new DefaultScriptParserFactory(false));
+        defaultScriptRunner = new DefaultScriptRunner(databaseDialectScriptParserClassMap, dbSupports, new DefaultSQLHandler());
 
         script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
         script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");

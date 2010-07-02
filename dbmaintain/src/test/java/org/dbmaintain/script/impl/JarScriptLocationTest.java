@@ -15,25 +15,24 @@
  */
 package org.dbmaintain.script.impl;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.apache.commons.io.IOUtils.contentEquals;
-import org.dbmaintain.script.Script;
 import org.dbmaintain.script.Qualifier;
-import org.dbmaintain.util.CollectionUtils;
-import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.CollectionUtils.asSet;
+import org.dbmaintain.script.Script;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import static java.io.File.createTempFile;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.SortedSet;
-import static java.util.Collections.*;
+
+import static java.io.File.createTempFile;
+import static java.util.Collections.singleton;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.apache.commons.io.IOUtils.contentEquals;
+import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 
 /**
  * @author Filip Neven
@@ -50,7 +49,7 @@ public class JarScriptLocationTest {
         Script script1 = TestUtils.createScript("folder1/script1.sql", "Script 1 content");
         Script script2 = TestUtils.createScript("folder1/script2.sql", "Script 2 content");
         scripts = asSortedSet(script1, script2);
-        jarFile = createTempFile("scriptjar", ".jar", new File("target"));
+        jarFile = createTempFile("scriptjar", ".jar");
     }
 
     @Test
@@ -92,7 +91,7 @@ public class JarScriptLocationTest {
         assertEquals(originalScriptJar.getPatchQualifiers(), scriptJarFromFile.getPatchQualifiers());
         assertEquals(originalScriptJar.getPostProcessingScriptDirName(), scriptJarFromFile.getPostProcessingScriptDirName());
         assertEquals(originalScriptJar.getScriptEncoding(), scriptJarFromFile.getScriptEncoding());
-        
+
     }
 
 }

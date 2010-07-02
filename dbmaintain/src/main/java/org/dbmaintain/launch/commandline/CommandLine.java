@@ -19,9 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
-import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
@@ -32,7 +29,7 @@ import java.util.Properties;
 
 /**
  * Class that exposes a set of DbMaintain operations for command line execution.
- * 
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
@@ -44,25 +41,25 @@ public class CommandLine {
     private static Log logger = LogFactory.getLog(CommandLine.class);
 
     /**
-     * Enum that defines all DbMaintain operations that can be invoked using this class.  
+     * Enum that defines all DbMaintain operations that can be invoked using this class.
      */
     public enum DbMaintainOperation {
-        
+
         CREATE_SCRIPT_ARCHIVE("createScriptArchive"),
         CHECK_SCRIPT_UPDATES("checkScriptUpdates"),
-        UPDATE_DATABASE("updateDatabase"), 
-        MARK_DATABASE_AS_UPTODATE("markDatabaseAsUpToDate"), 
-        CLEAR_DATABASE("clearDatabase"), 
+        UPDATE_DATABASE("updateDatabase"),
+        MARK_DATABASE_AS_UPTODATE("markDatabaseAsUpToDate"),
+        CLEAR_DATABASE("clearDatabase"),
         CLEAN_DATABASE("cleanDatabase"),
-        DISABLE_CONSTRAINTS("disableConstraints"), 
+        DISABLE_CONSTRAINTS("disableConstraints"),
         UPDATE_SEQUENCES("updateSequences");
-        
+
         private String operationName;
-        
+
         private DbMaintainOperation(String operationName) {
             this.operationName = operationName;
         }
-        
+
         /**
          * @return The name of the operation, that can be used as first command line argument to invoke an operation
          */
@@ -72,8 +69,7 @@ public class CommandLine {
 
         /**
          * @param operationName The name of the operation, that can be used as first command line argument to invoke an operation
-         * 
-         * @return The operation identified by the given operation name 
+         * @return The operation identified by the given operation name
          */
         public static DbMaintainOperation getByOperationName(String operationName) {
             for (DbMaintainOperation operation : values()) {
@@ -84,13 +80,13 @@ public class CommandLine {
             return null;
         }
     }
-    
-    
+
+
     /**
      * Executes a DbMaintain operation. The first command-line argument defines the operation that
      * must be executed. The second argument defines the properties file that is used to configure
      * DbMaintain.
-     * 
+     *
      * @param args The command line arguments
      */
     public static void main(String[] args) {
@@ -103,8 +99,8 @@ public class CommandLine {
 
     /**
      * Parses the command line arguments and gives back a {@link CommandLineArguments} instance that represents
-     * these arguments in a more convenient way. 
-     * 
+     * these arguments in a more convenient way.
+     *
      * @param args The command line arguments as an array of strings
      * @return An instance of {@link CommandLineArguments}
      */
@@ -123,7 +119,7 @@ public class CommandLine {
     /**
      * Gets the requested DbMaintain operation. If the requested operation cannot be recognized, an error message
      * is printed, a help message is shown and execution is ended.
-     * 
+     *
      * @param commandLineArguments The command line arguments
      * @return The requested DbMaintain operation
      */
@@ -140,9 +136,9 @@ public class CommandLine {
 
     /**
      * Loads the configuration from custom config file or, if no custom config file was configured, from
-     * {@link #DBMAINTAIN_PROPERTIES}, if this file exists. If a custom config file was configured and the config file 
+     * {@link #DBMAINTAIN_PROPERTIES}, if this file exists. If a custom config file was configured and the config file
      * cannot be found, an error message is printed and execution is ended.
-     * 
+     *
      * @param commandLineArguments The command line arguments
      * @return The configuration as a <code>Properties</code> file
      */
@@ -163,86 +159,71 @@ public class CommandLine {
 
     /**
      * Executes the given operation using the given configuration.
-     * 
-     * @param operation The operation that must be executed
-     * @param configuration The dbMaintain configuration
+     *
+     * @param operation            The operation that must be executed
+     * @param configuration        The dbMaintain configuration
      * @param commandLineArguments The command line arguments
      */
     public static void executeOperation(DbMaintainOperation operation, Properties configuration, CommandLineArguments commandLineArguments) {
         switch (operation) {
-        case CREATE_SCRIPT_ARCHIVE:
-            if (commandLineArguments.getFirstExtraArgument() == null) {
-                System.err.println("Archive file name must be specified as extra argument");
-                System.exit(1);
-            }
-            if (commandLineArguments.getSecondExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
-            }
-            String jarFileName = commandLineArguments.getFirstExtraArgument();
-            getDbMaintain(configuration).createScriptArchive(jarFileName);
-            break;
-        case CHECK_SCRIPT_UPDATES:
-            if (commandLineArguments.getFirstExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
-            }
-            getDbMaintain(configuration).checkScriptUpdates();
-            break;
-        case UPDATE_DATABASE:
-            if (commandLineArguments.getFirstExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
-            }
-            getDbMaintain(configuration).updateDatabase();
-            break;
-        case MARK_DATABASE_AS_UPTODATE:
-            if (commandLineArguments.getFirstExtraArgument() != null) {
-                configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
-            }
-            getDbMaintain(configuration).markDatabaseAsUpToDate();
-            break;
-        case CLEAR_DATABASE:
-            getDbMaintain(configuration).clearDatabase();
-            break;
-        case CLEAN_DATABASE:
-            getDbMaintain(configuration).cleanDatabase();
-            break;
-        case DISABLE_CONSTRAINTS:
-            getDbMaintain(configuration).disableConstraints();
-            break;
-        case UPDATE_SEQUENCES:
-            getDbMaintain(configuration).updateSequences();
-            break;
+            case CREATE_SCRIPT_ARCHIVE:
+                if (commandLineArguments.getFirstExtraArgument() == null) {
+                    System.err.println("Archive file name must be specified as extra argument");
+                    System.exit(1);
+                }
+                if (commandLineArguments.getSecondExtraArgument() != null) {
+                    configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
+                }
+                String jarFileName = commandLineArguments.getFirstExtraArgument();
+                getDbMaintain(configuration, false).createScriptArchive(jarFileName);
+                break;
+            case CHECK_SCRIPT_UPDATES:
+                if (commandLineArguments.getFirstExtraArgument() != null) {
+                    configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
+                }
+                getDbMaintain(configuration, true).checkScriptUpdates();
+                break;
+            case UPDATE_DATABASE:
+                if (commandLineArguments.getFirstExtraArgument() != null) {
+                    configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
+                }
+                getDbMaintain(configuration, true).updateDatabase();
+                break;
+            case MARK_DATABASE_AS_UPTODATE:
+                if (commandLineArguments.getFirstExtraArgument() != null) {
+                    configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
+                }
+                getDbMaintain(configuration, true).markDatabaseAsUpToDate();
+                break;
+            case CLEAR_DATABASE:
+                getDbMaintain(configuration, true).clearDatabase();
+                break;
+            case CLEAN_DATABASE:
+                getDbMaintain(configuration, true).cleanDatabase();
+                break;
+            case DISABLE_CONSTRAINTS:
+                getDbMaintain(configuration, true).disableConstraints();
+                break;
+            case UPDATE_SEQUENCES:
+                getDbMaintain(configuration, true).updateSequences();
+                break;
         }
     }
-
 
 
     /**
      * Gets an instance of {@link DbMaintain} configured with the given <code>Properties</code>
      *
      * @param configuration The configuration to use to configure DbMaintain
+     * @param usesDatabase  true if a connection to the database is needed, false otherwise
      * @return An instance of {@link DbMaintain}
      */
-    protected static DbMaintain getDbMaintain(Properties configuration) {
-        return getDbMaintain(configuration, new DefaultSQLHandler());
+    protected static DbMaintain getDbMaintain(Properties configuration, boolean usesDatabase) {
+        return new DbMaintain(configuration, usesDatabase);
     }
 
-
-    /**
-     * Gets an instance of {@link DbMaintain} configured with the given <code>Properties</code>
-     * 
-     * @param configuration the configuration to use to configure DbMaintain
-     * @param sqlHandler handles all access to the underlying database
-     * @return An instance of {@link DbMaintain}
-     */
-    protected static DbMaintain getDbMaintain(Properties configuration, SQLHandler sqlHandler) {
-        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, sqlHandler);
-        return new DbMaintain(dbMaintainConfigurer);
-    }
-    
-    
     /**
      * @param fileName The name of the file
-     * 
      * @return An inputStream giving access to the file with the given name.
      */
     protected static URL getPropertiesAsURL(String fileName) {
@@ -254,7 +235,7 @@ public class CommandLine {
         return FileUtils.getUrl(file);
     }
 
-    
+
     /**
      * Prints out a help message that explains the usage of this class
      */

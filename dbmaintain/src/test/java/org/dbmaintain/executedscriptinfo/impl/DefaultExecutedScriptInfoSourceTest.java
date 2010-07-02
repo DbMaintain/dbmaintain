@@ -15,28 +15,25 @@
  */
 package org.dbmaintain.executedscriptinfo.impl;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static org.apache.commons.lang.time.DateUtils.parseDate;
-
-import java.text.ParseException;
-import java.util.Collections;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
 import org.dbmaintain.script.Qualifier;
+import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.sql.DataSource;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.Set;
+
+import static junit.framework.Assert.*;
+import static org.apache.commons.lang.time.DateUtils.parseDate;
+import static org.dbmaintain.util.TestUtils.getDbSupports;
 
 /**
  * Test class for {@link org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -48,18 +45,16 @@ import org.junit.Test;
 public class DefaultExecutedScriptInfoSourceTest {
 
     /* The tested instance */
-    DefaultExecutedScriptInfoSource executedScriptInfoSource;
-
+    private DefaultExecutedScriptInfoSource executedScriptInfoSource;
     /* The tested instance with auto-create configured */
-    DefaultExecutedScriptInfoSource executedScriptInfoSourceAutoCreate;
+    private DefaultExecutedScriptInfoSource executedScriptInfoSourceAutoCreate;
 
-    /* The dataSource */
-    DataSource dataSource;
+    private DataSource dataSource;
+    private DbSupport defaultDbSupport;
 
-    /* The db support instance for the default schema */
-    DbSupport dbSupport;
-
-    ExecutedScript executedScript1, executedScript2, executedPostprocessingScript;
+    private ExecutedScript executedScript1;
+    private ExecutedScript executedScript2;
+    private ExecutedScript executedPostprocessingScript;
 
 
     /**
@@ -67,8 +62,8 @@ public class DefaultExecutedScriptInfoSourceTest {
      */
     @Before
     public void setUp() {
-        dbSupport = TestUtils.getDbSupport();
-        dataSource = dbSupport.getDataSource();
+        defaultDbSupport = getDbSupports().getDefaultDbSupport();
+        dataSource = defaultDbSupport.getDataSource();
 
         initExecutedScriptInfoSource();
 
@@ -77,13 +72,13 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     private void initExecutedScriptInfoSource() {
-        executedScriptInfoSource = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, false);
-        executedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(dbSupport, true);
+        executedScriptInfoSource = TestUtils.getDefaultExecutedScriptInfoSource(defaultDbSupport, false);
+        executedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(defaultDbSupport, true);
     }
 
     @Before
     public void initTestData() throws ParseException {
-        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(),  Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedPostprocessingScript = new ExecutedScript(new Script("postprocessing/postprocessingscript1.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
@@ -175,7 +170,7 @@ public class DefaultExecutedScriptInfoSourceTest {
         initExecutedScriptInfoSource();
         assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
     }
-    
+
 
     @Test
     public void testDeleteExecutedScript() {

@@ -15,13 +15,14 @@
  */
 package org.dbmaintain.config;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 
 /**
@@ -83,7 +84,6 @@ public class DbMaintainConfigurationLoader {
     	if (customConfiguration != null) {
     		properties.putAll(customConfiguration);
     	}
-
         return properties;
     }
 

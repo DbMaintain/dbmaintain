@@ -15,18 +15,17 @@
  */
 package org.dbmaintain.structure.impl;
 
-import java.util.Collection;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 
+import java.util.Set;
+
 /**
- * Implementation of {@link SequenceUpdater}. All sequences and identity columns that have a value lower than the value
- * defined by {@link #PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE} are set to this value.
+ * Implementation of {@link SequenceUpdater}. All sequences and identity columns that have a value lower than the given value.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -39,26 +38,20 @@ public class DefaultSequenceUpdater implements SequenceUpdater {
 
     /* The lowest acceptable sequence value */
     protected long lowestAcceptableSequenceValue;
-
-    protected Collection<DbSupport> dbSupports;
+    protected DbSupports dbSupports;
 
     
-    /**
-     * @param lowestAcceptableSequenceValue
-     * @param dbSupports
-     */
-    public DefaultSequenceUpdater(long lowestAcceptableSequenceValue, Collection<DbSupport> dbSupports) {
+    public DefaultSequenceUpdater(long lowestAcceptableSequenceValue, DbSupports dbSupports) {
         this.lowestAcceptableSequenceValue = lowestAcceptableSequenceValue;
         this.dbSupports = dbSupports;
     }
-
 
     /**
      * Updates all database sequences and identity columns to a sufficiently high value, so that test data be inserted
      * easily.
      */
     public void updateSequences() {
-        for (DbSupport dbSupport : dbSupports) {
+        for (DbSupport dbSupport : dbSupports.getDbSupports()) {
         	for (String schemaName : dbSupport.getSchemaNames()) {
 	            logger.info("Updating sequences and identity columns in database " + (dbSupport.getDatabaseName() != null ? dbSupport.getDatabaseName() + 
 	        			", and schema " : "schema ") + schemaName);
@@ -70,10 +63,10 @@ public class DefaultSequenceUpdater implements SequenceUpdater {
 
 
     /**
-     * Increments all sequences whose value is too low.
+     * Increments all sequences in the given schema whose value is too low.
      *
      * @param dbSupport The database support, not null
-     * @param schemaName 
+     * @param schemaName The schema, not null
      */
     private void incrementSequencesWithLowValue(DbSupport dbSupport, String schemaName) {
         if (!dbSupport.supportsSequences()) {
@@ -90,10 +83,10 @@ public class DefaultSequenceUpdater implements SequenceUpdater {
 
 
     /**
-     * Increments the next value for identity columns whose next value is too low
+     * Increments the next value for identity columns in the given schema whose next value is too low
      *
      * @param dbSupport The database support, not null
-     * @param schemaName 
+     * @param schemaName The schema, not null
      */
     private void incrementIdentityColumnsWithLowValue(DbSupport dbSupport, String schemaName) {
         if (!dbSupport.supportsIdentityColumns()) {

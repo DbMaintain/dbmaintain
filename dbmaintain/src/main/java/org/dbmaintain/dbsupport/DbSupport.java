@@ -40,19 +40,14 @@ import static org.dbmaintain.dbsupport.StoredIdentifierCase.*;
 abstract public class DbSupport {
 
     private DatabaseInfo databaseInfo;
-
     private DataSource dataSource;
-
     private String defaultSchemaName;
-
     private Set<String> schemaNames;
 
     /* Gives access to the database */
     private SQLHandler sqlHandler;
-
     /* Indicates whether database identifiers are stored in lowercase, uppercase or mixed case */
     private StoredIdentifierCase storedIdentifierCase;
-
     /* The string that is used to quote identifiers to make them case sensitive, e.g. ", null means quoting not supported*/
     private String identifierQuoteString;
 
@@ -82,6 +77,10 @@ abstract public class DbSupport {
 
     public DatabaseInfo getDatabaseInfo() {
         return databaseInfo;
+    }
+
+    public boolean isDefaultDbSupport() {
+        return databaseInfo.isDisabled();
     }
 
     public String getDatabaseName() {
@@ -138,12 +137,32 @@ abstract public class DbSupport {
 
 
     /**
-     * Returns the names of all tables in the database.
+     * Returns the names of all tables in the default schema.
+     *
+     * @return The names of all tables in the database
+     */
+    public Set<String> getTableNames() {
+        return getTableNames(defaultSchemaName);
+    }
+
+    /**
+     * Returns the names of all tables in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all tables in the database
      */
     public abstract Set<String> getTableNames(String schemaName);
+
+
+    /**
+     * Gets the names of all columns of the given table in the default schema.
+     *
+     * @param tableName The table, not null
+     * @return The names of the columns of the table with the given name
+     */
+    public Set<String> getColumnNames(String tableName) {
+        return getColumnNames(defaultSchemaName, tableName);
+    }
 
     /**
      * Gets the names of all columns of the given table.
@@ -154,6 +173,16 @@ abstract public class DbSupport {
      */
     public abstract Set<String> getColumnNames(String schemaName, String tableName);
 
+
+    /**
+     * Retrieves the names of all the views in the default schema.
+     *
+     * @return The names of all views in the database
+     */
+    public Set<String> getViewNames() {
+        return getViewNames(defaultSchemaName);
+    }
+
     /**
      * Retrieves the names of all the views in the database schema.
      *
@@ -162,8 +191,18 @@ abstract public class DbSupport {
      */
     public abstract Set<String> getViewNames(String schemaName);
 
+
     /**
-     * Retrieves the names of all materialized views in the database schema.
+     * Retrieves the names of all materialized views in the default schema.
+     *
+     * @return The names of all materialized views in the database
+     */
+    public Set<String> getMaterializedViewNames() {
+        return getMaterializedViewNames(defaultSchemaName);
+    }
+
+    /**
+     * Retrieves the names of all materialized views in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all materialized views in the database
@@ -172,8 +211,18 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Materialized views not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Retrieves the names of all synonyms in the database schema.
+     * Retrieves the names of all synonyms in the default schema.
+     *
+     * @return The names of all synonyms in the database
+     */
+    public Set<String> getSynonymNames() {
+        return getSynonymNames(defaultSchemaName);
+    }
+
+    /**
+     * Retrieves the names of all synonyms in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all synonyms in the database
@@ -182,8 +231,18 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Synonyms not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Retrieves the names of all sequences in the database schema.
+     * Retrieves the names of all sequences in the default schema.
+     *
+     * @return The names of all sequences in the database, not null
+     */
+    public Set<String> getSequenceNames() {
+        return getSequenceNames(defaultSchemaName);
+    }
+
+    /**
+     * Retrieves the names of all sequences in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all sequences in the database, not null
@@ -192,8 +251,18 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Retrieves the names of all triggers in the database schema.
+     * Retrieves the names of all triggers in the default schema.
+     *
+     * @return The names of all triggers in the database, not null
+     */
+    public Set<String> getTriggerNames() {
+        return getTriggerNames(defaultSchemaName);
+    }
+
+    /**
+     * Retrieves the names of all triggers in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all triggers in the database, not null
@@ -202,8 +271,18 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Triggers not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Retrieves the names of all types in the database schema.
+     * Retrieves the names of all types in the default schema.
+     *
+     * @return The names of all types in the database, not null
+     */
+    public Set<String> getTypeNames() {
+        return getTypeNames(defaultSchemaName);
+    }
+
+    /**
+     * Retrieves the names of all types in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all types in the database, not null
@@ -214,7 +293,17 @@ abstract public class DbSupport {
 
 
     /**
-     * Removes the table with the given name from the database.
+     * Removes the table with the given name from the default schema.
+     * Note: the table name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param tableName The table to drop (case-sensitive), not null
+     */
+    public void dropTable(String tableName) {
+        dropTable(defaultSchemaName, tableName);
+    }
+
+    /**
+     * Removes the table with the given name from the given schema.
      * Note: the table name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName The schema, not null
@@ -224,8 +313,19 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop table " + qualified(schemaName, tableName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
+
     /**
-     * Removes the view with the given name from the database
+     * Removes the view with the given name from the default schema
+     * Note: the view name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param viewName The view to drop (case-sensitive), not null
+     */
+    public void dropView(String viewName) {
+        dropView(defaultSchemaName, viewName);
+    }
+
+    /**
+     * Removes the view with the given name from the given schema
      * Note: the view name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName The schema, not null
@@ -235,8 +335,19 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop view " + qualified(schemaName, viewName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
+
     /**
-     * Removes the materialized view with the given name from the database
+     * Removes the materialized view with the given name from the default schema
+     * Note: the view name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param viewName The view to drop (case-sensitive), not null
+     */
+    public void dropMaterializedView(String viewName) {
+        dropMaterializedView(defaultSchemaName, viewName);
+    }
+
+    /**
+     * Removes the materialized view with the given name from the given schema
      * Note: the view name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName The schema, not null
@@ -246,8 +357,19 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Materialized views are not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Removes the synonym with the given name from the database
+     * Removes the synonym with the given name from the default schema
+     * Note: the synonym name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param synonymName The synonym to drop (case-sensitive), not null
+     */
+    public void dropSynonym(String synonymName) {
+        dropSynonym(defaultSchemaName, synonymName);
+    }
+
+    /**
+     * Removes the synonym with the given name from the given schema
      * Note: the synonym name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName  The schema, not null
@@ -257,8 +379,19 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop synonym " + qualified(schemaName, synonymName), getDataSource());
     }
 
+
     /**
-     * Drops the sequence with the given name from the database
+     * Drops the sequence with the given name from the default schema
+     * Note: the sequence name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param sequenceName The sequence to drop (case-sensitive), not null
+     */
+    public void dropSequence(String sequenceName) {
+        dropSequence(defaultSchemaName, sequenceName);
+    }
+
+    /**
+     * Drops the sequence with the given name from the given schema
      * Note: the sequence name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName   The schema, not null
@@ -268,8 +401,19 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop sequence " + qualified(schemaName, sequenceName), getDataSource());
     }
 
+
     /**
-     * Drops the trigger with the given name from the database
+     * Drops the trigger with the given name from the default schema
+     * Note: the trigger name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param triggerName The trigger to drop (case-sensitive), not null
+     */
+    public void dropTrigger(String triggerName) {
+        dropTrigger(defaultSchemaName, triggerName);
+    }
+
+    /**
+     * Drops the trigger with the given name from the given schema
      * Note: the trigger name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName  The schema, not null
@@ -279,8 +423,19 @@ abstract public class DbSupport {
         getSQLHandler().executeUpdate("drop trigger " + qualified(schemaName, triggerName), getDataSource());
     }
 
+
     /**
-     * Drops the type with the given name from the database
+     * Drops the type with the given name from the default schema
+     * Note: the type name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param typeName The type to drop (case-sensitive), not null
+     */
+    public void dropType(String typeName) {
+        dropType(defaultSchemaName, typeName);
+    }
+
+    /**
+     * Drops the type with the given name from the given schema
      * Note: the type name is surrounded with quotes, making it case-sensitive.
      *
      * @param schemaName The schema, not null
@@ -292,14 +447,29 @@ abstract public class DbSupport {
 
 
     /**
-     * Disables all referential constraints (e.g. foreign keys) on all table in the schema
+     * Disables all referential constraints (e.g. foreign keys) on all table in the default schema
+     */
+    public void disableReferentialConstraints() {
+        disableReferentialConstraints(defaultSchemaName);
+    }
+
+    /**
+     * Disables all referential constraints (e.g. foreign keys) on all table in the given schema
      *
      * @param schemaName The schema, not null
      */
     public abstract void disableReferentialConstraints(String schemaName);
 
+
     /**
-     * Disables all value constraints (e.g. not null) on all tables in the schema
+     * Disables all value constraints (e.g. not null) on all tables in the default schema
+     */
+    public void disableValueConstraints() {
+        disableValueConstraints(defaultSchemaName);
+    }
+
+    /**
+     * Disables all value constraints (e.g. not null) on all tables in the given schema
      *
      * @param schemaName The schema, not null
      */
@@ -307,7 +477,19 @@ abstract public class DbSupport {
 
 
     /**
-     * Returns the value of the sequence with the given name.
+     * Returns the value of the sequence with the given name from the default schema.
+     * <p/>
+     * Note: this can have the side-effect of increasing the sequence value.
+     *
+     * @param sequenceName The sequence, not null
+     * @return The value of the sequence with the given name
+     */
+    public long getSequenceValue(String sequenceName) {
+        return getSequenceValue(defaultSchemaName, sequenceName);
+    }
+
+    /**
+     * Returns the value of the sequence with the given name from the given schema.
      * <p/>
      * Note: this can have the side-effect of increasing the sequence value.
      *
@@ -319,8 +501,19 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Sets the next value of the sequence with the given sequence name to the given sequence value.
+     * Sets the next value of the sequence with the given name to the given sequence value in the default schema.
+     *
+     * @param sequenceName     The sequence, not null
+     * @param newSequenceValue The value to set
+     */
+    public void incrementSequenceToValue(String sequenceName, long newSequenceValue) {
+        incrementSequenceToValue(defaultSchemaName, sequenceName, newSequenceValue);
+    }
+
+    /**
+     * Sets the next value of the sequence with the given sequence name to the given sequence value in the given schema.
      *
      * @param schemaName       The schema, not null
      * @param sequenceName     The sequence, not null
@@ -330,8 +523,19 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Gets the names of all identity columns of the given table.
+     * Gets the names of all identity columns of the given table in the default schema.
+     *
+     * @param tableName The table, not null
+     * @return The names of the identity columns of the table with the given name
+     */
+    public Set<String> getIdentityColumnNames(String tableName) {
+        return getIdentityColumnNames(defaultSchemaName, tableName);
+    }
+
+    /**
+     * Gets the names of all identity columns of the given table in the given schema.
      *
      * @param schemaName The schema, not null
      * @param tableName  The table, not null
@@ -341,9 +545,22 @@ abstract public class DbSupport {
         throw new UnsupportedOperationException("Identity columns not supported for " + getSupportedDatabaseDialect());
     }
 
+
     /**
-     * Increments the identity value for the specified identity column on the specified table to the given value. If there
-     * is no identity specified on the given primary key, the method silently finishes without effect.
+     * Increments the identity value for the specified identity column on the specified table to the given value in the default schema.
+     * If there is no identity specified on the given primary key, the method silently finishes without effect.
+     *
+     * @param tableName          The table with the identity column, not null
+     * @param identityColumnName The column, not null
+     * @param identityValue      The new value
+     */
+    public void incrementIdentityColumnToValue(String tableName, String identityColumnName, long identityValue) {
+        incrementIdentityColumnToValue(defaultSchemaName, tableName, identityColumnName, identityValue);
+    }
+
+    /**
+     * Increments the identity value for the specified identity column on the specified table to the given value in the given schema.
+     * If there is no identity specified on the given primary key, the method silently finishes without effect.
      *
      * @param schemaName         The schema, not null
      * @param tableName          The table with the identity column, not null
@@ -384,7 +601,20 @@ abstract public class DbSupport {
 
 
     /**
-     * Qualifies the given database object name with the name of the database schema. Quotes are put around both
+     * Qualifies the given database object name with the name of the default schema. Quotes are put around both
+     * schemaname and object name. If the schemaName is not supplied, the database object is returned surrounded with
+     * quotes. If the DBMS doesn't support quoted database object names, no quotes are put around neither schema name
+     * nor database object name.
+     *
+     * @param databaseObjectName The database object name to be qualified
+     * @return The qualified database object name
+     */
+    public String qualified(String databaseObjectName) {
+        return qualified(defaultSchemaName, databaseObjectName);
+    }
+
+    /**
+     * Qualifies the given database object name with the name of the given schema. Quotes are put around both
      * schemaname and object name. If the schemaName is not supplied, the database object is returned surrounded with
      * quotes. If the DBMS doesn't support quoted database object names, no quotes are put around neither schema name
      * nor database object name.
@@ -396,6 +626,7 @@ abstract public class DbSupport {
     public String qualified(String schemaName, String databaseObjectName) {
         return quoted(schemaName) + "." + quoted(databaseObjectName);
     }
+
 
     /**
      * Put quotes around the given databaseObjectName, if the underlying DBMS supports quoted database object names.
@@ -438,8 +669,8 @@ abstract public class DbSupport {
             return toCorrectCaseIdentifier(schemaNamePart) + "." + toCorrectCaseIdentifier(identifierPart);
         }
 
-        if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
-            return identifier.substring(1, identifier.length() - 1);
+        if (isQuoted(identifier)) {
+            return removeIdentifierQuotes(identifier);
         }
         if (storedIdentifierCase == UPPER_CASE) {
             return identifier.toUpperCase();
@@ -448,6 +679,25 @@ abstract public class DbSupport {
         } else {
             return identifier;
         }
+    }
+
+    /**
+     * @param identifier The identifier, not null
+     * @return True if the identifier starts and ends with identifier quotes
+     */
+    public boolean isQuoted(String identifier) {
+        return identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString);
+    }
+
+    /**
+     * @param identifier The identifier, not null
+     * @return The identifier, removing identifier quotes if necessary, not null
+     */
+    public String removeIdentifierQuotes(String identifier) {
+        if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
+            return identifier.substring(1, identifier.length() - 1);
+        }
+        return identifier;
     }
 
     /**
@@ -509,6 +759,30 @@ abstract public class DbSupport {
         }
     }
 
+    /**
+     * Enables or disables the setting of identity value in insert and update statements in the default schema.
+     * By default some databases do not allow to set values of identity columns directly from insert/update
+     * statements. If supported, this method will enable/disable this behavior.
+     *
+     * @param tableName The table with the identity column, not null
+     * @param enabled   True to enable, false to disable
+     */
+    public void setSettingIdentityColumnValueEnabled(String tableName, boolean enabled) {
+        setSettingIdentityColumnValueEnabled(defaultSchemaName, tableName, enabled);
+    }
+
+    /**
+     * Enables or disables the setting of identity value in insert and update statements in the given schema.
+     * By default some databases do not allow to set values of identity columns directly from insert/update
+     * statements. If supported, this method will enable/disable this behavior.
+     *
+     * @param schemaName The schema name, not null
+     * @param tableName  The table with the identity column, not null
+     * @param enabled    True to enable, false to disable
+     */
+    public void setSettingIdentityColumnValueEnabled(String schemaName, String tableName, boolean enabled) {
+        throw new UnsupportedOperationException("Enabling/disabling setting values for identity columns not supported for " + getSupportedDatabaseDialect());
+    }
 
     /**
      * Indicates whether the underlying DBMS supports synonyms

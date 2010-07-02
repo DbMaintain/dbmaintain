@@ -15,10 +15,9 @@
  */
 package org.dbmaintain.script.impl;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
-import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
 
@@ -31,9 +30,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
 
 /**
- * Script container that looks for scripts in a file system directory and its subdirectories. The 
+ * Script container that looks for scripts in a file system directory and its subdirectories. The
  * scripts directory can optionally contain config file {@link #LOCATION_PROPERTIES_FILENAME}, that
  * defines all properties that are applicable to the script organization.
  *
@@ -42,54 +43,32 @@ import java.util.TreeSet;
  */
 public class FileSystemScriptLocation extends ScriptLocation {
 
-    /**
-     * The root directory where scripts are located
-     */
-    protected File scriptLocation;
 
     /**
      * Constructor for FileSystemScriptLocation.
-     * 
-     * @param scriptLocation The file system directory that is the root of this script location
-     * @param defaultScriptEncoding The default script encoding. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultPostProcessingScriptDirName The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     *
+     * @param scriptLocation              The file system directory that is the root of this script location
+     * @param defaultScriptEncoding       The default script encoding. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPostProcessingScriptDirName
+     *                                    The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultRegisteredQualifiers The default registered qualifiers
-     * @param defaultPatchQualifiers The default qualfiers that indicate a patch file. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultQualifierPefix The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPatchQualifiers      The default qualfiers that indicate a patch file. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultQualifierPrefix      The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      */
-    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
-                Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPefix,
-                String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
-
-        this.scriptLocation = scriptLocation;
-        assertValidScriptLocation();
-
-        Properties customProperties = getLocationCustomProperties();
-        initConfiguration(customProperties, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers,
-                defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions);
-
-        scripts = loadScriptsFromFileSystem();
-    }
-
-
-    /**
-     * Asserts that the script root directory exists
-     */
-    protected void assertValidScriptLocation() {
-        if (!scriptLocation.exists()) {
-            throw new DbMaintainException("Script file location " + scriptLocation + " doesn't exist");
-        }
+    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
+                                    String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
+        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions);
     }
 
 
     /**
      * @return if a location properties file {@link #LOCATION_PROPERTIES_FILENAME} is available, a <code>Properties</code>
-     * file with the properties from this file. Returns null if such a file is not available.
+     *         file with the properties from this file. Returns null if such a file is not available.
      * @throws DbMaintainException if the properties file is invalid
      */
-    protected Properties getLocationCustomProperties() {
+    protected Properties getCustomProperties(File scriptLocation) {
         File customPropertiesFileLocation = new File(scriptLocation + "/" + LOCATION_PROPERTIES_FILENAME);
         if (!customPropertiesFileLocation.exists()) {
             return null;
@@ -111,7 +90,7 @@ public class FileSystemScriptLocation extends ScriptLocation {
     /**
      * @return all available scripts, loaded from the file system
      */
-    protected SortedSet<Script> loadScriptsFromFileSystem() {
+    protected SortedSet<Script> loadScripts(File scriptLocation) {
         SortedSet<Script> scripts = new TreeSet<Script>();
         getScriptsAt(scripts, scriptLocation.getAbsolutePath(), "");
         return scripts;
@@ -122,8 +101,8 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * Adds all scripts available in the given directory or one of its subdirectories to the given set of files. Recursively
      * invokes itself to handle subdirectories.
      *
-     * @param scripts aggregates the scripts found up until now during recursion.
-     * @param scriptRoot the root script directory
+     * @param scripts          aggregates the scripts found up until now during recursion.
+     * @param scriptRoot       the root script directory
      * @param relativeLocation the subdirectory in which we are now looking for scripts
      */
     protected void getScriptsAt(SortedSet<Script> scripts, String scriptRoot, String relativeLocation) {
@@ -156,11 +135,10 @@ public class FileSystemScriptLocation extends ScriptLocation {
         return false;
     }
 
-
     /**
      * Creates a script object for the given script file
      *
-     * @param scriptFile the script file, not null
+     * @param scriptFile             the script file, not null
      * @param relativeScriptFileName the name of the script file relative to the root scripts dir, not null
      * @return The script, not null
      */
@@ -170,12 +148,4 @@ public class FileSystemScriptLocation extends ScriptLocation {
                 qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
     }
 
-
-    /**
-     * @return the root directory of the scripts location
-     */
-    @Override
-    public String getLocationName() {
-        return scriptLocation.getAbsolutePath();
-    }
 }

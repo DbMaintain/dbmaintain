@@ -100,7 +100,7 @@ public class Database {
 
     public DatabaseInfo createDatabaseInfo() {
         List<String> schemaNames = getSchemaNames();
-        return new DatabaseInfo(name, dialect, driverClassName, url, userName, password, schemaNames);
+        return new DatabaseInfo(name, dialect, driverClassName, url, userName, password, schemaNames, !included);
     }
 
     protected List<String> getSchemaNames() {

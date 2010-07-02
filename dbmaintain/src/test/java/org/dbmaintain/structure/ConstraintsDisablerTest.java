@@ -15,10 +15,8 @@
  */
 package org.dbmaintain.structure;
 
-import static org.junit.Assert.fail;
-
-import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
@@ -28,7 +26,7 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 
-import java.util.Properties;
+import static org.junit.Assert.fail;
 
 /**
  * Test class for the ConstraintsDisabler. This test is independent of the dbms that is used. The database dialect that
@@ -42,11 +40,8 @@ public class ConstraintsDisablerTest {
     /* The tested object */
     private ConstraintsDisabler constraintsDisabler;
 
-    /* Database support class instance */
-    protected DbSupport dbSupport;
-
-    /* DataSource for the test database */
     protected DataSource dataSource;
+    protected DbSupports dbSupports;
 
 
     /**
@@ -55,9 +50,9 @@ public class ConstraintsDisablerTest {
      */
     @Before
     public void setUp() throws Exception {
-        dbSupport = TestUtils.getDbSupport();
-        dataSource = dbSupport.getDataSource();
-        constraintsDisabler = TestUtils.getDefaultConstraintsDisabler(dbSupport);
+        dbSupports = TestUtils.getDbSupports();
+        dataSource = dbSupports.getDefaultDbSupport().getDataSource();
+        constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
 
         cleanupTestDatabase();
         createTestTables();

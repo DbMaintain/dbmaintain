@@ -31,7 +31,7 @@ import java.util.Properties;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-abstract public class BaseTask extends Task {
+public abstract class BaseTask extends Task {
 
     /**
      * Optional custom configuration file. Is usually not needed, since all applicable properties are configurable
@@ -50,7 +50,7 @@ abstract public class BaseTask extends Task {
 
 
     protected PropertiesDbMaintainConfigurer getDbMaintainConfigurer() {
-        return new PropertiesDbMaintainConfigurer(getConfiguration(), null);
+        return new PropertiesDbMaintainConfigurer(getConfiguration());
     }
 
 

@@ -17,6 +17,7 @@ package org.dbmaintain.scriptrunner.impl.db2;
 
 import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.scriptrunner.impl.Application;
 import org.dbmaintain.scriptrunner.impl.BaseNativeScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
@@ -39,10 +40,10 @@ public class Db2ScriptRunner extends BaseNativeScriptRunner {
     protected Map<DbSupport, Db2ConnectionInfo> db2ConnectionInfos;
 
 
-    public Db2ScriptRunner(DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap, String db2Command) {
-        super(defaultDbSupport, nameDbSupportMap);
+    public Db2ScriptRunner(DbSupports dbSupports, String db2Command) {
+        super(dbSupports);
         this.application = createApplication(db2Command);
-        this.db2ConnectionInfos = getDb2ConnectionInfos(nameDbSupportMap);
+        this.db2ConnectionInfos = getDb2ConnectionInfos(dbSupports);
     }
 
 
@@ -134,11 +135,11 @@ public class Db2ScriptRunner extends BaseNativeScriptRunner {
     }
 
 
-    protected Map<DbSupport, Db2ConnectionInfo> getDb2ConnectionInfos(Map<String, DbSupport> nameDbSupportMap) {
+    protected Map<DbSupport, Db2ConnectionInfo> getDb2ConnectionInfos(DbSupports dbSupports) {
         Map<DbSupport, Db2ConnectionInfo> result = new HashMap<DbSupport, Db2ConnectionInfo>();
 
         int aliasCount = 1;
-        for (DbSupport dbSupport : nameDbSupportMap.values()) {
+        for (DbSupport dbSupport : dbSupports.getDbSupports()) {
             String remoteAlias = "dbm" + aliasCount++;
             DatabaseInfo databaseInfo = dbSupport.getDatabaseInfo();
             Db2ConnectionInfo db2ConnectionInfo = parseFromJdbcUrl(databaseInfo.getUrl(), remoteAlias, databaseInfo.getUserName(), databaseInfo.getPassword());

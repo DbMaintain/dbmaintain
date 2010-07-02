@@ -4,17 +4,17 @@
 package org.dbmaintain.launch.ant;
 
 import org.apache.tools.ant.BuildException;
+import org.dbmaintain.config.DbSupportsFactory;
 import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
 import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -66,9 +66,9 @@ abstract public class BaseDatabaseTask extends BaseTask {
             throw new DbMaintainException("No database configuration found. At least one database should be defined.");
         }
 
-        String defaultDatabaseName = databases.get(0).getName();
-        Map<String, DatabaseInfo> nameDatabaseInfoMap = createNameDatabaseInfoMap(databases);
-        return new PropertiesDbMaintainConfigurer(getConfiguration(), defaultDatabaseName, nameDatabaseInfoMap, getSQLHandler());
+        List<DatabaseInfo> databaseInfos = createDatabaseInfos(databases);
+        DbSupports dbSupports = createDbSupports(databaseInfos);
+        return new PropertiesDbMaintainConfigurer(getConfiguration(), dbSupports, getSQLHandler());
     }
 
 
@@ -80,17 +80,18 @@ abstract public class BaseDatabaseTask extends BaseTask {
     }
 
 
-    protected Map<String, DatabaseInfo> createNameDatabaseInfoMap(List<Database> databases) {
-        Map<String, DatabaseInfo> nameDatabaseInfoMap = new HashMap<String, DatabaseInfo>();
+    protected List<DatabaseInfo> createDatabaseInfos(List<Database> databases) {
+        List<DatabaseInfo> databaseInfos = new ArrayList<DatabaseInfo>();
         for (Database database : databases) {
-            if (database.isIncluded()) {
-                DatabaseInfo databaseInfo = database.createDatabaseInfo();
-                nameDatabaseInfoMap.put(database.getName(), databaseInfo);
-            } else {
-                nameDatabaseInfoMap.put(database.getName(), null);
-            }
+            DatabaseInfo databaseInfo = database.createDatabaseInfo();
+            databaseInfos.add(databaseInfo);
         }
-        return nameDatabaseInfoMap;
+        return databaseInfos;
+    }
+
+    protected DbSupports createDbSupports(List<DatabaseInfo> databaseInfos) {
+        DbSupportsFactory dbSupportsFactory = new DbSupportsFactory(getConfiguration(), getSQLHandler());
+        return dbSupportsFactory.createDbSupports(databaseInfos);
     }
 
 }

@@ -37,28 +37,20 @@ public class Script implements Comparable<Script> {
 
     /* The name of the script */
     private String fileName;
-
     /* The script indexes */
     private ScriptIndexes scriptIndexes;
-
     /* The logical name of the target database for this script (extracted from the filename) */
     private String targetDatabaseName;
-
     /* Timestamp that indicates when the file was last modified */
     private Long fileLastModifiedAt;
-
     /* Checksum calculated on the script contents */
     private String checkSum;
-
     /* The handle to the content of the script */
     private ScriptContentHandle scriptContentHandle;
-
     /* True if this script is a postprocessing script */
     private boolean postProcessingScript;
-
     /* True if this script is a patch script */
     private boolean patchScript;
-
     /* Set of qualifiers for this script */
     private Set<Qualifier> qualifiers;
 
@@ -147,7 +139,6 @@ public class Script implements Comparable<Script> {
         return fileName.substring(index + 1);
     }
 
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -160,6 +151,14 @@ public class Script implements Comparable<Script> {
         return scriptIndexes;
     }
 
+    /**
+     * @param baseLineRevision The baseline revision, null if there is not baseline
+     * @return True if a baseline revision was set and the revision of the script was below the baseline
+     */
+    public boolean isIgnored(ScriptIndexes baseLineRevision) {
+        return baseLineRevision != null && baseLineRevision.compareTo(scriptIndexes) > 0;
+    }
+
 
     /**
      * @return Logical name that indicates the target database on which this script must be executed. Can be null to
@@ -168,7 +167,6 @@ public class Script implements Comparable<Script> {
     public String getTargetDatabaseName() {
         return targetDatabaseName;
     }
-
 
     /**
      * @return The timestamp at which the file in which this script is stored on the filesystem was last

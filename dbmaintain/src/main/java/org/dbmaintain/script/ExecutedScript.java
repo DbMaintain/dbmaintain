@@ -23,37 +23,33 @@ import java.util.Date;
  */
 public class ExecutedScript implements Comparable<ExecutedScript> {
 
-	private Script script;
-	
-	private Date executedAt;
-	
-	private Boolean successful;
-
-	public ExecutedScript(Script script, Date executedAt, Boolean successful) {
-		this.script = script;
-		this.executedAt = executedAt;
-		this.successful = successful;
-	}
+    private Script script;
+    private Date executedAt;
+    private Boolean successful;
 
 
-	public Script getScript() {
-		return script;
-	}
-
-	
-	public Date getExecutedAt() {
-		return executedAt;
-	}
-
-	
-	public Boolean isSuccessful() {
-		return successful;
-	}
+    public ExecutedScript(Script script, Date executedAt, Boolean successful) {
+        this.script = script;
+        this.executedAt = executedAt;
+        this.successful = successful;
+    }
 
 
-	public void setSuccessful(Boolean successful) {
-		this.successful = successful;
-	}
+    public Script getScript() {
+        return script;
+    }
+
+    public Date getExecutedAt() {
+        return executedAt;
+    }
+
+    public Boolean isSuccessful() {
+        return successful;
+    }
+
+    public void setSuccessful(Boolean successful) {
+        this.successful = successful;
+    }
 
 
     /**
@@ -69,15 +65,19 @@ public class ExecutedScript implements Comparable<ExecutedScript> {
         this.script = script;
     }
 
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ExecutedScript)) return false;
-
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ExecutedScript)) {
+            return false;
+        }
         ExecutedScript that = (ExecutedScript) o;
-
-        if (!script.equals(that.script)) return false;
-
+        if (!script.equals(that.script)) {
+            return false;
+        }
         return true;
     }
 

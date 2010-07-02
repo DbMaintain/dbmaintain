@@ -15,22 +15,25 @@
  */
 package org.dbmaintain.clear.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.clear.DBClearer;
-import org.dbmaintain.clear.impl.DefaultDBClearer;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.util.SQLTestUtils;
-import org.dbmaintain.util.TestUtils;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.util.HashSet;
+
+import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
+import static org.dbmaintain.util.TestUtils.getDbSupports;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the {@link DBClearer} using multiple database schemas. <p/> This test is currenlty only implemented
@@ -44,34 +47,28 @@ public class DefaultDBClearerMultiSchemaTest {
 	/* The logger instance for this class */
 	private static Log logger = LogFactory.getLog(DefaultDBClearerMultiSchemaTest.class);
 
-	/* DataSource for the test database */
-	private DataSource dataSource;
 
-	/* Tested object */
-	private DefaultDBClearer defaultDbClearer;
+    /* Tested object */
+    private DefaultDBClearer defaultDbClearer;
 
-	/* The db support */
-	private DbSupport dbSupport;
+    private DataSource dataSource;
+    private DbSupports dbSupports;
+    private DbSupport defaultDbSupport;
 
 
-	/**
-	 * Configures the tested object. Creates a test table, index, view and sequence
-	 */
 	@Before
 	public void setUp() throws Exception {
-		dbSupport = TestUtils.getDbSupport("PUBLIC", "SCHEMA_A", "SCHEMA_B");
-        dataSource = dbSupport.getDataSource();
-		defaultDbClearer = TestUtils.getDefaultDBClearer(dbSupport);
+		dbSupports = getDbSupports("PUBLIC", "SCHEMA_A", "SCHEMA_B");
+        defaultDbSupport = dbSupports.getDefaultDbSupport();
+        dataSource = defaultDbSupport.getDataSource();
+
+        defaultDbClearer = new DefaultDBClearer(dbSupports, new HashSet<DbItemIdentifier>());
 
 		dropTestDatabase();
 		createTestDatabase();
 	}
 
-
-	/**
-	 * Removes all test tables.
-	 */
-	@After
+@After
 	public void tearDown() throws Exception {
 		dropTestDatabase();
 	}
@@ -82,13 +79,13 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Test
 	public void testClearDatabase_tables() throws Exception {
-		assertEquals(1, dbSupport.getTableNames("PUBLIC").size());
-		assertEquals(1, dbSupport.getTableNames("SCHEMA_A").size());
-		assertEquals(1, dbSupport.getTableNames("SCHEMA_B").size());
+		assertEquals(1, defaultDbSupport.getTableNames("PUBLIC").size());
+		assertEquals(1, defaultDbSupport.getTableNames("SCHEMA_A").size());
+		assertEquals(1, defaultDbSupport.getTableNames("SCHEMA_B").size());
 		defaultDbClearer.clearDatabase();
-		assertTrue(dbSupport.getTableNames("PUBLIC").isEmpty());
-		assertTrue(dbSupport.getTableNames("SCHEMA_A").isEmpty());
-		assertTrue(dbSupport.getTableNames("SCHEMA_B").isEmpty());
+		assertTrue(defaultDbSupport.getTableNames("PUBLIC").isEmpty());
+		assertTrue(defaultDbSupport.getTableNames("SCHEMA_A").isEmpty());
+		assertTrue(defaultDbSupport.getTableNames("SCHEMA_B").isEmpty());
 	}
 
 
@@ -97,13 +94,13 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Test
 	public void testClearDatabase_views() throws Exception {
-		assertEquals(1, dbSupport.getViewNames("PUBLIC").size());
-		assertEquals(1, dbSupport.getViewNames("SCHEMA_A").size());
-		assertEquals(1, dbSupport.getViewNames("SCHEMA_B").size());
+		assertEquals(1, defaultDbSupport.getViewNames("PUBLIC").size());
+		assertEquals(1, defaultDbSupport.getViewNames("SCHEMA_A").size());
+		assertEquals(1, defaultDbSupport.getViewNames("SCHEMA_B").size());
 		defaultDbClearer.clearDatabase();
-		assertTrue(dbSupport.getViewNames("PUBLIC").isEmpty());
-		assertTrue(dbSupport.getViewNames("SCHEMA_A").isEmpty());
-		assertTrue(dbSupport.getViewNames("SCHEMA_B").isEmpty());
+		assertTrue(defaultDbSupport.getViewNames("PUBLIC").isEmpty());
+		assertTrue(defaultDbSupport.getViewNames("SCHEMA_A").isEmpty());
+		assertTrue(defaultDbSupport.getViewNames("SCHEMA_B").isEmpty());
 	}
 
 
@@ -112,13 +109,13 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	@Test
 	public void testClearDatabase_sequences() throws Exception {
-		assertEquals(1, dbSupport.getSequenceNames("PUBLIC").size());
-		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_A").size());
-		assertEquals(1, dbSupport.getSequenceNames("SCHEMA_B").size());
+		assertEquals(1, defaultDbSupport.getSequenceNames("PUBLIC").size());
+		assertEquals(1, defaultDbSupport.getSequenceNames("SCHEMA_A").size());
+		assertEquals(1, defaultDbSupport.getSequenceNames("SCHEMA_B").size());
 		defaultDbClearer.clearDatabase();
-		assertTrue(dbSupport.getSequenceNames("PUBLIC").isEmpty());
-		assertTrue(dbSupport.getSequenceNames("SCHEMA_A").isEmpty());
-		assertTrue(dbSupport.getSequenceNames("SCHEMA_B").isEmpty());
+		assertTrue(defaultDbSupport.getSequenceNames("PUBLIC").isEmpty());
+		assertTrue(defaultDbSupport.getSequenceNames("SCHEMA_A").isEmpty());
+		assertTrue(defaultDbSupport.getSequenceNames("SCHEMA_B").isEmpty());
 	}
 
 
@@ -127,20 +124,20 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	private void createTestDatabase() throws Exception {
 		// create schemas
-		SQLTestUtils.executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
-		SQLTestUtils.executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
+		executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
+		executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
 		// create tables
-		SQLTestUtils.executeUpdate("create table TEST_TABLE (col1 varchar(100))", dataSource);
-		SQLTestUtils.executeUpdate("create table SCHEMA_A.TEST_TABLE (col1 varchar(100))", dataSource);
-		SQLTestUtils.executeUpdate("create table SCHEMA_B.TEST_TABLE (col1 varchar(100))", dataSource);
+		executeUpdate("create table TEST_TABLE (col1 varchar(100))", dataSource);
+		executeUpdate("create table SCHEMA_A.TEST_TABLE (col1 varchar(100))", dataSource);
+		executeUpdate("create table SCHEMA_B.TEST_TABLE (col1 varchar(100))", dataSource);
 		// create views
-		SQLTestUtils.executeUpdate("create view TEST_VIEW as select col1 from TEST_TABLE", dataSource);
-		SQLTestUtils.executeUpdate("create view SCHEMA_A.TEST_VIEW as select col1 from SCHEMA_A.TEST_TABLE", dataSource);
-		SQLTestUtils.executeUpdate("create view SCHEMA_B.TEST_VIEW as select col1 from SCHEMA_B.TEST_TABLE", dataSource);
+		executeUpdate("create view TEST_VIEW as select col1 from TEST_TABLE", dataSource);
+		executeUpdate("create view SCHEMA_A.TEST_VIEW as select col1 from SCHEMA_A.TEST_TABLE", dataSource);
+		executeUpdate("create view SCHEMA_B.TEST_VIEW as select col1 from SCHEMA_B.TEST_TABLE", dataSource);
 		// create sequences
-		SQLTestUtils.executeUpdate("create sequence TEST_SEQUENCE", dataSource);
-		SQLTestUtils.executeUpdate("create sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
-		SQLTestUtils.executeUpdate("create sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
+		executeUpdate("create sequence TEST_SEQUENCE", dataSource);
+		executeUpdate("create sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
+		executeUpdate("create sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
 	}
 
 
@@ -149,20 +146,20 @@ public class DefaultDBClearerMultiSchemaTest {
 	 */
 	private void dropTestDatabase() throws Exception {
 		// drop sequences
-		SQLTestUtils.executeUpdateQuietly("drop sequence TEST_SEQUENCE", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
+		executeUpdateQuietly("drop sequence TEST_SEQUENCE", dataSource);
+		executeUpdateQuietly("drop sequence SCHEMA_A.TEST_SEQUENCE", dataSource);
+		executeUpdateQuietly("drop sequence SCHEMA_B.TEST_SEQUENCE", dataSource);
 		// drop views
-		SQLTestUtils.executeUpdateQuietly("drop view TEST_VIEW", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop view SCHEMA_A.TEST_VIEW", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop view SCHEMA_B.TEST_VIEW", dataSource);
+		executeUpdateQuietly("drop view TEST_VIEW", dataSource);
+		executeUpdateQuietly("drop view SCHEMA_A.TEST_VIEW", dataSource);
+		executeUpdateQuietly("drop view SCHEMA_B.TEST_VIEW", dataSource);
 		// drop tables
-		SQLTestUtils.executeUpdateQuietly("drop table TEST_TABLE", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop table SCHEMA_A.TEST_TABLE", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop table SCHEMA_B.TEST_TABLE", dataSource);
+		executeUpdateQuietly("drop table TEST_TABLE", dataSource);
+		executeUpdateQuietly("drop table SCHEMA_A.TEST_TABLE", dataSource);
+		executeUpdateQuietly("drop table SCHEMA_B.TEST_TABLE", dataSource);
 		// drop schemas
-		SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_A", dataSource);
-		SQLTestUtils.executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
+		executeUpdateQuietly("drop schema SCHEMA_A", dataSource);
+		executeUpdateQuietly("drop schema SCHEMA_B", dataSource);
 	}
 
 

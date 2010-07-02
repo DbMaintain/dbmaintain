@@ -17,12 +17,12 @@ package org.dbmaintain.scriptrunner.impl;
 
 import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
 import static org.apache.commons.lang.StringUtils.deleteWhitespace;
@@ -40,8 +40,8 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
     protected String sqlPlusCommand;
 
 
-    public SqlPlusScriptRunner(DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap, String sqlPlusCommand) {
-        super(defaultDbSupport, nameDbSupportMap);
+    public SqlPlusScriptRunner(DbSupports dbSupports, String sqlPlusCommand) {
+        super(dbSupports);
         this.sqlPlusCommand = sqlPlusCommand;
         this.application = createApplication(sqlPlusCommand);
     }

@@ -18,6 +18,7 @@ package org.dbmaintain.scriptrunner.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.scriptrunner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
@@ -25,7 +26,6 @@ import org.dbmaintain.util.DbMaintainException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
 import static org.dbmaintain.util.FileUtils.createFile;
@@ -42,13 +42,11 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(BaseNativeScriptRunner.class);
 
-    protected DbSupport defaultDbSupport;
-    protected Map<String, DbSupport> nameDbSupportMap;
+    protected DbSupports dbSupports;
 
 
-    public BaseNativeScriptRunner(DbSupport defaultDbSupport, Map<String, DbSupport> nameDbSupportMap) {
-        this.defaultDbSupport = defaultDbSupport;
-        this.nameDbSupportMap = nameDbSupportMap;
+    public BaseNativeScriptRunner(DbSupports dbSupports) {
+        this.dbSupports = dbSupports;
     }
 
     public void initialize() {
@@ -111,12 +109,13 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
     }
 
     protected DbSupport getTargetDatabaseDbSupport(Script script) {
-        if (script.getTargetDatabaseName() == null) {
-            return defaultDbSupport;
+        String databaseName = script.getTargetDatabaseName();
+        if (databaseName == null) {
+            return dbSupports.getDefaultDbSupport();
         }
-        if (!nameDbSupportMap.containsKey(script.getTargetDatabaseName())) {
+        if (!dbSupports.isConfiguredDatabase(databaseName)) {
             throw new DbMaintainException("Error executing script " + script.getFileName() + ". No database initialized with the name " + script.getTargetDatabaseName());
         }
-        return nameDbSupportMap.get(script.getTargetDatabaseName());
+        return dbSupports.getDbSupport(databaseName);
     }
 }

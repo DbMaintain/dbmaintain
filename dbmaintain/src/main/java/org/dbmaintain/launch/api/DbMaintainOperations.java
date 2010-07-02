@@ -16,8 +16,6 @@
 package org.dbmaintain.launch.api;
 
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.config.PropertiesDbMaintainConfigurer;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.util.DbMaintainException;
 
@@ -26,7 +24,7 @@ import java.util.Properties;
 
 /**
  * Class that offers static methods that expose all available DbMaintain operations.
- * 
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
@@ -34,77 +32,72 @@ public class DbMaintainOperations {
 
     private static final String DBMAINTAIN_PROPERTIES = "dbmaintain.properties";
 
+
     /**
      * Creates an archive file containing all scripts in all configured script locations
-     * 
+     *
      * @param archiveFileName The name of the archive file to create
      */
     public static void createScriptArchive(String archiveFileName) {
-        getDbMaintain().createScriptArchive(archiveFileName);
+        getDbMaintain(false).createScriptArchive(archiveFileName);
     }
 
-    
     /**
      * Updates the database to the latest version.
      */
     public static void updateDatabase() {
-        getDbMaintain().updateDatabase();
+        getDbMaintain(true).updateDatabase();
     }
 
-    
     /**
-     * Marks the database as up-to-date, without executing any script. You can use this operation to prepare 
+     * Marks the database as up-to-date, without executing any script. You can use this operation to prepare
      * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
      */
     public static void markDatabaseAsUptodate() {
-        getDbMaintain().markDatabaseAsUpToDate();
+        getDbMaintain(true).markDatabaseAsUpToDate();
     }
 
-    
     /**
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
     public static void clearDatabase() {
-        getDbMaintain().clearDatabase();
+        getDbMaintain(true).clearDatabase();
     }
 
-    
     /**
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
     public static void cleanDatabase() {
-        getDbMaintain().cleanDatabase();
+        getDbMaintain(true).cleanDatabase();
     }
 
-    
     /**
      * Disables or drops all foreign key and not null constraints.
      */
     public static void disableConstraints() {
-        getDbMaintain().disableConstraints();
+        getDbMaintain(true).disableConstraints();
     }
 
-    
     /**
      * Updates all sequences and identity columns to a minimum value.
      */
     public static void updateSequences() {
-        getDbMaintain().updateSequences();
+        getDbMaintain(true).updateSequences();
     }
-    
-    
+
+
     /**
+     * @param usesDatabase true if a connection to the database is needed, false otherwise
      * @return An instance of {@link DbMaintain}, that exposes all DbMaintain operations. This instance is configured
-     * using the properties file dbmaintain.properties, which must be available in the classpath.
+     *         using the properties file dbmaintain.properties, which must be available in the classpath.
      */
-    private static DbMaintain getDbMaintain() {
+    private static DbMaintain getDbMaintain(boolean usesDatabase) {
         URL propertiesFromClassPath = ClassLoader.getSystemResource(DBMAINTAIN_PROPERTIES);
         if (propertiesFromClassPath == null) {
             throw new DbMaintainException("Could not find properties file " + DBMAINTAIN_PROPERTIES + " in classpath");
         }
-        Properties dbMaintainConfiguration = new DbMaintainConfigurationLoader().loadConfiguration(propertiesFromClassPath);
-        PropertiesDbMaintainConfigurer dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(dbMaintainConfiguration, 
-                new DefaultSQLHandler());
-        return new DbMaintain(dbMaintainConfigurer);
+        Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration(propertiesFromClassPath);
+        return new DbMaintain(configuration, usesDatabase);
     }
+
 }

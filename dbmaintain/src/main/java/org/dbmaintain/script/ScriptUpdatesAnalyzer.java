@@ -16,10 +16,11 @@
 package org.dbmaintain.script;
 
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import static org.dbmaintain.script.ScriptUpdateType.*;
 import org.dbmaintain.script.impl.ScriptRepository;
 
 import java.util.*;
+
+import static org.dbmaintain.script.ScriptUpdateType.*;
 
 /**
  * An instance of this class can compare the info that we have about previously executed scripts with the new scripts.
@@ -57,15 +58,17 @@ public class ScriptUpdatesAnalyzer {
     /**
      * Creates a new instance that will compare the info from the given {@link ExecutedScriptInfoSource} with the current
      * scripts from the given {@link ScriptRepository}. It also needs to know whether a new patch script with a lower
-     * index is a regular or irregular script update 
-     * @param scriptRepository exposes the current set of scripts
+     * index is a regular or irregular script update
+     *
+     * @param scriptRepository         exposes the current set of scripts
      * @param executedScriptInfoSource provides info on the script that were executed on the database
-     * @param useScriptFileLastModificationDates whether the last modification date of the scripts can be used to determine
-     * if a script has changed.
-     * @param allowOutOfSequenceExecutionOfPatchScripts whether scripts marked as patch scripts may be executed out-of-sequence
+     * @param useScriptFileLastModificationDates
+     *                                 whether the last modification date of the scripts can be used to determine if a script has changed.
+     * @param allowOutOfSequenceExecutionOfPatchScripts
+     *                                 whether scripts marked as patch scripts may be executed out-of-sequence
      */
     public ScriptUpdatesAnalyzer(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-                         boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts) {
+                                 boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts) {
         this.scriptRepository = scriptRepository;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
@@ -78,7 +81,7 @@ public class ScriptUpdatesAnalyzer {
      * whether it is a regular or irregular one.
      *
      * @return {@link ScriptUpdates} object that represents all updates that were performed to the scripts since the last
-     * database update
+     *         database update
      */
     public ScriptUpdates calculateScriptUpdates() {
         // Iterate over the already executed scripts to find out whether the contents of some scripts has been modified
@@ -138,6 +141,7 @@ public class ScriptUpdatesAnalyzer {
 
     /**
      * Register the given script as a newly added one
+     *
      * @param script The newly added script
      */
     protected void registerScriptAddition(Script script) {
@@ -166,6 +170,7 @@ public class ScriptUpdatesAnalyzer {
 
     /**
      * Register that the given script's content has changed since the last update
+     *
      * @param script The script who's content has changed
      */
     protected void registerScriptUpdate(Script script) {
@@ -181,6 +186,7 @@ public class ScriptUpdatesAnalyzer {
 
     /**
      * Register that the given script has been deleted since the last update
+     *
      * @param deletedScript The script that has been deleted
      */
     protected void registerScriptDeletion(Script deletedScript) {
@@ -196,8 +202,9 @@ public class ScriptUpdatesAnalyzer {
 
     /**
      * Register that the given script has been renamed to the given new script since the last update
+     *
      * @param executedScript The script like it was during the last update
-     * @param renamedTo The renamed script
+     * @param renamedTo      The renamed script
      */
     protected void registerScriptRename(ExecutedScript executedScript, Script renamedTo) {
         if (executedScript.getScript().isIncremental() && renamedTo.isIncremental()) {
@@ -215,7 +222,7 @@ public class ScriptUpdatesAnalyzer {
 
     /**
      * @return whether the sequence of the indexed scripts has changed due to indexed scripts that were renamed since
-     * the last update
+     *         the last update
      */
     protected boolean sequenceOfIndexedScriptsChangedDueToRenames() {
         Iterator<Script> indexedScriptsIterator = scriptRepository.getIndexedScripts().iterator();
@@ -336,7 +343,7 @@ public class ScriptUpdatesAnalyzer {
     protected Script getExecutedScriptWithHighestScriptIndex() {
         Script result = null;
         for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
-            if (executedScript.getScript().isIncremental() && (result == null  || executedScript.getScript().compareTo(result) > 0)) {
+            if (executedScript.getScript().isIncremental() && (result == null || executedScript.getScript().compareTo(result) > 0)) {
                 result = executedScript.getScript();
             }
         }

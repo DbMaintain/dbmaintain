@@ -35,21 +35,25 @@ public class DbMaintainProperties {
      * End of property names that indicate a database driver classname
      */
     public static final String PROPERTY_DRIVERCLASSNAME_END = "driverClassName";
+    public static final String PROPERTY_DRIVERCLASSNAME = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
 
     /**
      * End of property names that indicate a database url
      */
     public static final String PROPERTY_URL_END = "url";
+    public static final String PROPERTY_URL = PROPERTY_DATABASE_START + '.' + PROPERTY_URL_END;
 
     /**
      * End of property names that indicate a database username
      */
     public static final String PROPERTY_USERNAME_END = "userName";
+    public static final String PROPERTY_USERNAME = PROPERTY_DATABASE_START + '.' + PROPERTY_USERNAME_END;
 
     /**
      * End of property names that indicate a database password
      */
     public static final String PROPERTY_PASSWORD_END = "password";
+    public static final String PROPERTY_PASSWORD = PROPERTY_DATABASE_START + '.' + PROPERTY_PASSWORD_END;
 
     /**
      * End of property names that indicate whether the database is included: i.e. it is active and must be updated
@@ -60,11 +64,13 @@ public class DbMaintainProperties {
      * Property key of the SQL dialect of the underlying DBMS implementation
      */
     public static final String PROPERTY_DIALECT_END = "dialect";
+    public static final String PROPERTY_DIALECT = PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END;
 
     /**
      * Property key for the database schema names
      */
     public static final String PROPERTY_SCHEMANAMES_END = "schemaNames";
+    public static final String PROPERTY_SCHEMANAMES = PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END;
 
     /**
      * Property key for the default identifier casing (lower_case, upper_case,
@@ -228,6 +234,9 @@ public class DbMaintainProperties {
     public static final String PROPERTY_SQL_PLUS_COMMAND = "dbMaintainer.sqlPlusScriptRunner.sqlPlusCommand";
 
     public static final String PROPERTY_DB2_COMMAND = "dbMaintainer.db2ScriptRunner.db2Command";
+
+    public static final String PROPERTY_BASELINE_REVISION = "dbMaintainer.baseline.revision";
+
 
     /**
      * Private constructor to prevent instantiation

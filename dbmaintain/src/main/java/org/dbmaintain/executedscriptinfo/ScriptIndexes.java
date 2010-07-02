@@ -15,14 +15,14 @@
  */
 package org.dbmaintain.executedscriptinfo;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.split;
+import org.dbmaintain.util.DbMaintainException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dbmaintain.util.DbMaintainException;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.split;
 
 /**
  * Class representing the indexes of a script.
@@ -69,8 +69,6 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
     }
 
 
-
-
     /**
      * An empty list if no version is defined.
      *
@@ -79,18 +77,18 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
     public List<Long> getIndexes() {
         return indexes;
     }
-    
-    
+
+
     public boolean isIncrementalScript() {
         return indexes.get(indexes.size() - 1) != null;
     }
-    
-    
+
+
     public boolean isRepeatableScript() {
         return !isIncrementalScript();
     }
 
-    
+
     protected void assertValidIndexes() {
         if (indexes.size() == 0) {
             throw new DbMaintainException("The script must contain at least one index");
@@ -104,7 +102,7 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
         }
     }
 
-    
+
     /**
      * Gets a string representation of the indexes as followes:
      * 1, null, 2, null => 1.x.2.x

@@ -15,10 +15,9 @@
  */
 package org.dbmaintain.clean.impl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbItemIdentifier;
+import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -26,6 +25,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.util.HashSet;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the DBCleaner with multiple schemas.
@@ -37,11 +40,10 @@ import javax.sql.DataSource;
  */
 public class DefaultDBCleanerMultiSchemaTest {
 
-    /* DataSource for the test database */
-    private DataSource dataSource;
-
     /* Tested object */
     private DefaultDBCleaner defaultDbCleaner;
+
+    private DataSource dataSource;
 
 
     /**
@@ -50,9 +52,9 @@ public class DefaultDBCleanerMultiSchemaTest {
     @Before
     public void setUp() throws Exception {
         // configure 3 schemas
-        DbSupport dbSupport = TestUtils.getDbSupport("PUBLIC", "SCHEMA_A", "SCHEMA_B");
-        dataSource = dbSupport.getDataSource();
-        defaultDbCleaner = TestUtils.getDefaultDBCleaner(dbSupport);
+        DbSupports dbSupports = TestUtils.getDbSupports("PUBLIC", "SCHEMA_A", "SCHEMA_B");
+        dataSource = dbSupports.getDefaultDbSupport().getDataSource();
+        defaultDbCleaner = new DefaultDBCleaner(dbSupports, new HashSet<DbItemIdentifier>(), new DefaultSQLHandler());
 
         dropTestTables();
         createTestTables();

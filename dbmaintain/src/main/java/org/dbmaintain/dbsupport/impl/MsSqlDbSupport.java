@@ -200,6 +200,19 @@ public class MsSqlDbSupport extends DbSupport {
         disableNotNullConstraints(schemaName, tableName);
     }
 
+    /**
+     * Enables or disables the setting of identity value in insert and update statements.
+     * By default some databases do not allow to set values of identity columns directly from insert/update
+     * statements. If supported, this method will enable/disable this behavior.
+     *
+     * @param schemaName The schema name, not null
+     * @param tableName  The table with the identity column, not null
+     * @param enabled    True to enable, false to disable
+     */
+    @Override
+    public void setSettingIdentityColumnValueEnabled(String schemaName, String tableName, boolean enabled) {
+        getSQLHandler().executeUpdate("SET IDENTITY_INSERT " + qualified(schemaName, tableName) + " " + (enabled ? "ON" : "OFF"), getDataSource());
+    }
 
     /**
      * Synonyms are supported.
