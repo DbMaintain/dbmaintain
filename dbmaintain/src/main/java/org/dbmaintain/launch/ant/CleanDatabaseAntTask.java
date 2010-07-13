@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2008,  Unitils.org
+ * Copyright,  DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id$
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.CleanDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+
+import java.util.List;
 
 /**
- * Task that removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
- * 
+ * Task that removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ClearDatabaseTask extends BaseDatabaseTask {
+public class CleanDatabaseAntTask extends BaseDatabaseAntTask {
 
-    protected void performTask(DbMaintain dbMaintain) {
-        dbMaintain.clearDatabase();
+
+    @Override
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new CleanDatabaseTask(databaseInfos);
     }
+
 }

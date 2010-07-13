@@ -1,106 +1,105 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.dbmaintain</groupId>
-    <artifactId>dbmaintain-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
-  </parent>
-  <artifactId>dbmaintain-maven-plugin</artifactId>
-  <packaging>maven-plugin</packaging>
-  <name>${project.artifactId}</name>
-  <properties>
-    <mvn.version>2.0.9</mvn.version>
-  </properties>
-  <description>
-    Maven plugin for dbmaintain.
-    
-    DbMaintain enables automatic roll-out of updates to a relational database. 
-    It brings database scripts into version control just like regular source code 
-    and can be used to transparantly deploy databases from development on to production.
-  </description>
-  <dependencies>
-    <dependency>
-      <groupId>org.dbmaintain</groupId>
-      <artifactId>dbmaintain</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>${mvn.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model</artifactId>
-      <version>${mvn.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>${mvn.version}</version>
-    </dependency>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.dbmaintain</groupId>
+        <artifactId>dbmaintain-parent</artifactId>
+        <version>2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>1.5.15</version>
-    </dependency>
-  </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>2.5</version>
-        <executions>
-          <execution>
-            <id>help-mojo</id>
-            <goals>
-              <goal>helpmojo</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-invoker-plugin</artifactId>
-        <version>1.4</version>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>install</goal>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <skipInvocation>${maven.test.skip}</skipInvocation>
-          <verbose>true</verbose>
-          <cloneAllFiles>true</cloneAllFiles>
-          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <reporting>
-    <plugins>
-      <!-- Apache plugins in alphabetical order -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>2.5</version>
-        <configuration>
-          <requirements>
-            <!--
-              NOTE: Maven 2.x does not interpolate properties of the form project.*|pom.* so the Maven Plugin Plugin
-              gets garbage when manually examining the config of the Maven Compiler Plugin.
-            -->
-            <jdk>${project.build.java.target}</jdk>
-          </requirements>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
+    <artifactId>dbmaintain-maven-plugin</artifactId>
+    <packaging>maven-plugin</packaging>
+    <name>${project.artifactId}</name>
+
+    <description>
+        Maven plugin for dbmaintain.
+
+        DbMaintain enables automatic roll-out of updates to a relational database.
+        It brings database scripts into version control just like regular source code
+        and can be used to transparantly deploy databases from development on to production.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dbmaintain</groupId>
+            <artifactId>dbmaintain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-project</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <id>help-mojo</id>
+                        <goals>
+                            <goal>helpmojo</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skipInvocation>${maven.test.skip}</skipInvocation>
+                    <verbose>true</verbose>
+                    <cloneAllFiles>true</cloneAllFiles>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                </configuration>
+            </plugin-->
+        </plugins>
+    </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <requirements>
+                        <!--
+                          NOTE: Maven 2.x does not interpolate properties of the form project.*|pom.* so the Maven Plugin Plugin
+                          gets garbage when manually examining the config of the Maven Compiler Plugin.
+                        -->
+                        <jdk>${project.build.java.target}</jdk>
+                    </requirements>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

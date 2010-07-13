@@ -15,8 +15,14 @@
  */
 package org.dbmaintain.launch.api;
 
+import org.dbmaintain.DbMaintainer;
+import org.dbmaintain.archive.ScriptArchiveCreator;
+import org.dbmaintain.clean.DbCleaner;
+import org.dbmaintain.clear.DbClearer;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.config.MainFactory;
+import org.dbmaintain.structure.ConstraintsDisabler;
+import org.dbmaintain.structure.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.net.URL;
@@ -39,14 +45,16 @@ public class DbMaintainOperations {
      * @param archiveFileName The name of the archive file to create
      */
     public static void createScriptArchive(String archiveFileName) {
-        getDbMaintain(false).createScriptArchive(archiveFileName);
+        ScriptArchiveCreator scriptArchiveCreator = getMainFactory().createScriptArchiveCreator();
+        scriptArchiveCreator.createScriptArchive(archiveFileName);
     }
 
     /**
      * Updates the database to the latest version.
      */
     public static void updateDatabase() {
-        getDbMaintain(true).updateDatabase();
+        DbMaintainer dbMaintainer = getMainFactory().createDbMaintainer();
+        dbMaintainer.updateDatabase(false);
     }
 
     /**
@@ -54,50 +62,49 @@ public class DbMaintainOperations {
      * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
      */
     public static void markDatabaseAsUptodate() {
-        getDbMaintain(true).markDatabaseAsUpToDate();
+        DbMaintainer dbMaintainer = getMainFactory().createDbMaintainer();
+        dbMaintainer.markDatabaseAsUpToDate();
     }
 
     /**
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
     public static void clearDatabase() {
-        getDbMaintain(true).clearDatabase();
+        DbClearer dbClearer = getMainFactory().createDbClearer();
+        dbClearer.clearDatabase();
     }
 
     /**
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
     public static void cleanDatabase() {
-        getDbMaintain(true).cleanDatabase();
+        DbCleaner dbCleaner = getMainFactory().createDbCleaner();
+        dbCleaner.cleanDatabase();
     }
 
     /**
      * Disables or drops all foreign key and not null constraints.
      */
     public static void disableConstraints() {
-        getDbMaintain(true).disableConstraints();
+        ConstraintsDisabler constraintsDisabler = getMainFactory().createConstraintsDisabler();
+        constraintsDisabler.disableConstraints();
     }
 
     /**
      * Updates all sequences and identity columns to a minimum value.
      */
     public static void updateSequences() {
-        getDbMaintain(true).updateSequences();
+        SequenceUpdater sequenceUpdater = getMainFactory().createSequenceUpdater();
+        sequenceUpdater.updateSequences();
     }
 
 
-    /**
-     * @param usesDatabase true if a connection to the database is needed, false otherwise
-     * @return An instance of {@link DbMaintain}, that exposes all DbMaintain operations. This instance is configured
-     *         using the properties file dbmaintain.properties, which must be available in the classpath.
-     */
-    private static DbMaintain getDbMaintain(boolean usesDatabase) {
+    private static MainFactory getMainFactory() {
         URL propertiesFromClassPath = ClassLoader.getSystemResource(DBMAINTAIN_PROPERTIES);
         if (propertiesFromClassPath == null) {
             throw new DbMaintainException("Could not find properties file " + DBMAINTAIN_PROPERTIES + " in classpath");
         }
         Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration(propertiesFromClassPath);
-        return new DbMaintain(configuration, usesDatabase);
+        return new MainFactory(configuration);
     }
-
 }

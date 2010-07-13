@@ -23,7 +23,7 @@ package org.dbmaintain.clean;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DBCleaner {
+public interface DbCleaner {
 
 
     /**

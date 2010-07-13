@@ -1,10 +1,10 @@
 <antlib>
-    <taskdef name="createScriptArchive" classname="org.dbmaintain.launch.ant.CreateScriptArchiveTask"/>
-    <taskdef name="checkScriptUpdates" classname="org.dbmaintain.launch.ant.CheckScriptUpdatesTask"/>
-    <taskdef name="updateDatabase" classname="org.dbmaintain.launch.ant.UpdateDatabaseTask"/>
-    <taskdef name="markDatabaseAsUpToDate" classname="org.dbmaintain.launch.ant.MarkDatabaseAsUpToDateTask"/>
-    <taskdef name="clearDatabase" classname="org.dbmaintain.launch.ant.ClearDatabaseTask"/>
-    <taskdef name="cleanDatabase" classname="org.dbmaintain.launch.ant.CleanDatabaseTask"/>
-    <taskdef name="disableConstraints" classname="org.dbmaintain.launch.ant.DisableConstraintsTask"/>
-    <taskdef name="updateSequences" classname="org.dbmaintain.launch.ant.UpdateSequencesTask"/>
+    <taskdef name="createScriptArchive" classname="org.dbmaintain.launch.ant.CreateScriptArchiveAntTask"/>
+    <taskdef name="checkScriptUpdates" classname="org.dbmaintain.launch.ant.CheckScriptUpdatesAntTask"/>
+    <taskdef name="updateDatabase" classname="org.dbmaintain.launch.ant.UpdateDatabaseAntTask"/>
+    <taskdef name="markDatabaseAsUpToDate" classname="org.dbmaintain.launch.ant.MarkDatabaseAsUpToDateAntTask"/>
+    <taskdef name="clearDatabase" classname="org.dbmaintain.launch.ant.ClearDatabaseAntTask"/>
+    <taskdef name="cleanDatabase" classname="org.dbmaintain.launch.ant.CleanDatabaseAntTask"/>
+    <taskdef name="disableConstraints" classname="org.dbmaintain.launch.ant.DisableConstraintsAntTask"/>
+    <taskdef name="updateSequences" classname="org.dbmaintain.launch.ant.UpdateSequencesAntTask"/>
 </antlib>

@@ -18,13 +18,12 @@ package org.dbmaintain.scriptparser;
 import java.io.Reader;
 
 
-
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public interface ScriptParserFactory {
 
-    public ScriptParser createScriptParser(Reader scriptReader);
+    ScriptParser createScriptParser(Reader scriptReader);
 
 }

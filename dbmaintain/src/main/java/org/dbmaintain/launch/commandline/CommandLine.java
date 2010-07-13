@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
 
@@ -175,51 +175,43 @@ public class CommandLine {
                     configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getSecondExtraArgument());
                 }
                 String jarFileName = commandLineArguments.getFirstExtraArgument();
-                getDbMaintain(configuration, false).createScriptArchive(jarFileName);
+                getMainFactory(configuration).createScriptArchiveCreator().createScriptArchive(jarFileName);
                 break;
             case CHECK_SCRIPT_UPDATES:
                 if (commandLineArguments.getFirstExtraArgument() != null) {
                     configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
                 }
-                getDbMaintain(configuration, true).checkScriptUpdates();
+                getMainFactory(configuration).createDbMaintainer().updateDatabase(true);
                 break;
             case UPDATE_DATABASE:
                 if (commandLineArguments.getFirstExtraArgument() != null) {
                     configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
                 }
-                getDbMaintain(configuration, true).updateDatabase();
+                getMainFactory(configuration).createDbMaintainer().updateDatabase(false);
                 break;
             case MARK_DATABASE_AS_UPTODATE:
                 if (commandLineArguments.getFirstExtraArgument() != null) {
                     configuration.put(DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS, commandLineArguments.getFirstExtraArgument());
                 }
-                getDbMaintain(configuration, true).markDatabaseAsUpToDate();
+                getMainFactory(configuration).createDbMaintainer().markDatabaseAsUpToDate();
                 break;
             case CLEAR_DATABASE:
-                getDbMaintain(configuration, true).clearDatabase();
+                getMainFactory(configuration).createDbClearer().clearDatabase();
                 break;
             case CLEAN_DATABASE:
-                getDbMaintain(configuration, true).cleanDatabase();
+                getMainFactory(configuration).createDbCleaner().cleanDatabase();
                 break;
             case DISABLE_CONSTRAINTS:
-                getDbMaintain(configuration, true).disableConstraints();
+                getMainFactory(configuration).createConstraintsDisabler().disableConstraints();
                 break;
             case UPDATE_SEQUENCES:
-                getDbMaintain(configuration, true).updateSequences();
+                getMainFactory(configuration).createSequenceUpdater().updateSequences();
                 break;
         }
     }
 
-
-    /**
-     * Gets an instance of {@link DbMaintain} configured with the given <code>Properties</code>
-     *
-     * @param configuration The configuration to use to configure DbMaintain
-     * @param usesDatabase  true if a connection to the database is needed, false otherwise
-     * @return An instance of {@link DbMaintain}
-     */
-    protected static DbMaintain getDbMaintain(Properties configuration, boolean usesDatabase) {
-        return new DbMaintain(configuration, usesDatabase);
+    protected static MainFactory getMainFactory(Properties configuration) {
+        return new MainFactory(configuration);
     }
 
     /**

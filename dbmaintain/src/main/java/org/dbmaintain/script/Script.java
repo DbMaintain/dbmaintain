@@ -51,6 +51,8 @@ public class Script implements Comparable<Script> {
     private boolean postProcessingScript;
     /* True if this script is a patch script */
     private boolean patchScript;
+    /* True if this script is ignored because it falls below the baseline revision */
+    private boolean ignored;
     /* Set of qualifiers for this script */
     private Set<Qualifier> qualifiers;
 
@@ -66,10 +68,11 @@ public class Script implements Comparable<Script> {
      * @param registeredQualifiers        the qualifiers that were registered and are thus allowed to be used, not null
      * @param patchQualifiers             the qualifiers that indicate that this script is a patch script, not null
      * @param postProcessingScriptDirName name of the post processing script dir
+     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      */
     public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String targetDatabasePrefix,
-                  String qualifierPrefix, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
-        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
+                  String qualifierPrefix, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
+        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
         this.scriptContentHandle = scriptContentHandle;
     }
 
@@ -89,10 +92,11 @@ public class Script implements Comparable<Script> {
      * @param registeredQualifiers        all qualifiers that were registered and are thus allowed to be used, not null
      * @param patchQualifiers             the qualifiers that indicate that a script is a patch script, not null
      * @param postProcessingScriptDirName Name of the post processing script dir
+     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      */
     public Script(String fileName, Long fileLastModifiedAt, String checkSum, String targetDatabasePrefix, String qualifierPrefix,
-                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
-        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
+                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
+        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
         this.checkSum = checkSum;
     }
 
@@ -107,9 +111,10 @@ public class Script implements Comparable<Script> {
      * @param registeredQualifiers        all qualifiers that were registered and are thus allowed to be used, not null
      * @param patchQualifiers             the qualifiers that indicate that this script is a patch script, not null
      * @param postProcessingScriptDirName name of the post processing script dir
+     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      */
     private Script(String fileName, Long fileLastModifiedAt, String targetDatabasePrefix, String qualifierPrefix,
-                   Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName) {
+                   Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
         this.fileName = fileName;
         this.scriptIndexes = createScriptIndexes(fileName);
         List<String> allTokens = getTokensFromPath(asSet(qualifierPrefix, targetDatabasePrefix));
@@ -118,6 +123,7 @@ public class Script implements Comparable<Script> {
         this.patchScript = hasQualifierFrom(patchQualifiers);
         this.fileLastModifiedAt = fileLastModifiedAt;
         this.postProcessingScript = isPostProcessingScript(postProcessingScriptDirName);
+        this.ignored = isIgnored(baseLineRevision);
     }
 
 
@@ -139,11 +145,6 @@ public class Script implements Comparable<Script> {
         return fileName.substring(index + 1);
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-
     /**
      * @return The version, not null
      */
@@ -155,7 +156,7 @@ public class Script implements Comparable<Script> {
      * @param baseLineRevision The baseline revision, null if there is not baseline
      * @return True if a baseline revision was set and the revision of the script was below the baseline
      */
-    public boolean isIgnored(ScriptIndexes baseLineRevision) {
+    protected boolean isIgnored(ScriptIndexes baseLineRevision) {
         return baseLineRevision != null && baseLineRevision.compareTo(scriptIndexes) > 0;
     }
 
@@ -246,6 +247,13 @@ public class Script implements Comparable<Script> {
         return postProcessingScript;
     }
 
+
+    /**
+     * @return True if this script is ignored because it falls below the baseline revision
+     */
+    public boolean isIgnored() {
+        return ignored;
+    }
 
     /**
      * @return True if this script is a patch script

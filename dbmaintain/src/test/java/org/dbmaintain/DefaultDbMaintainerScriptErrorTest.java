@@ -26,8 +26,8 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
 
     @Before
-    public void given() {
-        script = new Script("01_filename.sql", 0L, new ScriptContentHandle.StringScriptContentHandle("content of script", "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
+    public void initialize() {
+        script = new Script("01_filename.sql", 0L, new ScriptContentHandle.StringScriptContentHandle("content of script", "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
     }
 
 
@@ -88,7 +88,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
 
     private DefaultDbMaintainer createDefaultDbMaintainer(long maxNrOfCharsWhenLoggingScriptContent) {
-        return new DefaultDbMaintainer(scriptRunner.getMock(), null, executedScriptInfoSource.getMock(), false, false, false, false, false, false, false, null, null, null, null, null, null, maxNrOfCharsWhenLoggingScriptContent);
+        return new DefaultDbMaintainer(scriptRunner.getMock(), null, executedScriptInfoSource.getMock(), false, false, false, false, false, false, null, null, null, null, null, null, maxNrOfCharsWhenLoggingScriptContent, null);
     }
 
 }

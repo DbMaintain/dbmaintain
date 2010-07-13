@@ -16,6 +16,7 @@
 package org.dbmaintain.script.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
@@ -54,11 +55,12 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param qualifierPrefix             The prefix that identifies a qualifier in the filename, not null
      * @param targetDatabasePrefix        The prefix that indicates the target database part in the filename, not null
      * @param scriptFileExtensions        The script file extensions
+     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      */
     public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
                                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix,
-                                 String targetDatabasePrefix, Set<String> scriptFileExtensions) {
-        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
+                                 String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision) {
+        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision);
     }
 
 
@@ -74,11 +76,12 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param defaultQualifierPefix       the default qualifier prefix
      * @param defaultTargetDatabasePrefix the default target database prefix
      * @param defaultScriptFileExtensions the default script file extensions
+     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      */
     public ArchiveScriptLocation(File jarLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
                                  Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPefix,
-                                 String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
-        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions);
+                                 String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision) {
+        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision);
     }
 
 
@@ -110,7 +113,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
                 };
                 String scriptName = jarEntry.getName();
                 Script script = new Script(scriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix,
-                        qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
+                        qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
                 scripts.add(script);
             }
         }
@@ -130,19 +133,21 @@ public class ArchiveScriptLocation extends ScriptLocation {
 
 
     /**
-     * @param jarFile The jar file, not null
+     * @param scriptLocation The location of the jar file, not null
      * @return The properties as a properties map
      */
-    protected Properties getCustomProperties(JarFile jarFile) {
+    @Override
+    protected Properties getCustomProperties(File scriptLocation) {
         InputStream configurationInputStream = null;
         try {
             Properties configuration = new Properties();
+            JarFile jarFile = createJarFile(scriptLocation);
             ZipEntry configurationEntry = jarFile.getEntry(LOCATION_PROPERTIES_FILENAME);
             configurationInputStream = jarFile.getInputStream(configurationEntry);
             configuration.load(configurationInputStream);
             return configuration;
         } catch (IOException e) {
-            throw new DbMaintainException("Error while reading configuration file " + LOCATION_PROPERTIES_FILENAME + " from jar file " + jarFile, e);
+            throw new DbMaintainException("Error while reading configuration file " + LOCATION_PROPERTIES_FILENAME + " from jar file " + scriptLocation, e);
         } finally {
             closeQuietly(configurationInputStream);
         }
@@ -202,6 +207,9 @@ public class ArchiveScriptLocation extends ScriptLocation {
         configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
         configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
         configuration.put(PROPERTY_SCRIPT_FILE_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
+        if (baseLineRevision != null) {
+            configuration.put(PROPERTY_BASELINE_REVISION, baseLineRevision.getIndexesString());
+        }
         return configuration;
     }
 

@@ -17,6 +17,7 @@ package org.dbmaintain.integrationtest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.config.*;
 import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupport;
@@ -24,7 +25,6 @@ import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.launch.DbMaintain;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
@@ -45,6 +45,7 @@ import static org.apache.commons.lang.StringUtils.*;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.*;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -87,7 +88,6 @@ public class DbMaintainIntegrationTest {
 
     private File scriptsLocation;
     private DbSupport defaultDbSupport;
-    private PropertiesDbMaintainConfigurer dbMaintainConfigurer;
     private Properties configuration;
 
     @Before
@@ -99,7 +99,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testInitialScriptsExecuted() {
+    public void initialScriptsExecuted() {
         createScripts(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
         updateDatabase();
         assertScriptsCorrectlyExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
@@ -107,7 +107,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testAddIncremental() {
+    public void addIncremental() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
         assertScriptsNotExecuted(INCREMENTAL_2);
@@ -117,7 +117,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testAddIncremental_dryRun() {
+    public void addIncremental_dryRun() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
         assertScriptsNotExecuted(INCREMENTAL_2);
@@ -127,7 +127,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testUpdateIncremental_fromScratchEnabled() {
+    public void updateIncremental_fromScratchEnabled() {
         enableFromScratch();
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
@@ -138,7 +138,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testUpdateIncremental_fromScratchDisabled() {
+    public void updateIncremental_fromScratchDisabled() {
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
         updateScript(INCREMENTAL_1);
@@ -150,7 +150,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testUpdateIncremental_fromScratchDisabled_dryRun() {
+    public void updateIncremental_fromScratchDisabled_dryRun() {
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
         updateScript(INCREMENTAL_1);
@@ -162,7 +162,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testAddIncrementalWithLowerIndex_fromScratchEnabled() {
+    public void addIncrementalWithLowerIndex_fromScratchEnabled() {
         enableFromScratch();
         createScripts(INCREMENTAL_2);
         updateDatabase();
@@ -172,7 +172,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testAddIncrementalWithLowerIndex_fromScratchDisabled() {
+    public void addIncrementalWithLowerIndex_fromScratchDisabled() {
         createScripts(INCREMENTAL_2);
         updateDatabase();
         createScripts(INCREMENTAL_1);
@@ -185,7 +185,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testRemoveExistingIncremental_fromScratchEnabled() {
+    public void removeExistingIncremental_fromScratchEnabled() {
         enableFromScratch();
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
@@ -196,7 +196,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testRemoveExistingIncremental_fromScratchDisabled() {
+    public void removeExistingIncremental_fromScratchDisabled() {
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
         removeScript(INCREMENTAL_2);
@@ -210,7 +210,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testAddRepeatable() {
+    public void addRepeatable() {
         createScripts(INCREMENTAL_1);
         updateDatabase();
         assertScriptsNotExecuted(REPEATABLE);
@@ -220,7 +220,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testAddRepeatable_dryRun() {
+    public void addRepeatable_dryRun() {
         createScripts(INCREMENTAL_1);
         updateDatabase();
         assertScriptsNotExecuted(REPEATABLE);
@@ -230,7 +230,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testUpdateRepeatable() {
+    public void updateRepeatable() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
         updateRepeatableScript(REPEATABLE);
@@ -240,7 +240,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testUpdateRepeatable_dryRun() {
+    public void updateRepeatable_dryRun() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
         updateRepeatableScript(REPEATABLE);
@@ -261,7 +261,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testDeleteRepeatable_dryRun() {
+    public void deleteRepeatable_dryRun() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
         removeScript(REPEATABLE);
@@ -276,7 +276,7 @@ public class DbMaintainIntegrationTest {
      * not allowed so the update should have failed.
      */
     @Test(expected = DbMaintainException.class)
-    public void testAddPatchScript_outOfSequenceNotAllowed() {
+    public void addPatchScript_outOfSequenceNotAllowed() {
         createScripts(INCREMENTAL_2);
         updateDatabase();
 
@@ -290,7 +290,7 @@ public class DbMaintainIntegrationTest {
      * allowed, the hotfix script should have been executed (with a warning)
      */
     @Test
-    public void testAddPatchScript_outOfSequenceAllowed() {
+    public void addPatchScript_outOfSequenceAllowed() {
         allowOutOfSequenceExecutionOfPatches();
         createScripts(INCREMENTAL_2);
         updateDatabase();
@@ -304,7 +304,7 @@ public class DbMaintainIntegrationTest {
      * allowed, but the patch has a sequence nr that was already used. This should fail.
      */
     @Test(expected = DbMaintainException.class)
-    public void testAddPatchScript_identicalSequenceNr() {
+    public void addPatchScript_identicalSequenceNr() {
         allowOutOfSequenceExecutionOfPatches();
         createScripts(INCREMENTAL_1);
         updateDatabase();
@@ -315,7 +315,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testErrorInIncrementalScript() {
+    public void errorInIncrementalScript() {
         enableFromScratch();
 
         createScripts(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
@@ -355,7 +355,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testErrorInRepeatableScript() {
+    public void errorInRepeatableScript() {
         enableFromScratch();
 
         createScripts(INCREMENTAL_1, REPEATABLE);
@@ -402,7 +402,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testErrorInRepeatableScript_fixByRemovingScript() {
+    public void errorInRepeatableScript_fixByRemovingScript() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         errorInScript(REPEATABLE);
         try {
@@ -426,7 +426,7 @@ public class DbMaintainIntegrationTest {
      * we start with a from scratch update
      */
     @Test
-    public void testInitialFromScratchUpdate() {
+    public void initialFromScratchUpdate() {
         enableFromScratch();
         createTable(BEFORE_INITIAL_TABLE);
         createScripts(INCREMENTAL_1);
@@ -439,7 +439,7 @@ public class DbMaintainIntegrationTest {
      * we start with a from scratch update
      */
     @Test
-    public void testNoInitialFromScratchUpdateIfFromScratchDisabled() {
+    public void noInitialFromScratchUpdateIfFromScratchDisabled() {
         disableFromScratch();
         createTable(BEFORE_INITIAL_TABLE);
         createScripts(INCREMENTAL_1);
@@ -449,7 +449,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testExecutePostProcessingScriptsIfSomeScriptIsModified() {
+    public void executePostProcessingScriptsIfSomeScriptIsModified() {
         disableFromScratch();
         createScripts(INCREMENTAL_1, REPEATABLE);
         createPostprocessingScripts(POST_PROCESSING_INDEXED_1);
@@ -472,7 +472,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testReExecuteAllPostProcessingScriptsIfOneOfThemIsModified() {
+    public void reExecuteAllPostProcessingScriptsIfOneOfThemIsModified() {
         disableFromScratch();
         createScripts(INCREMENTAL_1);
         createPostprocessingScripts(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
@@ -518,7 +518,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testHandleRegularIndexedScriptRename() {
+    public void handleRegularIndexedScriptRename() {
         disableFromScratch();
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
@@ -531,7 +531,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void testHandleRepeatableScriptRename() {
+    public void handleRepeatableScriptRename() {
         disableFromScratch();
         createScripts(INCREMENTAL_1, REPEATABLE);
         updateDatabase();
@@ -543,7 +543,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testHandleScriptRenameThatChangesScriptSequence() {
+    public void handleScriptRenameThatChangesScriptSequence() {
         disableFromScratch();
         createScripts(INCREMENTAL_2, INCREMENTAL_3);
         updateDatabase();
@@ -558,7 +558,7 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
-    public void testIncludedAndExcludedQualifiers() {
+    public void includedAndExcludedQualifiers() {
         enableFromScratch();
         createScripts(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2, INCREMENTAL_4);
 
@@ -581,7 +581,7 @@ public class DbMaintainIntegrationTest {
     @Test
     @Ignore
     // The qualifier expression functionality has been removed
-    public void testQualifiersWithQualifierExpression() {
+    public void qualifiersWithQualifierExpression() {
         enableFromScratch();
         createScripts(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
 
@@ -620,6 +620,24 @@ public class DbMaintainIntegrationTest {
         createScripts(INCREMENTAL_2_UNKNOWN_QUALIFIER);
         updateDatabase();
     }
+
+
+    @Test
+    public void noFromScratchUpdateIfBaseLineRevisionIsSet() throws Exception {
+        try {
+            configuration.setProperty(PROPERTY_BASELINE_REVISION, "1.2");
+
+            updateIncremental_fromScratchEnabled();
+            fail("Expected DbMaintainException");
+
+        } catch (DbMaintainException e) {
+            assertEquals("Unable to recreate the database from scratch: a baseline revision is set.\n" +
+                    "The database would have been cleared but not all scripts would have been executed.\n" +
+                    "Please clear the baseline revision if you want to perform a from scratch update.\n" +
+                    "Another option is to explicitly clear the database using the clear task and then performing the update.", e.getMessage());
+        }
+    }
+
 
     ////////////// PRIVATE HELPER METHODS ////////////////////
 
@@ -668,7 +686,8 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertInExecutedScripts(TestScript script) {
-        ExecutedScriptInfoSource executedScriptInfoSource = dbMaintainConfigurer.createExecutedScriptInfoSource(null);
+        MainFactory mainFactory = new MainFactory(configuration);
+        ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
         Set<ExecutedScript> executedScripts = executedScriptInfoSource.getExecutedScripts();
         for (ExecutedScript executedScript : executedScripts) {
             if (script.scriptName.equals(executedScript.getScript().getFileName())) {
@@ -679,7 +698,8 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertNotInExecutedScripts(TestScript script) {
-        ExecutedScriptInfoSource executedScriptInfoSource = dbMaintainConfigurer.createExecutedScriptInfoSource(null);
+        MainFactory mainFactory = new MainFactory(configuration);
+        ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
         Set<ExecutedScript> executedScripts = executedScriptInfoSource.getExecutedScripts();
         for (ExecutedScript executedScript : executedScripts) {
             if (script.scriptName.equals(executedScript.getScript().getFileName())) {
@@ -731,13 +751,15 @@ public class DbMaintainIntegrationTest {
     }
 
     private void updateDatabase() {
-        DbMaintain dbMaintain = new DbMaintain(dbMaintainConfigurer);
-        dbMaintain.updateDatabase();
+        MainFactory mainFactory = new MainFactory(configuration);
+        DbMaintainer dbMaintainer = mainFactory.createDbMaintainer();
+        dbMaintainer.updateDatabase(false);
     }
 
     private void checkScriptUpdates() {
-        DbMaintain dbMaintain = new DbMaintain(dbMaintainConfigurer);
-        dbMaintain.checkScriptUpdates();
+        MainFactory mainFactory = new MainFactory(configuration);
+        DbMaintainer dbMaintainer = mainFactory.createDbMaintainer();
+        dbMaintainer.updateDatabase(true);
     }
 
     private void createScripts(TestScript... scripts) {
@@ -907,7 +929,6 @@ public class DbMaintainIntegrationTest {
         DbSupportsFactory dbSupportsFactory = new DbSupportsFactory(configuration, sqlHandler);
         DbSupports dbSupports = dbSupportsFactory.createDbSupports(databaseInfos);
 
-        dbMaintainConfigurer = new PropertiesDbMaintainConfigurer(configuration, dbSupports, sqlHandler);
         defaultDbSupport = dbSupports.getDefaultDbSupport();
     }
 }

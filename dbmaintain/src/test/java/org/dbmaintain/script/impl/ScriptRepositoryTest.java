@@ -47,13 +47,13 @@ public class ScriptRepositoryTest {
         postProcessing1 = createScript("postprocessing/01_post1.sql");
         postProcessing2 = createScript("postprocessing/02_post2.sql");
 
-        scriptLocation1 = new ArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1), null, null, null, null, null, null, null);
-        scriptLocation2 = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2), null, null, null, null, null, null, null);
+        scriptLocation1 = new ArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1), null, null, null, null, null, null, null, null);
+        scriptLocation2 = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2), null, null, null, null, null, null, null, null);
     }
 
     @Test
     public void getScripts() {
-        ScriptRepository scriptRepository = new ScriptRepository(asSet(scriptLocation1, scriptLocation2), getTrivialQualifierEvaluator(), null);
+        ScriptRepository scriptRepository = new ScriptRepository(asSet(scriptLocation1, scriptLocation2), getTrivialQualifierEvaluator());
 
         assertEquals(asSortedSet(indexed1, indexed2), scriptRepository.getIndexedScripts());
         assertEquals(asSortedSet(repeatable1, repeatable2), scriptRepository.getRepeatableScripts());
@@ -62,14 +62,14 @@ public class ScriptRepositoryTest {
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateScript() {
-        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null, null, null, null, null, null, null);
-        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator(), null);
+        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null, null, null, null, null, null, null, null);
+        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
     }
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateIndex() {
-        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null, null, null, null, null, null, null);
-        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator(), null);
+        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null, null, null, null, null, null, null, null);
+        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
     }
 
 }

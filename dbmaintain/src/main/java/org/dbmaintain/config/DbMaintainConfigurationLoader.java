@@ -17,6 +17,8 @@ package org.dbmaintain.config;
 
 import org.dbmaintain.util.DbMaintainException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -43,7 +45,7 @@ public class DbMaintainConfigurationLoader {
      */
     public static final String PROPKEY_CUSTOM_CONFIGURATION = "dbmaintain.configuration.customFileName";
 
-    
+
     /**
      * Loads all properties as defined by the default configuration.
      *
@@ -57,13 +59,23 @@ public class DbMaintainConfigurationLoader {
     /**
      * Loads all properties as defined by the default configuration. Properties defined by the properties
      * file to which the given URL points override the default properties.
-     * 
-     * @param customConfigurationUrl URL that points to the custom configuration, may be null if there is no custom config
      *
+     * @param customConfigurationUrl URL that points to the custom configuration, may be null if there is no custom config
      * @return the settings, not null
      */
     public Properties loadConfiguration(URL customConfigurationUrl) {
-    	return loadConfiguration(loadPropertiesFromURL(customConfigurationUrl));
+        return loadConfiguration(loadPropertiesFromURL(customConfigurationUrl));
+    }
+
+    /**
+     * Loads all properties as defined by the default configuration. Properties defined by the properties
+     * file to which the given URL points override the default properties.
+     *
+     * @param customConfigurationFile The custom configuration, may be null if there is no custom config
+     * @return the settings, not null
+     */
+    public Properties loadConfiguration(File customConfigurationFile) {
+        return loadConfiguration(loadPropertiesFromFile(customConfigurationFile));
     }
 
 
@@ -72,18 +84,17 @@ public class DbMaintainConfigurationLoader {
      * object override the default properties.
      *
      * @param customConfiguration custom configuration, may be null if there is no custom config
-     *
      * @return the settings, not null
      */
     public Properties loadConfiguration(Properties customConfiguration) {
         Properties properties = new Properties();
 
-    	// Load the default properties file, that is distributed with DbMaintain (dbmaintain-default.properties)
-    	properties.putAll(loadDefaultConfiguration());
+        // Load the default properties file, that is distributed with DbMaintain (dbmaintain-default.properties)
+        properties.putAll(loadDefaultConfiguration());
 
-    	if (customConfiguration != null) {
-    		properties.putAll(customConfiguration);
-    	}
+        if (customConfiguration != null) {
+            properties.putAll(customConfiguration);
+        }
         return properties;
     }
 
@@ -102,9 +113,9 @@ public class DbMaintainConfigurationLoader {
         return defaultConfiguration;
     }
 
-    
-	protected Properties loadPropertiesFromClasspath(String propertiesFileName) {
-		InputStream inputStream = null;
+
+    protected Properties loadPropertiesFromClasspath(String propertiesFileName) {
+        InputStream inputStream = null;
         try {
             inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName);
             if (inputStream == null) {
@@ -117,29 +128,43 @@ public class DbMaintainConfigurationLoader {
         } finally {
             closeQuietly(inputStream);
         }
-	}
-
+    }
 
     protected Properties loadPropertiesFromURL(URL propertiesFileUrl) {
-	    if (propertiesFileUrl == null) {
+        if (propertiesFileUrl == null) {
             return null;
         }
         InputStream urlStream = null;
-	    try {
-	        urlStream = propertiesFileUrl.openStream();
-	        return loadPropertiesFromStream(urlStream);
-	    } catch (IOException e) {
-	        throw new DbMaintainException("Unable to load configuration file", e);
-	    } finally {
-	        closeQuietly(urlStream);
-	    }
-	}
+        try {
+            urlStream = propertiesFileUrl.openStream();
+            return loadPropertiesFromStream(urlStream);
+        } catch (IOException e) {
+            throw new DbMaintainException("Unable to load configuration file " + propertiesFileUrl, e);
+        } finally {
+            closeQuietly(urlStream);
+        }
+    }
 
-    
+    protected Properties loadPropertiesFromFile(File propertiesFile) {
+        if (propertiesFile == null) {
+            return null;
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(propertiesFile);
+            return loadPropertiesFromStream(inputStream);
+        } catch (IOException e) {
+            throw new DbMaintainException("Unable to load configuration file " + propertiesFile, e);
+        } finally {
+            closeQuietly(inputStream);
+        }
+    }
+
+
     protected Properties loadPropertiesFromStream(InputStream inputStream) throws IOException {
         Properties properties = new Properties();
         properties.load(inputStream);
         return properties;
     }
-	
+
 }

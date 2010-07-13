@@ -24,7 +24,7 @@ package org.dbmaintain.clear;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public interface DBClearer {
+public interface DbClearer {
 
 
     /**

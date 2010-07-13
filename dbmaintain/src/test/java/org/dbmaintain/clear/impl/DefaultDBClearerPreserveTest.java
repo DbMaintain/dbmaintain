@@ -17,12 +17,12 @@ package org.dbmaintain.clear.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
-import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbSupports;
-import org.dbmaintain.util.TestUtils;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.structure.ConstraintsDisabler;
+import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.hsqldb.Trigger;
 import org.junit.After;
 import org.junit.Before;
@@ -34,14 +34,14 @@ import java.util.Set;
 
 import static org.dbmaintain.dbsupport.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.dbsupport.DbItemType.*;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.SQLTestUtils.*;
 import static org.dbmaintain.util.TestUtils.getDbSupports;
+import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for the {@link DBClearer} with configuration to preserve all items.
+ * Test class for the {@link org.dbmaintain.clear.DbClearer} with configuration to preserve all items.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -53,7 +53,7 @@ public class DefaultDBClearerPreserveTest {
     private static Log logger = LogFactory.getLog(DefaultDBClearerPreserveTest.class);
 
     /* Tested object */
-    private DefaultDBClearer defaultDbClearer;
+    private DefaultDbClearer defaultDbClearer;
 
     private DataSource dataSource;
     private DbSupport defaultDbSupport;
@@ -89,7 +89,11 @@ public class DefaultDBClearerPreserveTest {
             itemsToPreserve.add(parseItemIdentifier(SYNONYM, "Test_Synonym", dbSupports));
             itemsToPreserve.add(parseItemIdentifier(SYNONYM, defaultDbSupport.quoted("Test_CASE_Synonym"), dbSupports));
         }
-        defaultDbClearer = new DefaultDBClearer(dbSupports, itemsToPreserve);
+
+        ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
+        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDbSupport, true);
+
+        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
     }
 
     @After
@@ -103,7 +107,7 @@ public class DefaultDBClearerPreserveTest {
         assertEquals(2, defaultDbSupport.getTableNames().size());
         defaultDbClearer.clearDatabase();
         System.out.println(defaultDbSupport.getTableNames());
-        assertEquals(2, defaultDbSupport.getTableNames().size());
+        assertEquals(3, defaultDbSupport.getTableNames().size()); // executed scripts table was created
     }
 
     @Test
@@ -175,6 +179,8 @@ public class DefaultDBClearerPreserveTest {
      * Drops all created test database structures (views, tables...)
      */
     private void cleanupTestDatabase() throws Exception {
+        dropExecutedScriptsTable();
+
         String dialect = defaultDbSupport.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             cleanupTestDatabaseHsqlDb();
@@ -233,10 +239,16 @@ public class DefaultDBClearerPreserveTest {
      * @author Filip Neven
      * @author Tim Ducheyne
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public static class TestTrigger implements Trigger {
 
         public void fire(int i, String string, String string1, Object[] objects, Object[] objects1) {
         }
+    }
+
+
+    private void dropExecutedScriptsTable() {
+        executeUpdateQuietly("drop table dbmaintain_scripts", dataSource);
     }
 
     //
@@ -465,9 +477,5 @@ public class DefaultDBClearerPreserveTest {
         dropTestTriggers(defaultDbSupport, "test_trigger", "\"Test_CASE_Trigger\"");
         dropTestTables(defaultDbSupport, "\"Test_CASE_Table\"", "test_table");
         dropTestTypes(defaultDbSupport, "test_type", "\"Test_CASE_Type\"");
-    }
-
-    private Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType dbItemType, String... itemIdentifiers) {
-        return TestUtils.toDbItemIdentifiers(dbItemType, asSet(itemIdentifiers), dbSupports);
     }
 }

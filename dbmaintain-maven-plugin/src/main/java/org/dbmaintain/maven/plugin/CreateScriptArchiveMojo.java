@@ -1,34 +1,57 @@
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.launch.DbMaintain;
-
-import java.io.File;
+import org.dbmaintain.launch.task.CreateScriptArchiveTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 
 /**
  * Creates a jar containing the SQL scripts.
  *
  * @author tiwe
+ * @author Tim Ducheyne
  * @goal createScriptArchive
  */
-public class CreateScriptArchiveMojo extends AbstractDbMaintainMojo {
+public class CreateScriptArchiveMojo extends BaseMojo {
 
     /**
-     * @parameter expression="${dbmaintain.archiveFileName}"
-     * @required
+     * @parameter
      */
-    private File archiveFileName;
+    private String archiveFileName;
+    /**
+     * @parameter
+     */
+    protected String scriptLocations;
+    /**
+     * @parameter
+     */
+    private String scriptEncoding;
+    /**
+     * @parameter
+     */
+    private String postProcessingScriptDirectoryName;
+    /**
+     * @parameter
+     */
+    private String qualifiers;
+    /**
+     * @parameter
+     */
+    private String patchQualifiers;
+    /**
+     * @parameter
+     */
+    private String qualifierPrefix;
+    /**
+     * @parameter
+     */
+    private String targetDatabasePrefix;
+    /**
+     * @parameter
+     */
+    private String scriptFileExtensions;
+
 
     @Override
-    protected void execute(DbMaintain dbMaintain) {
-        dbMaintain.createScriptArchive(archiveFileName.getAbsolutePath());
+    protected DbMaintainTask createDbMaintainTask() {
+        return new CreateScriptArchiveTask(archiveFileName, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, qualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions);
     }
-
-
-    /**
-     * @return False, no database connection is needed
-     */
-    protected boolean usesDatabase() {
-        return false;
-    }
-
 }

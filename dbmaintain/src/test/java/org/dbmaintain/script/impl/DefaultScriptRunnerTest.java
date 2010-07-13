@@ -22,7 +22,7 @@ import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
 import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.scriptparser.impl.DefaultScriptParserFactory;
-import org.dbmaintain.scriptrunner.impl.DefaultScriptRunner;
+import org.dbmaintain.scriptrunner.impl.JdbcScriptRunner;
 import org.dbmaintain.util.SQLTestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +47,7 @@ import static org.dbmaintain.util.TestUtils.getDbSupports;
 public class DefaultScriptRunnerTest {
 
     /* The tested object */
-    private DefaultScriptRunner defaultScriptRunner;
+    private JdbcScriptRunner defaultScriptRunner;
 
     /* DataSource for the test database */
     protected DataSource dataSource;
@@ -70,10 +70,10 @@ public class DefaultScriptRunnerTest {
 
         Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
         databaseDialectScriptParserClassMap.put("hsqldb", new DefaultScriptParserFactory(false));
-        defaultScriptRunner = new DefaultScriptRunner(databaseDialectScriptParserClassMap, dbSupports, new DefaultSQLHandler());
+        defaultScriptRunner = new JdbcScriptRunner(databaseDialectScriptParserClassMap, dbSupports, new DefaultSQLHandler());
 
-        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
-        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
+        script1 = new Script("test-script1.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script1.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
+        script2 = new Script("test-script2.sql", 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/test-script2.sql"), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
 
         cleanupTestDatabase();
     }

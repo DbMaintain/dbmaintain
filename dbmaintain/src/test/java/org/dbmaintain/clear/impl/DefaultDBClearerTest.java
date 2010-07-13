@@ -17,10 +17,12 @@ package org.dbmaintain.clear.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.structure.ConstraintsDisabler;
+import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
@@ -31,11 +33,14 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.util.HashSet;
 
+import static java.util.Arrays.asList;
 import static org.dbmaintain.util.SQLTestUtils.*;
+import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.*;
+import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
 
 /**
- * Test class for the {@link DBClearer}.
+ * Test class for the {@link org.dbmaintain.clear.DbClearer}.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -47,7 +52,7 @@ public class DefaultDBClearerTest {
     private static Log logger = LogFactory.getLog(DefaultDBClearerTest.class);
 
     /* Tested object */
-    private DefaultDBClearer defaultDbClearer;
+    private DefaultDbClearer defaultDbClearer;
 
     private DataSource dataSource;
     private DbSupports dbSupports;
@@ -59,8 +64,11 @@ public class DefaultDBClearerTest {
         dbSupports = TestUtils.getDbSupports();
         defaultDbSupport = dbSupports.getDefaultDbSupport();
         dataSource = defaultDbSupport.getDataSource();
-        // create clearer instance
-        defaultDbClearer = new DefaultDBClearer(dbSupports, new HashSet<DbItemIdentifier>());
+
+        ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
+        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDbSupport, true);
+
+        defaultDbClearer = new DefaultDbClearer(dbSupports, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -72,33 +80,22 @@ public class DefaultDBClearerTest {
     }
 
 
-    /**
-     * Checks if the tables are correctly dropped.
-     */
     @Test
-    public void testClearDatabase_tables() throws Exception {
+    public void clearTables() throws Exception {
         assertEquals(2, defaultDbSupport.getTableNames().size());
         defaultDbClearer.clearDatabase();
-        assertTrue(defaultDbSupport.getTableNames().isEmpty());
+        assertReflectionEquals(asList(defaultDbSupport.toCorrectCaseIdentifier("dbmaintain_scripts")), defaultDbSupport.getTableNames("PUBLIC"));
     }
 
-
-    /**
-     * Checks if the views are correctly dropped
-     */
     @Test
-    public void testClearDatabase_views() throws Exception {
+    public void clearViews() throws Exception {
         assertEquals(2, defaultDbSupport.getViewNames().size());
         defaultDbClearer.clearDatabase();
         assertTrue(defaultDbSupport.getViewNames().isEmpty());
     }
 
-
-    /**
-     * Checks if the materialized views are correctly dropped
-     */
     @Test
-    public void testClearDatabase_materializedViews() throws Exception {
+    public void clearMaterializedViews() throws Exception {
         if (!defaultDbSupport.supportsMaterializedViews()) {
             logger.warn("Current dialect does not support materialized views. Skipping test.");
             return;
@@ -108,12 +105,8 @@ public class DefaultDBClearerTest {
         assertTrue(defaultDbSupport.getMaterializedViewNames().isEmpty());
     }
 
-
-    /**
-     * Checks if the synonyms are correctly dropped
-     */
     @Test
-    public void testClearDatabase_synonyms() throws Exception {
+    public void clearSynonyms() throws Exception {
         if (!defaultDbSupport.supportsSynonyms()) {
             logger.warn("Current dialect does not support synonyms. Skipping test.");
             return;
@@ -123,12 +116,8 @@ public class DefaultDBClearerTest {
         assertTrue(defaultDbSupport.getSynonymNames().isEmpty());
     }
 
-
-    /**
-     * Tests if the triggers are correctly dropped
-     */
     @Test
-    public void testClearDatabase_sequences() throws Exception {
+    public void clearSequences() throws Exception {
         if (!defaultDbSupport.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -139,9 +128,6 @@ public class DefaultDBClearerTest {
     }
 
 
-    /**
-     * Creates all test database structures (view, tables...)
-     */
     private void createTestDatabase() throws Exception {
         String dialect = defaultDbSupport.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
@@ -163,11 +149,9 @@ public class DefaultDBClearerTest {
         }
     }
 
-
-    /**
-     * Drops all created test database structures (views, tables...)
-     */
     private void cleanupTestDatabase() throws Exception {
+        dropExecutedScriptsTable();
+
         String dialect = defaultDbSupport.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             cleanupTestDatabaseHsqlDb();
@@ -184,6 +168,11 @@ public class DefaultDBClearerTest {
         } else if ("mssql".equals(dialect)) {
             cleanupTestDatabaseMsSql();
         }
+    }
+
+
+    private void dropExecutedScriptsTable() {
+        executeUpdateQuietly("drop table dbmaintain_scripts", dataSource);
     }
 
     //
@@ -226,6 +215,7 @@ public class DefaultDBClearerTest {
      * @author Filip Neven
      * @author Tim Ducheyne
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public static class TestTrigger implements Trigger {
 
         public void fire(int i, String string, String string1, Object[] objects, Object[] objects1) {

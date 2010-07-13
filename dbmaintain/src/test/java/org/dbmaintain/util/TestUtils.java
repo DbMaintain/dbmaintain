@@ -15,7 +15,9 @@
  */
 package org.dbmaintain.util;
 
-import org.dbmaintain.dbsupport.*;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.dbsupport.DbSupport;
+import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
 import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
@@ -30,7 +32,10 @@ import org.dbmaintain.script.impl.ScriptRepository;
 import javax.sql.DataSource;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import java.util.SortedSet;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -68,47 +73,34 @@ public abstract class TestUtils {
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable, ScriptIndexes baselineRevision) {
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
-                "db_executed_scripts", "script_file_name", 100, "last_modified_at", "checksum", 150, "executed_at", 10, "succeeded",
+                "dbmaintain_scripts", "file_name", 150, "file_last_modified_at", "checksum", 50, "executed_at", 50, "succeeded",
                 new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@", "#", Collections.<Qualifier>emptySet(),
                 asSet(new Qualifier("patch")), "postprocessing", baselineRevision);
     }
 
-    public static Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType dbItemType, Set<String> itemsAsString, DbSupports dbSupports) {
-        Set<DbItemIdentifier> itemIdentifiers = new HashSet<DbItemIdentifier>();
-        for (String itemAsString : itemsAsString) {
-            itemIdentifiers.add(DbItemIdentifier.parseItemIdentifier(dbItemType, itemAsString, dbSupports));
-        }
-        return itemIdentifiers;
-    }
-
-
-    public static Set<DbItemIdentifier> toDbSchemaIdentifiers(Set<String> schemasAsString, DbSupports dbSupports) {
-        Set<DbItemIdentifier> schemaIdentifiers = new HashSet<DbItemIdentifier>();
-        for (String schemaAsString : schemasAsString) {
-            schemaIdentifiers.add(DbItemIdentifier.parseSchemaIdentifier(schemaAsString, dbSupports));
-        }
-        return schemaIdentifiers;
-    }
-
     public static Script createScript(String fileName) {
-        return new Script(fileName, 1L, "xxxxx", "@", "#", Collections.<Qualifier>emptySet(), asSet(new Qualifier("patch")), "postprocessing");
+        return createScript(fileName, (ScriptIndexes) null);
+    }
+
+    public static Script createScript(String fileName, ScriptIndexes baseLineRevision) {
+        return new Script(fileName, 1L, "xxxxx", "@", "#", Collections.<Qualifier>emptySet(), asSet(new Qualifier("patch")), "postprocessing", baseLineRevision);
     }
 
     public static Script createScript(String fileName, String content) {
         return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1"), "@", "#",
-                Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing");
+                Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
         return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "postprocessing", Collections.<Qualifier>emptySet(),
-                asSet(new Qualifier("patch")), "#", "@", asSet("sql"));
+                asSet(new Qualifier("patch")), "#", "@", asSet("sql"), null);
     }
 
 
     public static ScriptRepository getScriptRepository(SortedSet<Script> scriptsToReturn) {
-        ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, null, null, null);
+        ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, null, null, null, null);
         QualifierEvaluator qualifierEvaluator = getTrivialQualifierEvaluator();
-        return new ScriptRepository(asSet(scriptLocation), qualifierEvaluator, null);
+        return new ScriptRepository(asSet(scriptLocation), qualifierEvaluator);
     }
 
 

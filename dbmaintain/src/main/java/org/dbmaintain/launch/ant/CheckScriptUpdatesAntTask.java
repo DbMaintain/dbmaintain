@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright,  DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package org.dbmaintain.launch.ant;
 
-import static org.dbmaintain.config.DbMaintainProperties.*;
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.CheckScriptUpdatesTask;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
 
-import java.util.Properties;
+import java.util.List;
 
 /**
  * Performs a dry run of the database update. May be used to verify if there are any updates or in a test that fails
@@ -28,8 +29,7 @@ import java.util.Properties;
  * @author Tim Ducheyne
  * @since 10-feb-2009
  */
-@SuppressWarnings("UnusedDeclaration")
-public class CheckScriptUpdatesTask extends BaseDatabaseTask {
+public class CheckScriptUpdatesAntTask extends BaseDatabaseAntTask {
 
     private String scriptLocations;
     private Boolean fromScratchEnabled;
@@ -38,27 +38,15 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     private String qualifiers;
     private String includedQualifiers;
     private String excludedQualifiers;
-    private Boolean useLastModificationDates;
     private String scriptFileExtensions;
-
-
-    protected void performTask(DbMaintain dbMaintain) {
-        dbMaintain.checkScriptUpdates();
-    }
+    private Boolean useLastModificationDates;
 
 
     @Override
-    protected void addTaskConfiguration(Properties configuration) {
-        addTaskConfiguration(configuration, PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
-        addTaskConfiguration(configuration, PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
-        addTaskConfiguration(configuration, PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
-        addTaskConfiguration(configuration, PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
-        addTaskConfiguration(configuration, PROPERTY_QUALIFIERS, qualifiers);
-        addTaskConfiguration(configuration, PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
-        addTaskConfiguration(configuration, PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
-        addTaskConfiguration(configuration, PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
-        addTaskConfiguration(configuration, PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new CheckScriptUpdatesTask(databaseInfos, scriptLocations, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
     }
+
 
     /**
      * Defines where the scripts can be found that must be executed on the database. Multiple locations may be
@@ -91,7 +79,8 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
      * automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually.
      * False by default.
      *
-     * @param autoCreateDbMaintainScriptsTable True if the DBMAINTAIN_SCRIPTS table can be created automatically
+     * @param autoCreateDbMaintainScriptsTable
+     *         True if the DBMAINTAIN_SCRIPTS table can be created automatically
      */
     public void setAutoCreateDbMaintainScriptsTable(boolean autoCreateDbMaintainScriptsTable) {
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
@@ -101,7 +90,9 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     /**
      * If this property is set to true, a patch script is allowed to be executed even if another script
      * with a higher index was already executed.
-     * @param allowOutOfSequenceExecutionOfPatches true if out-of-sequence execution of patches is enabled
+     *
+     * @param allowOutOfSequenceExecutionOfPatches
+     *         true if out-of-sequence execution of patches is enabled
      */
     public void setAllowOutOfSequenceExecutionOfPatches(boolean allowOutOfSequenceExecutionOfPatches) {
         this.allowOutOfSequenceExecutionOfPatches = allowOutOfSequenceExecutionOfPatches;
@@ -110,6 +101,7 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     /**
      * Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must
      * be declared.
+     *
      * @param qualifiers the registered (allowed) script qualifiers
      */
     public void setQualifiers(String qualifiers) {
@@ -119,6 +111,7 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     /**
      * Optional comma-separated list of script qualifiers. All included qualifiers must be registered using the
      * qualifiers property. Only scripts which are qualified with one of the included qualifiers will be executed.
+     *
      * @param includedQualifiers the included script qualifiers
      */
     public void setIncludedQualifiers(String includedQualifiers) {
@@ -128,6 +121,7 @@ public class CheckScriptUpdatesTask extends BaseDatabaseTask {
     /**
      * Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the
      * qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed.
+     *
      * @param excludedQualifiers the excluded script qualifiers
      */
     public void setExcludedQualifiers(String excludedQualifiers) {

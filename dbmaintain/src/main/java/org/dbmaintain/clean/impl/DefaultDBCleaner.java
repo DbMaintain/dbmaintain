@@ -17,7 +17,7 @@ package org.dbmaintain.clean.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clean.DBCleaner;
+import org.dbmaintain.clean.DbCleaner;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbSupports;
@@ -34,16 +34,16 @@ import static org.dbmaintain.dbsupport.DbItemIdentifier.getSchemaIdentifier;
 import static org.dbmaintain.dbsupport.DbItemType.TABLE;
 
 /**
- * Implementation of {@link DBCleaner}. This implementation will delete all data from a database, except for the tables
+ * Implementation of {@link org.dbmaintain.clean.DbCleaner}. This implementation will delete all data from a database, except for the tables
  * that are configured as tables to preserve.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultDBCleaner implements DBCleaner {
+public class DefaultDbCleaner implements DbCleaner {
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DefaultDBCleaner.class);
+    private static Log logger = LogFactory.getLog(DefaultDbCleaner.class);
 
     /* The schema's and tables that should left untouched */
     protected Set<DbItemIdentifier> itemsToPreserve;
@@ -60,7 +60,7 @@ public class DefaultDBCleaner implements DBCleaner {
      * @param itemsToPreserve The schema's and tables that should not be cleaned, not null
      * @param sqlHandler      The sql handler that will execute the statements, not null
      */
-    public DefaultDBCleaner(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, SQLHandler sqlHandler) {
+    public DefaultDbCleaner(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, SQLHandler sqlHandler) {
         this.dbSupports = dbSupports;
         this.sqlHandler = sqlHandler;
         this.itemsToPreserve = itemsToPreserve;

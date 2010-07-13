@@ -1,6 +1,10 @@
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.UpdateDatabaseTask;
+
+import java.util.List;
 
 /**
  * This operation can be used to bring the database to the latest version. First it checks which scripts were already
@@ -9,19 +13,65 @@ import org.dbmaintain.launch.DbMaintain;
  * already executed, an error is given; unless the fromScratch option is enabled: in that case all database objects are
  * removed and the database is rebuilt from scratch. If there are post-processing scripts, these are always executed at
  * the end.
- * 
- * @see http://dbmaintain.sourceforge.net/tutorial.html#Update_the_database
+ *
  * @author tiwe
+ * @author Tim Ducheyne
  * @goal updateDatabase
  */
-public class UpdateDatabaseMojo
-    extends AbstractDbMaintainMojo
-{
+public class UpdateDatabaseMojo extends BaseDatabaseMojo {
+
+    /**
+     * @parameter
+     */
+    protected String scriptLocations;
+    /**
+     * @parameter
+     */
+    protected Boolean fromScratchEnabled;
+    /**
+     * @parameter
+     */
+    protected Boolean autoCreateDbMaintainScriptsTable;
+    /**
+     * @parameter
+     */
+    protected Boolean allowOutOfSequenceExecutionOfPatches;
+    /**
+     * @parameter
+     */
+    protected String qualifiers;
+    /**
+     * @parameter
+     */
+    protected String includedQualifiers;
+    /**
+     * @parameter
+     */
+    protected String excludedQualifiers;
+    /**
+     * @parameter
+     */
+    protected Boolean cleanDb;
+    /**
+     * @parameter
+     */
+    protected Boolean disableConstraints;
+    /**
+     * @parameter
+     */
+    protected Boolean updateSequences;
+    /**
+     * @parameter
+     */
+    protected Boolean useLastModificationDates;
+    /**
+     * @parameter
+     */
+    protected String scriptFileExtensions;
+
 
     @Override
-    protected void execute( DbMaintain dbMaintain )
-    {
-        dbMaintain.updateDatabase();
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new UpdateDatabaseTask(databaseInfos, scriptLocations, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
     }
-
 }

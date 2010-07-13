@@ -15,16 +15,17 @@
  */
 package org.dbmaintain.script;
 
-import static org.dbmaintain.script.ScriptUpdateType.*;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.dbmaintain.util.TestUtils;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static org.dbmaintain.script.ScriptUpdateType.*;
+import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Filip Neven
@@ -259,10 +260,10 @@ public class ScriptUpdatesAnalyzerTest {
     private static Script createScript(String scriptName, boolean modified) {
         String checkSum = scriptName + (modified ? (++sequence) : "");
         Long lastModifiedAt = modified ? 1L : 0L;
-        return new Script(scriptName, lastModifiedAt, checkSum, "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing");
+        return new Script(scriptName, lastModifiedAt, checkSum, "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing", null);
     }
 
     private static Script createRenamedScript(Script originalScript, String newName) {
-        return new Script(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum(), "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing");
+        return new Script(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum(), "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing", null);
     }
 }

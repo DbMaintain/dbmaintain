@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright,  DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,22 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DisableConstraintsTask;
+
+import java.util.List;
 
 /**
- * Task that removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
- * 
+ * Task that disables or drops all foreign key and not null constraints.
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class CleanDatabaseTask extends BaseDatabaseTask {
+public class DisableConstraintsAntTask extends BaseDatabaseAntTask {
 
-
-    protected void performTask(DbMaintain dbMaintain) {
-        dbMaintain.cleanDatabase();
+    @Override
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new DisableConstraintsTask(databaseInfos);
     }
-
 }

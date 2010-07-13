@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright,  DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,32 @@
  */
 package org.dbmaintain.launch.ant;
 
-import java.util.Properties;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.UpdateSequencesTask;
 
-import org.dbmaintain.config.DbMaintainProperties;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE;
-import org.dbmaintain.launch.DbMaintain;
+import java.util.List;
 
 /**
  * Task that updates all sequences and identity columns to a minimum value.
- * 
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class UpdateSequencesTask extends BaseDatabaseTask {
+public class UpdateSequencesAntTask extends BaseDatabaseAntTask {
 
     private Long lowestAcceptableSequenceValue;
-    
-    protected void performTask(DbMaintain dbMaintain) {
-        dbMaintain.updateSequences();
-    }
-    
+
+
     @Override
-    protected void addTaskConfiguration(Properties configuration) {
-        addTaskConfiguration(configuration, PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, lowestAcceptableSequenceValue);
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new UpdateSequencesTask(databaseInfos, lowestAcceptableSequenceValue);
     }
+
 
     public void setLowestAcceptableSequenceValue(Long lowestAcceptableSequenceValue) {
         this.lowestAcceptableSequenceValue = lowestAcceptableSequenceValue;
     }
+
 
 }

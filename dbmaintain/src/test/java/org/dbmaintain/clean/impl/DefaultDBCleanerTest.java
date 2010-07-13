@@ -46,7 +46,7 @@ public class DefaultDBCleanerTest {
     private DataSource dataSource;
 
     /* Tested object */
-    private DefaultDBCleaner defaultDbCleaner;
+    private DefaultDbCleaner defaultDbCleaner;
 
     private DbSupport defaultDbSupport;
     private DbSupports dbSupports;
@@ -72,7 +72,7 @@ public class DefaultDBCleanerTest {
         DbItemIdentifier tableTest_CASE_Table_Preserve = parseItemIdentifier(TABLE, "Test_CASE_Table_Preserve", dbSupports);
 
         Set<DbItemIdentifier> itemsToPreserve = asSet(tableTest_table_Preserve, tableTest_CASE_Table_Preserve);
-        defaultDbCleaner = new DefaultDBCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
+        defaultDbCleaner = new DefaultDbCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
     }
 
 

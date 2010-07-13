@@ -47,7 +47,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
     private DataSource dataSource;
 
     /* Tested object */
-    private DefaultDBCleaner defaultDbCleaner;
+    private DefaultDbCleaner defaultDbCleaner;
 
     private DbSupports dbSupports;
 
@@ -67,7 +67,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
         DbItemIdentifier tableTEST = parseItemIdentifier(TABLE, "\"SCHEMA_A\".\"TEST\"", dbSupports);
 
         Set<DbItemIdentifier> itemsToPreserve = asSet(schemaC, tableTest, tableTEST);
-        defaultDbCleaner = new DefaultDBCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
+        defaultDbCleaner = new DefaultDbCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
     }
 
     @After

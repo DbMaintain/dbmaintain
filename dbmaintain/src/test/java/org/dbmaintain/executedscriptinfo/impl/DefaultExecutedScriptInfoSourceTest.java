@@ -33,6 +33,7 @@ import java.util.Set;
 
 import static junit.framework.Assert.*;
 import static org.apache.commons.lang.time.DateUtils.parseDate;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDbSupports;
 
 /**
@@ -78,9 +79,9 @@ public class DefaultExecutedScriptInfoSourceTest {
 
     @Before
     public void initTestData() throws ParseException {
-        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
-        executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
-        executedPostprocessingScript = new ExecutedScript(new Script("postprocessing/postprocessingscript1.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript1 = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript2 = new ExecutedScript(new Script("script2.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedPostprocessingScript = new ExecutedScript(new Script("postprocessing/postprocessingscript1.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
 
@@ -154,7 +155,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     @Test
     public void renameExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
-        Script renamedToScript = new Script("1_script1_renamed.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing");
+        Script renamedToScript = new Script("1_script1_renamed.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null);
         executedScriptInfoSource.renameExecutedScript(executedScript1, renamedToScript);
         assertEquals(renamedToScript, executedScriptInfoSource.getExecutedScripts().first().getScript());
         initExecutedScriptInfoSource();
@@ -196,19 +197,13 @@ public class DefaultExecutedScriptInfoSourceTest {
         assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
     }
 
-    /**
-     * Utility method to create the test version table.
-     */
+
     private void createExecutedScriptsTable() {
         SQLTestUtils.executeUpdate(executedScriptInfoSource.getCreateExecutedScriptTableStatement(), dataSource);
     }
 
-
-    /**
-     * Utility method to drop the test executed scripts table.
-     */
     private void dropExecutedScriptsTable() {
-        SQLTestUtils.executeUpdateQuietly("drop table db_executed_scripts", dataSource);
+        executeUpdateQuietly("drop table dbmaintain_scripts", dataSource);
     }
 
 }

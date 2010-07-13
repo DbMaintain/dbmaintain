@@ -18,6 +18,8 @@ package org.dbmaintain.clear.impl;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.structure.ConstraintsDisabler;
 import org.junit.Before;
 import org.junit.Test;
 import org.unitils.UnitilsJUnit4;
@@ -31,7 +33,7 @@ import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
- * Test class for the {@link DefaultDBClearer} to verify that we will keep trying to
+ * Test class for the {@link DefaultDbClearer} to verify that we will keep trying to
  * drop database objects even if we get exceptions (until we make no more progress).
  *
  * @author Mark Jeffrey
@@ -40,10 +42,11 @@ import static org.dbmaintain.util.CollectionUtils.asSet;
 public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
 
     /* Tested object */
-    private DefaultDBClearer defaultDbClearer;
+    private DefaultDbClearer defaultDbClearer;
 
-    /* The DbSupport object */
-    protected Mock<DbSupport> dbSupportMock;
+    protected Mock<DbSupport> dbSupport;
+    protected Mock<ConstraintsDisabler> constraintsDisabler;
+    protected Mock<ExecutedScriptInfoSource> executedScriptInfoSource;
 
     private static final String SCHEMA = "MYSCHEMA";
     private final Set<String> tableNames = asSet("TABLE1", "TABLE2", "TABLE3");
@@ -53,11 +56,11 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Before
     public void setUp() throws Exception {
-        DbSupports dbSupports = new DbSupports(asList(dbSupportMock.getMock()), new ArrayList<String>());
+        DbSupports dbSupports = new DbSupports(asList(dbSupport.getMock()), new ArrayList<String>());
 
-        defaultDbClearer = new DefaultDBClearer(dbSupports, new HashSet<DbItemIdentifier>());
-        dbSupportMock.returns(tableNames).getTableNames(SCHEMA);
-        dbSupportMock.returns(asSet(SCHEMA)).getSchemaNames();
+        defaultDbClearer = new DefaultDbClearer(dbSupports, new HashSet<DbItemIdentifier>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
+        dbSupport.returns(tableNames).getTableNames(SCHEMA);
+        dbSupport.returns(asSet(SCHEMA)).getSchemaNames();
     }
 
     /**
@@ -65,7 +68,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Test
     public void testClearDatabase_IgnoreFirstErrorOnDropTable() throws Exception {
-        dbSupportMock.onceRaises(new RuntimeException("Test Exception")).dropTable(SCHEMA, "TABLE2");
+        dbSupport.onceRaises(new RuntimeException("Test Exception")).dropTable(SCHEMA, "TABLE2");
         defaultDbClearer.clearDatabase();
     }
 
@@ -74,7 +77,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Test(expected = IllegalStateException.class)
     public void testClearDatabase_ThrowExceptionWhenExcdeptionsDoNotDecrease() throws Exception {
-        dbSupportMock.raises(new IllegalStateException("Test Exception")).dropTable(SCHEMA, "TABLE2");
+        dbSupport.raises(new IllegalStateException("Test Exception")).dropTable(SCHEMA, "TABLE2");
         defaultDbClearer.clearDatabase();
     }
 

@@ -42,25 +42,32 @@ public class ConfigUtils {
      * @return The configured class name
      */
     public static <T> Class<T> getConfiguredClass(Class<T> type, Properties configuration, String... implementationDiscriminatorValues) {
-        return ReflectionUtils.getClassWithName(getConfiguredClassName(type, configuration, implementationDiscriminatorValues));
+        String className = getConfiguredClassName(type, configuration, "implClassName", implementationDiscriminatorValues);
+        return ReflectionUtils.getClassWithName(className);
+    }
+
+    public static <T> Class<T> getFactoryClass(Class<T> type, Properties configuration, String... implementationDiscriminatorValues) {
+        String className = getConfiguredClassName(type, configuration, "factory", implementationDiscriminatorValues);
+        return ReflectionUtils.getClassWithName(className);
     }
 
 
     /**
      * Retrieves the class name of the concrete instance of the class with the given type as configured by the given <code>Configuration</code>.
      * Tries to retrieve a specific implementation first (propery key = fully qualified name of the interface
-     * type + '.impl.className.' + implementationDiscriminatorValue). If this key does not exist, the generally configured
+     * 'type'.'propertyName'.'implementationDiscriminatorValue'). If this key does not exist, the generally configured
      * instance is retrieved (same property key without the implementationDiscriminatorValue).
      *
      * @param type          The type of the instance
      * @param configuration The configuration containing the necessary properties for configuring the instance
+     * @param propertyName  The name to add to the type, not null
      * @param implementationDiscriminatorValues
      *                      The values that define which specific implementation class should be used.
      *                      This is typically an environment specific property, like the DBMS that is used.
-     * @return The configured class name
+     * @return The configured class name, not null
      */
-    public static String getConfiguredClassName(Class<?> type, Properties configuration, String... implementationDiscriminatorValues) {
-        String propKey = type.getName() + ".implClassName";
+    private static String getConfiguredClassName(Class<?> type, Properties configuration, String propertyName, String... implementationDiscriminatorValues) {
+        String propKey = type.getName() + "." + propertyName;
 
         // first try specific instance using the given discriminators
         if (implementationDiscriminatorValues != null) {

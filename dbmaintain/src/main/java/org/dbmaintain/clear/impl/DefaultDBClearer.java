@@ -17,11 +17,13 @@ package org.dbmaintain.clear.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.clear.DbClearer;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
@@ -31,22 +33,27 @@ import static org.dbmaintain.dbsupport.DbItemIdentifier.getSchemaIdentifier;
 import static org.dbmaintain.dbsupport.DbItemType.*;
 
 /**
- * Implementation of {@link DBClearer}. This implementation individually drops every table, view, materialized view, synonym,
+ * Implementation of {@link org.dbmaintain.clear.DbClearer}. This implementation individually drops every table, view, materialized view, synonym,
  * trigger and sequence in the database. A list of tables, views, ... that should be preserved can be specified at construction.
  * <p/>
  * NOTE: FK constraints give problems in MySQL and Derby
  * The cascade in 'drop table A cascade;' does not work in MySQL-5.0
- * For these reasons we advise to disable/drop all foreign key constraints before calling {@link #clearDatabase()} (like
- * the method {@link org.dbmaintain.DefaultDbMaintainer#clearDatabase()} does).
+ * The foreign key constraints will be disabled before this method is called.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultDBClearer implements DBClearer {
+public class DefaultDbClearer implements DbClearer {
 
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DefaultDBClearer.class);
+    private static Log logger = LogFactory.getLog(DefaultDbClearer.class);
+
+    /* Disables of constraints before clearing the database */
+    protected ConstraintsDisabler constraintsDisabler;
+
+    /* Clears the executed scripts table */
+    protected ExecutedScriptInfoSource executedScriptInfoSource;
 
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should not be dropped. */
     protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
@@ -56,12 +63,16 @@ public class DefaultDBClearer implements DBClearer {
     private MultiPassErrorHandler multiPassErrorHandler;
 
     /**
-     * @param dbSupports The db support instances, not null
-     * @param itemsToPreserve  The schema's, tables, triggers etc that should not be dropped, not null
+     * @param dbSupports               The db support instances, not null
+     * @param itemsToPreserve          The schema's, tables, triggers etc that should not be dropped, not null
+     * @param constraintsDisabler      Disables of constraints before clearing the database, not null
+     * @param executedScriptInfoSource Clears the executed scripts table, not null
      */
-    public DefaultDBClearer(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve) {
+    public DefaultDbClearer(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
         this.dbSupports = dbSupports;
         this.itemsToPreserve = itemsToPreserve;
+        this.constraintsDisabler = constraintsDisabler;
+        this.executedScriptInfoSource = executedScriptInfoSource;
         assertItemsToPreserveExist(itemsToPreserve);
     }
 
@@ -72,31 +83,42 @@ public class DefaultDBClearer implements DBClearer {
      * untouched.
      */
     public void clearDatabase() {
+        // Constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables
+        constraintsDisabler.disableConstraints();
+
         for (DbSupport dbSupport : dbSupports.getDbSupports()) {
-            if (dbSupport != null) {
-                for (String schemaName : dbSupport.getSchemaNames()) {
-                    multiPassErrorHandler = new MultiPassErrorHandler();
-
-                    // check whether schema needs to be preserved
-                    if (itemsToPreserve.contains(getSchemaIdentifier(schemaName, dbSupport))) {
-                        continue;
-                    }
-                    logger.info("Clearing database schema " + schemaName);
-                    do {
-                        dropSynonyms(dbSupport, schemaName);
-                        dropViews(dbSupport, schemaName);
-                        dropMaterializedViews(dbSupport, schemaName);
-                        dropSequences(dbSupport, schemaName);
-                        dropTables(dbSupport, schemaName);
-
-                        dropTriggers(dbSupport, schemaName);
-                        dropTypes(dbSupport, schemaName);
-                    }
-                    while (multiPassErrorHandler.continueExecutionAfterPass());
-
-                    // todo drop functions, stored procedures.
-                }
+            if (dbSupport == null) {
+                continue;
             }
+            clearDatabase(dbSupport);
+        }
+
+        executedScriptInfoSource.clearAllExecutedScripts();
+    }
+
+
+    protected void clearDatabase(DbSupport dbSupport) {
+        for (String schemaName : dbSupport.getSchemaNames()) {
+            multiPassErrorHandler = new MultiPassErrorHandler();
+
+            // check whether schema needs to be preserved
+            if (itemsToPreserve.contains(getSchemaIdentifier(schemaName, dbSupport))) {
+                continue;
+            }
+            logger.info("Clearing database schema " + schemaName);
+            do {
+                dropSynonyms(dbSupport, schemaName);
+                dropViews(dbSupport, schemaName);
+                dropMaterializedViews(dbSupport, schemaName);
+                dropSequences(dbSupport, schemaName);
+                dropTables(dbSupport, schemaName);
+
+                dropTriggers(dbSupport, schemaName);
+                dropTypes(dbSupport, schemaName);
+            }
+            while (multiPassErrorHandler.continueExecutionAfterPass());
+
+            // todo drop functions, stored procedures.
         }
     }
 
@@ -281,7 +303,7 @@ public class DefaultDBClearer implements DBClearer {
         Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTriggers = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
         Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTypes = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
 
-        for (DbItemIdentifier itemToPreserve : this.itemsToPreserve) {
+        for (DbItemIdentifier itemToPreserve : itemsToPreserve) {
             DbSupport dbSupport = dbSupports.getDbSupport(itemToPreserve.getDatabaseName());
             switch (itemToPreserve.getType()) {
                 case SCHEMA:

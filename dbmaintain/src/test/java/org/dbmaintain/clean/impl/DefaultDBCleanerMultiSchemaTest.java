@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class DefaultDBCleanerMultiSchemaTest {
 
     /* Tested object */
-    private DefaultDBCleaner defaultDbCleaner;
+    private DefaultDbCleaner defaultDbCleaner;
 
     private DataSource dataSource;
 
@@ -54,7 +54,7 @@ public class DefaultDBCleanerMultiSchemaTest {
         // configure 3 schemas
         DbSupports dbSupports = TestUtils.getDbSupports("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         dataSource = dbSupports.getDefaultDbSupport().getDataSource();
-        defaultDbCleaner = new DefaultDBCleaner(dbSupports, new HashSet<DbItemIdentifier>(), new DefaultSQLHandler());
+        defaultDbCleaner = new DefaultDbCleaner(dbSupports, new HashSet<DbItemIdentifier>(), new DefaultSQLHandler());
 
         dropTestTables();
         createTestTables();

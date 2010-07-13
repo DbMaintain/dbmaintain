@@ -18,7 +18,6 @@ package org.dbmaintain.script.impl;
 
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.Script;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.SortedSet;
@@ -40,30 +39,19 @@ public class ScriptRepositoryBaselineRevisionTest {
     /* Tested object */
     private ScriptRepository scriptRepository;
 
-    private ScriptLocation scriptLocation;
-
-
-    @Before
-    public void init() {
-        Script script11 = createScript("1_folder/1_script.sql");
-        Script script12 = createScript("1_folder/2_script.sql");
-        Script script21 = createScript("2_folder/1_script.sql");
-        Script repeatableScript = createScript("repeatable/script.sql");
-        Script postProcessingScript = createScript("postprocessing/script.sql");
-        scriptLocation = new ArchiveScriptLocation(asSortedSet(script11, script12, script21, repeatableScript, postProcessingScript), null, null, null, null, null, null, null);
-    }
 
     @Test
     public void someScriptsFiltered() throws Exception {
-        scriptRepository = new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator(), new ScriptIndexes("1.2"));
+        scriptRepository = createScriptRepository(new ScriptIndexes("1.2"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
         assertPropertyLenientEquals("fileName", asList("1_folder/2_script.sql", "2_folder/1_script.sql"), result);
     }
 
+
     @Test
     public void allScriptsFiltered() throws Exception {
-        scriptRepository = new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator(), new ScriptIndexes("999"));
+        scriptRepository = createScriptRepository(new ScriptIndexes("999"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
         assertTrue(result.isEmpty());
@@ -71,7 +59,7 @@ public class ScriptRepositoryBaselineRevisionTest {
 
     @Test
     public void noScriptsFiltered() throws Exception {
-        scriptRepository = new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator(), new ScriptIndexes("1.0"));
+        scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
         assertPropertyLenientEquals("fileName", asList("1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql"), result);
@@ -79,7 +67,7 @@ public class ScriptRepositoryBaselineRevisionTest {
 
     @Test
     public void repeatableScriptsNotFiltered() throws Exception {
-        scriptRepository = new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator(), new ScriptIndexes("1.0"));
+        scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getRepeatableScripts();
         assertPropertyLenientEquals("fileName", asList("repeatable/script.sql"), result);
@@ -87,9 +75,24 @@ public class ScriptRepositoryBaselineRevisionTest {
 
     @Test
     public void postProcessingScriptsNotFiltered() throws Exception {
-        scriptRepository = new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator(), new ScriptIndexes("1.0"));
+        scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getPostProcessingScripts();
         assertPropertyLenientEquals("fileName", asList("postprocessing/script.sql"), result);
     }
+
+
+    private ScriptRepository createScriptRepository(ScriptIndexes baseLineRevision) {
+        Script script11 = createScript("1_folder/1_script.sql", baseLineRevision);
+        Script script12 = createScript("1_folder/2_script.sql", baseLineRevision);
+        Script script21 = createScript("2_folder/1_script.sql", baseLineRevision);
+        Script repeatableScript = createScript("repeatable/script.sql", baseLineRevision);
+        Script postProcessingScript = createScript("postprocessing/script.sql", baseLineRevision);
+        SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, postProcessingScript);
+
+        ScriptLocation scriptLocation = new ArchiveScriptLocation(scripts, null, null, null, null, null, null, null, baseLineRevision);
+        return new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator());
+    }
+
+
 }

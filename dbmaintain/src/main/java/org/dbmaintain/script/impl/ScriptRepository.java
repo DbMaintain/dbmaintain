@@ -1,6 +1,5 @@
 package org.dbmaintain.script.impl;
 
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.QualifierEvaluator;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
@@ -19,12 +18,10 @@ public class ScriptRepository {
     protected SortedSet<Script> postProcessingScripts = new TreeSet<Script>();
 
     protected QualifierEvaluator qualifierEvaluator;
-    protected ScriptIndexes baseLineRevision;
 
 
-    public ScriptRepository(Set<ScriptLocation> scriptLocations, QualifierEvaluator qualifierEvaluator, ScriptIndexes baseLineRevision) {
+    public ScriptRepository(Set<ScriptLocation> scriptLocations, QualifierEvaluator qualifierEvaluator) {
         this.qualifierEvaluator = qualifierEvaluator;
-        this.baseLineRevision = baseLineRevision;
         initScripts(scriptLocations);
     }
 
@@ -76,7 +73,7 @@ public class ScriptRepository {
         if (script.isPostProcessingScript()) {
             postProcessingScripts.add(script);
         } else if (script.isIncremental()) {
-            if (!script.isIgnored(baseLineRevision)) {
+            if (!script.isIgnored()) {
                 indexedScripts.add(script);
             }
         } else { // Repeatable script

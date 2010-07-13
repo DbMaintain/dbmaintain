@@ -97,7 +97,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
 
 
     private ExecutedScript createScript(String scriptName) throws ParseException {
-        return new ExecutedScript(new Script(scriptName, 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.<Qualifier>emptySet(), "postprocessing"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        return new ExecutedScript(new Script(scriptName, 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.<Qualifier>emptySet(), "postprocessing", null), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
     private void dropExecutedScriptsTable() {

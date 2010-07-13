@@ -162,8 +162,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                Script script = new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
-                if (!script.isIgnored(baseLineRevision)) {
+                Script script = new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+                if (!script.isIgnored()) {
                     ExecutedScript executedScript = new ExecutedScript(script, executedAt, succeeded);
                     executedScripts.add(executedScript);
                 }

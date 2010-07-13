@@ -15,16 +15,16 @@
  */
 package org.dbmaintain.script;
 
-import static junit.framework.Assert.*;
-
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.DbMaintainException;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Set;
+
 import static java.util.Collections.singleton;
+import static junit.framework.Assert.*;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
  * Tests for the script class
@@ -42,15 +42,15 @@ public class ScriptTest {
         Script script = createScript("incremental/02_sprint1/01_incrementalScript.sql");
         assertTrue(script.isIncremental());
     }
-    
+
     @Test
     public void testIsIncremental_repeatable() {
         Script script = createScript("repeatable/repeatableScript.sql");
         assertTrue(script.isRepeatable());
     }
-    
+
     /**
-     * Verifies that an exception is thrown when a repeatable script is located inside an indexed folder. 
+     * Verifies that an exception is thrown when a repeatable script is located inside an indexed folder.
      */
     @Test(expected = DbMaintainException.class)
     public void testIsIncremental_repeatableScriptInsideIndexedFolder() {
@@ -202,21 +202,21 @@ public class ScriptTest {
     }
 
     private Script createScript(String fileName) {
-        return new Script(fileName, 10L, "xxx", "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing");
+        return new Script(fileName, 10L, "xxx", "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
     }
 
     private Script createScriptWithContent(String fileName, String scriptContent) {
         return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1"),
-                "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing");
+                "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
     }
 
     private Script createScriptWithCheckSum(String fileName, String checkSum) {
-        return new Script(fileName, 0L, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing");
+        return new Script(fileName, 0L, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
     }
 
     private Script createScriptWithModificationDateAndCheckSum(String fileName, long fileLastModifiedAt, String checkSum) {
         return new Script(fileName, fileLastModifiedAt, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(),
-                "postprocessing");
+                "postprocessing", null);
     }
 
     private Set<Qualifier> getPatchQualifier() {

@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.script.impl;
 
+import org.dbmaintain.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
@@ -56,10 +57,11 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * @param defaultQualifierPrefix      The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      */
     public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
-                                    String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions) {
-        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions);
+                                    String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision) {
+        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision);
     }
 
 
@@ -145,7 +147,7 @@ public class FileSystemScriptLocation extends ScriptLocation {
     protected Script createScript(File scriptFile, String relativeScriptFileName) {
         ScriptContentHandle scriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), scriptEncoding);
         return new Script(relativeScriptFileName, scriptFile.lastModified(), scriptContentHandle, targetDatabasePrefix,
-                qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName);
+                qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
     }
 
 }

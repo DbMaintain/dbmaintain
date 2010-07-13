@@ -37,17 +37,17 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultScriptRunner implements ScriptRunner {
+public class JdbcScriptRunner implements ScriptRunner {
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DefaultScriptRunner.class);
+    private static Log logger = LogFactory.getLog(JdbcScriptRunner.class);
 
     protected DbSupports dbSupports;
     protected SQLHandler sqlHandler;
     protected Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap;
 
 
-    public DefaultScriptRunner(Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap, DbSupports dbSupports, SQLHandler sqlHandler) {
+    public JdbcScriptRunner(Map<String, ScriptParserFactory> databaseDialectScriptParserFactoryMap, DbSupports dbSupports, SQLHandler sqlHandler) {
         this.databaseDialectScriptParserFactoryMap = databaseDialectScriptParserFactoryMap;
         this.dbSupports = dbSupports;
         this.sqlHandler = sqlHandler;

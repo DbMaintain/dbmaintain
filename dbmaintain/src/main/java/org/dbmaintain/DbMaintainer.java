@@ -15,15 +15,12 @@
  */
 package org.dbmaintain;
 
-import org.dbmaintain.script.ScriptUpdates;
-
 /**
  * Defines the contract for classes that perform automatic maintenance of a database.<br>
  * <p/>
  * The {@link #updateDatabase} operation can be used to bring the database to the latest version. The
  * {@link #markDatabaseAsUpToDate} operation updates the state of the database to indicate that all scripts have been
- * executed, without actually executing them. {@link #clearDatabase} will drop all tables and update the state to
- * indicate that no scripts have been executed yet on the database.
+ * executed, without actually executing them.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -40,7 +37,7 @@ public interface DbMaintainer {
      * at the end.
      *
      * @param dryRun if true, no updates have to be performed on the database - we do a simulation of the database update
-     * instead of actually performing the database update.
+     *               instead of actually performing the database update.
      * @return whether updates were performed on the database
      */
     boolean updateDatabase(boolean dryRun);
@@ -53,31 +50,4 @@ public interface DbMaintainer {
      */
     void markDatabaseAsUpToDate();
 
-
-    /**
-     * This operation removes all database objects from the database, such as tables, views, sequences, synonyms and triggers.
-     * The database schemas will be left untouched: this way, you can immediately start an update afterwards. This operation
-     * is also called when a from-scratch update is performed. The table dbmaintain_scripts is not dropped but all data in
-     * it is removed. It's possible to exclude certain database objects to make sure they are not dropped, like described
-     * in {@link org.dbmaintain.clear.DBClearer}
-     */
-    void clearDatabase();
-
-
-    /**
-     * This operation deletes all data from the database, except for the DBMAINTAIN_SCRIPTS table.
-     */
-    void cleanDatabase();
-
-
-    /**
-     * This operation disables all foreign key and not null constraints of the database schemas. Primary key constraints
-     * are left untouched.
-     */
-    void disableConstraints();
-
-    /**
-     * This operation thatupdates all sequences and identity columns to a minimum value.
-     */
-    void updateSequences();
 }

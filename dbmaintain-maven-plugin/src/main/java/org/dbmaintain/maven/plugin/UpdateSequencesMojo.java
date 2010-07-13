@@ -1,25 +1,46 @@
+/*
+ * Copyright,  DbMaintain.org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.UpdateSequencesTask;
+
+import java.util.List;
 
 /**
  * This operation is also mainly useful for automated testing purposes. This operation sets all sequences and identity
  * columns to a minimum value. By default this value is 1000, but is can be configured with the
  * lowestAcceptableSequenceValue option. The updateDatabase operation offers an option to automatically update the
  * sequences after the scripts were executed.
- * 
- * @see http://dbmaintain.sourceforge.net/tutorial.html#Update_sequences
+ *
  * @author tiwe
+ * @author Tim Ducheyne
  * @goal updateSequences
  */
-public class UpdateSequencesMojo
-    extends AbstractDbMaintainMojo
-{
+public class UpdateSequencesMojo extends BaseDatabaseMojo {
+
+    /**
+     * @parameter
+     */
+    private Long lowestAcceptableSequenceValue;
+
 
     @Override
-    protected void execute( DbMaintain dbMaintain )
-    {
-        dbMaintain.updateSequences();
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new UpdateSequencesTask(databaseInfos, lowestAcceptableSequenceValue);
     }
-
 }

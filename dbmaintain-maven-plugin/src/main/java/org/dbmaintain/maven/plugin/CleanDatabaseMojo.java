@@ -1,26 +1,25 @@
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.launch.DbMaintain;
+import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.launch.task.CleanDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+
+import java.util.List;
 
 /**
  * If you want to remove all existing data from the tables in your database, you can call the cleanDatabase operation.
  * The data from the table dbmaintain_script is not deleted. It's possible to preserve data from certain tables, like
  * described in Preserve database objects. The updateDatabase operation offers an option to automatically clean the
  * database before doing an update.
- * 
- * @see http://dbmaintain.sourceforge.net/tutorial.html#Clean_the_database
+ *
  * @author tiwe
+ * @author Tim Ducheyne
  * @goal cleanDatabase
  */
-public class CleanDatabaseMojo
-    extends AbstractDbMaintainMojo
-{
+public class CleanDatabaseMojo extends BaseDatabaseMojo {
 
     @Override
-    protected void execute( DbMaintain dbMaintain )
-    {
-        dbMaintain.cleanDatabase();
-
+    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+        return new CleanDatabaseTask(databaseInfos);
     }
-
 }
