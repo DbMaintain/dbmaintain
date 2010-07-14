@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
 
 /**
- * Test class for the {@link org.dbmaintain.clear.DbClearer}.
+ * Test class for the {@link org.dbmaintain.clear.DBClearer}.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -52,7 +52,7 @@ public class DefaultDBClearerTest {
     private static Log logger = LogFactory.getLog(DefaultDBClearerTest.class);
 
     /* Tested object */
-    private DefaultDbClearer defaultDbClearer;
+    private DefaultDBClearer defaultDBClearer;
 
     private DataSource dataSource;
     private DbSupports dbSupports;
@@ -68,7 +68,7 @@ public class DefaultDBClearerTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDbSupport, true);
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(dbSupports, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -83,14 +83,14 @@ public class DefaultDBClearerTest {
     @Test
     public void clearTables() throws Exception {
         assertEquals(2, defaultDbSupport.getTableNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertReflectionEquals(asList(defaultDbSupport.toCorrectCaseIdentifier("dbmaintain_scripts")), defaultDbSupport.getTableNames("PUBLIC"));
     }
 
     @Test
     public void clearViews() throws Exception {
         assertEquals(2, defaultDbSupport.getViewNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertTrue(defaultDbSupport.getViewNames().isEmpty());
     }
 
@@ -101,7 +101,7 @@ public class DefaultDBClearerTest {
             return;
         }
         assertEquals(2, defaultDbSupport.getMaterializedViewNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertTrue(defaultDbSupport.getMaterializedViewNames().isEmpty());
     }
 
@@ -112,7 +112,7 @@ public class DefaultDBClearerTest {
             return;
         }
         assertEquals(2, defaultDbSupport.getSynonymNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertTrue(defaultDbSupport.getSynonymNames().isEmpty());
     }
 
@@ -123,7 +123,7 @@ public class DefaultDBClearerTest {
             return;
         }
         assertEquals(2, defaultDbSupport.getSequenceNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertTrue(defaultDbSupport.getSequenceNames().isEmpty());
     }
 

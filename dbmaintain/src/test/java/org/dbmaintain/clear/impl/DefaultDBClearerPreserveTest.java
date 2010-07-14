@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for the {@link org.dbmaintain.clear.DbClearer} with configuration to preserve all items.
+ * Test class for the {@link org.dbmaintain.clear.DBClearer} with configuration to preserve all items.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -53,7 +53,7 @@ public class DefaultDBClearerPreserveTest {
     private static Log logger = LogFactory.getLog(DefaultDBClearerPreserveTest.class);
 
     /* Tested object */
-    private DefaultDbClearer defaultDbClearer;
+    private DefaultDBClearer defaultDBClearer;
 
     private DataSource dataSource;
     private DbSupport defaultDbSupport;
@@ -93,7 +93,7 @@ public class DefaultDBClearerPreserveTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDbSupport, true);
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
     }
 
     @After
@@ -105,7 +105,7 @@ public class DefaultDBClearerPreserveTest {
     @Test
     public void preserveTables() throws Exception {
         assertEquals(2, defaultDbSupport.getTableNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         System.out.println(defaultDbSupport.getTableNames());
         assertEquals(3, defaultDbSupport.getTableNames().size()); // executed scripts table was created
     }
@@ -113,7 +113,7 @@ public class DefaultDBClearerPreserveTest {
     @Test
     public void preserveViews() throws Exception {
         assertEquals(2, defaultDbSupport.getViewNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDbSupport.getViewNames().size());
     }
 
@@ -124,7 +124,7 @@ public class DefaultDBClearerPreserveTest {
             return;
         }
         assertEquals(2, defaultDbSupport.getMaterializedViewNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDbSupport.getMaterializedViewNames().size());
     }
 
@@ -135,7 +135,7 @@ public class DefaultDBClearerPreserveTest {
             return;
         }
         assertEquals(2, defaultDbSupport.getSynonymNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDbSupport.getSynonymNames().size());
     }
 
@@ -146,7 +146,7 @@ public class DefaultDBClearerPreserveTest {
             return;
         }
         assertEquals(2, defaultDbSupport.getSequenceNames().size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDbSupport.getSequenceNames().size());
     }
 

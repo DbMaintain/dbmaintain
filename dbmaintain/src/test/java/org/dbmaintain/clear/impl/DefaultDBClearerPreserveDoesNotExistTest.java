@@ -37,7 +37,7 @@ import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for the {@link org.dbmaintain.clear.DbClearer} with preserve items configured, but some items do not exist.
+ * Test class for the {@link org.dbmaintain.clear.DBClearer} with preserve items configured, but some items do not exist.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -48,7 +48,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     private static Log logger = LogFactory.getLog(DefaultDBClearerPreserveDoesNotExistTest.class);
 
     /* Tested object */
-    private DefaultDbClearer defaultDbClearer;
+    private DefaultDBClearer defaultDBClearer;
 
     private DbSupports dbSupports;
     private ConstraintsDisabler constraintsDisabler;
@@ -77,8 +77,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
         itemsToPreserve.add(parseSchemaIdentifier("unexisting_schema1", dbSupports));
         itemsToPreserve.add(parseSchemaIdentifier("unexisting_schema2", dbSupports));
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer.clearDatabase();
     }
 
     /**
@@ -90,8 +90,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
         itemsToPreserve.add(parseItemIdentifier(TABLE, "unexisting_table1", dbSupports));
         itemsToPreserve.add(parseItemIdentifier(TABLE, "unexisting_table2", dbSupports));
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer.clearDatabase();
     }
 
     /**
@@ -103,8 +103,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
         itemsToPreserve.add(parseItemIdentifier(VIEW, "unexisting_view1", dbSupports));
         itemsToPreserve.add(parseItemIdentifier(VIEW, "unexisting_view2", dbSupports));
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer.clearDatabase();
     }
 
     /**
@@ -116,8 +116,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
         itemsToPreserve.add(parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", dbSupports));
         itemsToPreserve.add(parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", dbSupports));
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer.clearDatabase();
     }
 
     /**
@@ -134,8 +134,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             itemsToPreserve.add(parseItemIdentifier(SEQUENCE, "unexisting_sequence1", dbSupports));
             itemsToPreserve.add(parseItemIdentifier(SEQUENCE, "unexisting_sequence2", dbSupports));
 
-            defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-            defaultDbClearer.clearDatabase();
+            defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+            defaultDBClearer.clearDatabase();
             fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected
@@ -156,8 +156,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             itemsToPreserve.add(parseItemIdentifier(SYNONYM, "unexisting_synonym1", dbSupports));
             itemsToPreserve.add(parseItemIdentifier(SYNONYM, "unexisting_synonym2", dbSupports));
 
-            defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-            defaultDbClearer.clearDatabase();
+            defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+            defaultDBClearer.clearDatabase();
             fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected

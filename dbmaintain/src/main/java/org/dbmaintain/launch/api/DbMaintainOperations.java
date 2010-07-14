@@ -17,8 +17,8 @@ package org.dbmaintain.launch.api;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.archive.ScriptArchiveCreator;
-import org.dbmaintain.clean.DbCleaner;
-import org.dbmaintain.clear.DbClearer;
+import org.dbmaintain.clean.DBCleaner;
+import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.structure.ConstraintsDisabler;
@@ -70,7 +70,7 @@ public class DbMaintainOperations {
      * Removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
      */
     public static void clearDatabase() {
-        DbClearer dbClearer = getMainFactory().createDbClearer();
+        DBClearer dbClearer = getMainFactory().createDBClearer();
         dbClearer.clearDatabase();
     }
 
@@ -78,7 +78,7 @@ public class DbMaintainOperations {
      * Removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
      */
     public static void cleanDatabase() {
-        DbCleaner dbCleaner = getMainFactory().createDbCleaner();
+        DBCleaner dbCleaner = getMainFactory().createDBCleaner();
         dbCleaner.cleanDatabase();
     }
 

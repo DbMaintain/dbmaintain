@@ -1,23 +1,8 @@
-/*
- * Copyright 2006-2007,  Unitils.org
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.dbmaintain.clean.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clean.DbCleaner;
+import org.dbmaintain.clean.DBCleaner;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbSupport;
 import org.dbmaintain.dbsupport.DbSupports;
@@ -34,16 +19,16 @@ import static org.dbmaintain.dbsupport.DbItemIdentifier.getSchemaIdentifier;
 import static org.dbmaintain.dbsupport.DbItemType.TABLE;
 
 /**
- * Implementation of {@link org.dbmaintain.clean.DbCleaner}. This implementation will delete all data from a database, except for the tables
+ * Implementation of {@link org.dbmaintain.clean.DBCleaner}. This implementation will delete all data from a database, except for the tables
  * that are configured as tables to preserve.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultDbCleaner implements DbCleaner {
+public class DefaultDBCleaner implements DBCleaner {
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DefaultDbCleaner.class);
+    private static Log logger = LogFactory.getLog(DefaultDBCleaner.class);
 
     /* The schema's and tables that should left untouched */
     protected Set<DbItemIdentifier> itemsToPreserve;
@@ -60,7 +45,7 @@ public class DefaultDbCleaner implements DbCleaner {
      * @param itemsToPreserve The schema's and tables that should not be cleaned, not null
      * @param sqlHandler      The sql handler that will execute the statements, not null
      */
-    public DefaultDbCleaner(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, SQLHandler sqlHandler) {
+    public DefaultDBCleaner(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, SQLHandler sqlHandler) {
         this.dbSupports = dbSupports;
         this.sqlHandler = sqlHandler;
         this.itemsToPreserve = itemsToPreserve;

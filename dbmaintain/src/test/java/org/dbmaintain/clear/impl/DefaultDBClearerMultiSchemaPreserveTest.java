@@ -24,7 +24,7 @@ import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Test class for the {@link org.dbmaintain.clear.DbClearer} using multiple database schemas with configuration to preserve all items. <p/>
+ * Test class for the {@link org.dbmaintain.clear.DBClearer} using multiple database schemas with configuration to preserve all items. <p/>
  * This test is currenlty only implemented for HsqlDb
  *
  * @author Filip Neven
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 public class DefaultDBClearerMultiSchemaPreserveTest {
 
     /* Tested object */
-    private DefaultDbClearer defaultDbClearer;
+    private DefaultDBClearer defaultDBClearer;
 
     private DataSource dataSource;
     private DbSupport defaultDbSupport;
@@ -66,7 +66,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDbSupport, true);
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(dbSupports, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
     }
 
 
@@ -84,7 +84,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         assertEquals(1, defaultDbSupport.getTableNames("PUBLIC").size());
         assertEquals(1, defaultDbSupport.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDbSupport.getTableNames("SCHEMA_B").size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDbSupport.getTableNames("PUBLIC").size()); // executed scripts table was created
         assertEquals(1, defaultDbSupport.getTableNames("SCHEMA_A").size());
         assertEquals(0, defaultDbSupport.getTableNames("SCHEMA_B").size());
@@ -96,7 +96,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         assertEquals(1, defaultDbSupport.getViewNames("PUBLIC").size());
         assertEquals(1, defaultDbSupport.getViewNames("SCHEMA_A").size());
         assertEquals(1, defaultDbSupport.getViewNames("SCHEMA_B").size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(1, defaultDbSupport.getViewNames("PUBLIC").size());
         assertEquals(1, defaultDbSupport.getViewNames("SCHEMA_A").size());
         assertEquals(0, defaultDbSupport.getViewNames("SCHEMA_B").size());
@@ -108,7 +108,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         assertEquals(1, defaultDbSupport.getSequenceNames("PUBLIC").size());
         assertEquals(1, defaultDbSupport.getSequenceNames("SCHEMA_A").size());
         assertEquals(1, defaultDbSupport.getSequenceNames("SCHEMA_B").size());
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
         assertEquals(1, defaultDbSupport.getSequenceNames("PUBLIC").size());
         assertEquals(1, defaultDbSupport.getSequenceNames("SCHEMA_A").size());
         assertEquals(0, defaultDbSupport.getSequenceNames("SCHEMA_B").size());

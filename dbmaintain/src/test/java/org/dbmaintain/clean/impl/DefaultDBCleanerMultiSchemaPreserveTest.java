@@ -47,7 +47,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
     private DataSource dataSource;
 
     /* Tested object */
-    private DefaultDbCleaner defaultDbCleaner;
+    private DefaultDBCleaner defaultDBCleaner;
 
     private DbSupports dbSupports;
 
@@ -67,7 +67,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
         DbItemIdentifier tableTEST = parseItemIdentifier(TABLE, "\"SCHEMA_A\".\"TEST\"", dbSupports);
 
         Set<DbItemIdentifier> itemsToPreserve = asSet(schemaC, tableTest, tableTEST);
-        defaultDbCleaner = new DefaultDbCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
+        defaultDBCleaner = new DefaultDBCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
     }
 
     @After
@@ -85,7 +85,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_C.TEST", dataSource));
-        defaultDbCleaner.cleanDatabase();
+        defaultDBCleaner.cleanDatabase();
         assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertTrue(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));

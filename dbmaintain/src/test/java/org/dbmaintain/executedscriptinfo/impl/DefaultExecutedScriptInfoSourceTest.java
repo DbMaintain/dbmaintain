@@ -20,7 +20,6 @@ import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +32,7 @@ import java.util.Set;
 
 import static junit.framework.Assert.*;
 import static org.apache.commons.lang.time.DateUtils.parseDate;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDbSupports;
 
@@ -58,11 +58,8 @@ public class DefaultExecutedScriptInfoSourceTest {
     private ExecutedScript executedPostprocessingScript;
 
 
-    /**
-     * Initialize test fixture and creates a test version table.
-     */
     @Before
-    public void setUp() {
+    public void initialize() {
         defaultDbSupport = getDbSupports().getDefaultDbSupport();
         dataSource = defaultDbSupport.getDataSource();
 
@@ -84,21 +81,14 @@ public class DefaultExecutedScriptInfoSourceTest {
         executedPostprocessingScript = new ExecutedScript(new Script("postprocessing/postprocessingscript1.sql", 20L, "yyy", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
-
-    /**
-     * Cleanup by dropping the test version table.
-     */
     @After
-    public void tearDown() {
+    public void cleanUp() {
         dropExecutedScriptsTable();
     }
 
 
-    /**
-     * Test setting and getting version
-     */
     @Test
-    public void testRegisterAndRetrieveExecutedScript() {
+    public void registerAndRetrieveExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
         assertTrue(executedScriptInfoSource.getExecutedScripts().contains(executedScript1));
@@ -117,22 +107,14 @@ public class DefaultExecutedScriptInfoSourceTest {
         assertTrue(executedScripts2.contains(executedScript2));
     }
 
-
-    /**
-     * Tests getting the version, but no executed scripts table yet (e.g. first use)
-     */
     @Test(expected = DbMaintainException.class)
-    public void testRegisterExecutedScript_NoExecutedScriptsTable() {
+    public void registerExecutedScript_NoExecutedScriptsTable() {
         dropExecutedScriptsTable();
         executedScriptInfoSource.registerExecutedScript(executedScript1);
     }
 
-
-    /**
-     * Tests getting the version, but no executed scripts table yet and auto-create is true.
-     */
     @Test
-    public void testAutoCreateExecutedScriptsTable() {
+    public void autoCreateExecutedScriptsTable() {
         dropExecutedScriptsTable();
 
         executedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
@@ -142,7 +124,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void testUpdateExecutedScript() {
+    public void updateExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         assertFalse(executedScriptInfoSource.getExecutedScripts().first().isSuccessful());
         executedScript1.setSuccessful(true);
@@ -163,7 +145,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void testClearAllRegisteredScripts() {
+    public void clearAllRegisteredScripts() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         executedScriptInfoSource.registerExecutedScript(executedScript2);
         executedScriptInfoSource.clearAllExecutedScripts();
@@ -172,9 +154,8 @@ public class DefaultExecutedScriptInfoSourceTest {
         assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
     }
 
-
     @Test
-    public void testDeleteExecutedScript() {
+    public void deleteExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
         executedScriptInfoSource.deleteExecutedScript(executedScript1);
@@ -185,7 +166,7 @@ public class DefaultExecutedScriptInfoSourceTest {
 
 
     @Test
-    public void testDeleteAllExecutedPostprocessingScripts() {
+    public void deleteAllExecutedPostprocessingScripts() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         executedScriptInfoSource.registerExecutedScript(executedPostprocessingScript);
         assertEquals(2, executedScriptInfoSource.getExecutedScripts().size());
@@ -199,7 +180,7 @@ public class DefaultExecutedScriptInfoSourceTest {
 
 
     private void createExecutedScriptsTable() {
-        SQLTestUtils.executeUpdate(executedScriptInfoSource.getCreateExecutedScriptTableStatement(), dataSource);
+        executeUpdate(executedScriptInfoSource.getCreateExecutedScriptTableStatement(), dataSource);
     }
 
     private void dropExecutedScriptsTable() {

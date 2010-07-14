@@ -632,7 +632,7 @@ public class DbMaintainIntegrationTest {
 
         } catch (DbMaintainException e) {
             assertEquals("Unable to recreate the database from scratch: a baseline revision is set.\n" +
-                    "The database would have been cleared but not all scripts would have been executed.\n" +
+                    "After clearing the database only scripts starting from the baseline revision would have been executed. The other scripts would have been ignored resulting in an inconsistent database state.\n" +
                     "Please clear the baseline revision if you want to perform a from scratch update.\n" +
                     "Another option is to explicitly clear the database using the clear task and then performing the update.", e.getMessage());
         }

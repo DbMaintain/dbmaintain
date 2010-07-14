@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.launch.task;
 
-import org.dbmaintain.clear.DbClearer;
+import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.dbsupport.DatabaseInfo;
 
@@ -42,7 +42,7 @@ public class ClearDatabaseTask extends DbMaintainDatabaseTask {
 
     @Override
     protected void doExecute(MainFactory mainFactory) {
-        DbClearer dbClearer = mainFactory.createDbClearer();
+        DBClearer dbClearer = mainFactory.createDBClearer();
         dbClearer.clearDatabase();
     }
 }

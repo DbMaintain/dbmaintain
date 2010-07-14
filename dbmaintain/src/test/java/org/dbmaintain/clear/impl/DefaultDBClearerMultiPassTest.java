@@ -33,7 +33,7 @@ import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
- * Test class for the {@link DefaultDbClearer} to verify that we will keep trying to
+ * Test class for the {@link DefaultDBClearer} to verify that we will keep trying to
  * drop database objects even if we get exceptions (until we make no more progress).
  *
  * @author Mark Jeffrey
@@ -42,7 +42,7 @@ import static org.dbmaintain.util.CollectionUtils.asSet;
 public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
 
     /* Tested object */
-    private DefaultDbClearer defaultDbClearer;
+    private DefaultDBClearer defaultDBClearer;
 
     protected Mock<DbSupport> dbSupport;
     protected Mock<ConstraintsDisabler> constraintsDisabler;
@@ -58,7 +58,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     public void setUp() throws Exception {
         DbSupports dbSupports = new DbSupports(asList(dbSupport.getMock()), new ArrayList<String>());
 
-        defaultDbClearer = new DefaultDbClearer(dbSupports, new HashSet<DbItemIdentifier>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
+        defaultDBClearer = new DefaultDBClearer(dbSupports, new HashSet<DbItemIdentifier>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
         dbSupport.returns(tableNames).getTableNames(SCHEMA);
         dbSupport.returns(asSet(SCHEMA)).getSchemaNames();
     }
@@ -69,7 +69,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     @Test
     public void testClearDatabase_IgnoreFirstErrorOnDropTable() throws Exception {
         dbSupport.onceRaises(new RuntimeException("Test Exception")).dropTable(SCHEMA, "TABLE2");
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
     }
 
     /**
@@ -78,7 +78,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     @Test(expected = IllegalStateException.class)
     public void testClearDatabase_ThrowExceptionWhenExcdeptionsDoNotDecrease() throws Exception {
         dbSupport.raises(new IllegalStateException("Test Exception")).dropTable(SCHEMA, "TABLE2");
-        defaultDbClearer.clearDatabase();
+        defaultDBClearer.clearDatabase();
     }
 
 }

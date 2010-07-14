@@ -1,7 +1,7 @@
 package org.dbmaintain;
 
-import org.dbmaintain.clean.DbCleaner;
-import org.dbmaintain.clear.DbClearer;
+import org.dbmaintain.clean.DBCleaner;
+import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.config.FactoryWithDatabase;
 import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.config.PropertyUtils;
@@ -35,8 +35,8 @@ public class DbMaintainerFactory extends FactoryWithDatabase<DbMaintainer> {
         ScriptIndexes baseLineRevision = factoryWithDatabaseContext.getBaselineRevision();
 
         MainFactory mainFactory = factoryWithDatabaseContext.getMainFactory();
-        DbCleaner dbCleaner = mainFactory.createDbCleaner();
-        DbClearer dbClearer = mainFactory.createDbClearer();
+        DBCleaner dbCleaner = mainFactory.createDBCleaner();
+        DBClearer dbClearer = mainFactory.createDBClearer();
         ConstraintsDisabler constraintsDisabler = mainFactory.createConstraintsDisabler();
         SequenceUpdater sequenceUpdater = mainFactory.createSequenceUpdater();
         ScriptRunner scriptRunner = mainFactory.createScriptRunner();

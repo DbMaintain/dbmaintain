@@ -196,10 +196,10 @@ public class CommandLine {
                 getMainFactory(configuration).createDbMaintainer().markDatabaseAsUpToDate();
                 break;
             case CLEAR_DATABASE:
-                getMainFactory(configuration).createDbClearer().clearDatabase();
+                getMainFactory(configuration).createDBClearer().clearDatabase();
                 break;
             case CLEAN_DATABASE:
-                getMainFactory(configuration).createDbCleaner().cleanDatabase();
+                getMainFactory(configuration).createDBCleaner().cleanDatabase();
                 break;
             case DISABLE_CONSTRAINTS:
                 getMainFactory(configuration).createConstraintsDisabler().disableConstraints();

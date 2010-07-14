@@ -46,7 +46,7 @@ public class DefaultDBCleanerTest {
     private DataSource dataSource;
 
     /* Tested object */
-    private DefaultDbCleaner defaultDbCleaner;
+    private DefaultDBCleaner defaultDBCleaner;
 
     private DbSupport defaultDbSupport;
     private DbSupports dbSupports;
@@ -72,7 +72,7 @@ public class DefaultDBCleanerTest {
         DbItemIdentifier tableTest_CASE_Table_Preserve = parseItemIdentifier(TABLE, "Test_CASE_Table_Preserve", dbSupports);
 
         Set<DbItemIdentifier> itemsToPreserve = asSet(tableTest_table_Preserve, tableTest_CASE_Table_Preserve);
-        defaultDbCleaner = new DefaultDbCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
+        defaultDBCleaner = new DefaultDBCleaner(dbSupports, itemsToPreserve, new DefaultSQLHandler());
     }
 
 
@@ -92,7 +92,7 @@ public class DefaultDBCleanerTest {
     public void testCleanDatabase() throws Exception {
         assertFalse(isEmpty("TEST_TABLE", dataSource));
         assertFalse(isEmpty(defaultDbSupport.quoted("Test_CASE_Table"), dataSource));
-        defaultDbCleaner.cleanDatabase();
+        defaultDBCleaner.cleanDatabase();
         assertTrue(isEmpty("TEST_TABLE", dataSource));
         assertTrue(isEmpty(defaultDbSupport.quoted("Test_CASE_Table"), dataSource));
     }
@@ -105,7 +105,7 @@ public class DefaultDBCleanerTest {
     public void testCleanDatabase_preserveTablesToPreserve() throws Exception {
         assertFalse(isEmpty("TEST_TABLE_PRESERVE", dataSource));
         assertFalse(isEmpty(defaultDbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
-        defaultDbCleaner.cleanDatabase();
+        defaultDBCleaner.cleanDatabase();
         assertFalse(isEmpty("TEST_TABLE_PRESERVE", dataSource));
         assertFalse(isEmpty(defaultDbSupport.quoted("Test_CASE_Table_Preserve"), dataSource));
     }

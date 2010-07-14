@@ -1,21 +1,6 @@
-/*
- * Copyright,  DbMaintain.org
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.dbmaintain.clear;
 
-import org.dbmaintain.clear.impl.DefaultDbClearer;
+import org.dbmaintain.clear.impl.DefaultDBClearer;
 import org.dbmaintain.config.FactoryWithDatabase;
 import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
@@ -32,17 +17,17 @@ import static org.dbmaintain.dbsupport.DbItemType.*;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DbClearerFactory extends FactoryWithDatabase<DbClearer> {
+public class DBClearerFactory extends FactoryWithDatabase<DBClearer> {
 
 
-    public DbClearer createInstance() {
+    public DBClearer createInstance() {
         Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve();
 
         MainFactory mainFactory = factoryWithDatabaseContext.getMainFactory();
         ConstraintsDisabler constraintsDisabler = mainFactory.createConstraintsDisabler();
         ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
 
-        return new DefaultDbClearer(getDbSupports(), itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        return new DefaultDBClearer(getDbSupports(), itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
     }
 
 

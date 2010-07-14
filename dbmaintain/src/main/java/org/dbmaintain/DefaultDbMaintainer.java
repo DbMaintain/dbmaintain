@@ -17,8 +17,8 @@ package org.dbmaintain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clean.DbCleaner;
-import org.dbmaintain.clear.DbClearer;
+import org.dbmaintain.clean.DBCleaner;
+import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.dbsupport.SQLHandler;
 import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.executedscriptinfo.ScriptIndexes;
@@ -32,6 +32,7 @@ import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
 
+import static java.lang.System.currentTimeMillis;
 import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
 import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 
@@ -57,9 +58,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
     /* Executor of the scripts */
     protected ScriptRunner scriptRunner;
     /* Clearer of the database (removed all tables, sequences, ...) before updating from scratch */
-    protected DbClearer dbClearer;
+    protected DBClearer dbClearer;
     /* Cleaner of the database (deletes all data from all tables after updating if requested */
-    protected DbCleaner dbCleaner;
+    protected DBCleaner dbCleaner;
     /* Disabler of constraints after updating if requested */
     protected ConstraintsDisabler constraintsDisabler;
     /* Database sequence updater */
@@ -122,7 +123,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
                                boolean fromScratchEnabled, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-                               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DbClearer dbClearer, DbCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
+                               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
                                SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler, long maxNrOfCharsWhenLoggingScriptContent, ScriptIndexes baseLineRevision) {
 
         this.scriptRunner = scriptRunner;
@@ -355,8 +356,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
         scriptRunner.initialize();
         try {
             for (ScriptUpdate scriptUpdate : scriptUpdates) {
-                logger.info("Executing " + scriptUpdatesFormatter.formatScriptUpdate(scriptUpdate));
+                long startTimeMs = currentTimeMillis();
                 executeScript(scriptUpdate.getScript());
+                long durationMs = currentTimeMillis() - startTimeMs;
+                logger.info("Executed " + scriptUpdatesFormatter.formatScriptUpdate(scriptUpdate) + " (" + durationMs + " ms)");
             }
         } finally {
             scriptRunner.close();

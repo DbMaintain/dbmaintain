@@ -2,8 +2,8 @@ package org.dbmaintain.config;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.archive.ScriptArchiveCreator;
-import org.dbmaintain.clean.DbCleaner;
-import org.dbmaintain.clear.DbClearer;
+import org.dbmaintain.clean.DBCleaner;
+import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.dbsupport.DatabaseInfo;
 import org.dbmaintain.dbsupport.DbSupports;
 import org.dbmaintain.dbsupport.SQLHandler;
@@ -47,12 +47,12 @@ public class MainFactory {
         return createInstance(DbMaintainer.class);
     }
 
-    public DbCleaner createDbCleaner() {
-        return createInstance(DbCleaner.class);
+    public DBCleaner createDBCleaner() {
+        return createInstance(DBCleaner.class);
     }
 
-    public DbClearer createDbClearer() {
-        return createInstance(DbClearer.class);
+    public DBClearer createDBClearer() {
+        return createInstance(DBClearer.class);
     }
 
     public ConstraintsDisabler createConstraintsDisabler() {

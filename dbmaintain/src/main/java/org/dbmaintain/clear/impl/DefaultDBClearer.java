@@ -1,23 +1,9 @@
-/*
- * Copyright 2006-2007,  Unitils.org
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.dbmaintain.clear.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clear.DbClearer;
+import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.clear.impl.MultiPassErrorHandler;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 import org.dbmaintain.dbsupport.DbItemType;
 import org.dbmaintain.dbsupport.DbSupport;
@@ -33,7 +19,7 @@ import static org.dbmaintain.dbsupport.DbItemIdentifier.getSchemaIdentifier;
 import static org.dbmaintain.dbsupport.DbItemType.*;
 
 /**
- * Implementation of {@link org.dbmaintain.clear.DbClearer}. This implementation individually drops every table, view, materialized view, synonym,
+ * Implementation of {@link org.dbmaintain.clear.DBClearer}. This implementation individually drops every table, view, materialized view, synonym,
  * trigger and sequence in the database. A list of tables, views, ... that should be preserved can be specified at construction.
  * <p/>
  * NOTE: FK constraints give problems in MySQL and Derby
@@ -43,11 +29,11 @@ import static org.dbmaintain.dbsupport.DbItemType.*;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultDbClearer implements DbClearer {
+public class DefaultDBClearer implements DBClearer {
 
 
     /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(DefaultDbClearer.class);
+    private static Log logger = LogFactory.getLog(DefaultDBClearer.class);
 
     /* Disables of constraints before clearing the database */
     protected ConstraintsDisabler constraintsDisabler;
@@ -68,7 +54,7 @@ public class DefaultDbClearer implements DbClearer {
      * @param constraintsDisabler      Disables of constraints before clearing the database, not null
      * @param executedScriptInfoSource Clears the executed scripts table, not null
      */
-    public DefaultDbClearer(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
+    public DefaultDBClearer(DbSupports dbSupports, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
         this.dbSupports = dbSupports;
         this.itemsToPreserve = itemsToPreserve;
         this.constraintsDisabler = constraintsDisabler;

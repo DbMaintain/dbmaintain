@@ -1,6 +1,6 @@
 package org.dbmaintain.clean;
 
-import org.dbmaintain.clean.impl.DefaultDbCleaner;
+import org.dbmaintain.clean.impl.DefaultDBCleaner;
 import org.dbmaintain.config.FactoryWithDatabase;
 import org.dbmaintain.dbsupport.DbItemIdentifier;
 
@@ -14,12 +14,12 @@ import static org.dbmaintain.dbsupport.DbItemType.TABLE;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DbCleanerFactory extends FactoryWithDatabase<DbCleaner> {
+public class DBCleanerFactory extends FactoryWithDatabase<DBCleaner> {
 
 
-    public DbCleaner createInstance() {
+    public DBCleaner createInstance() {
         Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve();
-        return new DefaultDbCleaner(getDbSupports(), itemsToPreserve, getSqlHandler());
+        return new DefaultDBCleaner(getDbSupports(), itemsToPreserve, getSqlHandler());
     }
 
 
