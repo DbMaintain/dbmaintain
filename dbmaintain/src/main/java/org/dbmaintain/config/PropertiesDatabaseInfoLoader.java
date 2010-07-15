@@ -57,16 +57,21 @@ public class PropertiesDatabaseInfoLoader {
 
 
     protected DatabaseInfo getUnnamedDatabaseInfo() {
-        String driverClassName = getString(PROPERTY_DRIVERCLASSNAME, configuration);
-        String url = getString(PROPERTY_URL, configuration);
-        String userName = getString(PROPERTY_USERNAME, configuration);
-        String password = getString(PROPERTY_PASSWORD, "", configuration);
-        String databaseDialect = getString(PROPERTY_DIALECT, configuration);
-        List<String> schemaNames = getStringList(PROPERTY_SCHEMANAMES, configuration);
-        if (schemaNames.isEmpty()) {
-            throw new DbMaintainException("No value found for property " + PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END);
+        try {
+            String driverClassName = getString(PROPERTY_DRIVERCLASSNAME, configuration);
+            String url = getString(PROPERTY_URL, configuration);
+            String userName = getString(PROPERTY_USERNAME, configuration);
+            String password = getString(PROPERTY_PASSWORD, "", configuration);
+            String databaseDialect = getString(PROPERTY_DIALECT, configuration);
+            List<String> schemaNames = getStringList(PROPERTY_SCHEMANAMES, configuration);
+            if (schemaNames.isEmpty()) {
+                throw new DbMaintainException("No value found for property " + PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END);
+            }
+            return new DatabaseInfo("<no-name>", databaseDialect, driverClassName, url, userName, password, schemaNames, false);
+
+        } catch (DbMaintainException e) {
+            throw new DbMaintainException("No database configuration found. At least one database should be defined in the properties or in the task configuration.", e);
         }
-        return new DatabaseInfo("<no-name>", databaseDialect, driverClassName, url, userName, password, schemaNames, false);
     }
 
     /**

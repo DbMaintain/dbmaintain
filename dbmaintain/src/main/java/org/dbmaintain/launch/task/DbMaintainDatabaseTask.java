@@ -2,7 +2,6 @@ package org.dbmaintain.launch.task;
 
 import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.dbsupport.DatabaseInfo;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.util.List;
 import java.util.Properties;
@@ -24,9 +23,6 @@ public abstract class DbMaintainDatabaseTask extends DbMaintainTask {
 
     @Override
     protected MainFactory createMainFactory(Properties configuration) {
-        if (databaseInfos == null || databaseInfos.isEmpty()) {
-            throw new DbMaintainException("No database configuration found. At least one database should be defined.");
-        }
         return new MainFactory(configuration, databaseInfos);
     }
 

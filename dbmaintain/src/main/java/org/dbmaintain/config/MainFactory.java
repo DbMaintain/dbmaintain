@@ -12,6 +12,7 @@ import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.scriptrunner.ScriptRunner;
 import org.dbmaintain.structure.ConstraintsDisabler;
 import org.dbmaintain.structure.SequenceUpdater;
+import org.dbmaintain.util.DbMaintainException;
 
 import java.util.List;
 import java.util.Properties;
@@ -24,7 +25,6 @@ import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
  * @author Filip Neven
  */
 public class MainFactory {
-
 
     protected Properties configuration;
     protected List<DatabaseInfo> databaseInfos;
@@ -128,9 +128,13 @@ public class MainFactory {
     }
 
     protected List<DatabaseInfo> getDatabaseInfos() {
-        if (databaseInfos == null) {
+        if (databaseInfos == null || databaseInfos.isEmpty()) {
             PropertiesDatabaseInfoLoader propertiesDatabaseInfoLoader = new PropertiesDatabaseInfoLoader(configuration);
             databaseInfos = propertiesDatabaseInfoLoader.getDatabaseInfos();
+
+            if (databaseInfos == null || databaseInfos.isEmpty()) {
+                throw new DbMaintainException("No database configuration found. At least one database should be defined in the properties or in the task configuration.");
+            }
         }
         return databaseInfos;
     }
