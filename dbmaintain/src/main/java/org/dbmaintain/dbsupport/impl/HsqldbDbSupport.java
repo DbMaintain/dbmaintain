@@ -22,9 +22,7 @@ import org.dbmaintain.dbsupport.StoredIdentifierCase;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Set;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
@@ -34,8 +32,12 @@ import static org.apache.commons.dbutils.DbUtils.closeQuietly;
  *
  * @author Filip Neven
  * @author Tim Ducheyne
+ * @author Faisal Feroz
  */
 public class HsqldbDbSupport extends DbSupport {
+
+    /* The major version number of the hsql database */
+    private Integer hsqlMajorVersionNumber;
 
 
     public HsqldbDbSupport(DatabaseInfo databaseInfo, DataSource dataSource, SQLHandler sqlHandler, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
@@ -58,7 +60,10 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public Set<String> getTableNames(String schemaName) {
-        return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.SYSTEM_TABLES where TABLE_TYPE = 'TABLE' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
+        if (getHsqldbMajorVersionNumber() < 2) {
+            return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.SYSTEM_TABLES where TABLE_TYPE = 'TABLE' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
+        }
+        return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = '" + schemaName + "'", getDataSource());
     }
 
     /**
@@ -69,7 +74,10 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public Set<String> getColumnNames(String schemaName, String tableName) {
-        return getSQLHandler().getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS where TABLE_NAME = '" + tableName + "' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
+        if (getHsqldbMajorVersionNumber() < 2) {
+            return getSQLHandler().getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS where TABLE_NAME = '" + tableName + "' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
+        }
+        return getSQLHandler().getItemsAsStringSet("select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '" + tableName + "' AND TABLE_SCHEMA = '" + schemaName + "'", getDataSource());
     }
 
     /**
@@ -79,7 +87,10 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public Set<String> getViewNames(String schemaName) {
-        return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.SYSTEM_TABLES where TABLE_TYPE = 'VIEW' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
+        if (getHsqldbMajorVersionNumber() < 2) {
+            return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.SYSTEM_TABLES where TABLE_TYPE = 'VIEW' AND TABLE_SCHEM = '" + schemaName + "'", getDataSource());
+        }
+        return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = '" + schemaName + "'", getDataSource());
     }
 
     /**
@@ -89,7 +100,10 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public Set<String> getSequenceNames(String schemaName) {
-        return getSQLHandler().getItemsAsStringSet("select SEQUENCE_NAME from INFORMATION_SCHEMA.SYSTEM_SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "'", getDataSource());
+        if (getHsqldbMajorVersionNumber() < 2) {
+            return getSQLHandler().getItemsAsStringSet("select SEQUENCE_NAME from INFORMATION_SCHEMA.SYSTEM_SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "'", getDataSource());
+        }
+        return getSQLHandler().getItemsAsStringSet("select SEQUENCE_NAME from INFORMATION_SCHEMA.SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "'", getDataSource());
     }
 
     /**
@@ -99,7 +113,10 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public Set<String> getTriggerNames(String schemaName) {
-        return getSQLHandler().getItemsAsStringSet("select TRIGGER_NAME from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where TRIGGER_SCHEM = '" + schemaName + "'", getDataSource());
+        if (getHsqldbMajorVersionNumber() < 2) {
+            return getSQLHandler().getItemsAsStringSet("select TRIGGER_NAME from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where TRIGGER_SCHEM = '" + schemaName + "'", getDataSource());
+        }
+        return getSQLHandler().getItemsAsStringSet("select TRIGGER_NAME from INFORMATION_SCHEMA.TRIGGERS where TRIGGER_SCHEMA = '" + schemaName + "'", getDataSource());
     }
 
 
@@ -119,7 +136,11 @@ public class HsqldbDbSupport extends DbSupport {
             queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
-            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            if (getHsqldbMajorVersionNumber() < 2) {
+                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            } else {
+                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            }
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -159,7 +180,11 @@ public class HsqldbDbSupport extends DbSupport {
             queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
-            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            if (getHsqldbMajorVersionNumber() < 2) {
+                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            } else {
+                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+            }
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -189,8 +214,13 @@ public class HsqldbDbSupport extends DbSupport {
             alterStatement = connection.createStatement();
 
             // Do not remove PK constraints
-            resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEM = '" + schemaName + "' " +
-                    "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
+            if (getHsqldbMajorVersionNumber() < 2) {
+                resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEM = '" + schemaName + "' " +
+                        "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
+            } else {
+                resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEMA = '" + schemaName + "' " +
+                        "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
+            }
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String columnName = resultSet.getString("COLUMN_NAME");
@@ -215,7 +245,10 @@ public class HsqldbDbSupport extends DbSupport {
      */
     @Override
     public long getSequenceValue(String schemaName, String sequenceName) {
-        return getSQLHandler().getItemAsLong("select START_WITH from INFORMATION_SCHEMA.SYSTEM_SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "' and SEQUENCE_NAME = '" + sequenceName + "'", getDataSource());
+        if (getHsqldbMajorVersionNumber() < 2) {
+            return getSQLHandler().getItemAsLong("select START_WITH from INFORMATION_SCHEMA.SYSTEM_SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "' and SEQUENCE_NAME = '" + sequenceName + "'", getDataSource());
+        }
+        return getSQLHandler().getItemAsLong("select NEXT_VALUE from INFORMATION_SCHEMA.SEQUENCES where SEQUENCE_SCHEMA = '" + schemaName + "' and SEQUENCE_NAME = '" + sequenceName + "'", getDataSource());
     }
 
     /**
@@ -326,5 +359,26 @@ public class HsqldbDbSupport extends DbSupport {
     @Override
     public boolean supportsSetDatabaseDefaultSchema() {
         return true;
+    }
+
+
+    /**
+     * @return The major version number of the Hsql database server that is used (e.g. for Hsql version 1.8.0, 1 is returned
+     */
+    protected Integer getHsqldbMajorVersionNumber() {
+        if (hsqlMajorVersionNumber == null) {
+            Connection connection = null;
+            try {
+                connection = getDataSource().getConnection();
+                DatabaseMetaData metaData = connection.getMetaData();
+                hsqlMajorVersionNumber = metaData.getDatabaseMajorVersion();
+
+            } catch (SQLException e) {
+                throw new DbMaintainException("Unable to determine database major version", e);
+            } finally {
+                closeQuietly(connection);
+            }
+        }
+        return hsqlMajorVersionNumber;
     }
 }

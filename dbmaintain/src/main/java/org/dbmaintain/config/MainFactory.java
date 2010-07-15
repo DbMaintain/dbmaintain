@@ -28,6 +28,8 @@ public class MainFactory {
 
     protected Properties configuration;
     protected List<DatabaseInfo> databaseInfos;
+    protected DbSupports dbSupports;
+    protected SQLHandler sqlHandler;
 
     protected FactoryContext factoryContext;
     protected FactoryWithDatabaseContext factoryWithDatabaseContext;
@@ -40,6 +42,11 @@ public class MainFactory {
     public MainFactory(Properties configuration, List<DatabaseInfo> databaseInfos) {
         this.configuration = configuration;
         this.databaseInfos = databaseInfos;
+    }
+
+    public MainFactory(Properties configuration, DbSupports dbSupports) {
+        this.configuration = configuration;
+        this.dbSupports = dbSupports;
     }
 
 
@@ -98,19 +105,12 @@ public class MainFactory {
 
     protected synchronized FactoryWithDatabaseContext createFactoryWithDatabaseContext() {
         if (factoryWithDatabaseContext == null) {
-            SQLHandler sqlHandler = new DefaultSQLHandler();
-            DbSupports dbSupports = createDbSupports(sqlHandler, getDatabaseInfos());
-            factoryWithDatabaseContext = new FactoryWithDatabaseContext(configuration, this, dbSupports, sqlHandler);
+            DbSupports dbSupports = getDbSupports();
+            factoryWithDatabaseContext = new FactoryWithDatabaseContext(configuration, this, dbSupports, getSqlHandler());
         }
         return factoryWithDatabaseContext;
     }
 
-    protected List<DatabaseInfo> getDatabaseInfos() {
-        if (databaseInfos != null) {
-            return databaseInfos;
-        }
-        return createDatabaseInfos();
-    }
 
     @SuppressWarnings({"unchecked"})
     protected <T extends Factory> T createFactoryForType(Class<?> type) {
@@ -119,13 +119,26 @@ public class MainFactory {
     }
 
 
-    protected DbSupports createDbSupports(SQLHandler sqlHandler, List<DatabaseInfo> databaseInfos) {
-        DbSupportsFactory dbSupportsFactory = new DbSupportsFactory(configuration, sqlHandler);
-        return dbSupportsFactory.createDbSupports(databaseInfos);
+    protected DbSupports getDbSupports() {
+        if (dbSupports == null) {
+            DbSupportsFactory dbSupportsFactory = new DbSupportsFactory(configuration, getSqlHandler());
+            dbSupports = dbSupportsFactory.createDbSupports(getDatabaseInfos());
+        }
+        return dbSupports;
     }
 
-    protected List<DatabaseInfo> createDatabaseInfos() {
-        PropertiesDatabaseInfoLoader propertiesDatabaseInfoLoader = new PropertiesDatabaseInfoLoader(configuration);
-        return propertiesDatabaseInfoLoader.getDatabaseInfos();
+    protected List<DatabaseInfo> getDatabaseInfos() {
+        if (databaseInfos == null) {
+            PropertiesDatabaseInfoLoader propertiesDatabaseInfoLoader = new PropertiesDatabaseInfoLoader(configuration);
+            databaseInfos = propertiesDatabaseInfoLoader.getDatabaseInfos();
+        }
+        return databaseInfos;
+    }
+
+    protected SQLHandler getSqlHandler() {
+        if (sqlHandler == null) {
+            sqlHandler = new DefaultSQLHandler();
+        }
+        return sqlHandler;
     }
 }
