@@ -37,7 +37,6 @@ public interface ExecutedScriptInfoSource {
      */
     void registerExecutedScript(ExecutedScript executedScript);
 
-
     /**
      * Updates the given registered script
      *
@@ -45,19 +44,16 @@ public interface ExecutedScriptInfoSource {
      */
     void updateExecutedScript(ExecutedScript executedScript);
 
-
     /**
      * Clears all script executions that have been registered. After having invoked this method,
      * {@link #getExecutedScripts()} will return an empty set.
      */
     void clearAllExecutedScripts();
 
-
     /**
      * @return All scripts that were registered as being executed on the database
      */
     Set<ExecutedScript> getExecutedScripts();
-
 
     /**
      * Remove the given executed script from the executed scripts
@@ -65,7 +61,6 @@ public interface ExecutedScriptInfoSource {
      * @param executedScript The executed script, which is no longer part of the executed scripts
      */
     void deleteExecutedScript(ExecutedScript executedScript);
-
 
     /**
      * Registers the fact that the script that was originally executed has been renamed.
@@ -75,9 +70,18 @@ public interface ExecutedScriptInfoSource {
      */
     void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript);
 
-
     /**
      * Removes all previously registered executed postprocessing scripts
      */
     void deleteAllExecutedPostprocessingScripts();
+
+    /**
+     * Marks the failed scripts in the executed scripts table as successful.
+     */
+    void markErrorScriptsAsSuccessful();
+
+    /**
+     * Removes the failed scripts in the executed scripts table.
+     */
+    void removeErrorScripts();
 }

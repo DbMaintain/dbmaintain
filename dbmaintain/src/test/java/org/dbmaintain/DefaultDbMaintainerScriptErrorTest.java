@@ -14,8 +14,7 @@ import org.unitils.mock.Mock;
 import java.util.Collections;
 
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
@@ -41,12 +40,10 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
             fail("Expected DbMaintainException");
 
         } catch (DbMaintainException e) {
-            assertEquals("Error while executing script 01_filename.sql:\n" +
-                    "error message\n\n" +
-                    "Full contents of failed script 01_filename.sql:\n" +
+            assertTrue(e.getMessage().contains("Full contents of failed script 01_filename.sql:\n" +
                     "----------------------------------------------------\n" +
                     "content of script\n" +
-                    "----------------------------------------------------\n", e.getMessage());
+                    "----------------------------------------------------\n"));
         }
     }
 
@@ -61,8 +58,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
             fail("Expected DbMaintainException");
 
         } catch (DbMaintainException e) {
-            assertEquals("Error while executing script 01_filename.sql:\n" +
-                    "error message\n\n", e.getMessage());
+            assertFalse(e.getMessage().contains("Full contents of failed script"));
         }
     }
 
@@ -77,12 +73,10 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
             fail("Expected DbMaintainException");
 
         } catch (DbMaintainException e) {
-            assertEquals("Error while executing script 01_filename.sql:\n" +
-                    "error message\n\n" +
-                    "Full contents of failed script 01_filename.sql:\n" +
+            assertTrue(e.getMessage().contains("Full contents of failed script 01_filename.sql:\n" +
                     "----------------------------------------------------\n" +
                     "conte... <remainder of script is omitted>\n" +
-                    "----------------------------------------------------\n", e.getMessage());
+                    "----------------------------------------------------\n"));
         }
     }
 

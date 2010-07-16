@@ -26,6 +26,7 @@ import org.dbmaintain.scriptparser.ScriptParserFactory;
 import org.dbmaintain.scriptrunner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
 
+import javax.sql.DataSource;
 import java.io.Reader;
 import java.util.Map;
 
@@ -77,12 +78,27 @@ public class JdbcScriptRunner implements ScriptRunner {
             // create a script parser for the target database in question 
             ScriptParser scriptParser = databaseDialectScriptParserFactoryMap.get(targetDbSupport.getSupportedDatabaseDialect()).createScriptParser(scriptContentReader);
             // parse and execute the statements
-            String statement;
-            while ((statement = scriptParser.getNextStatement()) != null) {
-                sqlHandler.executeUpdateAndCommit(statement, targetDbSupport.getDataSource());
-            }
+            parseAndExecuteScript(targetDbSupport, scriptParser);
+
         } finally {
             closeQuietly(scriptContentReader);
+        }
+    }
+
+    private void parseAndExecuteScript(DbSupport targetDbSupport, ScriptParser scriptParser) {
+        DataSource dataSource = targetDbSupport.getDataSource();
+        try {
+            sqlHandler.startTransaction(dataSource);
+
+            String statement;
+            while ((statement = scriptParser.getNextStatement()) != null) {
+                sqlHandler.executeUpdate(statement, dataSource);
+            }
+            sqlHandler.endTransactionAndCommit(dataSource);
+
+        } catch (DbMaintainException e) {
+            sqlHandler.endTransactionAndRollback(dataSource);
+            throw e;
         }
     }
 

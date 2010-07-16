@@ -164,16 +164,16 @@ public class DefaultDbMaintainer implements DbMaintainer {
             if (!getIncrementalScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
                 throw new DbMaintainException("During the latest update, the execution of the following incremental script failed: " +
                         getIncrementalScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed before any other " +
-                        "updates can be performed.");
+                        "updates can be performed.\n" + getErrorScriptOptionsMessage());
             }
 
             if (!getRepeatableScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
                 ExecutedScript failedScript = getRepeatableScriptsThatFailedDuringLastUpdate().first();
                 if (!scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
                         && !scriptUpdates.getRegularlyDeletedRepeatableScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
-                    throw new DbMaintainException("During the latest update, the execution of the following repeatable script failed: " +
+                    throw new DbMaintainException("During the latest update, the execution of following repeatable script failed: " +
                             getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThe script that causes this problem must be fixed " +
-                            "before any other updates can be performed: This can be the failed script itself or an incremental script.");
+                            "before any other updates can be performed.");
                 }
             }
 
@@ -410,6 +410,8 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
         } catch (DbMaintainException e) {
             String message = "Error while executing script " + script.getFileName() + ":\n" + e.getMessage() + "\n\n";
+            message += "A rollback was performed but there could still be changes that were committed in the database (for example a creation of a table).\n" +
+                    getErrorScriptOptionsMessage() + "\n\n";
             if (maxNrOfCharsWhenLoggingScriptContent > 0) {
                 String scriptContents = script.getScriptContentHandle().getScriptContentsAsString(maxNrOfCharsWhenLoggingScriptContent);
                 message += "Full contents of failed script " + script.getFileName() + ":\n";
@@ -421,6 +423,12 @@ public class DefaultDbMaintainer implements DbMaintainer {
         }
     }
 
+    protected String getErrorScriptOptionsMessage() {
+        return "There are 2 options:\n" +
+                "1: Fix the script, manually perform the changes of the script and call the markErrorScriptPerformed task.\n" +
+                "2: Fix the script, revert committed changes of the script (if any) and call the markErrorScriptReverted task.\n\n" +
+                "You can then continue the update by re-running the updateDatabase task. The error script will only be executed again when option 2 was chosen.";
+    }
 
     /**
      * @return the incremental scripts that failed during the last database update

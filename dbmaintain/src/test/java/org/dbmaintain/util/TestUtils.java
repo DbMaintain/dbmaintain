@@ -133,6 +133,12 @@ public abstract class TestUtils {
             public void deleteAllExecutedPostprocessingScripts() {
             }
 
+            public void markErrorScriptsAsSuccessful() {
+            }
+
+            public void removeErrorScripts() {
+            }
+
             public Set<ExecutedScript> getExecutedScripts() {
                 return executedScripts;
             }

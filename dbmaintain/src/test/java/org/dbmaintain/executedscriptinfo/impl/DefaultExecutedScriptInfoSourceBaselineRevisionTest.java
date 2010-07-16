@@ -101,7 +101,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     }
 
     private void dropExecutedScriptsTable() {
-        SQLTestUtils.executeUpdateQuietly("drop table db_executed_scripts", dataSource);
+        SQLTestUtils.executeUpdateQuietly("drop table dbmaintain_scripts", dataSource);
     }
 
 }

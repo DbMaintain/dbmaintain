@@ -7,4 +7,6 @@
     <taskdef name="cleanDatabase" classname="org.dbmaintain.launch.ant.CleanDatabaseAntTask"/>
     <taskdef name="disableConstraints" classname="org.dbmaintain.launch.ant.DisableConstraintsAntTask"/>
     <taskdef name="updateSequences" classname="org.dbmaintain.launch.ant.UpdateSequencesAntTask"/>
+    <taskdef name="markErrorScriptPerformed" classname="org.dbmaintain.launch.ant.MarkErrorScriptPerformedAntTask"/>
+    <taskdef name="markErrorScriptReverted" classname="org.dbmaintain.launch.ant.MarkErrorScriptRevertedAntTask"/>
 </antlib>

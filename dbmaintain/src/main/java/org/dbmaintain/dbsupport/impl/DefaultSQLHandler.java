@@ -112,7 +112,7 @@ public class DefaultSQLHandler implements SQLHandler {
             return nbChanges;
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while performing database update:\n" + sql + "\n" + e.getMessage(), e);
+            throw new DbMaintainException("Error while performing database update:\n" + sql, e);
         } finally {
             closeQuietly(statement);
         }
@@ -140,7 +140,6 @@ public class DefaultSQLHandler implements SQLHandler {
         throw new DbMaintainException("No item value found: " + sql);
     }
 
-
     public String getItemAsString(String sql, DataSource dataSource) {
         logger.debug(sql);
 
@@ -161,7 +160,6 @@ public class DefaultSQLHandler implements SQLHandler {
         // in case no value was found, throw an exception
         throw new DbMaintainException("No item value found: " + sql);
     }
-
 
     public Set<String> getItemsAsStringSet(String sql, DataSource dataSource) {
         logger.debug(sql);
@@ -203,10 +201,72 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    public boolean isDoExecuteUpdates() {
-        return doExecuteUpdates;
+    /**
+     * Starts a transaction by turning of auto commit.
+     * Make sure to call endTransaction at the end of the transaction
+     *
+     * @param dataSource The data source, not null
+     */
+    public void startTransaction(DataSource dataSource) {
+        Connection connection = getConnection(dataSource);
+        try {
+            if (connection.getAutoCommit()) {
+                connection.setAutoCommit(false);
+            }
+        } catch (Exception e) {
+            throw new DbMaintainException("Unable to start transaction.", e);
+        }
     }
 
+    /**
+     * Ends a transaction that was started using startTransaction
+     * by committing and turning auto commit back on.
+     *
+     * @param dataSource The data source, not null
+     */
+    public void endTransactionAndCommit(DataSource dataSource) {
+        Connection connection = getConnection(dataSource);
+        try {
+            connection.commit();
+
+        } catch (Exception e) {
+            try {
+                connection.rollback();
+            } catch (Exception t) {
+                logger.warn("Unable to perform database rollback after commit failure.");
+            }
+            throw new DbMaintainException("Error while performing database commit.", e);
+        } finally {
+            reenableAutoCommit(connection);
+        }
+    }
+
+    /**
+     * Ends a transaction that was started using startTransaction
+     * by rolling back and turning auto commit back on.
+     *
+     * @param dataSource The data source, not null
+     */
+    public void endTransactionAndRollback(DataSource dataSource) {
+        Connection connection = getConnection(dataSource);
+        try {
+            connection.rollback();
+
+        } catch (Exception e) {
+            throw new DbMaintainException("Unable to perform database rollback.", e);
+        } finally {
+            reenableAutoCommit(connection);
+        }
+    }
+
+    private void reenableAutoCommit(Connection connection) {
+        try {
+            connection.setAutoCommit(true);
+
+        } catch (Exception t) {
+            logger.warn("Unable to re-enable auto commit behavior.");
+        }
+    }
 
     /**
      * Closes all connections that were created and cached by this SQLHandler. This method must always be invoked before

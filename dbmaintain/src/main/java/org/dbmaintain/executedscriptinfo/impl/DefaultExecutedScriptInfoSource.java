@@ -147,7 +147,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
             statement = connection.createStatement();
             resultSet = statement.executeQuery("select " + fileNameColumnName + ", " + fileLastModifiedAtColumnName + ", " +
                     checksumColumnName + ", " + executedAtColumnName + ", " + succeededColumnName +
-                    " from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName));
+                    " from " + getQualifiedExecutedScriptsTableName());
 
             executedScripts = new TreeSet<ExecutedScript>();
             while (resultSet.next()) {
@@ -201,7 +201,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         getExecutedScripts().add(executedScript);
 
         String executedAt = timestampFormat.format(executedScript.getExecutedAt());
-        String insertSql = "insert into " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+        String insertSql = "insert into " + getQualifiedExecutedScriptsTableName() +
                 " (" + fileNameColumnName + ", " + fileLastModifiedAtColumnName + ", " + checksumColumnName + ", " +
                 executedAtColumnName + ", " + succeededColumnName + ") values ('" + executedScript.getScript().getFileName() +
                 "', " + executedScript.getScript().getFileLastModifiedAt() + ", '" +
@@ -219,7 +219,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         getExecutedScripts().add(executedScript);
 
         String executedAt = timestampFormat.format(executedScript.getExecutedAt());
-        String updateSql = "update " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+        String updateSql = "update " + getQualifiedExecutedScriptsTableName() +
                 " set " + checksumColumnName + " = '" + executedScript.getScript().getCheckSum() + "', " +
                 fileLastModifiedAtColumnName + " = " + executedScript.getScript().getFileLastModifiedAt() + ", " +
                 executedAtColumnName + " = '" + executedAt + "', " +
@@ -237,7 +237,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     public void deleteExecutedScript(ExecutedScript executedScript) {
         getExecutedScripts().remove(executedScript);
 
-        String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+        String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName() +
                 " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
     }
@@ -250,7 +250,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @param renamedToScript the script to which the original script has been renamed
      */
     public void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript) {
-        String renameSql = "update " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+        String renameSql = "update " + getQualifiedExecutedScriptsTableName() +
                 " set " + fileNameColumnName + " = '" + renamedToScript.getFileName() + "', " +
                 checksumColumnName + " = '" + renamedToScript.getCheckSum() + "', " +
                 fileLastModifiedAtColumnName + " = " + renamedToScript.getFileLastModifiedAt() +
@@ -265,7 +265,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
             ExecutedScript executedScript = executedScriptsIterator.next();
             if (executedScript.getScript().isPostProcessingScript()) {
                 executedScriptsIterator.remove();
-                String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) +
+                String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName() +
                         " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
                 sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
             }
@@ -280,8 +280,29 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     public void clearAllExecutedScripts() {
         getExecutedScripts().clear();
 
-        String deleteSql = "delete from " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName);
+        String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName();
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
+    }
+
+
+    /**
+     * Marks the failed scripts in the executed scripts table as successful.
+     */
+    public void markErrorScriptsAsSuccessful() {
+        String deleteSql = "update " + getQualifiedExecutedScriptsTableName() + " set " + succeededColumnName + "=1 where " + succeededColumnName + "=0";
+        sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
+        // reset executed scripts
+        executedScripts = null;
+    }
+
+    /**
+     * Removes the failed scripts in the executed scripts table.
+     */
+    public void removeErrorScripts() {
+        String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName() + " where " + succeededColumnName + "=0";
+        sqlHandler.executeUpdateAndCommit(deleteSql, defaultDbSupport.getDataSource());
+        // reset executed scripts
+        executedScripts = null;
     }
 
 
@@ -299,13 +320,13 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
         // does not exist yet, if auto-create create version table
         if (autoCreateExecutedScriptsTable) {
-            logger.warn("Executed scripts table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " doesn't exist yet or is invalid. A new one is created automatically.");
+            logger.warn("Executed scripts table " + getQualifiedExecutedScriptsTableName() + " doesn't exist yet or is invalid. A new one is created automatically.");
             createExecutedScriptsTable();
             return false;
         }
 
         // throw an exception that shows how to create the version table
-        String message = "Executed scripts table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " doesn't exist yet or is invalid.\n";
+        String message = "Executed scripts table " + getQualifiedExecutedScriptsTableName() + " doesn't exist yet or is invalid.\n";
         message += "Please create it manually or let DbMaintain create it automatically by setting the property autoCreateDbMaintainScriptsTable to true.\n";
         message += "The table can be created manually by executing following statement:\n";
         message += getCreateExecutedScriptTableStatement();
@@ -335,7 +356,6 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         return false;
     }
 
-
     /**
      * Creates the version table and inserts a version record.
      */
@@ -351,17 +371,20 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         sqlHandler.executeUpdateAndCommit(getCreateExecutedScriptTableStatement(), defaultDbSupport.getDataSource());
     }
 
-
     /**
      * @return The statement to create the version table.
      */
     protected String getCreateExecutedScriptTableStatement() {
         String longDataType = defaultDbSupport.getLongDataType();
-        return "create table " + defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName) + " ( " +
+        return "create table " + getQualifiedExecutedScriptsTableName() + " ( " +
                 fileNameColumnName + " " + defaultDbSupport.getTextDataType(fileNameColumnSize) + ", " +
                 fileLastModifiedAtColumnName + " " + defaultDbSupport.getLongDataType() + ", " +
                 checksumColumnName + " " + defaultDbSupport.getTextDataType(checksumColumnSize) + ", " +
                 executedAtColumnName + " " + defaultDbSupport.getTextDataType(executedAtColumnSize) + ", " +
                 succeededColumnName + " " + longDataType + " )";
+    }
+
+    protected String getQualifiedExecutedScriptsTableName() {
+        return defaultDbSupport.qualified(defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName);
     }
 }
