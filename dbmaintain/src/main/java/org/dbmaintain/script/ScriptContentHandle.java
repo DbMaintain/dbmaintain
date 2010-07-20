@@ -113,7 +113,7 @@ public abstract class ScriptContentHandle {
 
     protected void readScript() throws IOException {
         Reader scriptContentReader = null;
-        try {                             
+        try {
             scriptContentReader = openScriptContentReader();
             IOUtils.copy(scriptContentReader, new NullWriter());
             scriptContentReader.close();

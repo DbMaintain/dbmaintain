@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.CleanDatabaseTask;
 import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
 

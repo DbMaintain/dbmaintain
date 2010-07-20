@@ -15,7 +15,8 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Test;
 

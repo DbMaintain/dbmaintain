@@ -15,9 +15,9 @@
  */
 package org.dbmaintain.launch.task;
 
-import org.dbmaintain.clear.DBClearer;
-import org.dbmaintain.config.MainFactory;
-import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.MainFactory;
+import org.dbmaintain.database.DatabaseInfo;
+import org.dbmaintain.structure.clear.DBClearer;
 
 import java.util.List;
 

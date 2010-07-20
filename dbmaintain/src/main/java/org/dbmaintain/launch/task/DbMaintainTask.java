@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.launch.task;
 
+import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.config.MainFactory;
 
 import java.io.File;
 import java.util.Properties;

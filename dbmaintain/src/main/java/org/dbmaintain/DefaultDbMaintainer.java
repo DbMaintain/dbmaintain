@@ -17,24 +17,28 @@ package org.dbmaintain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clear.DBClearer;
-import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.format.ScriptUpdatesFormatter;
-import org.dbmaintain.script.*;
-import org.dbmaintain.script.impl.ScriptRepository;
-import org.dbmaintain.scriptrunner.ScriptRunner;
-import org.dbmaintain.structure.ConstraintsDisabler;
-import org.dbmaintain.structure.SequenceUpdater;
+import org.dbmaintain.database.SQLHandler;
+import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.script.analyzer.ScriptUpdate;
+import org.dbmaintain.script.analyzer.ScriptUpdates;
+import org.dbmaintain.script.analyzer.ScriptUpdatesAnalyzer;
+import org.dbmaintain.script.analyzer.ScriptUpdatesFormatter;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.repository.ScriptRepository;
+import org.dbmaintain.script.runner.ScriptRunner;
+import org.dbmaintain.structure.clean.DBCleaner;
+import org.dbmaintain.structure.clear.DBClearer;
+import org.dbmaintain.structure.constraint.ConstraintsDisabler;
+import org.dbmaintain.structure.sequence.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
-import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
-import static org.dbmaintain.script.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 
 /**
  * Class that offers operations for automatically maintaining a database.

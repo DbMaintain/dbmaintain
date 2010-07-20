@@ -15,19 +15,21 @@
  */
 package org.dbmaintain.util;
 
-import org.dbmaintain.dbsupport.DatabaseInfo;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DbSupports;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
-import org.dbmaintain.dbsupport.impl.HsqldbDbSupport;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
-import org.dbmaintain.script.*;
-import org.dbmaintain.script.impl.ArchiveScriptLocation;
-import org.dbmaintain.script.impl.FileSystemScriptLocation;
-import org.dbmaintain.script.impl.ScriptLocation;
-import org.dbmaintain.script.impl.ScriptRepository;
+import org.dbmaintain.database.*;
+import org.dbmaintain.database.impl.DefaultSQLHandler;
+import org.dbmaintain.database.impl.HsqldbDatabase;
+import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
+import org.dbmaintain.script.qualifier.Qualifier;
+import org.dbmaintain.script.qualifier.QualifierEvaluator;
+import org.dbmaintain.script.repository.ScriptLocation;
+import org.dbmaintain.script.repository.ScriptRepository;
+import org.dbmaintain.script.repository.impl.ArchiveScriptLocation;
+import org.dbmaintain.script.repository.impl.FileSystemScriptLocation;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -39,7 +41,7 @@ import java.util.SortedSet;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.dbmaintain.dbsupport.DbMaintainDataSource.createDataSource;
+import static org.dbmaintain.database.DbMaintainDataSource.createDataSource;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
@@ -49,8 +51,8 @@ import static org.dbmaintain.util.CollectionUtils.asSet;
 public abstract class TestUtils {
 
 
-    public static DbSupports getDbSupports() {
-        return getDbSupports("PUBLIC");
+    public static Databases getDatabases() {
+        return getDatabases("PUBLIC");
     }
 
     public static DatabaseInfo getHsqlDatabaseInfo(String... schemaNames) {
@@ -60,21 +62,23 @@ public abstract class TestUtils {
         return new DatabaseInfo("mydatabase", "hsqldb", "org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "", asList(schemaNames), false);
     }
 
-    public static DbSupports getDbSupports(String... schemaNames) {
+    public static Databases getDatabases(String... schemaNames) {
         DatabaseInfo databaseInfo = getHsqlDatabaseInfo(schemaNames);
         DataSource dataSource = createDataSource(databaseInfo);
-        DbSupport dbSupport = new HsqldbDbSupport(databaseInfo, dataSource, new DefaultSQLHandler(), null, null);
-        return new DbSupports(asList(dbSupport), new ArrayList<String>());
+        SQLHandler sqlHandler = new DefaultSQLHandler();
+        DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
+        Database database = new HsqldbDatabase(databaseConnection, null, null);
+        return new Databases(asList(database), new ArrayList<String>());
     }
 
-    public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable) {
-        return getDefaultExecutedScriptInfoSource(dbSupport, autoCreateExecutedScriptsTable, null);
+    public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable) {
+        return getDefaultExecutedScriptInfoSource(database, autoCreateExecutedScriptsTable, null);
     }
 
-    public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(DbSupport dbSupport, boolean autoCreateExecutedScriptsTable, ScriptIndexes baselineRevision) {
+    public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable, ScriptIndexes baselineRevision) {
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
                 "dbmaintain_scripts", "file_name", 150, "file_last_modified_at", "checksum", 50, "executed_at", 50, "succeeded",
-                new SimpleDateFormat("dd/MM/yyyy"), dbSupport, new DefaultSQLHandler(), "@", "#", Collections.<Qualifier>emptySet(),
+                new SimpleDateFormat("dd/MM/yyyy"), database, new DefaultSQLHandler(), "@", "#", Collections.<Qualifier>emptySet(),
                 asSet(new Qualifier("patch")), "postprocessing", baselineRevision);
     }
 

@@ -20,7 +20,6 @@ scripts/01_v1.0/01_products_and_orders.sql
 	
 +-----+
 # This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb' and 'postgresql'.
-# The value of this property defines which vendor specific implementations of DbSupport and ConstraintsDisabler are chosen.
 database.dialect=hsqldb
 database.driverClassName=org.hsqldb.jdbcDriver
 database.url=jdbc:hsqldb:mem:testdb

@@ -1,13 +1,14 @@
 package org.dbmaintain.config;
 
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.script.IncludeExcludeQualifierEvaluator;
-import org.dbmaintain.script.Qualifier;
-import org.dbmaintain.script.QualifierEvaluator;
-import org.dbmaintain.script.impl.ArchiveScriptLocation;
-import org.dbmaintain.script.impl.FileSystemScriptLocation;
-import org.dbmaintain.script.impl.ScriptLocation;
-import org.dbmaintain.script.impl.ScriptRepository;
+import org.dbmaintain.MainFactory;
+import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.qualifier.Qualifier;
+import org.dbmaintain.script.qualifier.QualifierEvaluator;
+import org.dbmaintain.script.qualifier.impl.IncludeExcludeQualifierEvaluator;
+import org.dbmaintain.script.repository.ScriptLocation;
+import org.dbmaintain.script.repository.ScriptRepository;
+import org.dbmaintain.script.repository.impl.ArchiveScriptLocation;
+import org.dbmaintain.script.repository.impl.FileSystemScriptLocation;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.io.File;

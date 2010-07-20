@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.launch.task;
 
-import org.dbmaintain.archive.ScriptArchiveCreator;
-import org.dbmaintain.config.MainFactory;
+import org.dbmaintain.MainFactory;
+import org.dbmaintain.script.archive.ScriptArchiveCreator;
 
 import static org.dbmaintain.config.DbMaintainProperties.*;
 

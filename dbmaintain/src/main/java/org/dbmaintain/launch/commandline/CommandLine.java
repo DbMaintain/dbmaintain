@@ -17,9 +17,9 @@ package org.dbmaintain.launch.commandline;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.FileUtils;
 

@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
 import org.dbmaintain.launch.task.UpdateDatabaseTask;
 
@@ -42,7 +42,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     private Boolean useLastModificationDates;
     private String scriptFileExtensions;
 
-    
+
     @Override
     protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
         return new UpdateDatabaseTask(databaseInfos, scriptLocations, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);

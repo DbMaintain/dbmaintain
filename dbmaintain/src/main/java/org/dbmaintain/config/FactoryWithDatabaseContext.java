@@ -1,7 +1,12 @@
 package org.dbmaintain.config;
 
-import org.dbmaintain.dbsupport.*;
-import org.dbmaintain.scriptparser.ScriptParserFactory;
+import org.dbmaintain.MainFactory;
+import org.dbmaintain.database.Database;
+import org.dbmaintain.database.Databases;
+import org.dbmaintain.database.SQLHandler;
+import org.dbmaintain.script.parser.ScriptParserFactory;
+import org.dbmaintain.structure.model.DbItemIdentifier;
+import org.dbmaintain.structure.model.DbItemType;
 
 import java.util.*;
 
@@ -10,8 +15,8 @@ import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_BACKSLASH_ESCA
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME;
 import static org.dbmaintain.config.PropertyUtils.getString;
 import static org.dbmaintain.config.PropertyUtils.getStringList;
-import static org.dbmaintain.dbsupport.DbItemIdentifier.*;
-import static org.dbmaintain.dbsupport.DbItemType.TABLE;
+import static org.dbmaintain.structure.model.DbItemIdentifier.*;
+import static org.dbmaintain.structure.model.DbItemType.TABLE;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
 /**
@@ -20,21 +25,21 @@ import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
  */
 public class FactoryWithDatabaseContext extends FactoryContext {
 
-    private DbSupports dbSupports;
+    private Databases databases;
     private SQLHandler sqlHandler;
 
 
-    public FactoryWithDatabaseContext(Properties configuration, MainFactory mainFactory, DbSupports dbSupports, SQLHandler sqlHandler) {
+    public FactoryWithDatabaseContext(Properties configuration, MainFactory mainFactory, Databases databases, SQLHandler sqlHandler) {
         super(configuration, mainFactory);
-        this.dbSupports = dbSupports;
+        this.databases = databases;
         this.sqlHandler = sqlHandler;
     }
 
 
     public DbItemIdentifier getExecutedScriptsTable() {
         String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, getConfiguration());
-        DbSupport defaultDbSupport = dbSupports.getDefaultDbSupport();
-        return getItemIdentifier(TABLE, defaultDbSupport.getDefaultSchemaName(), executedScriptsTableName, defaultDbSupport, true);
+        Database defaultDatabase = databases.getDefaultDatabase();
+        return getItemIdentifier(TABLE, defaultDatabase.getDefaultSchemaName(), executedScriptsTableName, defaultDatabase, true);
     }
 
     /**
@@ -45,7 +50,7 @@ public class FactoryWithDatabaseContext extends FactoryContext {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
         List<String> schemasToPreserve = getStringList(propertyPreserveSchemas, getConfiguration());
         for (String schemaToPreserve : schemasToPreserve) {
-            DbItemIdentifier itemIdentifier = parseSchemaIdentifier(schemaToPreserve, dbSupports);
+            DbItemIdentifier itemIdentifier = parseSchemaIdentifier(schemaToPreserve, databases);
             result.add(itemIdentifier);
         }
         return result;
@@ -61,7 +66,7 @@ public class FactoryWithDatabaseContext extends FactoryContext {
     public void addItemsToPreserve(DbItemType dbItemType, String itemsToPreserveProperty, Set<DbItemIdentifier> itemsToPreserve) {
         List<String> items = getStringList(itemsToPreserveProperty, getConfiguration());
         for (String itemToPreserve : items) {
-            DbItemIdentifier itemIdentifier = parseItemIdentifier(dbItemType, itemToPreserve, dbSupports);
+            DbItemIdentifier itemIdentifier = parseItemIdentifier(dbItemType, itemToPreserve, databases);
             itemsToPreserve.add(itemIdentifier);
         }
     }
@@ -79,17 +84,17 @@ public class FactoryWithDatabaseContext extends FactoryContext {
 
     public Set<String> getDatabaseDialectsInUse() {
         Set<String> dialects = new HashSet<String>();
-        for (DbSupport dbSupport : dbSupports.getDbSupports()) {
-            if (dbSupport != null) {
-                dialects.add(dbSupport.getSupportedDatabaseDialect());
+        for (Database database : databases.getDatabases()) {
+            if (database != null) {
+                dialects.add(database.getSupportedDatabaseDialect());
             }
         }
         return dialects;
     }
 
 
-    public DbSupports getDbSupports() {
-        return dbSupports;
+    public Databases getDatabases() {
+        return databases;
     }
 
     public SQLHandler getSqlHandler() {

@@ -1,10 +1,10 @@
 package org.dbmaintain;
 
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.script.Qualifier;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
-import org.dbmaintain.scriptrunner.ScriptRunner;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.script.qualifier.Qualifier;
+import org.dbmaintain.script.runner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Before;
 import org.junit.Test;

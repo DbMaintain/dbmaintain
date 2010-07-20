@@ -16,13 +16,13 @@
 package org.dbmaintain.launch.api;
 
 import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.archive.ScriptArchiveCreator;
-import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clear.DBClearer;
+import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
-import org.dbmaintain.config.MainFactory;
-import org.dbmaintain.structure.ConstraintsDisabler;
-import org.dbmaintain.structure.SequenceUpdater;
+import org.dbmaintain.script.archive.ScriptArchiveCreator;
+import org.dbmaintain.structure.clean.DBCleaner;
+import org.dbmaintain.structure.clear.DBClearer;
+import org.dbmaintain.structure.constraint.ConstraintsDisabler;
+import org.dbmaintain.structure.sequence.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.net.URL;

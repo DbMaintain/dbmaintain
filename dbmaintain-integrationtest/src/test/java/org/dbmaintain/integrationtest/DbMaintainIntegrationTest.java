@@ -18,14 +18,13 @@ package org.dbmaintain.integrationtest;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.DbMaintainer;
-import org.dbmaintain.config.*;
-import org.dbmaintain.dbsupport.DatabaseInfo;
-import org.dbmaintain.dbsupport.DbSupport;
-import org.dbmaintain.dbsupport.DbSupports;
-import org.dbmaintain.dbsupport.SQLHandler;
-import org.dbmaintain.dbsupport.impl.DefaultSQLHandler;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.MainFactory;
+import org.dbmaintain.config.DbMaintainConfigurationLoader;
+import org.dbmaintain.config.DbMaintainProperties;
+import org.dbmaintain.database.*;
+import org.dbmaintain.database.impl.DefaultSQLHandler;
 import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.junit.Before;
@@ -87,7 +86,7 @@ public class DbMaintainIntegrationTest {
     private static final String BEFORE_INITIAL_TABLE = "before_initial";
 
     private File scriptsLocation;
-    private DbSupport defaultDbSupport;
+    private Database defaultDatabase;
     private Properties configuration;
 
     @Before
@@ -459,13 +458,13 @@ public class DbMaintainIntegrationTest {
         assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1);
 
         // Verify that the postprocessing scripts are executed when a new incremental script is added
-        dropTestTables(defaultDbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        dropTestTables(defaultDatabase, getTableNameForScript(POST_PROCESSING_INDEXED_1));
         createScript(INCREMENTAL_2);
         updateDatabase();
         assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1);
 
         // Verify that the postprocessing scripts are executed when a repeatable script is updated
-        dropTestTables(defaultDbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        dropTestTables(defaultDatabase, getTableNameForScript(POST_PROCESSING_INDEXED_1));
         updateScript(REPEATABLE);
         updateDatabase();
         assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1);
@@ -480,26 +479,26 @@ public class DbMaintainIntegrationTest {
         assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if a new one is added
-        dropTestTables(defaultDbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        dropTestTables(defaultDatabase, getTableNameForScript(POST_PROCESSING_INDEXED_1));
         createScripts(POST_PROCESSING_INDEXED_2);
         updateDatabase();
         assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_INDEXED_2, POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if a not indexed postprocessing script is updated
-        dropTestTables(defaultDbSupport, getTableNameForScript(POST_PROCESSING_INDEXED_1));
+        dropTestTables(defaultDatabase, getTableNameForScript(POST_PROCESSING_INDEXED_1));
         updateRepeatableScript(POST_PROCESSING_NOTINDEXED);
         updateDatabase();
         assertScriptsCorrectlyExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_INDEXED_2);
         assertUpdatedScriptsExecuted(POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if an indexed postprocessing script is updated
-        dropTestTables(defaultDbSupport, getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
+        dropTestTables(defaultDatabase, getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
         updateRepeatableScript(POST_PROCESSING_INDEXED_1);
         updateDatabase();
         assertUpdatedScriptsExecuted(POST_PROCESSING_INDEXED_1, POST_PROCESSING_NOTINDEXED);
 
         // Verify that all postprocessing scripts are re-executed if one of them is renamed
-        dropTestTables(defaultDbSupport, getUpdatedTableNameForScript(POST_PROCESSING_INDEXED_1),
+        dropTestTables(defaultDatabase, getUpdatedTableNameForScript(POST_PROCESSING_INDEXED_1),
                 getTableNameForScript(POST_PROCESSING_INDEXED_2), getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
         renameScript(POST_PROCESSING_INDEXED_2, POST_PROCESSING_INDEXED_2_RENAMED);
         updateDatabase();
@@ -508,7 +507,7 @@ public class DbMaintainIntegrationTest {
         assertNotInExecutedScripts(POST_PROCESSING_INDEXED_2);
 
         // Verify that all postprocessing scripts are re-executed if one of them is deleted
-        dropTestTables(defaultDbSupport, getUpdatedTableNameForScript(POST_PROCESSING_INDEXED_1),
+        dropTestTables(defaultDatabase, getUpdatedTableNameForScript(POST_PROCESSING_INDEXED_1),
                 getTableNameForScript(POST_PROCESSING_INDEXED_2), getUpdatedTableNameForScript(POST_PROCESSING_NOTINDEXED));
         removeScript(POST_PROCESSING_INDEXED_2_RENAMED);
         updateDatabase();
@@ -642,7 +641,7 @@ public class DbMaintainIntegrationTest {
     ////////////// PRIVATE HELPER METHODS ////////////////////
 
     private void createTable(String tableName) {
-        SQLTestUtils.executeUpdate("create table " + tableName + " (test varchar(10))", defaultDbSupport.getDataSource());
+        SQLTestUtils.executeUpdate("create table " + tableName + " (test varchar(10))", defaultDatabase.getDataSource());
     }
 
     private void errorInScript(TestScript script) {
@@ -709,45 +708,45 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertScriptsCorrectlyExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDbSupport.getTableNames("PUBLIC");
+        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
-            assertTrue("Table " + tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(defaultDbSupport.toCorrectCaseIdentifier(tableName)));
+            assertTrue("Table " + tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
         }
     }
 
     private void assertUpdatedScriptsExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDbSupport.getTableNames("PUBLIC");
+        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
-            assertTrue("Table " + tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(defaultDbSupport.toCorrectCaseIdentifier(tableName)));
+            assertTrue("Table " + tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
         }
     }
 
     private void assertScriptsNotExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDbSupport.getTableNames("PUBLIC");
+        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
-            assertFalse("Table " + tableName + " exists, so the script " + script + " has been executed", tableNames.contains(defaultDbSupport.toCorrectCaseIdentifier(tableName)));
+            assertFalse("Table " + tableName + " exists, so the script " + script + " has been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
         }
     }
 
     private void assertUpdatedScriptsNotExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDbSupport.getTableNames("PUBLIC");
+        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
-            assertFalse("Table " + tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(defaultDbSupport.toCorrectCaseIdentifier(tableName)));
+            assertFalse("Table " + tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
         }
     }
 
     private void assertTableExists(String tableName) {
-        Set<String> tableNames = defaultDbSupport.getTableNames("PUBLIC");
-        assertTrue("Table " + tableName + " doesn't exist", tableNames.contains(defaultDbSupport.toCorrectCaseIdentifier(tableName)));
+        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
+        assertTrue("Table " + tableName + " doesn't exist", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
     }
 
     private void assertTableDoesntExist(String tableName) {
-        Set<String> tableNames = defaultDbSupport.getTableNames("PUBLIC");
-        assertFalse("Table " + tableName + " exists, while it shouldn't", tableNames.contains(defaultDbSupport.toCorrectCaseIdentifier(tableName)));
+        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
+        assertFalse("Table " + tableName + " exists, while it shouldn't", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
     }
 
     private void updateDatabase() {
@@ -901,10 +900,10 @@ public class DbMaintainIntegrationTest {
     }
 
     private void clearTestDatabase() {
-        dropTestTables(defaultDbSupport, "dbmaintain_scripts", BEFORE_INITIAL_TABLE);
+        dropTestTables(defaultDatabase, "dbmaintain_scripts", BEFORE_INITIAL_TABLE);
         for (TestScript script : TestScript.values()) {
-            dropTestTables(defaultDbSupport, getTableNameForScript(script));
-            dropTestTables(defaultDbSupport, getUpdatedTableNameForScript(script));
+            dropTestTables(defaultDatabase, getTableNameForScript(script));
+            dropTestTables(defaultDatabase, getUpdatedTableNameForScript(script));
         }
     }
 
@@ -922,13 +921,13 @@ public class DbMaintainIntegrationTest {
         configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "false");
         configuration.put(PROPERTY_QUALIFIERS, "special,q1,q2");
 
-        PropertiesDatabaseInfoLoader propertiesDatabaseInfoLoader = new PropertiesDatabaseInfoLoader(configuration);
+        DatabaseInfoFactory propertiesDatabaseInfoLoader = new DatabaseInfoFactory(configuration);
         List<DatabaseInfo> databaseInfos = propertiesDatabaseInfoLoader.getDatabaseInfos();
 
         SQLHandler sqlHandler = new DefaultSQLHandler();
-        DbSupportsFactory dbSupportsFactory = new DbSupportsFactory(configuration, sqlHandler);
-        DbSupports dbSupports = dbSupportsFactory.createDbSupports(databaseInfos);
+        DatabasesFactory databasesFactory = new DatabasesFactory(configuration, sqlHandler);
+        Databases databases = databasesFactory.createDatabases(databaseInfos);
 
-        defaultDbSupport = dbSupports.getDefaultDbSupport();
+        defaultDatabase = databases.getDefaultDatabase();
     }
 }

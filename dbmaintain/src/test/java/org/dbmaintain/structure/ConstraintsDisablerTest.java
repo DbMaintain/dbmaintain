@@ -15,8 +15,9 @@
  */
 package org.dbmaintain.structure;
 
-import org.dbmaintain.dbsupport.DbSupports;
-import org.dbmaintain.structure.impl.DefaultConstraintsDisabler;
+import org.dbmaintain.database.Databases;
+import org.dbmaintain.structure.constraint.ConstraintsDisabler;
+import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
@@ -41,7 +42,7 @@ public class ConstraintsDisablerTest {
     private ConstraintsDisabler constraintsDisabler;
 
     protected DataSource dataSource;
-    protected DbSupports dbSupports;
+    protected Databases databases;
 
 
     /**
@@ -50,9 +51,9 @@ public class ConstraintsDisablerTest {
      */
     @Before
     public void setUp() throws Exception {
-        dbSupports = TestUtils.getDbSupports();
-        dataSource = dbSupports.getDefaultDbSupport().getDataSource();
-        constraintsDisabler = new DefaultConstraintsDisabler(dbSupports);
+        databases = TestUtils.getDatabases();
+        dataSource = databases.getDefaultDatabase().getDataSource();
+        constraintsDisabler = new DefaultConstraintsDisabler(databases);
 
         cleanupTestDatabase();
         createTestTables();

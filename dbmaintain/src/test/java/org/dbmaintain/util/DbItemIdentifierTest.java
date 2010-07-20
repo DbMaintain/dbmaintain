@@ -15,15 +15,14 @@
  */
 package org.dbmaintain.util;
 
-import org.dbmaintain.dbsupport.DbItemIdentifier;
-import org.dbmaintain.dbsupport.DbSupports;
+import org.dbmaintain.database.Databases;
+import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static org.dbmaintain.dbsupport.DbItemIdentifier.*;
-import static org.dbmaintain.dbsupport.DbItemType.TABLE;
-import static org.dbmaintain.util.TestUtils.getDbSupports;
+import static org.dbmaintain.structure.model.DbItemIdentifier.*;
+import static org.dbmaintain.structure.model.DbItemType.TABLE;
 
 /**
  * @author Filip Neven
@@ -31,38 +30,38 @@ import static org.dbmaintain.util.TestUtils.getDbSupports;
  */
 public class DbItemIdentifierTest {
 
-    private DbSupports dbSupports;
+    private Databases databases;
 
     @Before
     public void init() {
-        dbSupports = getDbSupports();
+        databases = TestUtils.getDatabases();
     }
 
     @Test
     public void parseItemIdentifier_itemOnly() throws Exception {
-        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "test", dbSupports);
-        DbItemIdentifier identifier = getItemIdentifier(TABLE, "public", "test", dbSupports.getDefaultDbSupport());
+        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "test", databases);
+        DbItemIdentifier identifier = getItemIdentifier(TABLE, "public", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
     public void parseItemIdentifier_schemaAndItem() throws Exception {
-        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "myschema.test", dbSupports);
-        DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", dbSupports.getDefaultDbSupport());
+        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "myschema.test", databases);
+        DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
     public void parseItemIdentifier_databaseSchemaAndItem() throws Exception {
-        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "mydatabase.myschema.test", dbSupports);
-        DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", dbSupports.getDefaultDbSupport());
+        DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "mydatabase.myschema.test", databases);
+        DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
     public void parseSchemaOnly() throws Exception {
-        DbItemIdentifier parsedIdentifier = parseSchemaIdentifier("public", dbSupports);
-        DbItemIdentifier identifier = getSchemaIdentifier("public", dbSupports.getDefaultDbSupport());
+        DbItemIdentifier parsedIdentifier = parseSchemaIdentifier("public", databases);
+        DbItemIdentifier identifier = getSchemaIdentifier("public", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 }

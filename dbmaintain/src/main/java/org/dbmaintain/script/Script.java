@@ -16,7 +16,8 @@
 package org.dbmaintain.script;
 
 import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.util.ArrayList;

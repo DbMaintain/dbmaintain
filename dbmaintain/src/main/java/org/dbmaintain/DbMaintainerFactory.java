@@ -1,17 +1,16 @@
 package org.dbmaintain;
 
-import org.dbmaintain.clean.DBCleaner;
-import org.dbmaintain.clear.DBClearer;
 import org.dbmaintain.config.FactoryWithDatabase;
-import org.dbmaintain.config.MainFactory;
 import org.dbmaintain.config.PropertyUtils;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.format.ScriptUpdatesFormatter;
-import org.dbmaintain.script.impl.ScriptRepository;
-import org.dbmaintain.scriptrunner.ScriptRunner;
-import org.dbmaintain.structure.ConstraintsDisabler;
-import org.dbmaintain.structure.SequenceUpdater;
+import org.dbmaintain.script.analyzer.ScriptUpdatesFormatter;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
+import org.dbmaintain.script.repository.ScriptRepository;
+import org.dbmaintain.script.runner.ScriptRunner;
+import org.dbmaintain.structure.clean.DBCleaner;
+import org.dbmaintain.structure.clear.DBClearer;
+import org.dbmaintain.structure.constraint.ConstraintsDisabler;
+import org.dbmaintain.structure.sequence.SequenceUpdater;
 
 import static org.dbmaintain.config.DbMaintainProperties.*;
 

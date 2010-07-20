@@ -1,7 +1,7 @@
 package org.dbmaintain.config;
 
-import org.dbmaintain.dbsupport.DbSupports;
-import org.dbmaintain.dbsupport.SQLHandler;
+import org.dbmaintain.database.Databases;
+import org.dbmaintain.database.SQLHandler;
 
 import java.util.Properties;
 
@@ -22,8 +22,8 @@ public abstract class FactoryWithDatabase<T> implements Factory<T> {
         return factoryWithDatabaseContext.getConfiguration();
     }
 
-    public DbSupports getDbSupports() {
-        return factoryWithDatabaseContext.getDbSupports();
+    public Databases getDatabases() {
+        return factoryWithDatabaseContext.getDatabases();
     }
 
     public SQLHandler getSqlHandler() {

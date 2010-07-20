@@ -1,6 +1,6 @@
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.CheckScriptUpdatesTask;
 import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
 

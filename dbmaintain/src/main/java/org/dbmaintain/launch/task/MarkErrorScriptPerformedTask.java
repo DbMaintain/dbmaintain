@@ -1,8 +1,8 @@
 package org.dbmaintain.launch.task;
 
-import org.dbmaintain.config.MainFactory;
-import org.dbmaintain.dbsupport.DatabaseInfo;
-import org.dbmaintain.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.MainFactory;
+import org.dbmaintain.database.DatabaseInfo;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 
 import java.util.List;
 

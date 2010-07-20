@@ -17,7 +17,7 @@
 package org.dbmaintain.maven.plugin;
 
 import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.dbsupport.DatabaseInfo;
+import org.dbmaintain.database.DatabaseInfo;
 
 import java.util.ArrayList;
 import java.util.List;
