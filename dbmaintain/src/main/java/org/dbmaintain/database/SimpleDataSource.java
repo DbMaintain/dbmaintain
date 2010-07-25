@@ -17,7 +17,6 @@ package org.dbmaintain.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
 import java.lang.reflect.InvocationHandler;
@@ -35,10 +34,10 @@ import java.sql.SQLException;
  * @author Tim Ducheyne
  * @since 3-jan-2009
  */
-public class DbMaintainDataSource {
+public class SimpleDataSource {
 
     /* The logger instance for this class */
-    private static final Log logger = LogFactory.getLog(DbMaintainDataSource.class);
+    private static final Log logger = LogFactory.getLog(SimpleDataSource.class);
 
 
     /**
@@ -54,7 +53,7 @@ public class DbMaintainDataSource {
         String userName = databaseInfo.getUserName();
         String password = databaseInfo.getPassword();
         logger.info("Creating data source. Driver: " + driverClassName + ", url: " + url + ", user: " + userName + ", password: <not shown>");
-        return (DataSource) Proxy.newProxyInstance(DbMaintainDataSource.class.getClassLoader(), new Class<?>[]{DataSource.class}, new DbMaintainDataSourceInvocationHandler(driverClassName, url, userName, password));
+        return (DataSource) Proxy.newProxyInstance(SimpleDataSource.class.getClassLoader(), new Class<?>[]{DataSource.class}, new SimpleDataSourceInvocationHandler(driverClassName, url, userName, password));
     }
 
 
@@ -63,7 +62,7 @@ public class DbMaintainDataSource {
      * implements the getConnection method: this method will create a new database connection to the database configured
      * with the driverClassName, url, userName and password given with the constructor invocation.
      */
-    protected static class DbMaintainDataSourceInvocationHandler implements InvocationHandler {
+    protected static class SimpleDataSourceInvocationHandler implements InvocationHandler {
 
         private String driverClassName;
         private String url;
@@ -71,7 +70,7 @@ public class DbMaintainDataSource {
         private String password;
 
 
-        protected DbMaintainDataSourceInvocationHandler(String driverClassName, String url, String userName, String password) {
+        protected SimpleDataSourceInvocationHandler(String driverClassName, String url, String userName, String password) {
             this.driverClassName = driverClassName;
             this.url = url;
             this.userName = userName;
@@ -107,12 +106,12 @@ public class DbMaintainDataSource {
             try {
                 Class.forName(driverClassName);
             } catch (ClassNotFoundException e) {
-                throw new DbMaintainException("Driver class not found: " + driverClassName, e);
+                throw new DatabaseException("Unable to connect to database. Driver class not found: " + driverClassName, e);
             }
             try {
                 return DriverManager.getConnection(url, userName, password);
             } catch (SQLException e) {
-                throw new DbMaintainException("Unable to load driver for url: " + url, e);
+                throw new DatabaseException("Unable to connect to database. Could not create connection for database url: " + url + ", user name: " + userName + ", password: <not shown>", e);
             }
         }
 

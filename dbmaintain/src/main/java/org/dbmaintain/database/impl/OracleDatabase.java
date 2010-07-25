@@ -17,8 +17,8 @@ package org.dbmaintain.database.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseConnection;
+import org.dbmaintain.database.DatabaseException;
 import org.dbmaintain.database.StoredIdentifierCase;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.sql.*;
 import java.util.Set;
@@ -207,7 +207,7 @@ public class OracleDatabase extends Database {
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName));
             }
         } catch (SQLException e) {
-            throw new DbMaintainException("Error while disabling referential constraints on schema " + schemaName, e);
+            throw new DatabaseException("Unable to disable referential constraints for schema name: " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);
             closeQuietly(connection, alterStatement, resultSet);
@@ -240,7 +240,7 @@ public class OracleDatabase extends Database {
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " disable constraint " + quoted(constraintName));
             }
         } catch (SQLException e) {
-            throw new DbMaintainException("Error while disabling value constraints on schema " + schemaName, e);
+            throw new DatabaseException("Unable to disable value constraints for schema name: " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);
             closeQuietly(connection, alterStatement, resultSet);
@@ -287,7 +287,7 @@ public class OracleDatabase extends Database {
                 getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " increment by " + incrementBy, getDataSource());
             }
         } catch (SQLException e) {
-            throw new DbMaintainException("Error while incrementing sequence to value", e);
+            throw new DatabaseException("Unable to increment sequence to value " + newSequenceValue + " for schema name: " + schemaName + ", sequence name: " + sequenceName, e);
         } finally {
             closeQuietly(connection, statement, resultSet);
         }
@@ -417,7 +417,7 @@ public class OracleDatabase extends Database {
                 DatabaseMetaData metaData = connection.getMetaData();
                 oracleMajorVersionNumber = metaData.getDatabaseMajorVersion();
             } catch (SQLException e) {
-                throw new DbMaintainException("Unable to determine database major version", e);
+                throw new DatabaseException("Unable to determine database major version", e);
             } finally {
                 closeQuietly(connection);
             }

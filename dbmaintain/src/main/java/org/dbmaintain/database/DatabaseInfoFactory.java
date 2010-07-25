@@ -17,7 +17,6 @@
 package org.dbmaintain.database;
 
 import org.dbmaintain.config.PropertyUtils;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,22 +56,15 @@ public class DatabaseInfoFactory {
 
 
     protected DatabaseInfo getUnnamedDatabaseInfo() {
-        try {
-            String driverClassName = getString(PROPERTY_DRIVERCLASSNAME, configuration);
-            String url = getString(PROPERTY_URL, configuration);
-            String userName = getString(PROPERTY_USERNAME, configuration);
-            String password = getString(PROPERTY_PASSWORD, "", configuration);
-            String databaseDialect = getString(PROPERTY_DIALECT, configuration);
-            List<String> schemaNames = getStringList(PROPERTY_SCHEMANAMES, configuration);
-            if (schemaNames.isEmpty()) {
-                throw new DbMaintainException("No value found for property " + PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END);
-            }
-            return new DatabaseInfo("<no-name>", databaseDialect, driverClassName, url, userName, password, schemaNames, false);
-
-        } catch (DbMaintainException e) {
-            throw new DbMaintainException("No database configuration found. At least one database should be defined in the properties or in the task configuration.", e);
-        }
+        String driverClassName = getProperty(null, PROPERTY_DRIVERCLASSNAME_END);
+        String url = getProperty(null, PROPERTY_URL_END);
+        String userName = getProperty(null, PROPERTY_USERNAME_END);
+        String password = getProperty(null, PROPERTY_PASSWORD_END);
+        String databaseDialect = getProperty(null, PROPERTY_DIALECT_END);
+        List<String> schemaNames = getListProperty(null, PROPERTY_SCHEMANAMES_END);
+        return new DatabaseInfo("<no-name>", databaseDialect, driverClassName, url, userName, password, schemaNames, false);
     }
+
 
     /**
      * @param databaseName The name that identifies the database, not null
@@ -80,36 +72,12 @@ public class DatabaseInfoFactory {
      * @return a DataSource that connects with the database as configured for the given database name
      */
     protected DatabaseInfo createDatabaseInfo(String databaseName, boolean disabled) {
-        String driverClassNamePropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
-        String urlPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
-        String userNamePropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
-        String passwordPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DRIVERCLASSNAME_END;
-        String databaseDialectPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_DIALECT_END;
-        String schemaNamesListPropertyName = PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END;
-        String customDriverClassNamePropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DRIVERCLASSNAME_END;
-        String customUrlPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_URL_END;
-        String customUserNamePropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_USERNAME_END;
-        String customPasswordPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_PASSWORD_END;
-        String customSchemaNamesPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMANAMES_END;
-        String customDatabaseDialectPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_DIALECT_END;
-        String customSchemaNamesListPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_SCHEMANAMES_END;
-
-        if (!(containsProperty(customDriverClassNamePropertyName, configuration) ||
-                containsProperty(customUrlPropertyName, configuration) ||
-                containsProperty(customUserNamePropertyName, configuration) ||
-                containsProperty(customPasswordPropertyName, configuration) ||
-                containsProperty(customSchemaNamesPropertyName, configuration))) {
-            throw new DbMaintainException("No custom database properties defined for database " + databaseName);
-        }
-        String driverClassName = containsProperty(customDriverClassNamePropertyName, configuration) ? getString(customDriverClassNamePropertyName, configuration) : getString(driverClassNamePropertyName, configuration);
-        String url = containsProperty(customUrlPropertyName, configuration) ? getString(customUrlPropertyName, configuration) : getString(urlPropertyName, configuration);
-        String userName = containsProperty(customUserNamePropertyName, configuration) ? getString(customUserNamePropertyName, configuration) : getString(userNamePropertyName, configuration);
-        String password = containsProperty(customPasswordPropertyName, configuration) ? getString(customPasswordPropertyName, configuration) : getString(passwordPropertyName, configuration);
-        String databaseDialect = containsProperty(customDatabaseDialectPropertyName, configuration) ? getString(customDatabaseDialectPropertyName, configuration) : getString(databaseDialectPropertyName, configuration);
-        List<String> schemaNames = containsProperty(customSchemaNamesListPropertyName, configuration) ? getStringList(customSchemaNamesListPropertyName, configuration) : getStringList(schemaNamesListPropertyName, configuration);
-        if (schemaNames.isEmpty()) {
-            throw new DbMaintainException("No value found for property " + schemaNamesListPropertyName);
-        }
+        String driverClassName = getProperty(databaseName, PROPERTY_DRIVERCLASSNAME_END);
+        String url = getProperty(databaseName, PROPERTY_URL_END);
+        String userName = getProperty(databaseName, PROPERTY_USERNAME_END);
+        String password = getProperty(databaseName, PROPERTY_PASSWORD_END);
+        String databaseDialect = getProperty(databaseName, PROPERTY_DIALECT_END);
+        List<String> schemaNames = getListProperty(databaseName, PROPERTY_SCHEMANAMES_END);
         return new DatabaseInfo(databaseName, databaseDialect, driverClassName, url, userName, password, schemaNames, disabled);
     }
 
@@ -120,5 +88,29 @@ public class DatabaseInfoFactory {
     protected boolean isDatabaseIncluded(String databaseName) {
         return PropertyUtils.getBoolean(PROPERTY_DATABASE_START + '.' + databaseName + '.' + PROPERTY_INCLUDED_END, true, configuration);
     }
+
+
+    protected String getProperty(String databaseName, String propertyNameEnd) {
+        if (databaseName != null) {
+            String customPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + propertyNameEnd;
+            if (containsProperty(customPropertyName, configuration)) {
+                return getString(customPropertyName, "", configuration);
+            }
+        }
+        String defaultPropertyName = PROPERTY_DATABASE_START + '.' + propertyNameEnd;
+        return getString(defaultPropertyName, "", configuration);
+    }
+
+    protected List<String> getListProperty(String databaseName, String propertyNameEnd) {
+        if (databaseName != null) {
+            String customPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + propertyNameEnd;
+            if (containsProperty(customPropertyName, configuration)) {
+                return getStringList(customPropertyName, configuration, false);
+            }
+        }
+        String defaultPropertyName = PROPERTY_DATABASE_START + '.' + propertyNameEnd;
+        return getStringList(defaultPropertyName, configuration, false);
+    }
+
 
 }

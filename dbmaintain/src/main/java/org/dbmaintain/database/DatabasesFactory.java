@@ -16,8 +16,6 @@
  *  */
 package org.dbmaintain.database;
 
-import org.dbmaintain.util.DbMaintainException;
-
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +25,7 @@ import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
 import static org.dbmaintain.config.PropertyUtils.getString;
-import static org.dbmaintain.database.DbMaintainDataSource.createDataSource;
+import static org.dbmaintain.database.SimpleDataSource.createDataSource;
 import static org.dbmaintain.database.StoredIdentifierCase.*;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
@@ -63,6 +61,7 @@ public class DatabasesFactory {
 
 
     public Database createDatabase(DatabaseInfo databaseInfo) {
+        databaseInfo.validate();
         DataSource dataSource = createDataSource(databaseInfo);
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
 
@@ -89,7 +88,7 @@ public class DatabasesFactory {
         } else if ("auto".equals(storedIdentifierCasePropertyValue)) {
             return null;
         }
-        throw new DbMaintainException("Unknown value " + storedIdentifierCasePropertyValue + " for property " + PROPERTY_STORED_IDENTIFIER_CASE + ". It should be one of lower_case, upper_case, mixed_case or auto.");
+        throw new DatabaseException("Unable to determine stored identifier case. Unknown value " + storedIdentifierCasePropertyValue + " for property " + PROPERTY_STORED_IDENTIFIER_CASE + ". It should be one of lower_case, upper_case, mixed_case or auto.");
     }
 
     protected String getCustomIdentifierQuoteString(String databaseDialect) {

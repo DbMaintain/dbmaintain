@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.util;
+package org.dbmaintain.database;
+
+import org.dbmaintain.util.DbMaintainException;
 
 
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DbMaintainException extends RuntimeException {
+public class DatabaseException extends DbMaintainException {
 
     /**
      * Constructor for DbMaintainException.
      */
-    public DbMaintainException() {
+    public DatabaseException() {
         super();
     }
 
@@ -35,7 +37,7 @@ public class DbMaintainException extends RuntimeException {
      * @param message The exception message
      * @param cause   The wrapped exception
      */
-    public DbMaintainException(String message, Throwable cause) {
+    public DatabaseException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -44,7 +46,7 @@ public class DbMaintainException extends RuntimeException {
      *
      * @param message The exception message
      */
-    public DbMaintainException(String message) {
+    public DatabaseException(String message) {
         super(message);
     }
 
@@ -53,7 +55,7 @@ public class DbMaintainException extends RuntimeException {
      *
      * @param cause The wrapped exception
      */
-    public DbMaintainException(Throwable cause) {
+    public DatabaseException(Throwable cause) {
         super(cause);
     }
 

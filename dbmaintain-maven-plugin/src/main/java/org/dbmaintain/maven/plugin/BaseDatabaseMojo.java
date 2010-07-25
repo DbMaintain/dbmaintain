@@ -49,9 +49,11 @@ public abstract class BaseDatabaseMojo extends BaseMojo {
 
     protected List<DatabaseInfo> createDatabaseInfos() {
         List<DatabaseInfo> databaseInfos = new ArrayList<DatabaseInfo>();
-        for (Database database : databases) {
-            DatabaseInfo databaseInfo = database.createDatabaseInfo();
-            databaseInfos.add(databaseInfo);
+        if (databases != null) {
+            for (Database database : databases) {
+                DatabaseInfo databaseInfo = database.createDatabaseInfo();
+                databaseInfos.add(databaseInfo);
+            }
         }
         return databaseInfos;
     }

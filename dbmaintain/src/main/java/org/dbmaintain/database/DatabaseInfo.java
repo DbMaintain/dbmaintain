@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 /**
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -44,10 +46,34 @@ public class DatabaseInfo {
         this.driverClassName = driverClassName;
         this.url = url;
         this.userName = userName;
-        this.password = password;
-        this.defaultSchemaName = schemaNames.get(0);
+        if (password == null) {
+            this.password = "";
+        } else {
+            this.password = password;
+        }
+        if (!schemaNames.isEmpty()) {
+            this.defaultSchemaName = schemaNames.get(0);
+        }
         this.schemaNames = new HashSet<String>(schemaNames);
         this.disabled = disabled;
+    }
+
+    public void validate() {
+        if (isBlank(dialect)) {
+            throw new DatabaseException("Invalid database configuration. No database dialect defined in properties or task configuration.");
+        }
+        if (isBlank(driverClassName)) {
+            throw new DatabaseException("Invalid database configuration. No driver class name defined in properties or task configuration.");
+        }
+        if (isBlank(url)) {
+            throw new DatabaseException("Invalid database configuration. No database url defined in properties or task configuration.");
+        }
+        if (isBlank(userName)) {
+            throw new DatabaseException("Invalid database configuration. No database user name defined in properties or task configuration.");
+        }
+        if (schemaNames.isEmpty()) {
+            throw new DatabaseException("Invalid database configuration. No schema name(s) defined in properties or task configuration.");
+        }
     }
 
 

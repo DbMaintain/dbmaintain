@@ -16,8 +16,6 @@
  *  */
 package org.dbmaintain.database;
 
-import org.dbmaintain.util.DbMaintainException;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,7 @@ public class Databases {
 
     public Databases(List<Database> databases, List<String> disabledDatabaseNames) {
         if (databases.isEmpty()) {
-            throw new DbMaintainException("Unable to configure db supports. No db support instances provided.");
+            throw new DatabaseException("Unable to configure databases. No database instances provided.");
         }
         this.databases = databases;
         this.defaultDatabase = databases.get(0);
@@ -56,7 +54,7 @@ public class Databases {
     public Database getDatabase(String databaseName) {
         Database database = nameDatabaseMap.get(databaseName);
         if (database == null) {
-            throw new DbMaintainException("No test database configured with the name '" + databaseName + "'");
+            throw new DatabaseException("No database configured with name: " + databaseName);
         }
         return database;
     }

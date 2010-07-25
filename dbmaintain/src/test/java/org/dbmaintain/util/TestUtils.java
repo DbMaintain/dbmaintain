@@ -41,7 +41,7 @@ import java.util.SortedSet;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.dbmaintain.database.DbMaintainDataSource.createDataSource;
+import static org.dbmaintain.database.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**

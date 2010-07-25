@@ -15,11 +15,7 @@
  */
 package org.dbmaintain.database.impl;
 
-import org.dbmaintain.database.Database;
-import org.dbmaintain.database.DatabaseConnection;
-import org.dbmaintain.database.SQLHandler;
-import org.dbmaintain.database.StoredIdentifierCase;
-import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.database.*;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -316,7 +312,7 @@ public class MsSqlDatabase extends Database {
                 sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " " + dataType + " null", getDataSource());
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Error while disabling not null constraints. Table name: " + tableName, e);
+            throw new DatabaseException("Unable to disable not null constraints for schema name: " + schemaName + ", table name: " + tableName, e);
         } finally {
             closeQuietly(connection, statement, resultSet);
         }

@@ -16,7 +16,6 @@
 package org.dbmaintain.database;
 
 import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -712,7 +711,7 @@ abstract public class Database {
                 return MIXED_CASE;
             }
         } catch (SQLException e) {
-            throw new DbMaintainException("Unable to determine stored identifier case.", e);
+            throw new DatabaseException("Unable to determine stored identifier case.", e);
         } finally {
             closeQuietly(connection, null, null);
         }
@@ -740,7 +739,7 @@ abstract public class Database {
             return StringUtils.trimToNull(quoteString);
 
         } catch (SQLException e) {
-            throw new DbMaintainException("Unable to determine identifier quote string.", e);
+            throw new DatabaseException("Unable to determine identifier quote string.", e);
         } finally {
             closeQuietly(connection, null, null);
         }

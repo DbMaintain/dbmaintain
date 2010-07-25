@@ -17,8 +17,8 @@ package org.dbmaintain.database.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseConnection;
+import org.dbmaintain.database.DatabaseException;
 import org.dbmaintain.database.StoredIdentifierCase;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.sql.*;
 import java.util.Set;
@@ -145,7 +145,7 @@ public class HsqldbDatabase extends Database {
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Error while disabling not referential constraints on schema " + schemaName, e);
+            throw new DatabaseException("Unable to disable not referential constraints for schema name: " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);
             closeQuietly(connection, alterStatement, resultSet);
@@ -189,7 +189,7 @@ public class HsqldbDatabase extends Database {
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Error while disabling check and unique constraints on schema " + schemaName, e);
+            throw new DatabaseException("Unable to disable check and unique constraints for schema name: " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);
             closeQuietly(connection, alterStatement, resultSet);
@@ -225,7 +225,7 @@ public class HsqldbDatabase extends Database {
                 alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " set null");
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Error while disabling not null constraints on schema " + schemaName, e);
+            throw new DatabaseException("Unable to disable not null constraints for schema name: " + schemaName, e);
         } finally {
             closeQuietly(queryStatement);
             closeQuietly(connection, alterStatement, resultSet);
@@ -372,7 +372,7 @@ public class HsqldbDatabase extends Database {
                 hsqlMajorVersionNumber = metaData.getDatabaseMajorVersion();
 
             } catch (SQLException e) {
-                throw new DbMaintainException("Unable to determine database major version", e);
+                throw new DatabaseException("Unable to determine database major version.", e);
             } finally {
                 closeQuietly(connection);
             }

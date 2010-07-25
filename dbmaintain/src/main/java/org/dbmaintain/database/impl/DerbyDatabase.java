@@ -15,11 +15,7 @@
  */
 package org.dbmaintain.database.impl;
 
-import org.dbmaintain.database.Database;
-import org.dbmaintain.database.DatabaseConnection;
-import org.dbmaintain.database.SQLHandler;
-import org.dbmaintain.database.StoredIdentifierCase;
-import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.database.*;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -283,7 +279,7 @@ public class DerbyDatabase extends Database {
             }
             return result;
         } catch (SQLException e) {
-            throw new DbMaintainException("Error while querying for Derby primary keys for table name: " + tableName, e);
+            throw new DatabaseException("Unable to get primary key column names for schema name: " + schemaName + ", table name: " + tableName, e);
         } finally {
             closeQuietly(connection, null, resultSet);
         }
@@ -314,7 +310,7 @@ public class DerbyDatabase extends Database {
             }
             return result;
         } catch (SQLException e) {
-            throw new DbMaintainException("Error while querying for Derby primary keys for table name: " + tableName, e);
+            throw new DatabaseException("Unable to get not null column names for schema name: " + schemaName + ", table name: " + tableName, e);
         } finally {
             closeQuietly(connection, null, resultSet);
         }

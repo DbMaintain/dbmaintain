@@ -17,8 +17,8 @@ package org.dbmaintain.database.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.database.DatabaseException;
 import org.dbmaintain.database.SQLHandler;
-import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -87,7 +87,7 @@ public class DefaultSQLHandler implements SQLHandler {
             return statement.executeUpdate(sql);
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while performing database update: " + sql, e);
+            throw new DatabaseException("Error while performing database update: " + sql, e);
         } finally {
             closeQuietly(statement);
         }
@@ -112,7 +112,7 @@ public class DefaultSQLHandler implements SQLHandler {
             return nbChanges;
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while performing database update:\n" + sql, e);
+            throw new DatabaseException("Error while performing database update:\n" + sql, e);
         } finally {
             closeQuietly(statement);
         }
@@ -131,13 +131,13 @@ public class DefaultSQLHandler implements SQLHandler {
                 return resultSet.getLong(1);
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Error while executing statement: " + sql, e);
+            throw new DatabaseException("Error while executing statement: " + sql, e);
         } finally {
             closeQuietly(null, statement, resultSet);
         }
 
         // in case no value was found, throw an exception
-        throw new DbMaintainException("No item value found: " + sql);
+        throw new DatabaseException("No item value found: " + sql);
     }
 
     public String getItemAsString(String sql, DataSource dataSource) {
@@ -152,13 +152,13 @@ public class DefaultSQLHandler implements SQLHandler {
                 return resultSet.getString(1);
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Error while executing statement: " + sql, e);
+            throw new DatabaseException("Error while executing statement: " + sql, e);
         } finally {
             closeQuietly(null, statement, resultSet);
         }
 
         // in case no value was found, throw an exception
-        throw new DbMaintainException("No item value found: " + sql);
+        throw new DatabaseException("No item value found: " + sql);
     }
 
     public Set<String> getItemsAsStringSet(String sql, DataSource dataSource) {
@@ -176,7 +176,7 @@ public class DefaultSQLHandler implements SQLHandler {
             return result;
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while executing statement: " + sql, e);
+            throw new DatabaseException("Error while executing statement: " + sql, e);
         } finally {
             closeQuietly(null, statement, resultSet);
         }
@@ -194,7 +194,7 @@ public class DefaultSQLHandler implements SQLHandler {
             return resultSet.next();
 
         } catch (Exception e) {
-            throw new DbMaintainException("Error while executing statement: " + sql, e);
+            throw new DatabaseException("Error while executing statement: " + sql, e);
         } finally {
             closeQuietly(null, statement, resultSet);
         }
@@ -214,7 +214,7 @@ public class DefaultSQLHandler implements SQLHandler {
                 connection.setAutoCommit(false);
             }
         } catch (Exception e) {
-            throw new DbMaintainException("Unable to start transaction.", e);
+            throw new DatabaseException("Unable to start transaction.", e);
         }
     }
 
@@ -235,7 +235,7 @@ public class DefaultSQLHandler implements SQLHandler {
             } catch (Exception t) {
                 logger.warn("Unable to perform database rollback after commit failure.");
             }
-            throw new DbMaintainException("Error while performing database commit.", e);
+            throw new DatabaseException("Error while performing database commit.", e);
         } finally {
             reenableAutoCommit(connection);
         }
@@ -253,7 +253,7 @@ public class DefaultSQLHandler implements SQLHandler {
             connection.rollback();
 
         } catch (Exception e) {
-            throw new DbMaintainException("Unable to perform database rollback.", e);
+            throw new DatabaseException("Unable to perform database rollback.", e);
         } finally {
             reenableAutoCommit(connection);
         }
@@ -294,7 +294,7 @@ public class DefaultSQLHandler implements SQLHandler {
             try {
                 connection = dataSource.getConnection();
             } catch (SQLException e) {
-                throw new DbMaintainException("Error while creating connection", e);
+                throw new DatabaseException("Error while creating connection", e);
             }
             cachedConnections.put(dataSource, connection);
         }

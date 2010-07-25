@@ -19,6 +19,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.dbmaintain.launch.task.DbMaintainTask;
 
 import java.io.File;
@@ -37,7 +38,12 @@ public abstract class BaseMojo extends AbstractMojo {
      * @parameter expression="${project}"
      * @readonly
      */
-    private MavenProject project;
+    protected MavenProject project;
+
+    /**
+     * @component
+     */
+    protected MavenProjectHelper mavenProjectHelper;
 
     /**
      * The DbMaintain configuration file
@@ -60,9 +66,18 @@ public abstract class BaseMojo extends AbstractMojo {
 
         DbMaintainTask dbMaintainTask = createDbMaintainTask();
         dbMaintainTask.execute(configFile, environmentProperties);
+
+        performAfterTaskActions();
     }
 
     protected abstract DbMaintainTask createDbMaintainTask();
+
+    /**
+     * Hook method to perform some operations (such as attaching an artifact) when the
+     * task has completed successfully.
+     */
+    protected void performAfterTaskActions() {
+    }
 
 
     protected Properties getMavenProperties() {
