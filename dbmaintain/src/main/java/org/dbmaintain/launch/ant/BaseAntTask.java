@@ -15,8 +15,6 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.dbmaintain.launch.task.DbMaintainTask;
@@ -34,9 +32,6 @@ import static org.apache.commons.lang.StringUtils.isBlank;
  */
 public abstract class BaseAntTask extends Task {
 
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(BaseAntTask.class);
-
     /**
      * Optional custom configuration file. Is usually not needed, since all applicable properties are configurable
      * using task attributes.
@@ -53,7 +48,7 @@ public abstract class BaseAntTask extends Task {
         try {
             dbMaintainTask.execute(customConfigFile, environmentProperties);
         } catch (Exception e) {
-            logger.error("Unable to perform db maintain task.", e);
+            throw new BuildException("Unable to perform db maintain task. " + e.getMessage(), e);
         }
     }
 
