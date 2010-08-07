@@ -1,10 +1,15 @@
 package org.dbmaintain.maven.plugin;
 
+import org.apache.maven.artifact.Artifact;
 import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
 import org.dbmaintain.launch.task.UpdateDatabaseTask;
+import org.dbmaintain.util.DbMaintainException;
 
+import java.io.File;
 import java.util.List;
+
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * This operation can be used to bring the database to the latest version. First it checks which scripts were already
@@ -72,6 +77,49 @@ public class UpdateDatabaseMojo extends BaseDatabaseMojo {
 
     @Override
     protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new UpdateDatabaseTask(databaseInfos, scriptLocations, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
+        String allScriptLocations = getAllScriptLocations();
+        return new UpdateDatabaseTask(databaseInfos, allScriptLocations, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
+    }
+
+    private String getAllScriptLocations() {
+        StringBuilder allScriptLocations = getScriptArchiveDependenciesAsString();
+        if (!isBlank(scriptLocations)) {
+            if (allScriptLocations.length() > 0) {
+                allScriptLocations.append(", ");
+            }
+            allScriptLocations.append(scriptLocations);
+        }
+        return allScriptLocations.toString();
+    }
+
+    private StringBuilder getScriptArchiveDependenciesAsString() {
+        StringBuilder result = new StringBuilder();
+        if (scriptArchiveDependencies == null || scriptArchiveDependencies.isEmpty()) {
+            return result;
+        }
+
+        for (ScriptArchiveDependency scriptArchiveDependency : scriptArchiveDependencies) {
+            File artifactFile = resolveScriptArchieDependencyArtifact(scriptArchiveDependency);
+            result.append(artifactFile.getPath());
+            result.append(", ");
+        }
+        result.setLength(result.length() - 2);
+        return result;
+    }
+
+    private File resolveScriptArchieDependencyArtifact(ScriptArchiveDependency scriptArchiveDependency) {
+        String groupId = scriptArchiveDependency.getGroupId();
+        String artifactId = scriptArchiveDependency.getArtifactId();
+        String version = scriptArchiveDependency.getVersion();
+        String type = scriptArchiveDependency.getType();
+        String classifier = scriptArchiveDependency.getClassifier();
+
+        Artifact artifact = artifactFactory.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
+        try {
+            resolver.resolve(artifact, remoteRepositories, localRepository);
+        } catch (Exception e) {
+            throw new DbMaintainException("Unable to resolve script locations for group id: " + groupId + ", artifact id: " + artifactId + ", version: " + version + ", type: " + type + ", classifier: " + classifier, e);
+        }
+        return artifact.getFile();
     }
 }

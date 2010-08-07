@@ -35,6 +35,10 @@ public abstract class BaseDatabaseMojo extends BaseMojo {
      * @parameter
      */
     protected List<Database> databases;
+    /**
+     * @parameter
+     */
+    protected List<ScriptArchiveDependency> scriptArchiveDependencies;
 
 
     @Override

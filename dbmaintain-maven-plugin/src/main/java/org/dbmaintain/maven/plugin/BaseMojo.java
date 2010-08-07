@@ -15,6 +15,9 @@
  */
 package org.dbmaintain.maven.plugin;
 
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -23,7 +26,7 @@ import org.apache.maven.project.MavenProjectHelper;
 import org.dbmaintain.launch.task.DbMaintainTask;
 
 import java.io.File;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -36,15 +39,40 @@ public abstract class BaseMojo extends AbstractMojo {
      * The maven project.
      *
      * @parameter expression="${project}"
+     * @required
      * @readonly
      */
     protected MavenProject project;
-
     /**
      * @component
+     * @required
+     * @readonly
+     */
+    protected ArtifactFactory artifactFactory;
+    /**
+     * @component
+     * @required
+     * @readonly
+     */
+    protected ArtifactResolver resolver;
+    /**
+     * @parameter default-value="${localRepository}"
+     * @required
+     * @readonly
+     */
+    protected ArtifactRepository localRepository;
+    /**
+     * @parameter default-value="${project.remoteArtifactRepositories}"
+     * @required
+     * @readonly
+     */
+    protected List remoteRepositories;
+    /**
+     * @component
+     * @required
+     * @readonly
      */
     protected MavenProjectHelper mavenProjectHelper;
-
     /**
      * The DbMaintain configuration file
      * (common for native dbMaintain, through ant or this maven-plugin).
@@ -52,13 +80,6 @@ public abstract class BaseMojo extends AbstractMojo {
      * @parameter
      */
     protected File configFile;
-
-    /**
-     * Optional set of extra properties which will override any from {@linkplain #configFile}.
-     *
-     * @parameter
-     */
-    protected Map<String, String> properties;
 
 
     public void execute() throws MojoExecutionException, MojoFailureException {

@@ -5,6 +5,8 @@ import org.dbmaintain.launch.task.DbMaintainTask;
 
 import java.io.File;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 /**
  * Creates a jar containing the SQL scripts.
  *
@@ -16,37 +18,45 @@ import java.io.File;
 public class CreateScriptArchiveMojo extends BaseMojo {
 
     /**
-     * @parameter
+     * @parameter default-value="."
      */
     protected String scriptLocations;
     /**
      * @parameter
      */
-    private String scriptEncoding;
+    private String archiveFileName;
     /**
      * @parameter
      */
-    private String postProcessingScriptDirectoryName;
+    protected String scriptEncoding;
     /**
      * @parameter
      */
-    private String qualifiers;
+    protected String postProcessingScriptDirectoryName;
     /**
      * @parameter
      */
-    private String patchQualifiers;
+    protected String qualifiers;
     /**
      * @parameter
      */
-    private String qualifierPrefix;
+    protected String patchQualifiers;
     /**
      * @parameter
      */
-    private String targetDatabasePrefix;
+    protected String qualifierPrefix;
     /**
      * @parameter
      */
-    private String scriptFileExtensions;
+    protected String targetDatabasePrefix;
+    /**
+     * @parameter
+     */
+    protected String scriptFileExtensions;
+    /**
+     * @parameter
+     */
+    protected String qualifier;
 
 
     @Override
@@ -58,12 +68,26 @@ public class CreateScriptArchiveMojo extends BaseMojo {
 
     @Override
     protected void performAfterTaskActions() {
-        mavenProjectHelper.attachArtifact(project, "jar", "scripts", getArchiveFile());
+        if (!isBlank(archiveFileName)) {
+            getLog().info("An explicit archive file name was specified. The scripts archive will not be attached to the build.");
+            return;
+        }
+        mavenProjectHelper.attachArtifact(project, "jar", qualifier, getArchiveFile());
     }
 
     private File getArchiveFile() {
         String outputDirectory = project.getBuild().getDirectory();
-        String artifactId = project.getArtifactId();
-        return new File(outputDirectory, artifactId + "-scripts.jar");
+
+        String targetArchiveFileName;
+        if (!isBlank(archiveFileName)) {
+            targetArchiveFileName = archiveFileName.trim();
+        } else {
+            targetArchiveFileName = project.getBuild().getFinalName();
+            if (!isBlank(qualifier)) {
+                targetArchiveFileName += "-" + qualifier.trim();
+            }
+            targetArchiveFileName += ".jar";
+        }
+        return new File(outputDirectory, targetArchiveFileName);
     }
 }
