@@ -28,18 +28,19 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultScriptArchiveCreator.class);
 
-    private ScriptRepository scriptRepository;
-    private String scriptEncoding;
-    private String postProcessingScriptDirName;
-    private Set<Qualifier> registeredQualifiers;
-    private Set<Qualifier> patchQualifiers;
-    private String qualifierPrefix;
-    private String targetDatabasePrefix;
-    private Set<String> scriptFileExtensions;
-    private ScriptIndexes baseLineRevision;
+    protected ScriptRepository scriptRepository;
+    protected String scriptEncoding;
+    protected String postProcessingScriptDirName;
+    protected Set<Qualifier> registeredQualifiers;
+    protected Set<Qualifier> patchQualifiers;
+    protected String qualifierPrefix;
+    protected String targetDatabasePrefix;
+    protected Set<String> scriptFileExtensions;
+    protected ScriptIndexes baseLineRevision;
+    protected boolean ignoreCarriageReturnsWhenCalculatingCheckSum;
 
 
-    public DefaultScriptArchiveCreator(ScriptRepository scriptRepository, String scriptEncoding, String postProcessingScriptDirName, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix, String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision) {
+    public DefaultScriptArchiveCreator(ScriptRepository scriptRepository, String scriptEncoding, String postProcessingScriptDirName, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix, String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.scriptRepository = scriptRepository;
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
@@ -49,6 +50,7 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
         this.targetDatabasePrefix = targetDatabasePrefix;
         this.scriptFileExtensions = scriptFileExtensions;
         this.baseLineRevision = baseLineRevision;
+        this.ignoreCarriageReturnsWhenCalculatingCheckSum = ignoreCarriageReturnsWhenCalculatingCheckSum;
     }
 
     /**
@@ -63,7 +65,7 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
         try {
             logger.info("Creating script archive: " + archiveFileName);
             SortedSet<Script> allScripts = scriptRepository.getAllScripts();
-            ArchiveScriptLocation archiveScriptLocation = new ArchiveScriptLocation(allScripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision);
+            ArchiveScriptLocation archiveScriptLocation = new ArchiveScriptLocation(allScripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
             archiveScriptLocation.writeToJarFile(new File(archiveFileName));
 
         } catch (Exception e) {

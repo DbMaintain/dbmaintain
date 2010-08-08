@@ -151,27 +151,6 @@ public class ScriptTest {
     }
 
     @Test
-    public void testIsScriptContentEqualTo() {
-        Script script = createScriptWithContent("fileName", "script content");
-
-        Script sameScriptWithoutContent = createScriptWithCheckSum("fileName", script.getCheckSum());
-        assertEqualScriptContent(script, sameScriptWithoutContent, true);
-        assertEqualScriptContent(script, sameScriptWithoutContent, false);
-
-        Script scriptWithDifferentModificationDate = createScriptWithModificationDateAndCheckSum("fileName", 1L, script.getCheckSum());
-        assertEqualScriptContent(script, scriptWithDifferentModificationDate, true);
-        assertEqualScriptContent(script, scriptWithDifferentModificationDate, false);
-
-        Script scriptWithDifferentChecksum = createScriptWithCheckSum("fileName", "xxx");
-        assertEqualScriptContent(script, scriptWithDifferentChecksum, true);
-        assertDifferentScriptContent(script, scriptWithDifferentChecksum, false);
-
-        Script scriptWithDifferentChecksumAndModificationDate = createScriptWithModificationDateAndCheckSum("fileName", 1L, "xxx");
-        assertDifferentScriptContent(script, scriptWithDifferentChecksumAndModificationDate, true);
-        assertDifferentScriptContent(script, scriptWithDifferentChecksumAndModificationDate, false);
-    }
-
-    @Test
     public void testOrder() {
         Script incremental1 = createScript("01_x/01_x.sql");
         Script incremental2 = createScript("01_x/02_x.sql");
@@ -194,30 +173,8 @@ public class ScriptTest {
         }
     }
 
-    private void assertEqualScriptContent(Script script1, Script script2, boolean useLastModificationDates) {
-        assertTrue(script1.isScriptContentEqualTo(script2, useLastModificationDates));
-    }
-
-    private void assertDifferentScriptContent(Script script1, Script script2, boolean useLastModificationDates) {
-        assertFalse(script1.isScriptContentEqualTo(script2, useLastModificationDates));
-    }
-
     private Script createScript(String fileName) {
         return new Script(fileName, 10L, "xxx", "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
-    }
-
-    private Script createScriptWithContent(String fileName, String scriptContent) {
-        return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1"),
-                "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
-    }
-
-    private Script createScriptWithCheckSum(String fileName, String checkSum) {
-        return new Script(fileName, 0L, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
-    }
-
-    private Script createScriptWithModificationDateAndCheckSum(String fileName, long fileLastModifiedAt, String checkSum) {
-        return new Script(fileName, fileLastModifiedAt, checkSum, "@", "#", getRegisteredQualifiers(), getPatchQualifier(),
-                "postprocessing", null);
     }
 
     private Set<Qualifier> getPatchQualifier() {
@@ -227,5 +184,4 @@ public class ScriptTest {
     private Set<Qualifier> getRegisteredQualifiers() {
         return asSet(QUALIFIER1, QUALIFIER2, QUALIFIER3);
     }
-
 }

@@ -15,16 +15,14 @@
  */
 package org.dbmaintain.script;
 
-import org.apache.commons.io.IOUtils;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.NullWriter;
 import org.dbmaintain.util.ReaderInputStream;
 
 import java.io.*;
 import java.net.URL;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * A handle for getting the script content as a stream.
@@ -35,17 +33,20 @@ import java.security.NoSuchAlgorithmException;
 public abstract class ScriptContentHandle {
 
     protected MessageDigest scriptDigest;
-
     protected Reader scriptReader;
-
     protected String encoding;
+    /* If true, carriage return chars will be ignored when calculating check sums */
+    protected boolean ignoreCarriageReturnsWhenCalculatingCheckSum;
 
 
     /**
      * @param encoding The encoding of the script, not null
+     * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+     *                 If true, carriage return chars will be ignored when calculating check sums
      */
-    protected ScriptContentHandle(String encoding) {
+    protected ScriptContentHandle(String encoding, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.encoding = encoding;
+        this.ignoreCarriageReturnsWhenCalculatingCheckSum = ignoreCarriageReturnsWhenCalculatingCheckSum;
     }
 
     /**
@@ -56,9 +57,8 @@ public abstract class ScriptContentHandle {
      * @return The content stream, not null
      */
     public Reader openScriptContentReader() {
-        scriptDigest = getScriptDigest();
         try {
-            scriptReader = new InputStreamReader(new DigestInputStream(getScriptInputStream(), scriptDigest), encoding);
+            scriptReader = new InputStreamReader(getScriptInputStream(), encoding);
         } catch (UnsupportedEncodingException e) {
             throw new DbMaintainException("Unsupported encoding " + encoding, e);
         }
@@ -68,12 +68,35 @@ public abstract class ScriptContentHandle {
 
     public String getCheckSum() {
         try {
-            if (scriptDigest == null) {
-                readScript();
-            }
+            MessageDigest scriptDigest = getScriptDigest();
             return getHexPresentation(scriptDigest.digest());
         } catch (IOException e) {
             throw new DbMaintainException(e);
+        }
+    }
+
+    protected MessageDigest getScriptDigest() throws IOException {
+        if (scriptDigest != null) {
+            return scriptDigest;
+        }
+
+        InputStream scriptInputStream = null;
+        try {
+            scriptInputStream = getScriptInputStream();
+            scriptDigest = MessageDigest.getInstance("MD5");
+
+            int b;
+            while ((b = scriptInputStream.read()) != -1) {
+                if (ignoreCarriageReturnsWhenCalculatingCheckSum && b == '\r') {
+                    continue;
+                }
+                scriptDigest.update((byte) b);
+            }
+            return scriptDigest;
+        } catch (Exception e) {
+            throw new DbMaintainException("Unable to calculate digest for script.", e);
+        } finally {
+            closeQuietly(scriptInputStream);
         }
     }
 
@@ -99,26 +122,6 @@ public abstract class ScriptContentHandle {
             }
         } catch (IOException e) {
             return "<script content could not be retrieved>";
-        }
-    }
-
-
-    protected MessageDigest getScriptDigest() {
-        try {
-            return MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new DbMaintainException(e);
-        }
-    }
-
-    protected void readScript() throws IOException {
-        Reader scriptContentReader = null;
-        try {
-            scriptContentReader = openScriptContentReader();
-            IOUtils.copy(scriptContentReader, new NullWriter());
-            scriptContentReader.close();
-        } finally {
-            IOUtils.closeQuietly(scriptContentReader);
         }
     }
 
@@ -152,12 +155,13 @@ public abstract class ScriptContentHandle {
          *
          * @param url      The url to the content, not null
          * @param encoding The encoding of the script, not null
+         * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+         *                 If true, carriage return chars will be ignored when calculating check sums
          */
-        public UrlScriptContentHandle(URL url, String encoding) {
-            super(encoding);
+        public UrlScriptContentHandle(URL url, String encoding, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+            super(encoding, ignoreCarriageReturnsWhenCalculatingCheckSum);
             this.url = url;
         }
-
 
         /**
          * Opens a stream to the content of the script.
@@ -188,12 +192,13 @@ public abstract class ScriptContentHandle {
          *
          * @param scriptContent The content, not null
          * @param encoding      The encoding of the script, not null
+         * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+         *                      If true, carriage return chars will be ignored when calculating check sums
          */
-        public StringScriptContentHandle(String scriptContent, String encoding) {
-            super(encoding);
+        public StringScriptContentHandle(String scriptContent, String encoding, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+            super(encoding, ignoreCarriageReturnsWhenCalculatingCheckSum);
             this.scriptContent = scriptContent;
         }
-
 
         /**
          * Opens a stream to the content of the script.
@@ -204,9 +209,6 @@ public abstract class ScriptContentHandle {
         protected InputStream getScriptInputStream() {
             return new ReaderInputStream(new StringReader(scriptContent));
         }
-
-
     }
-
 
 }

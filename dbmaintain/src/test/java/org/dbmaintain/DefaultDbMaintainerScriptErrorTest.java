@@ -26,7 +26,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
     @Before
     public void initialize() {
-        script = new Script("01_filename.sql", 0L, new ScriptContentHandle.StringScriptContentHandle("content of script", "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
+        script = new Script("01_filename.sql", 0L, new ScriptContentHandle.StringScriptContentHandle("content of script", "ISO-8859-1", false), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
     }
 
 

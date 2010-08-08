@@ -57,11 +57,14 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param targetDatabasePrefix        The prefix that indicates the target database part in the filename, not null
      * @param scriptFileExtensions        The script file extensions
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+     *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
                                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix,
-                                 String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision) {
-        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision);
+                                 String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
+                                 boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -78,11 +81,14 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param defaultTargetDatabasePrefix the default target database prefix
      * @param defaultScriptFileExtensions the default script file extensions
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+     *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     public ArchiveScriptLocation(File jarLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
                                  Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPefix,
-                                 String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision) {
-        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision);
+                                 String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision,
+                                 boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -102,7 +108,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
             JarEntry jarEntry = jarEntries.nextElement();
             if (!LOCATION_PROPERTIES_FILENAME.equals(jarEntry.getName())) {
                 final JarEntry currentJarEntry = jarEntry;
-                ScriptContentHandle scriptContentHandle = new ScriptContentHandle(scriptEncoding) {
+                ScriptContentHandle scriptContentHandle = new ScriptContentHandle(scriptEncoding, ignoreCarriageReturnsWhenCalculatingCheckSum) {
                     @Override
                     protected InputStream getScriptInputStream() {
                         try {
@@ -211,6 +217,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
         if (baseLineRevision != null) {
             configuration.put(PROPERTY_BASELINE_REVISION, baseLineRevision.getIndexesString());
         }
+        configuration.put(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, Boolean.toString(ignoreCarriageReturnsWhenCalculatingCheckSum));
         return configuration;
     }
 

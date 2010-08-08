@@ -200,6 +200,8 @@ public class DbMaintainProperties {
      */
     public static final String PROPERTY_SCRIPT_FILE_EXTENSIONS = "dbMaintainer.script.fileExtensions";
 
+    public static final String PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM = "dbMaintainer.script.ignoreCarriageReturnsWhenCalculatingCheckSum";
+
     /**
      * Property key for the directory in which the code script files are located
      */

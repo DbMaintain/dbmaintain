@@ -152,6 +152,6 @@ public class JdbcScriptRunnerTest {
     }
 
     private Script createScript(String scriptName) {
-        return new Script(scriptName, 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/" + scriptName), "ISO-8859-1"), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
+        return new Script(scriptName, 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/" + scriptName), "ISO-8859-1", false), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
     }
 }

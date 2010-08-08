@@ -91,7 +91,7 @@ public class ScriptRepositoryBaselineRevisionTest {
         Script postProcessingScript = createScript("postprocessing/script.sql", baseLineRevision);
         SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, postProcessingScript);
 
-        ScriptLocation scriptLocation = new ArchiveScriptLocation(scripts, null, null, null, null, null, null, null, baseLineRevision);
+        ScriptLocation scriptLocation = new ArchiveScriptLocation(scripts, null, null, null, null, null, null, null, baseLineRevision, false);
         return new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator());
     }
 

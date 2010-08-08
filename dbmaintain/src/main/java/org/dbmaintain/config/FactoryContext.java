@@ -19,8 +19,7 @@ import java.util.Set;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.dbmaintain.config.DbMaintainProperties.*;
-import static org.dbmaintain.config.PropertyUtils.getString;
-import static org.dbmaintain.config.PropertyUtils.getStringList;
+import static org.dbmaintain.config.PropertyUtils.*;
 
 /**
  * @author Tim Ducheyne
@@ -76,13 +75,14 @@ public class FactoryContext {
         String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, configuration);
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, configuration);
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
+        boolean ignoreCarriageReturnsWhenCalculatingCheckSum = getBoolean(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, configuration);
         ScriptIndexes baseLineRevision = getBaselineRevision();
 
         File scriptLocationFile = new File(scriptLocation);
         if (scriptLocationFile.isDirectory()) {
-            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision);
+            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
         } else {
-            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision);
+            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
         }
     }
 

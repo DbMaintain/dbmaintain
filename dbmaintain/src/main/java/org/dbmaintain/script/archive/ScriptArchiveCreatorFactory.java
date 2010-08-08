@@ -10,8 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.config.DbMaintainProperties.*;
-import static org.dbmaintain.config.PropertyUtils.getString;
-import static org.dbmaintain.config.PropertyUtils.getStringList;
+import static org.dbmaintain.config.PropertyUtils.*;
 
 /**
  * @author Tim Ducheyne
@@ -30,8 +29,9 @@ public class ScriptArchiveCreatorFactory extends FactoryWithoutDatabase<ScriptAr
         String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, getConfiguration());
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, getConfiguration()));
         ScriptIndexes baselineRevision = factoryContext.getBaselineRevision();
+        boolean ignoreCarriageReturnsWhenCalculatingCheckSum = getBoolean(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, getConfiguration());
 
-        return new DefaultScriptArchiveCreator(scriptRepository, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baselineRevision);
+        return new DefaultScriptArchiveCreator(scriptRepository, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baselineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 }

@@ -44,6 +44,8 @@ abstract public class ScriptLocation {
     protected String scriptLocationName;
     /* The baseline revision. If set, all scripts with a lower revision will be ignored */
     protected ScriptIndexes baseLineRevision;
+    /* If true, carriage return chars will be ignored when calculating check sums */
+    protected boolean ignoreCarriageReturnsWhenCalculatingCheckSum;
 
 
     /**
@@ -56,10 +58,13 @@ abstract public class ScriptLocation {
      * @param targetDatabasePrefix        The prefix that indicates the target database part in the filename, not null
      * @param scriptFileExtensions        The script file extensions
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+     *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     protected ScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
                              Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix,
-                             String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision) {
+                             String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
+                             boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.scripts = scripts;
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
@@ -70,12 +75,14 @@ abstract public class ScriptLocation {
         this.scriptFileExtensions = scriptFileExtensions;
         this.scriptLocationName = "<undefined>";
         this.baseLineRevision = baseLineRevision;
+        this.ignoreCarriageReturnsWhenCalculatingCheckSum = ignoreCarriageReturnsWhenCalculatingCheckSum;
     }
 
     protected ScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
                              Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
-                             String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes defaultBaseLineRevision) {
-        this((SortedSet<Script>) null, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, defaultBaseLineRevision);
+                             String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes defaultBaseLineRevision,
+                             boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+        this((SortedSet<Script>) null, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, defaultBaseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
         assertValidScriptLocation(scriptLocation);
         this.scriptLocationName = scriptLocation.getAbsolutePath();
 
@@ -185,6 +192,9 @@ abstract public class ScriptLocation {
         if (customProperties.containsKey(PROPERTY_BASELINE_REVISION)) {
             String baseLineRevisionString = PropertyUtils.getString(PROPERTY_BASELINE_REVISION, customProperties);
             this.baseLineRevision = new ScriptIndexes(baseLineRevisionString);
+        }
+        if (customProperties.containsKey(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM)) {
+            this.ignoreCarriageReturnsWhenCalculatingCheckSum = PropertyUtils.getBoolean(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, customProperties);
         }
         assertValidScriptExtensions();
     }

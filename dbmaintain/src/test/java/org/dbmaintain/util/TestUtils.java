@@ -91,18 +91,18 @@ public abstract class TestUtils {
     }
 
     public static Script createScript(String fileName, String content) {
-        return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1"), "@", "#",
+        return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1", false), "@", "#",
                 Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
         return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "postprocessing", Collections.<Qualifier>emptySet(),
-                asSet(new Qualifier("patch")), "#", "@", asSet("sql"), null);
+                asSet(new Qualifier("patch")), "#", "@", asSet("sql"), null, false);
     }
 
 
     public static ScriptRepository getScriptRepository(SortedSet<Script> scriptsToReturn) {
-        ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, null, null, null, null);
+        ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, null, null, null, null, false);
         QualifierEvaluator qualifierEvaluator = getTrivialQualifierEvaluator();
         return new ScriptRepository(asSet(scriptLocation), qualifierEvaluator);
     }

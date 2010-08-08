@@ -59,10 +59,12 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param ignoreCarriageReturnsWhenCalculatingCheckSum
+     *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
-                                    String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision) {
-        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision);
+                                    String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -146,7 +148,7 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * @return The script, not null
      */
     protected Script createScript(File scriptFile, String relativeScriptFileName) {
-        ScriptContentHandle scriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), scriptEncoding);
+        ScriptContentHandle scriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), scriptEncoding, ignoreCarriageReturnsWhenCalculatingCheckSum);
         return new Script(relativeScriptFileName, scriptFile.lastModified(), scriptContentHandle, targetDatabasePrefix,
                 qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
     }
