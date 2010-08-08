@@ -11,6 +11,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Tim Ducheyne
  * @author Filip Neven
+ * @author Jessica Austin
  */
 public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest {
 

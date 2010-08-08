@@ -29,6 +29,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  *
  * @author Tim Ducheyne
  * @author Filip Neven
+ * @author Jessica Austin
  */
 public abstract class ScriptContentHandle {
 
