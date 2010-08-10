@@ -34,23 +34,29 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
 public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
 
     private String scriptLocations;
+    private String scriptEncoding;
+    private String postProcessingScriptDirectoryName;
     private Boolean fromScratchEnabled;
     private Boolean autoCreateDbMaintainScriptsTable;
     private Boolean allowOutOfSequenceExecutionOfPatches;
     private String qualifiers;
+    private String patchQualifiers;
     private String includedQualifiers;
     private String excludedQualifiers;
     private String scriptFileExtensions;
     private Boolean useLastModificationDates;
 
 
-    public CheckScriptUpdatesTask(List<DatabaseInfo> databaseInfos, String scriptLocations, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions, Boolean useLastModificationDates) {
+    public CheckScriptUpdatesTask(List<DatabaseInfo> databaseInfos, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions, Boolean useLastModificationDates) {
         super(databaseInfos);
         this.scriptLocations = scriptLocations;
+        this.scriptEncoding = scriptEncoding;
+        this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
         this.fromScratchEnabled = fromScratchEnabled;
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
         this.allowOutOfSequenceExecutionOfPatches = allowOutOfSequenceExecutionOfPatches;
         this.qualifiers = qualifiers;
+        this.patchQualifiers = patchQualifiers;
         this.includedQualifiers = includedQualifiers;
         this.excludedQualifiers = excludedQualifiers;
         this.scriptFileExtensions = scriptFileExtensions;
@@ -59,16 +65,19 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
 
 
     @Override
-    protected void addTaskConfiguration(TaskConfiguration configuration) {
-        configuration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
-        configuration.addConfigurationIfSet(PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
-        configuration.addConfigurationIfSet(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
-        configuration.addConfigurationIfSet(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
-        configuration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
-        configuration.addConfigurationIfSet(PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
-        configuration.addConfigurationIfSet(PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
-        configuration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
-        configuration.addConfigurationIfSet(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
+    protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, allowOutOfSequenceExecutionOfPatches);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
     }
 
     @Override

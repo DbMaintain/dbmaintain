@@ -27,16 +27,19 @@ import java.util.List;
  * lowestAcceptableSequenceValue option. The updateDatabase operation offers an option to automatically update the
  * sequences after the scripts were executed.
  *
- * @author tiwe
  * @author Tim Ducheyne
+ * @author tiwe
  * @goal updateSequences
  */
 public class UpdateSequencesMojo extends BaseDatabaseMojo {
 
     /**
+     * Threshold indicating the minimum value of sequences. If sequences are updated, all sequences having a lower value than this
+     * one are set to this value.
+     *
      * @parameter
      */
-    private Long lowestAcceptableSequenceValue;
+    protected Long lowestAcceptableSequenceValue;
 
 
     @Override

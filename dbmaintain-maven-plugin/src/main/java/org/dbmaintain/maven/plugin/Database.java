@@ -25,8 +25,8 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 /**
- * @author Filip Neven
  * @author Tim Ducheyne
+ * @author Filip Neven
  */
 public class Database {
 

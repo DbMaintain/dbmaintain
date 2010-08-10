@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * @author tiwe
  * @author Tim Ducheyne
+ * @author tiwe
  */
 public abstract class BaseMojo extends AbstractMojo {
 

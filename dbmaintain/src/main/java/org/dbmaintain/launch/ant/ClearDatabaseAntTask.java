@@ -22,7 +22,7 @@ import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
 import java.util.List;
 
 /**
- * Task that removes all database items, and empties the DBMAINTAIN_SCRIPTS table.
+ * Task that removes all database items like tables, views etc from the database and empties the DBMAINTAIN_SCRIPTS table.
  *
  * @author Filip Neven
  * @author Tim Ducheyne

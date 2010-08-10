@@ -30,10 +30,13 @@ import java.util.List;
 public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
 
     private String scriptLocations;
+    private String scriptEncoding;
+    private String postProcessingScriptDirectoryName;
     private Boolean fromScratchEnabled;
     private Boolean autoCreateDbMaintainScriptsTable;
     private Boolean allowOutOfSequenceExecutionOfPatches;
     private String qualifiers;
+    private String patchQualifiers;
     private String includedQualifiers;
     private String excludedQualifiers;
     private Boolean cleanDb;
@@ -45,7 +48,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new UpdateDatabaseTask(databaseInfos, scriptLocations, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
+        return new UpdateDatabaseTask(databaseInfos, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
     }
 
     /**
@@ -59,6 +62,26 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     }
 
     /**
+     * Encoding to use when reading the script files. Defaults to ISO-8859-1
+     *
+     * @param scriptEncoding The encoding
+     */
+    public void setScriptEncoding(String scriptEncoding) {
+        this.scriptEncoding = scriptEncoding;
+    }
+
+    /**
+     * Comma separated list of directories and files in which the post processing database scripts are
+     * located. Directories in this list are recursively search for files. Defaults to postprocessing
+     *
+     * @param postProcessingScriptDirectoryName
+     *         The directory names
+     */
+    public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {
+        this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
+    }
+
+    /**
      * Sets the fromScratchEnabled property, that indicates the database can be recreated from scratch if needed.
      * From-scratch recreation is needed in following cases:
      * <ul>
@@ -66,7 +89,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
      * <li>A new script has been added with an index number lower than the one of an already executed script</li>
      * <li>An script that was already executed has been removed or renamed</li>
      * </ul>
-     * If set to false, the dbmaintainer will give an error if one of these situations occurs. The default is false.
+     * If set to false, the DbMaintainer will give an error if one of these situations occurs. The default is false.
      *
      * @param fromScratchEnabled True if the database can be updated from scratch.
      */
@@ -86,7 +109,6 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
     }
 
-
     /**
      * Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must
      * be declared.
@@ -95,6 +117,16 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
      */
     public void setQualifiers(String qualifiers) {
         this.qualifiers = qualifiers;
+    }
+
+    /**
+     * The qualifiers to use to determine whether a script is a patch script. Defaults to patch.
+     * E.g. 01_#patch_myscript.sql
+     *
+     * @param patchQualifiers The patch qualifiers
+     */
+    public void setPatchQualifiers(String patchQualifiers) {
+        this.patchQualifiers = patchQualifiers;
     }
 
     /**

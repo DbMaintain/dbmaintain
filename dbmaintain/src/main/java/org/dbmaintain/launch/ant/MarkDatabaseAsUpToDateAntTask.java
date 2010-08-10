@@ -23,8 +23,9 @@ import org.dbmaintain.launch.task.MarkDatabaseAsUpToDateTask;
 import java.util.List;
 
 /**
- * Task that marks the database as up-to-date, without executing any script. You can use this operation to prepare
- * an existing database to be managed by DbMaintain, or after having manually fixed a problem.
+ * This operation updates the state of the database to indicate that all scripts have been executed, without actually
+ * executing them. This can be useful when you want to start using DbMaintain on an existing database, or after having
+ * fixed a problem directly on the database.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -49,10 +50,24 @@ public class MarkDatabaseAsUpToDateAntTask extends BaseDatabaseAntTask {
         this.scriptLocations = scriptLocations;
     }
 
+    /**
+     * Sets the autoCreateDbMaintainScriptsTable property. If set to true, the table DBMAINTAIN_SCRIPTS will be created
+     * automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually.
+     * False by default.
+     *
+     * @param autoCreateDbMaintainScriptsTable
+     *         True if the DBMAINTAIN_SCRIPTS table can be created automatically
+     */
     public void setAutoCreateDbMaintainScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
     }
 
+    /**
+     * Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must
+     * be declared.
+     *
+     * @param qualifiers the registered (allowed) script qualifiers
+     */
     public void setQualifiers(String qualifiers) {
         this.qualifiers = qualifiers;
     }
@@ -77,6 +92,12 @@ public class MarkDatabaseAsUpToDateAntTask extends BaseDatabaseAntTask {
         this.excludedQualifiers = excludedQualifiers;
     }
 
+    /**
+     * Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts.
+     * The extensions should not start with a dot. The default is 'sql,ddl'.
+     *
+     * @param scriptFileExtensions Comma separated list of file extensions.
+     */
     public void setScriptFileExtensions(String scriptFileExtensions) {
         this.scriptFileExtensions = scriptFileExtensions;
     }

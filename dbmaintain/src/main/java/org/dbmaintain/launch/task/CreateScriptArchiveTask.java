@@ -39,20 +39,16 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
     private String postProcessingScriptDirectoryName;
     private String qualifiers;
     private String patchQualifiers;
-    private String qualifierPrefix;
-    private String targetDatabasePrefix;
     private String scriptFileExtensions;
 
 
-    public CreateScriptArchiveTask(String archiveFileName, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, String qualifiers, String patchQualifiers, String qualifierPrefix, String targetDatabasePrefix, String scriptFileExtensions) {
+    public CreateScriptArchiveTask(String archiveFileName, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, String qualifiers, String patchQualifiers, String scriptFileExtensions) {
         this.archiveFileName = archiveFileName;
         this.scriptLocations = scriptLocations;
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
         this.qualifiers = qualifiers;
         this.patchQualifiers = patchQualifiers;
-        this.qualifierPrefix = qualifierPrefix;
-        this.targetDatabasePrefix = targetDatabasePrefix;
         this.scriptFileExtensions = scriptFileExtensions;
     }
 
@@ -70,8 +66,6 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
         taskConfiguration.addConfigurationIfSet(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
         taskConfiguration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
-        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
-        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
     }
 }

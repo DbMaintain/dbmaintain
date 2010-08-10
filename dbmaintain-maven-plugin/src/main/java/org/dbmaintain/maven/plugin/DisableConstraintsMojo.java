@@ -7,14 +7,10 @@ import org.dbmaintain.launch.task.DisableConstraintsTask;
 import java.util.List;
 
 /**
- * This operation disables all foreign key, not null and unique constraints. The updateDatabase operation offers an
- * option to automatically disable the constraints after the scripts were executed: This can be useful for a database
- * used to write persistence layer unit tests, to simplify the definition and limit the necessary amount of test data.
- * When using the automatic database update option of unitils, which uses DbMaintain, the disable constraints option is
- * enabled by default.
+ * Task that disables or drops all foreign key and not null constraints.
  *
- * @author tiwe
  * @author Tim Ducheyne
+ * @author tiwe
  * @goal disableConstraints
  */
 public class DisableConstraintsMojo extends BaseDatabaseMojo {
