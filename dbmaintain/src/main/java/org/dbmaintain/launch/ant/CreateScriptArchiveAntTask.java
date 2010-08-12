@@ -23,8 +23,7 @@ import org.dbmaintain.launch.task.DbMaintainTask;
  * input for the updateDatabase task to apply changes on a target database.
  * This way, database updates can be distributed as a deliverable, just like a war or ear file.
  * <p/>
- * The jar file that's created contains all configuration that concerns the organization of the scripts in this
- * jar in a properties file.
+ * The created jar file will contain all configuration concerning the scripts in the META-INF folder.
  *
  * @author Filip Neven
  * @author Tim Ducheyne

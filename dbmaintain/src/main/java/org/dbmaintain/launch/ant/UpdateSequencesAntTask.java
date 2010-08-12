@@ -38,6 +38,12 @@ public class UpdateSequencesAntTask extends BaseDatabaseAntTask {
     }
 
 
+    /**
+     * Threshold indicating the minimum value of sequences. If sequences are updated, all sequences having a lower value than this
+     * one are set to this value. Defaults to 1000.
+     *
+     * @param lowestAcceptableSequenceValue The lowest sequence value
+     */
     public void setLowestAcceptableSequenceValue(Long lowestAcceptableSequenceValue) {
         this.lowestAcceptableSequenceValue = lowestAcceptableSequenceValue;
     }

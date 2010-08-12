@@ -8,34 +8,342 @@ Ant tasks
 
     This page gives an overview of the different ant tasks and their attributes. The operations and attributes are not explained: for this we refer to the {{{tutorial.html#DbMaintain_operations}DbMaintain operations section in the tutorial}}.
 
-* Tasks
-~~~~~~~
-	
-*--------+--------------+-------------------+
-|<<Task>>|<<Attributes>>|<<Child elements>>|
-*--------+--------------+-------------------+
-|createScriptArchive|archiveFileName (required), scriptLocations (required), scriptEncoding, postProcessingScriptDirectoryName, qualifiers, patchQualifiers, scriptFileExtensions, configFile|
-*--------+--------------+-------------------+
-|updateDatabase|scriptLocations (required), scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, configFile|database|
-*--------+--------------+-------------------+
-|markDatabaseAsUpToDate|scriptLocations (required), autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, configFile|database|
-*--------+--------------+-------------------+
-|checkScriptUpdates|scriptLocations (required), scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, useLastModificationDates, scriptFileExtensions, configFile|database|
-*--------+--------------+-------------------+
-|clearDatabase|configFile|database|
-*--------+--------------+-------------------+
-|cleanDatabase|configFile|database|
-*--------+--------------+-------------------+
-|disableConstraints|configFile|database|
-*--------+--------------+-------------------+
-|updateSequences|lowestAcceptableSequenceValue, configFile|database|
-*--------+--------------+-------------------+
+    * {{{#createScriptArchive}createScriptArchive}}
 
-* Child elements
+    * {{{#updateDatabase}updateDatabase}}
+
+    * {{{#markDatabaseAsUpToDate}markDatabaseAsUpToDate}}
+
+    * {{{#checkScriptUpdates}checkScriptUpdates}}
+
+    * {{{#clearDatabase}clearDatabase}}
+    
+    * {{{#cleanDatabase}cleanDatabase}}
+
+    * {{{#disableConstraints}disableConstraints}}
+
+    * {{{#updateSequences}updateSequences}}
+
+    []
+
+* {createScriptArchive}
+~~~~~~~~~~~~~~~~~~~~~
+
+    Task that enables creating a jar file that packages all database update scripts. This jar can then be used as
+    input for the updateDatabase task to apply changes on a target database.
+    This way, database updates can be distributed as a deliverable, just like a war or ear file.
+
+    The created jar file will contain all configuration concerning the scripts in the META-INF folder.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| archiveFileName | Defines the target name for the generated script archive. This property is required |
+*-------------+---------------+
+| scriptLocations | Defines where the scripts can be found that must be added to the jar file. Multiple locations may be configured, separated by comma's. Only folder names can be provided. This property is required. |
+*-------------+---------------+
+| scriptEncoding | Encoding to use when reading the script files. Defaults to ISO-8859-1 |
+*-------------+---------------+
+| postProcessingScriptDirectoryName | Comma separated list of directories and files in which the post processing database scripts are located. Directories in this list are recursively search for files. Defaults to postprocessing |
+*-------------+---------------+
+| qualifiers | Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must be declared | 
+*-------------+---------------+
+| patchQualifiers | The qualifiers to use to determine whether a script is a patch script. Defaults to patch. E.g. 01_#patch_myscript.sql |
+*-------------+---------------+
+| scriptFileExtensions | Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl' |
+*-------------+---------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="create-jar">
+    <createScriptArchive archiveFileName="scripts.jar" scriptLocations="scripts"/>
+</target>
++----+
+
+
+
+* {updateDatabase}
 ~~~~~~~~~~~~~~~~
 
-*-----------------+--------------+
-|<<Child element>>|<<Attributes>>|
-*-----------------+--------------+
-|database|name, included, dialect, driverClassName, url, userName, password, schemaNames|
-*-----------------+--------------+
+    Task that updates the database to the latest version.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| scriptLocations | Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a jar file. This property is required. |
+*-------------+---------------+
+| scriptEncoding | Encoding to use when reading the script files. Defaults to ISO-8859-1 |
+*-------------+---------------+
+| postProcessingScriptDirectoryName | Comma separated list of directories and files in which the post processing database scripts are located. Directories in this list are recursively search for files. Defaults to postprocessing |
+*-------------+---------------+
+| fromScratchEnabled | Sets the fromScratchEnabled property, that indicates the database can be recreated from scratch if needed. |
+|                    | From-scratch recreation is needed in following cases: |
+|                    | * A script that was already executed has been modified |
+|                    | * A new script has been added with an index number lower than the one of an already executed script |
+|                    | * A script that was already executed has been removed or renamed |
+|                    | If set to false, the DbMaintainer will give an error if one of these situations occurs. The default is false. |
+*-------------+---------------+
+| autoCreateDbMaintainScriptsTable | If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually. False by default. |
+*-------------+---------------+
+| qualifiers | Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must be declared |
+*-------------+---------------+
+| patchQualifiers | The qualifiers to use to determine whether a script is a patch script. Defaults to patch. E.g. 01_#patch_myscript.sql |
+*-------------+---------------+
+| includedQualifiers | Optional comma-separated list of script qualifiers. All included qualifiers must be registered using the qualifiers property. Only scripts which are qualified with one of the included qualifiers will be executed. |
+*-------------+---------------+
+| excludedQualifiers | Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed. |
+*-------------+---------------+
+| allowOutOfSequenceExecutionOfPatches | If this property is set to true, a patch script is allowed to be executed even if another script with a higher index was already executed. |
+*-------------+---------------+
+| cleanDb | Indicates whether the database should be 'cleaned' before scripts are executed. If true, the records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' or 'dbMaintain.preserveDataOnly.*' are deleted before executing the first script. False by default. |
+*-------------+---------------+
+| disableConstraints | If set to true, all foreign key and not null constraints of the database are automatically disabled after the execution of the scripts. False by default. |
+*-------------+---------------+
+| updateSequences | If set to true, all sequences and identity columns are set to a sufficiently high value, so that test data can be inserted without having manually chosen test record IDs clashing with automatically generated keys. |
+*-------------+---------------+
+| scriptFileExtensions | Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl' |
+*-------------+---------------+
+| useLastModificationDates | Defines whether the last modification dates of the scripts files can be used to determine whether the contents of a script has changed. If set to true, DbMaintain will not look at the contents of scripts that were already executed on the database, if the last modification date is still the same. If it did change, it will first calculate the checksum of the file to verify that the content really changed. Setting this property to true improves performance: if set to false the checksum of every script must be calculated for each run. True by default. |
+*-------------+---------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="update-db">
+    <updateDatabase scriptLocations="scripts" autoCreateDbMaintainScriptsTable="true">
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>	    
+    </updateDatabase>
+</target>
++----+
+
+
+
+
+* {markDatabaseAsUpToDate}
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This operation updates the state of the database to indicate that all scripts have been executed, without actually
+    executing them. This can be useful when you want to start using DbMaintain on an existing database, or after having
+    fixed a problem directly on the database.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| scriptLocations | Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a jar file. This property is required. |
+*--------------+----------------+
+| autoCreateDbMaintainScriptsTable | If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually. False by default. |
+*-------------+---------------+
+| qualifiers | Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must be declared |
+*-------------+---------------+
+| includedQualifiers | Optional comma-separated list of script qualifiers. All included qualifiers must be registered using the qualifiers property. Only scripts which are qualified with one of the included qualifiers will be executed. |
+*-------------+---------------+
+| excludedQualifiers | Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed. |
+*-------------+---------------+
+| scriptFileExtensions | Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl' |
+*-------------+---------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="mark-uptodate">
+    <markDatabaseAsUpToDate scriptLocations="scripts" autoCreateDbMaintainScriptsTable="true">
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </markDatabaseAsUpToDate>
+</target>
++----+
+
+
+
+* {checkScriptUpdates}
+~~~~~~~~~~~~~~~~~~~~
+
+    Performs a dry run of the database update. May be used to verify if there are any updates or in a test that fails
+    if it appears that an irregular script update was performed.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| scriptLocations | Defines where the scripts can be found that must be executed on the database. Multiple locations may be configured, separated by comma's. A script location can be a folder or a jar file. This property is required. |
+*-------------+---------------+
+| scriptEncoding | Encoding to use when reading the script files. Defaults to ISO-8859-1 |
+*-------------+---------------+
+| postProcessingScriptDirectoryName | Comma separated list of directories and files in which the post processing database scripts are located. Directories in this list are recursively search for files. Defaults to postprocessing |
+*-------------+---------------+
+| fromScratchEnabled | Sets the fromScratchEnabled property, that indicates the database can be recreated from scratch if needed. |
+|                    | From-scratch recreation is needed in following cases: |
+|                    | * A script that was already executed has been modified |
+|                    | * A new script has been added with an index number lower than the one of an already executed script |
+|                    | * A script that was already executed has been removed or renamed |
+|                    | If set to false, the DbMaintainer will give an error if one of these situations occurs. The default is false. |
+*-------------+---------------+
+| autoCreateDbMaintainScriptsTable | If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually. False by default. |
+*-------------+---------------+
+| qualifiers | Optional comma-separated list of script qualifiers. All custom qualifiers that are used in script file names must be declared |
+*-------------+---------------+
+| patchQualifiers | The qualifiers to use to determine whether a script is a patch script. Defaults to patch. E.g. 01_#patch_myscript.sql |
+*-------------+---------------+
+| includedQualifiers | Optional comma-separated list of script qualifiers. All included qualifiers must be registered using the qualifiers property. Only scripts which are qualified with one of the included qualifiers will be executed. |
+*-------------+---------------+
+| excludedQualifiers | Optional comma-separated list of script qualifiers. All excluded qualifiers must be registered using the qualifiers property. Scripts qualified with one of the excluded qualifiers will not be executed. |
+*-------------+---------------+
+| allowOutOfSequenceExecutionOfPatches | If this property is set to true, a patch script is allowed to be executed even if another script with a higher index was already executed. |
+*-------------+---------------+
+| scriptFileExtensions | Sets the scriptFileExtensions property, that defines the extensions of the files that are regarded to be database scripts. The extensions should not start with a dot. The default is 'sql,ddl' |
+*-------------+---------------+
+| useLastModificationDates | Defines whether the last modification dates of the scripts files can be used to determine whether the contents of a script has changed. If set to true, DbMaintain will not look at the contents of scripts that were already executed on the database, if the last modification date is still the same. If it did change, it will first calculate the checksum of the file to verify that the content really changed. Setting this property to true improves performance: if set to false the checksum of every script must be calculated for each run. True by default. |
+*-------------+---------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+ <target name="dry-run">
+    <checkScriptUpdates scriptLocations="scripts" autoCreateDbMaintainScriptsTable="true">
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </checkScriptUpdates>
+</target>
+
++----+
+
+
+
+* {clearDatabase}
+~~~~~~~~~~~~~~~~~
+
+    Task that removes all database items like tables, views etc from the database and empties the DBMAINTAIN_SCRIPTS table.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="clear-db">
+    <clearDatabase>
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </clearDatabase>
+</target>
++----+
+
+
+
+* {cleanDatabase}
+~~~~~~~~~~~~~~~
+
+    Task that removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="clean-db">
+    <cleanDatabase configfile="dbmaintain.properties">
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </cleanDatabase>
+</target>
++----+
+
+
+
+
+* {disableConstraints}
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Task that disables or drops all foreign key and not null constraints.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="disable-constraints">
+    <disableConstraints>
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </disableConstraints>
+</target>
++----+
+
+
+
+
+* {updateSequences}
+~~~~~~~~~~~~~~~~~
+
+    Task that updates all sequences and identity columns to a minimum value.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| lowestAcceptableSequenceValue | Threshold indicating the minimum value of sequences. If sequences are updated, all sequences having a lower value than this one are set to this value. Defaults to 1000. |
+*-------------+---------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="update-sequences">
+    <updateSequences>
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </updateSequences>
+</target>
++----+
+
+
+
+* {Database child element}
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| name | An optional name. There can only be 1 database without a name. Can be used in the script name as target database. E.g. 01_@mydb_script.sql |
+*-------------+---------------+
+| included | Set to false if script for this database should be skipped. Defaults to true. |
+*-------------+---------------+
+| dialect | This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb', 'postgresql', 'derby' and 'mssql'. Required. |
+*-------------+---------------+
+| driverClassName | The class name of the database driver. Required |
+*-------------+---------------+
+| url | The url to the database. Required |
+*-------------+---------------+
+| userName | The user name for the database. Required |
+*-------------+---------------+
+| password | The password for the database. |
+*-------------+---------------+
+| schemaNames | The schema names. The first one is the default schema name for this database. Required. |
+*-------------+---------------+

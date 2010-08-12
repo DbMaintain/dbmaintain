@@ -35,7 +35,7 @@ public class UpdateSequencesMojo extends BaseDatabaseMojo {
 
     /**
      * Threshold indicating the minimum value of sequences. If sequences are updated, all sequences having a lower value than this
-     * one are set to this value.
+     * one are set to this value. Defaults to 1000.
      *
      * @parameter
      */

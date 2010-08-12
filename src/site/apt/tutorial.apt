@@ -52,6 +52,8 @@ Tutorial
 	*{{{#Preserve_database_objects}Preserve database objects}}
 
 	* {{{#Oracle_PLSQL_support}Oracle PL/SQL support}}
+
+	[]
 	
 * {Script organization}
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,15 +196,27 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 |SUCCEEDED|Indicates whether the script was executed successfully (1 if successful, 0 if there was an error)|
 *---------+----------------------------------+
 
+
 * {Error handling}
 ~~~~~~~~~~~~~~~~
-    If an error occurs during the execution of a script, dbmaintain immediately stops execution. If you try to perform the updateDatabase operation again, dbmaintain will refuse doing anything at all. To recover from an error, there are a number of possibilities:
-	
-    * An incremental script caused an error, and the fromScratch option is enabled. Simply fix the script: the datase is recreated from scratch during the next update.
-	
-    * An incremental script caused an error, and the fromScratch option is disabled. The easiest way to recover is to fix the script, manually undo any changes the script has made on the database, and remove this script's record from the DBMAINTAIN_SCRIPTS table. The next time you perform updateDatabase, dbmaintain starts with executing the fixed script.
-	
-    * A repeatable script caused an error. Simply fix the repeatable script, and it will be executed again when executing updateDatabase the next time.
+    If an error occurs during the execution of a script, DbMaintain immediately stops execution and performs a rollback of the script.
+    If a repeatable script caused the error you can simply fix this repeatable script and it will be executed again when executing updateDatabase the next time.
+
+    If an incremental script caused the error and you try to perform the updateDatabase operation again, DbMaintain will refuse to do it and will just give an error.
+    This is because implicit or explicit commits could have been performed by the script itself. For example a create table statement in oracle implicitly performs a commit.
+    As a result the database could be in an invalid state and should first be cleaned up. There are 2 options to recover from this state:
+
+    * Fix the script, manually perform the changes of the script and call the markErrorScriptPerformed task.
+
+    * Fix the script, revert committed changes of the script (if any) and call the markErrorScriptReverted task.
+
+    []
+    
+    The markErrorScriptPerformed task will just flag the script as successful. The next updateDatabase will then start with the next script.
+    The markErrorScriptReverted task will remove the failed record from the scripts table. The next updateDatabase will then re-start with that script again.
+
+    Note: if the from scratch option is enabled, you can simply fix the script. The next updateDatabase will then automatically re-create the database from scratch.
+
 	
 * {Configure and run DbMaintain}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,6 +231,8 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	* Make sure DBMAINTAIN_HOME is set to the installation directory of dbmaintain.
 	
 	* Set DBMAINTAIN_JDBC_DRIVER to the jar file that contains the necessary JDBC driver for your DBMS, or edit the file bin/setJdbcDriver.bat or bin/setJdbcDriver.sh to set JDBC_DRIVER to the correct value.
+
+    []
 
 	For instance, to create an archive file containing all scripts simply call (Replace .sh by .bat if you're using windows):
 

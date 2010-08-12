@@ -98,8 +98,8 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     }
 
     /**
-     * Sets the autoCreateDbMaintainScriptsTable property. If set to true, the table DBMAINTAIN_SCRIPTS will be created
-     * automatically if it does not exist yet. If false, an exception is thrown, indicating how to create the table manually.
+     * If set to true, the table DBMAINTAIN_SCRIPTS will be created automatically if it does not exist yet.
+     * If false, an exception is thrown, indicating how to create the table manually.
      * False by default.
      *
      * @param autoCreateDbMaintainScriptsTable

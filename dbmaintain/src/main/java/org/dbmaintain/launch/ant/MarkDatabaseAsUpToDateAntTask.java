@@ -46,6 +46,12 @@ public class MarkDatabaseAsUpToDateAntTask extends BaseDatabaseAntTask {
     }
 
 
+    /**
+     * Defines where the scripts can be found that must be executed on the database. Multiple locations may be
+     * configured, separated by comma's. A script location can be a folder or a jar file. This property is required.
+     *
+     * @param scriptLocations Comma separated list of script locations
+     */
     public void setScriptLocations(String scriptLocations) {
         this.scriptLocations = scriptLocations;
     }
