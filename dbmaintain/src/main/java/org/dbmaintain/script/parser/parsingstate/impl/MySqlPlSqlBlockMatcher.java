@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script.parser.impl;
+package org.dbmaintain.script.parser.parsingstate.impl;
 
 import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
-import org.dbmaintain.script.parser.parsingstate.impl.MySqlPlSqlBlockMatcher;
+
+import java.util.regex.Pattern;
 
 /**
  * @author Ken Dombeck
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class MySqlScriptParserFactory extends DefaultScriptParserFactory {
+public class MySqlPlSqlBlockMatcher implements PlSqlBlockMatcher {
 
-    public MySqlScriptParserFactory(boolean backSlashEscapingEnabled) {
-        super(backSlashEscapingEnabled);
+    private static final Pattern PL_SQL_PATTERN = Pattern.compile("^(CREATE (DEFINER=.*)?(FUNCTION|PROCEDURE|TRIGGER)|BEGIN)");
+
+    public boolean isStartOfPlSqlBlock(StringBuilder statementWithoutCommentsOrWhitespace) {
+        return PL_SQL_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();
     }
 
-    @Override
-    protected PlSqlBlockMatcher createStoredProcedureMatcher() {
-        return new MySqlPlSqlBlockMatcher();
-    }
 }
