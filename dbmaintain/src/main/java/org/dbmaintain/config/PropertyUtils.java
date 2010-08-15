@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package org.dbmaintain.config;
 
+import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReflectionUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -192,8 +192,8 @@ public class PropertyUtils {
             throw new DbMaintainException("Value " + value + " for property " + propertyName + " is not a number.");
         }
     }
-    
-    
+
+
     /**
      * Gets the int value for the property with the given name. If no such property is found, the value is empty
      * or cannot be converted to a long, an exception will be raised.

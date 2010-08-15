@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.util;
+package org.dbmaintain.script.parser.impl;
 
 /**
- * @author Filip Neven
+ * @author Ken Dombeck
  * @author Tim Ducheyne
+ * @author Filip Neven
  */
-public class CharacterUtils {
-
-    private static final Character CARRIAGE_RETURN = '\r', NEW_LINE = '\n';
-
-    public static boolean isNewLineCharacter(Character currentChar) {
-        return CARRIAGE_RETURN.equals(currentChar) || NEW_LINE.equals(currentChar);
-    }
+public class MySqlScriptParserFactory {
 }

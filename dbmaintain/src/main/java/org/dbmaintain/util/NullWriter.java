@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright DbMaintain.org
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,6 +40,7 @@ public class NullWriter extends Writer {
 
     /**
      * Does nothing - output to <code>/dev/null</code>.
+     *
      * @param idx The character to write
      */
     public void write(int idx) {
@@ -49,6 +49,7 @@ public class NullWriter extends Writer {
 
     /**
      * Does nothing - output to <code>/dev/null</code>.
+     *
      * @param chr The characters to write
      */
     public void write(char[] chr) {
@@ -57,8 +58,9 @@ public class NullWriter extends Writer {
 
     /**
      * Does nothing - output to <code>/dev/null</code>.
+     *
      * @param chr The characters to write
-     * @param st The start offset
+     * @param st  The start offset
      * @param end The number of characters to write
      */
     public void write(char[] chr, int st, int end) {
@@ -67,6 +69,7 @@ public class NullWriter extends Writer {
 
     /**
      * Does nothing - output to <code>/dev/null</code>.
+     *
      * @param str The string to write
      */
     public void write(String str) {
@@ -75,20 +78,25 @@ public class NullWriter extends Writer {
 
     /**
      * Does nothing - output to <code>/dev/null</code>.
+     *
      * @param str The string to write
-     * @param st The start offset
+     * @param st  The start offset
      * @param end The number of characters to write
      */
     public void write(String str, int st, int end) {
         //to /dev/null
     }
 
-    /** @see java.io.Writer#flush() */
+    /**
+     * @see java.io.Writer#flush()
+     */
     public void flush() {
         //to /dev/null
     }
 
-    /** @see java.io.Writer#close() */
+    /**
+     * @see java.io.Writer#close()
+     */
     public void close() {
         //to /dev/null
     }

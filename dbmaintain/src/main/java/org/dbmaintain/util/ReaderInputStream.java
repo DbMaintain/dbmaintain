@@ -1,5 +1,5 @@
 /*
- * Copyright 2008,  Unitils.org
+ * Copyright DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ import java.io.InputStream;
 import java.io.Reader;
 
 /**
- * Wrapper that makes an Reader available as an InputStream 
+ * Wrapper that makes an Reader available as an InputStream
  */
 public class ReaderInputStream extends InputStream {
-	
-	private Reader reader;
-	
-	public ReaderInputStream(Reader reader) {
-		this.reader = reader;
-	}
-	
-	public int read() throws IOException {
-		return reader.read();
-	}
-	
+
+    private Reader reader;
+
+    public ReaderInputStream(Reader reader) {
+        this.reader = reader;
+    }
+
+    public int read() throws IOException {
+        return reader.read();
+    }
+
 }

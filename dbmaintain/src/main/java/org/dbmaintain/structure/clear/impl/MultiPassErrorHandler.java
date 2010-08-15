@@ -1,8 +1,5 @@
-package org.dbmaintain.structure.clear.impl;
-
-
 /*
- * Copyright 2010,  Unitils.org
+ * Copyright DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +13,7 @@ package org.dbmaintain.structure.clear.impl;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.dbmaintain.structure.clear.impl;
 
 /**
  * This class is intended to permit multiple attempts (passes) to drop database

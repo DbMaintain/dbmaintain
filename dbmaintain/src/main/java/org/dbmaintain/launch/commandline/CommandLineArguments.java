@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007,  Unitils.org
+ * Copyright DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,16 @@ import org.dbmaintain.util.DbMaintainException;
 
 /**
  * Data object that exposes the command line arguments that were passed to DbMaintain
- *  
+ *
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class CommandLineArguments {
-    
+
     private String dbMaintainOperation;
     private String firstExtraArgument, secondExtraArgument;
     private String configFile;
-    
+
     public CommandLineArguments(String[] commandLineArgs) {
         parseArguments(commandLineArgs);
     }

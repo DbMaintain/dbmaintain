@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2008,  Unitils.org
+ * Copyright DbMaintain.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id$
  */
 package org.dbmaintain.util;
 
@@ -27,17 +25,17 @@ import java.io.Writer;
  */
 public class WriterOutputStream extends OutputStream {
 
-	private Writer writer;
-	
-	
-	public WriterOutputStream(Writer writer) {
-		this.writer = writer;
-	}
+    private Writer writer;
 
-	
-	@Override
-	public void write(int b) throws IOException {
-		writer.write(b);
-	}
+
+    public WriterOutputStream(Writer writer) {
+        this.writer = writer;
+    }
+
+
+    @Override
+    public void write(int b) throws IOException {
+        writer.write(b);
+    }
 
 }
