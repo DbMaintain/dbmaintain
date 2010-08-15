@@ -150,9 +150,9 @@ Ant tasks
 *-------------+---------------+
 | allowOutOfSequenceExecutionOfPatches | If this property is set to true, a patch script is allowed to be executed even if another script with a higher index was already executed. |
 *-------------+---------------+
-| cleanDb | Indicates whether the database should be 'cleaned' before scripts are executed. If true, the records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' or 'dbMaintain.preserveDataOnly.*' are deleted before executing the first script. False by default. |
+| cleanDb | Indicates whether the database should be 'cleaned' before scripts are executed. If true, the records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' or 'dbMaintain.preserveDataOnly.*' are deleted before and after executing the scripts. False by default. |
 *-------------+---------------+
-| disableConstraints | If set to true, all foreign key and not null constraints of the database are automatically disabled after the execution of the scripts. False by default. |
+| disableConstraints | If set to true, all foreign key and not null constraints of the database are automatically disabled before and after the execution of the scripts. False by default. |
 *-------------+---------------+
 | updateSequences | If set to true, all sequences and identity columns are set to a sufficiently high value, so that test data can be inserted without having manually chosen test record IDs clashing with automatically generated keys. |
 *-------------+---------------+

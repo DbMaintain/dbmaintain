@@ -221,6 +221,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
             } else {
                 logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
                 if (!dryRun) {
+                    // If the disable constraints option is enabled, disable all FK and not null constraints
+                    if (disableConstraints) {
+                        constraintsDisabler.disableConstraints();
+                    }
                     // If cleandb is enabled, remove all data from the database.
                     if (cleanDb) {
                         dbCleaner.cleanDatabase();
@@ -248,6 +252,10 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 // If the disable constraints option is enabled, disable all FK and not null constraints
                 if (disableConstraints) {
                     constraintsDisabler.disableConstraints();
+                }
+                // the scripts could have added data, if cleandb is enabled, remove all data from the database.
+                if (cleanDb) {
+                    dbCleaner.cleanDatabase();
                 }
                 // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
                 if (updateSequences) {

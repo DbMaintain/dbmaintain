@@ -164,7 +164,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     /**
      * Indicates whether the database should be 'cleaned' before scripts are executed. If true, the
      * records of all database tables, except for the ones listed in 'dbMaintainer.preserve.*' or
-     * 'dbMaintain.preserveDataOnly.*' are deleted before executing the first script. False by default.
+     * 'dbMaintain.preserveDataOnly.*' are deleted before and after executing the scripts. False by default.
      *
      * @param cleanDb True if the database must be 'cleaned' before executing scripts.
      */
@@ -173,8 +173,8 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     }
 
     /**
-     * If set to true, all foreign key and not null constraints of the database are automatically disabled after the execution
-     * of the scripts. False by default.
+     * If set to true, all foreign key and not null constraints of the database are automatically disabled before and
+     * after the execution of the scripts. False by default.
      *
      * @param disableConstraints True if constraints must be disabled.
      */
