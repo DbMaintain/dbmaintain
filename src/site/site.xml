@@ -31,7 +31,7 @@
             <item name="Tutorial" href="tutorial.html"/>
             <item name="Configuration" href="configuration.html"/>
             <item name="Ant tasks" href="ant-tasks.html"/>
-            <item name="Maven goals" href="plugin-info.html"/>
+            <item name="Maven goals" href="maven-goals.html"/>
             <item name="API Javadoc" href="apidocs/index.html"/>
         </menu>
 

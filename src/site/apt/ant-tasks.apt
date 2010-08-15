@@ -6,7 +6,7 @@
 Ant tasks
 ~~~~~~~~~
 
-    This page gives an overview of the different ant tasks and their attributes. The operations and attributes are not explained: for this we refer to the {{{tutorial.html#DbMaintain_operations}DbMaintain operations section in the tutorial}}.
+    This page gives an overview of the different ant tasks and their attributes.
 
     * {{{#createScriptArchive}createScriptArchive}}
 
@@ -216,7 +216,6 @@ Ant tasks
         <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </checkScriptUpdates>
 </target>
-
 +----+
 
 

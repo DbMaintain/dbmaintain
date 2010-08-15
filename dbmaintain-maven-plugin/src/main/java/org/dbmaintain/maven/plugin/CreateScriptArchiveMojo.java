@@ -12,8 +12,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
  * input for the updateDatabase task to apply changes on a target database.
  * This way, database updates can be distributed as a deliverable, just like a war or ear file.
  * <br/>
- * The jar file that's created contains all configuration that concerns the organization of the scripts in this
- * jar in a properties file.
+ * The created jar file will contain all configuration concerning the scripts in the META-INF folder.
  * <br/><br/>
  * This operation will hook into the package stage and will attach the generated archive to the build (so that it
  * is installed in the local repository). The archive will have the same artifact id and group id as configured in
@@ -33,9 +32,6 @@ import static org.apache.commons.lang.StringUtils.isBlank;
  *               &lt;groupId&gt;org.dbmaintain&lt;/groupId&gt;
  *               &lt;artifactId&gt;dbmaintain-maven-plugin&lt;/artifactId&gt;
  *               &lt;version&gt;-current dbmaintain version-&lt;/version&gt;
- *               &lt;goals&gt;
- *                   &lt;goal&gt;createScriptArchive&lt;/goal&gt;
- *               &lt;/goals&gt;
  *               &lt;configuration&gt;
  *                   &lt;databases&gt;
  *                       &lt;database&gt;
@@ -48,6 +44,13 @@ import static org.apache.commons.lang.StringUtils.isBlank;
  *                       &lt;/database&gt;
  *                   &lt;/databases&gt;
  *               &lt;/configuration&gt;
+ *               &lt;executions&gt;
+ *                  &lt;execution&gt;
+ *                      &lt;goals&gt;
+ *                          &lt;goal&gt;createScriptArchive&lt;/goal&gt;
+ *                      &lt;/goals&gt;
+ *                  &lt;/execution&gt;
+ *               &lt;/executions&gt;
  *          &lt;/plugins&gt;
  *       &lt;/plugin&gt;
  *   &lt;/build&gt;
@@ -82,6 +85,8 @@ public class CreateScriptArchiveMojo extends BaseMojo {
      */
     protected String archiveFileName;
     /**
+     * An optional qualifier for the artifact. This can be used if the archive is not the main artifact of the pom.
+     *
      * @parameter
      */
     protected String qualifier;
