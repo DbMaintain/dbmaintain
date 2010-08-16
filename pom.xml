@@ -67,13 +67,9 @@
     <!-- Remote repository -->
     <distributionManagement>
         <repository>
-            <id>dbmaintain-sourceforge-repository</id>
-            <url>sftp://web.sourceforge.net/home/groups/d/db/dbmaintain/htdocs/m2-repo</url>
-        </repository>
-        <site>
-            <id>dbmaintain-sourceforge-repository</id>
-            <url>scp://shell.sourceforge.net/home/groups/d/db/dbmaintain/htdocs/</url>
-        </site>
+	  <id>sourceforge-repository</id>
+            <url>sftp://web.sourceforge.net/home/groups/d/db/dbmaintain/htdocs/m2-repo</url>            
+        </repository>        
     </distributionManagement>
 
 
