@@ -37,12 +37,12 @@ Overview
     Two new operations have been introduced: markErrorScriptPerformed and markErrorScriptReverted that can be used when a script execution fails.
     See the tutorial for more info on these operations.
 
-    Extra database support was added: PL-SQL parsing for DB2 and MySQL and the possibility to use the native script runners for Oracle (SQL*Plus) and DB2 (db2).
+    Extra database support was added: PL-SQL parsing for DB2 and MySQL and the possibility to use the native script runners for Oracle (SQL*Plus) and DB2 (db2 CLP).
 
     A baseline revision concept has been added, giving the possibility to ignore all scripts before this baseline. This could be handy if
     the database starts from an pre-existing image. You then only have to deal with the deltas starting from this version.
 
-    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10000&styleName=Html&version=10010}release notes}} for more details.
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10040}release notes}} for more details.
 
 ** <<2009-02-21: Release of DbMaintain 1.0>>
 
