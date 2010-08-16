@@ -12,6 +12,10 @@ Ant tasks
 
     * {{{#updateDatabase}updateDatabase}}
 
+    * {{{#markErrorScriptPerformed}markErrorScriptPerformed}}
+
+    * {{{#markErrorScriptReverted}markErrorScriptReverted}}    
+
     * {{{#markDatabaseAsUpToDate}markDatabaseAsUpToDate}}
 
     * {{{#checkScriptUpdates}checkScriptUpdates}}
@@ -212,6 +216,110 @@ Ant tasks
 </project>
 +----+
 
+
+* {markErrorScriptPerformed}
+~~~~~~~~~~~~~~~~
+
+    Task that indicates that the failed script was manually performed. The script will NOT be run again in the next update. No scripts will be executed by this task.
+
+    One or more {{{#Database_configuration_element}databases}} must be specified as child elements.
+
+** Example
+
++----+
+<project>
+  ...
+  <build>
+       <plugins>
+           <plugin>
+               <groupId>org.dbmaintain</groupId>
+               <artifactId>dbmaintain-maven-plugin</artifactId>
+               <version>-current dbmaintain version-</version>
+               <configuration>
+                   <databases>
+                       <database>
+                           <dialect>oracle</dialect>
+                           <driverClassName>oracle.jdbc.driver.OracleDriver</driverClassName>
+                           <userName>user</userName>
+                           <password>pass</password>
+                           <url>jdbc:oracle:thin:@//localhost:1521/XE</url>
+                           <schemaNames>SCHEMA</schemaNames>
+                       </database>
+                   </databases>
+               </configuration>
+               <executions>
+                   <execution>
+                       <phase>install</phase>
+                       <goals>
+                           <goal>markErrorScriptPerformed</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <dependencies>
+                   <dependency>
+                       <groupId>com.oracle</groupId>
+                       <artifactId>ojdbc14</artifactId>
+                       <version>10.1.0.4.0</version>
+                   </dependency>
+               </dependencies>
+           </plugin>
+       </plugins>
+   </build>
+</project>
++----+
+
+
+
+* {markErrorScriptReverted}
+~~~~~~~~~~~~~~~~
+
+    Task that indicates that the failed script was manually reverted. The script will be run again in the next update. No scripts will be executed by this task.
+
+    One or more {{{#Database_configuration_element}databases}} must be specified as child elements.
+
+** Example
+
++----+
+<project>
+  ...
+  <build>
+       <plugins>
+           <plugin>
+               <groupId>org.dbmaintain</groupId>
+               <artifactId>dbmaintain-maven-plugin</artifactId>
+               <version>-current dbmaintain version-</version>
+               <configuration>
+                   <databases>
+                       <database>
+                           <dialect>oracle</dialect>
+                           <driverClassName>oracle.jdbc.driver.OracleDriver</driverClassName>
+                           <userName>user</userName>
+                           <password>pass</password>
+                           <url>jdbc:oracle:thin:@//localhost:1521/XE</url>
+                           <schemaNames>SCHEMA</schemaNames>
+                       </database>
+                   </databases>
+               </configuration>
+               <executions>
+                   <execution>
+                       <phase>install</phase>
+                       <goals>
+                           <goal>markErrorScriptReverted</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <dependencies>
+                   <dependency>
+                       <groupId>com.oracle</groupId>
+                       <artifactId>ojdbc14</artifactId>
+                       <version>10.1.0.4.0</version>
+                   </dependency>
+               </dependencies>
+           </plugin>
+       </plugins>
+   </build>
+</project>
++----+
 
 
 

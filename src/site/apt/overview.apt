@@ -13,18 +13,38 @@ Overview
 	
 	DbMaintain integrates seamlessly with {{{http://www.unitils.org}Unitils}}, an open source library for writing automated tests. With unitils you can easily test your application's database integration layer while you develop it, relying on DbMaintain for managing the test database.
 	
+
 * Where to start
 ~~~~~~~~~~~~~~
-    To get started with DbMaintain quickly, read the {{{cookbook.html}cookbook}}. For a complete overview of all features, read the {{{tutorial.html}tutorial}}.
-    
-* Origin of the project
-~~~~~~~~~~~~~~~~~~~~~
+    * An overview of the features and how to configure and use them is available as a {{{tutorial.html} tutorial}}.
 
-    The project started in september 2008, when we decided to split off the DbMaintainer feature of {{{http://www.unitils.org}Unitils}}. The DbMaintainer was initially written as a utility for maintaining the databases used for automated tests, but has grown to be a complete solution for managing the database.
-	
+    * If you are using ant, an overview of the available ant tasks can be found on the {{{ant-tasks.html} ant tasks}} page.
+
+    * If you are using maven, an overview of the available maven goals can be found on the {{{maven-goals.html} maven goals}} page.
+
+    * The {{{command-line.html} command line}} page gives an overview on how to launch DbMaintain from the command line.
+
+    * Finally, the {{{configuration.html} configuration }} page gives an overview of all possible configuration settings.
+
+    []    
+
+
 * News
 ~~~~
-    <<2009-02-21: Release of DbMaintain 1.0>>
+
+** <<2010-08-16 - Release of DbMaintain 2.0>>
+
+    Two new operations have been introduced: markErrorScriptPerformed and markErrorScriptReverted that can be used when a script execution fails.
+    See the tutorial for more info on these operations.
+
+    Extra database support was added: PL-SQL parsing for DB2 and MySQL and the possibility to use the native script runners for Oracle (SQL*Plus) and DB2 (db2).
+
+    A baseline revision concept has been added, giving the possibility to ignore all scripts before this baseline. This could be handy if
+    the database starts from an pre-existing image. You then only have to deal with the deltas starting from this version.
+
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10000&styleName=Html&version=10010}release notes}} for more details.
+
+** <<2009-02-21: Release of DbMaintain 1.0>>
 
     We're proud to announce the release 1.0 of DbMaintain, and the publication of the website. Thanks to everybody who's contributed
     or provided feedback.

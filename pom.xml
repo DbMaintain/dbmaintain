@@ -43,7 +43,7 @@
     <mailingLists>
         <mailingList>
             <name>User forum</name>
-            <archive>http://sourceforge.net/forum/forum.php?forum_id=868604</archive>
+            <archive>https://sourceforge.net/projects/dbmaintain/forums/forum/917034</archive>
         </mailingList>
     </mailingLists>
     <ciManagement>
@@ -110,7 +110,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>2.0.1</version>
                     <configuration>
                         <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
                     </configuration>

@@ -12,6 +12,10 @@ Ant tasks
 
     * {{{#updateDatabase}updateDatabase}}
 
+    * {{{#markErrorScriptPerformed}markErrorScriptPerformed}}
+
+    * {{{#markErrorScriptReverted}markErrorScriptReverted}}
+
     * {{{#markDatabaseAsUpToDate}markDatabaseAsUpToDate}}
 
     * {{{#checkScriptUpdates}checkScriptUpdates}}
@@ -123,6 +127,55 @@ Ant tasks
 </target>
 +----+
 
+
+
+* {markErrorScriptPerformed}
+~~~~~~~~~~~~~~~~
+
+    Task that indicates that the failed script was manually performed. The script will NOT be run again in the next update. No scripts will be executed by this task.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="mark-error-script-performed">
+    <markErrorScriptPerformed>
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </markErrorScriptPerformed>
+</target>
++----+
+
+
+
+* {markErrorScriptReverted}
+~~~~~~~~~~~~~~~~
+
+    Task that indicates that the failed script was manually reverted. The script will be run again in the next update. No scripts will be executed by this task.
+
+    One or more {{{#Database_child_element}databases}} must be specified as child elements.
+
+*--------------+----------------+
+|<<Attribute>> | <<Description>>|
+*--------------+----------------+
+| configFile | Optional custom configuration file. Is usually not needed, since all applicable properties are configurable using task attributes. |
+*-------------+---------------+
+
+** Example
+
++----+
+<target name="mark-error-script-reverted">
+    <markErrorScriptReverted>
+        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+    </markErrorScriptReverted>
+</target>
++----+
 
 
 

@@ -4,10 +4,6 @@
         <name>DbMaintain</name>
         <src>./images/logos/dbmaintain.gif</src>
     </bannerLeft>
-    <poweredBy>
-        <logo img="http://sflogo.sourceforge.net/sflogo.php?group_id=167201&amp;type=1" name="SourceForge.net" href="http://sourceforge.net/"/>
-        <logo img="./images/logos/maven-feather-border.png" name="Built by Maven" href="http://maven.apache.org/"/>
-    </poweredBy>
 
     <skin>
         <groupId>org.apache.maven.skins</groupId>
@@ -23,15 +19,15 @@
         <menu name="General">
             <item name="Overview" href="overview.html"/>
             <item name="Downloads" href="https://sourceforge.net/project/showfiles.php?group_id=240079"/>
-            <item name="Forum" href="https://sourceforge.net/forum/forum.php?forum_id=917034"/>
+            <item name="Forum" href="https://sourceforge.net/projects/dbmaintain/forums/forum/917034"/>
         </menu>
 
         <menu name="Documentation">
-            <item name="Cookbook" href="cookbook.html"/>
             <item name="Tutorial" href="tutorial.html"/>
-            <item name="Configuration" href="configuration.html"/>
             <item name="Ant tasks" href="ant-tasks.html"/>
             <item name="Maven goals" href="maven-goals.html"/>
+            <item name="Command line" href="command-line.html"/>
+            <item name="Configuration" href="configuration.html"/>
             <item name="API Javadoc" href="apidocs/index.html"/>
         </menu>
 
