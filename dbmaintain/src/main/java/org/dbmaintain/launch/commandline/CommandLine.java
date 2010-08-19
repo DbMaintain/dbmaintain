@@ -48,6 +48,8 @@ public class CommandLine {
         CREATE_SCRIPT_ARCHIVE("createScriptArchive"),
         CHECK_SCRIPT_UPDATES("checkScriptUpdates"),
         UPDATE_DATABASE("updateDatabase"),
+        MARK_ERROR_SCRIPT_PERFORMED("markErrorScriptPerformed"),
+        MARK_ERROR_SCRIPT_REVERTED("markErrorScriptReverted"),
         MARK_DATABASE_AS_UPTODATE("markDatabaseAsUpToDate"),
         CLEAR_DATABASE("clearDatabase"),
         CLEAN_DATABASE("cleanDatabase"),
@@ -195,6 +197,12 @@ public class CommandLine {
                 }
                 getMainFactory(configuration).createDbMaintainer().markDatabaseAsUpToDate();
                 break;
+            case MARK_ERROR_SCRIPT_PERFORMED:
+                getMainFactory(configuration).createExecutedScriptInfoSource().markErrorScriptsAsSuccessful();
+                break;
+            case MARK_ERROR_SCRIPT_REVERTED:
+                getMainFactory(configuration).createExecutedScriptInfoSource().removeErrorScripts();
+                break;
             case CLEAR_DATABASE:
                 getMainFactory(configuration).createDBClearer().clearDatabase();
                 break;
@@ -253,6 +261,16 @@ public class CommandLine {
         System.out.println("     Updates the database to the latest version.");
         System.out.println("     Optionally, an extra argument may be added indicating the scripts archive file or root folder.");
         System.out.println("     This argument overrides the value of the property " + DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS + ".");
+        System.out.println();
+        System.out.println("- " + DbMaintainOperation.MARK_ERROR_SCRIPT_PERFORMED.getOperationName());
+        System.out.println("     Task that indicates that the failed script was manually performed.");
+        System.out.println("     The script will NOT be run again in the next update.");
+        System.out.println("     No scripts will be executed by this task.");
+        System.out.println();
+        System.out.println("- " + DbMaintainOperation.MARK_ERROR_SCRIPT_REVERTED.getOperationName());
+        System.out.println("     Task that indicates that the failed script was manually reverted.");
+        System.out.println("     The script will be run again in the next update.");
+        System.out.println("     No scripts will be executed by this task.");
         System.out.println();
         System.out.println("- " + DbMaintainOperation.MARK_DATABASE_AS_UPTODATE.getOperationName());
         System.out.println("     Marks the database as up-to-date, without executing any script.");
