@@ -46,6 +46,14 @@
             <archive>https://sourceforge.net/projects/dbmaintain/forums/forum/917034</archive>
         </mailingList>
     </mailingLists>
+    <developers>
+        <developer>
+            <name>Tim Ducheyne</name>
+        </developer>
+        <developer>
+            <name>Filip Neven</name>
+        </developer>
+    </developers>
     <ciManagement>
         <system>hudson</system>
         <url>http://davidkarlsen.com/hudson/job/dbmaintain/</url>
@@ -96,45 +104,48 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-eclipse-plugin</artifactId>
-                    <version>2.7</version>
-                    <configuration>
-                        <downloadSources>true</downloadSources>
-                        <downloadJavadocs>true</downloadJavadocs>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>2.0.1</version>
-                    <configuration>
-                        <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.0</version>
-                    <configuration>
-                        <goals>deploy package assembly:assembly</goals>
-                        <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.2-beta-4</version>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                        <descriptors>
-                            <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
-                            <descriptor>assembly-descriptors/assembly-dbmaintain-src.xml</descriptor>
-                        </descriptors>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                    <descriptors>
+                        <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
+                        <descriptor>assembly-descriptors/assembly-dbmaintain-src.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <goals>deploy package assembly:assembly</goals>
+                    <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
