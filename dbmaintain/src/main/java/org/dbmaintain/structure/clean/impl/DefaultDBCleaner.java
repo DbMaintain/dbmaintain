@@ -106,7 +106,7 @@ public class DefaultDBCleaner implements DBCleaner {
      */
     protected void cleanTable(Database database, String schemaName, String tableName) {
         logger.debug("Deleting all records from table " + tableName + " in database schema " + schemaName);
-        sqlHandler.executeUpdate("delete from " + database.qualified(schemaName, tableName), database.getDataSource());
+        sqlHandler.execute("delete from " + database.qualified(schemaName, tableName), database.getDataSource());
     }
 
     protected void assertItemsToPreserveExist(Set<DbItemIdentifier> itemsToPreserve) {

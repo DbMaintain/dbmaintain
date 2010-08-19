@@ -134,7 +134,7 @@ public class MsSqlDatabase extends Database {
     @Override
     public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
         // there can only be 1 identity column per table
-        getSQLHandler().executeUpdate("DBCC CHECKIDENT ('" + qualified(schemaName, tableName) + "', reseed, " + identityValue + ")", getDataSource());
+        getSQLHandler().execute("DBCC CHECKIDENT ('" + qualified(schemaName, tableName) + "', reseed, " + identityValue + ")", getDataSource());
     }
 
 
@@ -157,7 +157,7 @@ public class MsSqlDatabase extends Database {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select f.name from sys.foreign_keys f, sys.tables t, sys.schemas s where f.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
 
@@ -182,13 +182,13 @@ public class MsSqlDatabase extends Database {
         // disable all unique constraints
         Set<String> keyConstraintNames = sqlHandler.getItemsAsStringSet("select k.name from sys.key_constraints k, sys.tables t, sys.schemas s where k.type = 'UQ' and k.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
         for (String keyConstraintName : keyConstraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(keyConstraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(keyConstraintName), getDataSource());
         }
 
         // disable all check constraints
         Set<String> checkConstraintNames = sqlHandler.getItemsAsStringSet("select c.name from sys.check_constraints c, sys.tables t, sys.schemas s where c.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
         for (String checkConstraintName : checkConstraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(checkConstraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(checkConstraintName), getDataSource());
         }
 
         // disable all not null constraints
@@ -206,7 +206,7 @@ public class MsSqlDatabase extends Database {
      */
     @Override
     public void setSettingIdentityColumnValueEnabled(String schemaName, String tableName, boolean enabled) {
-        getSQLHandler().executeUpdate("SET IDENTITY_INSERT " + qualified(schemaName, tableName) + " " + (enabled ? "ON" : "OFF"), getDataSource());
+        getSQLHandler().execute("SET IDENTITY_INSERT " + qualified(schemaName, tableName) + " " + (enabled ? "ON" : "OFF"), getDataSource());
     }
 
     /**
@@ -309,7 +309,7 @@ public class MsSqlDatabase extends Database {
                     dataType += "(" + maxLength + ")";
                 }
                 // remove the not-null constraint
-                sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " " + dataType + " null", getDataSource());
+                sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " " + dataType + " null", getDataSource());
             }
         } catch (Exception e) {
             throw new DatabaseException("Unable to disable not null constraints for schema name: " + schemaName + ", table name: " + tableName, e);

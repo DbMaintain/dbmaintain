@@ -130,7 +130,7 @@ public class Db2Database extends Database {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select CONSTNAME from SYSCAT.TABCONST where TYPE = 'F' and TABNAME = '" + tableName + "' and TABSCHEMA = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
 
@@ -155,7 +155,7 @@ public class Db2Database extends Database {
         // disable all check and unique constraints
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select CONSTNAME from SYSCAT.TABCONST where TYPE in ('K', 'U') and TABNAME = '" + tableName + "' and TABSCHEMA = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
 
         // Retrieve the name of the primary key columns, since we cannot remove the not-null constraint on these columns
@@ -168,8 +168,8 @@ public class Db2Database extends Database {
                 // Do not remove PK constraints
                 continue;
             }
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(notNullColumnName) + " drop not null", getDataSource());
-            sqlHandler.executeUpdate("call SYSPROC.ADMIN_CMD('REORG TABLE " + qualified(schemaName, tableName) + "')", getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(notNullColumnName) + " drop not null", getDataSource());
+            sqlHandler.execute("call SYSPROC.ADMIN_CMD('REORG TABLE " + qualified(schemaName, tableName) + "')", getDataSource());
         }
     }
 
@@ -194,7 +194,7 @@ public class Db2Database extends Database {
      */
     @Override
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
-        getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " restart with " + newSequenceValue, getDataSource());
+        getSQLHandler().execute("alter sequence " + qualified(schemaName, sequenceName) + " restart with " + newSequenceValue, getDataSource());
     }
 
     /**
@@ -220,7 +220,7 @@ public class Db2Database extends Database {
      */
     @Override
     public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
-        getSQLHandler().executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(identityColumnName) + " restart with " + identityValue, getDataSource());
+        getSQLHandler().execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(identityColumnName) + " restart with " + identityValue, getDataSource());
     }
 
 
@@ -230,7 +230,7 @@ public class Db2Database extends Database {
      */
     @Override
     public void setDatabaseDefaultSchema() {
-        getSQLHandler().executeUpdate("set schema " + getDefaultSchemaName(), getDataSource());
+        getSQLHandler().execute("set schema " + getDefaultSchemaName(), getDataSource());
     }
 
     /**

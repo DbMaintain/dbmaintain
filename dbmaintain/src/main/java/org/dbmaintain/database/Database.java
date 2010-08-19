@@ -296,7 +296,7 @@ abstract public class Database {
      * @param tableName  The table to drop (case-sensitive), not null
      */
     public void dropTable(String schemaName, String tableName) {
-        getSQLHandler().executeUpdate("drop table " + qualified(schemaName, tableName) + (supportsCascade() ? " cascade" : ""), getDataSource());
+        getSQLHandler().execute("drop table " + qualified(schemaName, tableName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
 
@@ -318,7 +318,7 @@ abstract public class Database {
      * @param viewName   The view to drop (case-sensitive), not null
      */
     public void dropView(String schemaName, String viewName) {
-        getSQLHandler().executeUpdate("drop view " + qualified(schemaName, viewName) + (supportsCascade() ? " cascade" : ""), getDataSource());
+        getSQLHandler().execute("drop view " + qualified(schemaName, viewName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
 
@@ -362,7 +362,7 @@ abstract public class Database {
      * @param synonymName The synonym to drop (case-sensitive), not null
      */
     public void dropSynonym(String schemaName, String synonymName) {
-        getSQLHandler().executeUpdate("drop synonym " + qualified(schemaName, synonymName), getDataSource());
+        getSQLHandler().execute("drop synonym " + qualified(schemaName, synonymName), getDataSource());
     }
 
 
@@ -384,7 +384,7 @@ abstract public class Database {
      * @param sequenceName The sequence to drop (case-sensitive), not null
      */
     public void dropSequence(String schemaName, String sequenceName) {
-        getSQLHandler().executeUpdate("drop sequence " + qualified(schemaName, sequenceName), getDataSource());
+        getSQLHandler().execute("drop sequence " + qualified(schemaName, sequenceName), getDataSource());
     }
 
 
@@ -406,7 +406,7 @@ abstract public class Database {
      * @param triggerName The trigger to drop (case-sensitive), not null
      */
     public void dropTrigger(String schemaName, String triggerName) {
-        getSQLHandler().executeUpdate("drop trigger " + qualified(schemaName, triggerName), getDataSource());
+        getSQLHandler().execute("drop trigger " + qualified(schemaName, triggerName), getDataSource());
     }
 
 
@@ -428,7 +428,7 @@ abstract public class Database {
      * @param typeName   The type to drop (case-sensitive), not null
      */
     public void dropType(String schemaName, String typeName) {
-        getSQLHandler().executeUpdate("drop type " + qualified(schemaName, typeName) + (supportsCascade() ? " cascade" : ""), getDataSource());
+        getSQLHandler().execute("drop type " + qualified(schemaName, typeName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
 

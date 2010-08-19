@@ -144,7 +144,7 @@ public class OracleDatabase extends Database {
      */
     @Override
     public void dropTable(String schemaName, String tableName) {
-        getSQLHandler().executeUpdate("drop table " + qualified(schemaName, tableName) + " cascade constraints" + (supportsPurge() ? " purge" : ""), getDataSource());
+        getSQLHandler().execute("drop table " + qualified(schemaName, tableName) + " cascade constraints" + (supportsPurge() ? " purge" : ""), getDataSource());
     }
 
     /**
@@ -155,7 +155,7 @@ public class OracleDatabase extends Database {
      */
     @Override
     public void dropView(String schemaName, String viewName) {
-        getSQLHandler().executeUpdate("drop view " + qualified(schemaName, viewName) + " cascade constraints", getDataSource());
+        getSQLHandler().execute("drop view " + qualified(schemaName, viewName) + " cascade constraints", getDataSource());
     }
 
     /**
@@ -166,7 +166,7 @@ public class OracleDatabase extends Database {
      */
     @Override
     public void dropMaterializedView(String schemaName, String materializedViewName) {
-        getSQLHandler().executeUpdate("drop materialized view " + qualified(schemaName, materializedViewName), getDataSource());
+        getSQLHandler().execute("drop materialized view " + qualified(schemaName, materializedViewName), getDataSource());
     }
 
     /**
@@ -179,7 +179,7 @@ public class OracleDatabase extends Database {
      */
     @Override
     public void dropType(String schemaName, String typeName) {
-        getSQLHandler().executeUpdate("drop type " + qualified(schemaName, typeName) + " force", getDataSource());
+        getSQLHandler().execute("drop type " + qualified(schemaName, typeName) + " force", getDataSource());
     }
 
 
@@ -280,11 +280,11 @@ public class OracleDatabase extends Database {
                 long lastNumber = resultSet.getLong("LAST_NUMBER");
                 long incrementBy = resultSet.getLong("INCREMENT_BY");
                 // change the increment
-                getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " increment by " + (newSequenceValue - lastNumber), getDataSource());
+                getSQLHandler().execute("alter sequence " + qualified(schemaName, sequenceName) + " increment by " + (newSequenceValue - lastNumber), getDataSource());
                 // select the increment
-                getSQLHandler().executeUpdate("select " + qualified(schemaName, sequenceName) + ".NEXTVAL from DUAL", getDataSource());
+                getSQLHandler().execute("select " + qualified(schemaName, sequenceName) + ".NEXTVAL from DUAL", getDataSource());
                 // set back old increment
-                getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " increment by " + incrementBy, getDataSource());
+                getSQLHandler().execute("alter sequence " + qualified(schemaName, sequenceName) + " increment by " + incrementBy, getDataSource());
             }
         } catch (SQLException e) {
             throw new DatabaseException("Unable to increment sequence to value " + newSequenceValue + " for schema name: " + schemaName + ", sequence name: " + sequenceName, e);
@@ -300,7 +300,7 @@ public class OracleDatabase extends Database {
      */
     @Override
     public void setDatabaseDefaultSchema() {
-        getSQLHandler().executeUpdate("alter session set current_schema=" + getDefaultSchemaName(), getDataSource());
+        getSQLHandler().execute("alter session set current_schema=" + getDefaultSchemaName(), getDataSource());
     }
 
 

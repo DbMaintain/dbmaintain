@@ -92,7 +92,7 @@ public class JdbcScriptRunner implements ScriptRunner {
 
             String statement;
             while ((statement = scriptParser.getNextStatement()) != null) {
-                sqlHandler.executeUpdate(statement, dataSource);
+                sqlHandler.execute(statement, dataSource);
             }
             sqlHandler.endTransactionAndCommit(dataSource);
 

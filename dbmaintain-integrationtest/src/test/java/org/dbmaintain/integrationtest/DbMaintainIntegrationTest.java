@@ -324,7 +324,7 @@ public class DbMaintainIntegrationTest {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "Error while performing database update");
+            assertMessageContains(e.getMessage(), "Error while performing database statement");
         }
         assertScriptsNotExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
 

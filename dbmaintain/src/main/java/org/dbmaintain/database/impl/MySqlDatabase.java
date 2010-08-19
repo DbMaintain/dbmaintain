@@ -114,7 +114,7 @@ public class MySqlDatabase extends Database {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints where constraint_type = 'FOREIGN KEY' AND table_name = '" + tableName + "' and constraint_schema = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop foreign key " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop foreign key " + quoted(constraintName), getDataSource());
         }
     }
 
@@ -139,7 +139,7 @@ public class MySqlDatabase extends Database {
         // disable all unique constraints (check constraints are not implemented)
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints where constraint_type in ('UNIQUE') AND table_name = '" + tableName + "' and constraint_schema = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop key " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop key " + quoted(constraintName), getDataSource());
         }
 
         // disable all not null constraints
@@ -147,7 +147,7 @@ public class MySqlDatabase extends Database {
         for (String notNullColumnName : notNullColumnNames) {
             // todo test length etc
             String columnType = sqlHandler.getItemAsString("select column_type from information_schema.columns where table_schema = '" + schemaName + "' and table_name = '" + tableName + "' and column_name = '" + notNullColumnName + "'", getDataSource());
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " change column " + quoted(notNullColumnName) + " " + quoted(notNullColumnName) + " " + columnType + " NULL ", getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " change column " + quoted(notNullColumnName) + " " + quoted(notNullColumnName) + " " + columnType + " NULL ", getDataSource());
         }
     }
 
@@ -173,7 +173,7 @@ public class MySqlDatabase extends Database {
      */
     @Override
     public void incrementIdentityColumnToValue(String schemaName, String tableName, String primaryKeyColumnName, long identityValue) {
-        getSQLHandler().executeUpdate("alter table " + qualified(schemaName, tableName) + " AUTO_INCREMENT = " + identityValue, getDataSource());
+        getSQLHandler().execute("alter table " + qualified(schemaName, tableName) + " AUTO_INCREMENT = " + identityValue, getDataSource());
     }
 
 
@@ -213,7 +213,7 @@ public class MySqlDatabase extends Database {
      */
     @Override
     public void setDatabaseDefaultSchema() {
-        getSQLHandler().executeUpdate("use " + getDefaultSchemaName(), getDataSource());
+        getSQLHandler().execute("use " + getDefaultSchemaName(), getDataSource());
     }
 
     /**

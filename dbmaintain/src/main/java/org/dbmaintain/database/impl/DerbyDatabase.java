@@ -126,7 +126,7 @@ public class DerbyDatabase extends Database {
      */
     @Override
     public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
-        getSQLHandler().executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(identityColumnName) + " RESTART WITH " + identityValue, getDataSource());
+        getSQLHandler().execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(identityColumnName) + " RESTART WITH " + identityValue, getDataSource());
     }
 
 
@@ -149,7 +149,7 @@ public class DerbyDatabase extends Database {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select c.CONSTRAINTNAME from SYS.SYSCONSTRAINTS c, SYS.SYSTABLES t, SYS.SYSSCHEMAS s where c.TYPE = 'F' AND c.TABLEID = t.TABLEID  AND t.TABLENAME = '" + tableName + "' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
 
@@ -174,7 +174,7 @@ public class DerbyDatabase extends Database {
         // disable all check and unique constraints
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select c.CONSTRAINTNAME from SYS.SYSCONSTRAINTS c, SYS.SYSTABLES t, SYS.SYSSCHEMAS s where c.TYPE in ('U', 'C') AND c.TABLEID = t.TABLEID  AND t.TABLENAME = '" + tableName + "' AND t.SCHEMAID = s.SCHEMAID AND s.SCHEMANAME = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
 
         // retrieve the name of the primary key, since we cannot remove the not-null constraint on this column
@@ -187,7 +187,7 @@ public class DerbyDatabase extends Database {
                 // Do not remove PK constraints
                 continue;
             }
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(notNullColumnName) + " NULL", getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(notNullColumnName) + " NULL", getDataSource());
         }
     }
 
@@ -198,7 +198,7 @@ public class DerbyDatabase extends Database {
      */
     @Override
     public void setDatabaseDefaultSchema() {
-        getSQLHandler().executeUpdate("set schema " + getDefaultSchemaName(), getDataSource());
+        getSQLHandler().execute("set schema " + getDefaultSchemaName(), getDataSource());
     }
 
     /**

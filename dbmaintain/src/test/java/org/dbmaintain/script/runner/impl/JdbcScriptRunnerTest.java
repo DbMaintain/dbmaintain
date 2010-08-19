@@ -63,6 +63,8 @@ public class JdbcScriptRunnerTest {
     private Script insertsWithCommit;
     /* A test script performing inserts with a rollback in the script */
     private Script insertsWithRollback;
+    /* A test script performing a select statement */
+    private Script scriptWithQuery;
     /* An empty test script */
     private Script emptyScript;
 
@@ -82,6 +84,7 @@ public class JdbcScriptRunnerTest {
         insertsWithoutError = createScript("inserts-without-error.sql");
         insertsWithCommit = createScript("inserts-with-commit.sql");
         insertsWithRollback = createScript("inserts-with-rollback.sql");
+        scriptWithQuery = createScript("script-with-query.sql");
         emptyScript = createScript("empty-script.sql");
 
         cleanupTestDatabase();
@@ -137,6 +140,11 @@ public class JdbcScriptRunnerTest {
         defaultScriptRunner.execute(insertsWithRollback);
 
         assertEquals(1, getItemAsLong("select count(1) from table1", dataSource));
+    }
+
+    @Test
+    public void scriptThatContainsQuery() throws Exception {
+        defaultScriptRunner.execute(scriptWithQuery);
     }
 
     @Test

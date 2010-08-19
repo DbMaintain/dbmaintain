@@ -128,7 +128,7 @@ public class PostgreSqlDatabase extends Database {
      * @param sequenceName The sequence to drop (case-sensitive), not null
      */
     public void dropSequence(String schemaName, String sequenceName) {
-        getSQLHandler().executeUpdate("drop sequence " + qualified(schemaName, sequenceName) + " cascade", getDataSource());
+        getSQLHandler().execute("drop sequence " + qualified(schemaName, sequenceName) + " cascade", getDataSource());
     }
 
     /**
@@ -144,7 +144,7 @@ public class PostgreSqlDatabase extends Database {
      */
     @Override
     public void dropTrigger(String schemaName, String triggerName) {
-        getSQLHandler().executeUpdate("drop trigger " + triggerName + " cascade", getDataSource());
+        getSQLHandler().execute("drop trigger " + triggerName + " cascade", getDataSource());
     }
 
     /**
@@ -177,7 +177,7 @@ public class PostgreSqlDatabase extends Database {
         SQLHandler sqlHandler = getSQLHandler();
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints con where con.table_name = '" + tableName + "' and constraint_type = 'FOREIGN KEY' and constraint_schema = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
     }
 
@@ -203,7 +203,7 @@ public class PostgreSqlDatabase extends Database {
         // The join wiht pg_constraints is used to filter out not null check-constraints that are implicitly created by Postgresql
         Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select constraint_name from information_schema.table_constraints con, pg_constraint pg_con where pg_con.conname = con.constraint_name and con.table_name = '" + tableName + "' and constraint_type in ('CHECK', 'UNIQUE') and constraint_schema = '" + schemaName + "'", getDataSource());
         for (String constraintName : constraintNames) {
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
         }
 
         // retrieve the name of the primary key, since we cannot remove the not-null constraint on this column
@@ -216,7 +216,7 @@ public class PostgreSqlDatabase extends Database {
                 // Do not remove PK constraints
                 continue;
             }
-            sqlHandler.executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + notNullColumnName + " drop not null", getDataSource());
+            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + notNullColumnName + " drop not null", getDataSource());
         }
     }
 
@@ -251,7 +251,7 @@ public class PostgreSqlDatabase extends Database {
      */
     @Override
     public void setDatabaseDefaultSchema() {
-        getSQLHandler().executeUpdate("SET search_path TO " + getDefaultSchemaName(), getDataSource());
+        getSQLHandler().execute("SET search_path TO " + getDefaultSchemaName(), getDataSource());
     }
 
 

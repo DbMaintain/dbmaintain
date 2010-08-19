@@ -257,7 +257,7 @@ public class HsqldbDatabase extends Database {
      */
     @Override
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
-        getSQLHandler().executeUpdate("alter sequence " + qualified(schemaName, sequenceName) + " restart with " + newSequenceValue, getDataSource());
+        getSQLHandler().execute("alter sequence " + qualified(schemaName, sequenceName) + " restart with " + newSequenceValue, getDataSource());
     }
 
     /**
@@ -282,7 +282,7 @@ public class HsqldbDatabase extends Database {
      */
     @Override
     public void incrementIdentityColumnToValue(String schemaName, String tableName, String identityColumnName, long identityValue) {
-        getSQLHandler().executeUpdate("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(identityColumnName) + " RESTART WITH " + identityValue, getDataSource());
+        getSQLHandler().execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(identityColumnName) + " RESTART WITH " + identityValue, getDataSource());
     }
 
 
@@ -292,7 +292,7 @@ public class HsqldbDatabase extends Database {
      */
     @Override
     public void setDatabaseDefaultSchema() {
-        getSQLHandler().executeUpdate("set schema " + getDefaultSchemaName(), getDataSource());
+        getSQLHandler().execute("set schema " + getDefaultSchemaName(), getDataSource());
     }
 
     /**

@@ -27,9 +27,8 @@ public interface SQLHandler {
      *
      * @param sql        The sql string for retrieving the items
      * @param dataSource The dataSource, not null
-     * @return The nr of updates
      */
-    int executeUpdate(String sql, DataSource dataSource);
+    void execute(String sql, DataSource dataSource);
 
     /**
      * Executes the given statement and commits the changes to the database

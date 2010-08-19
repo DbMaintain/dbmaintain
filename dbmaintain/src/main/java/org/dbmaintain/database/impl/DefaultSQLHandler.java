@@ -74,20 +74,20 @@ public class DefaultSQLHandler implements SQLHandler {
     }
 
 
-    public int executeUpdate(String sql, DataSource dataSource) {
+    public void execute(String sql, DataSource dataSource) {
         logger.debug(sql);
 
         if (!doExecuteUpdates) {
             // skip update
-            return 0;
+            return;
         }
         Statement statement = null;
         try {
             statement = getConnection(dataSource).createStatement();
-            return statement.executeUpdate(sql);
+            statement.execute(sql);
 
         } catch (Exception e) {
-            throw new DatabaseException("Error while performing database update: " + sql, e);
+            throw new DatabaseException("Error while performing database statement: " + sql, e);
         } finally {
             closeQuietly(statement);
         }
