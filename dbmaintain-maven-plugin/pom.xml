@@ -61,26 +61,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-invoker-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <id>integration-test</id>
-                        <goals>
-                            <goal>install</goal>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skipInvocation>${maven.test.skip}</skipInvocation>
-                    <verbose>true</verbose>
-                    <cloneAllFiles>true</cloneAllFiles>
-                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
-                </configuration>
-            </plugin-->
         </plugins>
     </build>
     <reporting>

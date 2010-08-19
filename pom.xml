@@ -122,21 +122,22 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                    <descriptors>
-                        <descriptor>assembly-descriptors/assembly-dbmaintain.xml</descriptor>
-                        <descriptor>assembly-descriptors/assembly-dbmaintain-src.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <goals>deploy package assembly:assembly</goals>
                     <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                    <finalName>dbmaintain-${project.version}</finalName>
+                    <descriptors>
+                        <descriptor>src/main/assembly/dbmaintain.xml</descriptor>
+                        <descriptor>src/main/assembly/dbmaintain-src.xml</descriptor>
+                    </descriptors>
                 </configuration>
             </plugin>
             <plugin>

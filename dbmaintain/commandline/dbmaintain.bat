@@ -87,8 +87,8 @@ goto error
 :chkMHome
 if not "%DBMAINTAIN_HOME%"=="" goto valMHome
 
-if "%OS%"=="Windows_NT" SET DBMAINTAIN_HOME=%~dp0..
-if "%OS%"=="WINNT" SET DBMAINTAIN_HOME=%~dp0..
+if "%OS%"=="Windows_NT" SET DBMAINTAIN_HOME=%~dp0
+if "%OS%"=="WINNT" SET DBMAINTAIN_HOME=%~dp0
 if not "%DBMAINTAIN_HOME%"=="" goto valMHome
 
 echo.
@@ -106,7 +106,7 @@ set DBMAINTAIN_HOME=%DBMAINTAIN_HOME:~0,-1%
 goto stripMHome
 
 :checkMBat
-if exist "%DBMAINTAIN_HOME%\bin\dbmaintain.bat" goto init
+if exist "%DBMAINTAIN_HOME%\dbmaintain.bat" goto init
 
 echo.
 echo ERROR: DBMAINTAIN_HOME is set to an invalid directory.
@@ -154,7 +154,7 @@ goto Win9xApp
 :endInit
 SET DBMAINTAIN_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
 
-SET DBMAINTAIN_CLASSPATH="%DBMAINTAIN_HOME%\lib\dbmaintain-1.1.jar";%JDBC_DRIVER%
+SET DBMAINTAIN_CLASSPATH="%DBMAINTAIN_HOME%\dbmaintain-${project.version}.jar";%JDBC_DRIVER%
 
 @REM Start DBMAINTAIN
 :runm2

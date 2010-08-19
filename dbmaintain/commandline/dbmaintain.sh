@@ -95,7 +95,7 @@ if [ -z "$DBMAINTAIN_HOME" ] ; then
 
   saveddir=`pwd`
 
-  DBMAINTAIN_HOME=`dirname "$PRG"`/..
+  DBMAINTAIN_HOME=`dirname "$PRG"`
 
   # make it fully qualified
   DBMAINTAIN_HOME=`cd "$DBMAINTAIN_HOME" && pwd`
@@ -145,12 +145,12 @@ if [ -z "$JAVA_HOME" ] ; then
 fi
 
 DBMAINTAIN_LAUNCHER="org.dbmaintain.launch.commandline.CommandLine"
-DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/lib/dbmaintain-1.1.jar"
+DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/dbmaintain-${project.version}.jar"
 
 # Check if $DBMAINTAIN_JDBC_DRIVER is set. If not, call setJdbcDriver.sh.
 if [ -z "$DBMAINTAIN_JDBC_DRIVER" ] ; then
-  if [ -f "$DBMAINTAIN_HOME/bin/setJdbcDriver.sh" ] ; then
-    . "$DBMAINTAIN_HOME/bin/setJdbcDriver.sh"
+  if [ -f "$DBMAINTAIN_HOME/setJdbcDriver.sh" ] ; then
+    . "$DBMAINTAIN_HOME/setJdbcDriver.sh"
   else
     . setJdbcDriver.sh
   fi

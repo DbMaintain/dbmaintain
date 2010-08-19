@@ -9,7 +9,7 @@
 
     <artifactId>dbmaintain</artifactId>
     <name>${project.artifactId}</name>
-    
+
     <build>
         <testResources>
             <testResource>
