@@ -17,7 +17,6 @@ package org.dbmaintain.structure.clear.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
-import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -32,7 +31,6 @@ import static java.util.Arrays.asList;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDatabases;
-import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
@@ -61,9 +59,8 @@ public class DefaultDBClearerMultiSchemaTest {
         dataSource = defaultDatabase.getDataSource();
 
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
-        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler);
 
         dropTestDatabase();
         createTestDatabase();

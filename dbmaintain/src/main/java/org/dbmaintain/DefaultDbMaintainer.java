@@ -216,6 +216,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 logger.info("The database is cleared, and all database scripts are executed.");
                 if (!dryRun) {
                     dbClearer.clearDatabase();
+                    executedScriptInfoSource.clearAllExecutedScripts();
                     executeScripts(scriptRepository.getAllUpdateScripts());
                 }
             } else {

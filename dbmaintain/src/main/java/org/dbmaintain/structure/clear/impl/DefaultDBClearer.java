@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
-import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.clear.DBClearer;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -52,9 +51,6 @@ public class DefaultDBClearer implements DBClearer {
     /* Disables of constraints before clearing the database */
     protected ConstraintsDisabler constraintsDisabler;
 
-    /* Clears the executed scripts table */
-    protected ExecutedScriptInfoSource executedScriptInfoSource;
-    
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should not be dropped. */
     protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
 
@@ -67,11 +63,10 @@ public class DefaultDBClearer implements DBClearer {
      * @param itemsToPreserve          The schema's, tables, triggers etc that should not be dropped, not null
      * @param constraintsDisabler      Disables of constraints before clearing the database, not null
      */
-    public DefaultDBClearer(Databases databases, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
+    public DefaultDBClearer(Databases databases, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler) {
         this.databases = databases;
         this.itemsToPreserve = itemsToPreserve;
         this.constraintsDisabler = constraintsDisabler;
-        this.executedScriptInfoSource = executedScriptInfoSource;
         assertItemsToPreserveExist(itemsToPreserve);
     }
 

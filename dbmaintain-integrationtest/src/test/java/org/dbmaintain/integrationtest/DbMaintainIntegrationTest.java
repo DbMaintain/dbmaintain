@@ -134,6 +134,10 @@ public class DbMaintainIntegrationTest {
         updateDatabase();
         assertScriptsNotExecuted(INCREMENTAL_1);
         assertUpdatedScriptsExecuted(INCREMENTAL_1);
+        // Verify that, if we run updateDatabase again, scripts are not run over again. This to make sure we prevent
+        // bug DBM-80 to happen again.
+        boolean updatePerformed = updateDatabase();
+        assertFalse(updatePerformed);
     }
 
     @Test
@@ -271,7 +275,7 @@ public class DbMaintainIntegrationTest {
 
 
     /**
-     * Test for adding a hotfix script that has an index smaller than an existing index. Out of sequence is
+     * Test for adding a patch script that has an index smaller than an existing index. Out of sequence is
      * not allowed so the update should have failed.
      */
     @Test(expected = DbMaintainException.class)
@@ -285,8 +289,8 @@ public class DbMaintainIntegrationTest {
 
 
     /**
-     * Test for adding a hotfix script that has an index smaller than an existing index. Out of sequence is
-     * allowed, the hotfix script should have been executed (with a warning)
+     * Test for adding a patch script that has an index smaller than an existing index. Out of sequence is
+     * allowed, the patch script should have been executed (with a warning)
      */
     @Test
     public void addPatchScript_outOfSequenceAllowed() {
@@ -435,7 +439,7 @@ public class DbMaintainIntegrationTest {
 
     /**
      * Verifies that, if the dbmaintain_scripts table doesn't exist yet, and the autoCreateExecutedScriptsInfoTable property is set to true,
-     * we start with a from scratch update
+     * we don't start with a from scratch update
      */
     @Test
     public void noInitialFromScratchUpdateIfFromScratchDisabled() {
@@ -749,10 +753,10 @@ public class DbMaintainIntegrationTest {
         assertFalse("Table " + tableName + " exists, while it shouldn't", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
     }
 
-    private void updateDatabase() {
+    private boolean updateDatabase() {
         MainFactory mainFactory = new MainFactory(configuration);
         DbMaintainer dbMaintainer = mainFactory.createDbMaintainer();
-        dbMaintainer.updateDatabase(false);
+        return dbMaintainer.updateDatabase(false);
     }
 
     private void checkScriptUpdates() {

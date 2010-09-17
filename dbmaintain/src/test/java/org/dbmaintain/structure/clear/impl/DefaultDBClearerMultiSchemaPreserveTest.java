@@ -17,7 +17,6 @@ package org.dbmaintain.structure.clear.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
-import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -26,16 +25,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.*;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDatabases;
-import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -69,19 +67,18 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         createTestDatabase();
 
         // configure items to preserve
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-        itemsToPreserve.add(parseSchemaIdentifier("schema_c", databases));
-        itemsToPreserve.add(parseItemIdentifier(TABLE, "test_table", databases));
-        itemsToPreserve.add(parseItemIdentifier(TABLE, defaultDatabase.quoted("SCHEMA_A") + "." + defaultDatabase.quoted("TEST_TABLE"), databases));
-        itemsToPreserve.add(parseItemIdentifier(VIEW, "test_view", databases));
-        itemsToPreserve.add(parseItemIdentifier(VIEW, "schema_a." + defaultDatabase.quoted("TEST_VIEW"), databases));
-        itemsToPreserve.add(parseItemIdentifier(SEQUENCE, "test_sequence", databases));
-        itemsToPreserve.add(parseItemIdentifier(SEQUENCE, defaultDatabase.quoted("SCHEMA_A") + ".test_sequence", databases));
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+            parseSchemaIdentifier("schema_c", databases),
+            parseItemIdentifier(TABLE, "test_table", databases),
+            parseItemIdentifier(TABLE, defaultDatabase.quoted("SCHEMA_A") + "." + defaultDatabase.quoted("TEST_TABLE"), databases),
+            parseItemIdentifier(VIEW, "test_view", databases),
+            parseItemIdentifier(VIEW, "schema_a." + defaultDatabase.quoted("TEST_VIEW"), databases),
+            parseItemIdentifier(SEQUENCE, "test_sequence", databases),
+            parseItemIdentifier(SEQUENCE, defaultDatabase.quoted("SCHEMA_A") + ".test_sequence", databases));
 
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
-        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler);
     }
 
 

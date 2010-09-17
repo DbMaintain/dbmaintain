@@ -17,7 +17,6 @@ package org.dbmaintain.structure.clear;
 
 import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.FactoryWithDatabase;
-import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.clear.impl.DefaultDBClearer;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -40,9 +39,8 @@ public class DBClearerFactory extends FactoryWithDatabase<DBClearer> {
 
         MainFactory mainFactory = factoryWithDatabaseContext.getMainFactory();
         ConstraintsDisabler constraintsDisabler = mainFactory.createConstraintsDisabler();
-        ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
 
-        return new DefaultDBClearer(getDatabases(), itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        return new DefaultDBClearer(getDatabases(), itemsToPreserve, constraintsDisabler);
     }
 
 

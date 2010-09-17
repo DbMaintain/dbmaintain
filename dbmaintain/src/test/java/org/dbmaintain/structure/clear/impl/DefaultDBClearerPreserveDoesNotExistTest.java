@@ -18,7 +18,6 @@ package org.dbmaintain.structure.clear.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Databases;
-import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -27,13 +26,12 @@ import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.*;
-import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
+import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.junit.Assert.fail;
 
 /**
@@ -47,12 +45,8 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultDBClearerPreserveDoesNotExistTest.class);
 
-    /* Tested object */
-    private DefaultDBClearer defaultDBClearer;
-
     private Databases databases;
     private ConstraintsDisabler constraintsDisabler;
-    private ExecutedScriptInfoSource executedScriptInfoSource;
 
 
     /**
@@ -64,7 +58,6 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     public void initialize() throws Exception {
         databases = TestUtils.getDatabases();
         constraintsDisabler = new DefaultConstraintsDisabler(databases);
-        executedScriptInfoSource = getDefaultExecutedScriptInfoSource(databases.getDefaultDatabase(), true);
     }
 
 
@@ -73,12 +66,14 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void schemasToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-        itemsToPreserve.add(parseSchemaIdentifier("unexisting_schema1", databases));
-        itemsToPreserve.add(parseSchemaIdentifier("unexisting_schema2", databases));
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+                parseSchemaIdentifier("unexisting_schema1", databases),
+                parseSchemaIdentifier("unexisting_schema2", databases));
+        createDbClearer(itemsToPreserve).clearDatabase();
+    }
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDBClearer.clearDatabase();
+    private DefaultDBClearer createDbClearer(Set<DbItemIdentifier> itemsToPreserve) {
+        return new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler);
     }
 
     /**
@@ -86,12 +81,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void tablesToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-        itemsToPreserve.add(parseItemIdentifier(TABLE, "unexisting_table1", databases));
-        itemsToPreserve.add(parseItemIdentifier(TABLE, "unexisting_table2", databases));
-
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDBClearer.clearDatabase();
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+            parseItemIdentifier(TABLE, "unexisting_table1", databases),
+            parseItemIdentifier(TABLE, "unexisting_table2", databases));
+        createDbClearer(itemsToPreserve).clearDatabase();
     }
 
     /**
@@ -99,12 +92,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void viewsToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-        itemsToPreserve.add(parseItemIdentifier(VIEW, "unexisting_view1", databases));
-        itemsToPreserve.add(parseItemIdentifier(VIEW, "unexisting_view2", databases));
-
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDBClearer.clearDatabase();
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+            parseItemIdentifier(VIEW, "unexisting_view1", databases),
+            parseItemIdentifier(VIEW, "unexisting_view2", databases));
+        createDbClearer(itemsToPreserve).clearDatabase();
     }
 
     /**
@@ -112,12 +103,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test(expected = DbMaintainException.class)
     public void materializedViewsToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-        itemsToPreserve.add(parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases));
-        itemsToPreserve.add(parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases));
-
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-        defaultDBClearer.clearDatabase();
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+            parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases),
+            parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases));
+        createDbClearer(itemsToPreserve).clearDatabase();
     }
 
     /**
@@ -130,12 +119,11 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             return;
         }
         try {
-            Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-            itemsToPreserve.add(parseItemIdentifier(SEQUENCE, "unexisting_sequence1", databases));
-            itemsToPreserve.add(parseItemIdentifier(SEQUENCE, "unexisting_sequence2", databases));
+            Set<DbItemIdentifier> itemsToPreserve = asSet(
+                parseItemIdentifier(SEQUENCE, "unexisting_sequence1", databases),
+                parseItemIdentifier(SEQUENCE, "unexisting_sequence2", databases));
 
-            defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-            defaultDBClearer.clearDatabase();
+            createDbClearer(itemsToPreserve).clearDatabase();
             fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected
@@ -152,12 +140,11 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             return;
         }
         try {
-            Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-            itemsToPreserve.add(parseItemIdentifier(SYNONYM, "unexisting_synonym1", databases));
-            itemsToPreserve.add(parseItemIdentifier(SYNONYM, "unexisting_synonym2", databases));
+            Set<DbItemIdentifier> itemsToPreserve = asSet(
+                parseItemIdentifier(SYNONYM, "unexisting_synonym1", databases),
+                parseItemIdentifier(SYNONYM, "unexisting_synonym2", databases));
 
-            defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
-            defaultDBClearer.clearDatabase();
+            createDbClearer(itemsToPreserve).clearDatabase();
             fail("DbMaintainException expected.");
         } catch (DbMaintainException e) {
             // expected
