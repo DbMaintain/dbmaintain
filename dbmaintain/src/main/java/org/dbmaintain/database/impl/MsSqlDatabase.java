@@ -102,6 +102,17 @@ public class MsSqlDatabase extends Database {
     }
 
     /**
+     * Retrieves the names of all the stored procedures in the database schema.
+     *
+     * @return The names of all stored procedures in the database
+     */
+    @Override
+	public Set<String> getStoredProcedureNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("SELECT sys.procedures.name FROM sys.procedures INNER JOIN sys.schemas ON sys.procedures.schema_id = sys.schemas.schema_id where sys.schemas.name = '" + schemaName + "'", getDataSource());
+	}
+
+
+	/**
      * Retrieves the names of all the types in the database schema.
      *
      * @return The names of all types in the database
@@ -230,6 +241,17 @@ public class MsSqlDatabase extends Database {
     }
 
     /**
+     * Stored procedures are supported.
+     *
+     * @return True
+     */
+    @Override
+	public boolean supportsStoredProcedures() {
+    	return true;
+	}
+
+
+	/**
      * Types are supported
      *
      * @return true

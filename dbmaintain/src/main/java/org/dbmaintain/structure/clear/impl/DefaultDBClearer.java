@@ -54,7 +54,7 @@ public class DefaultDBClearer implements DBClearer {
 
     /* Clears the executed scripts table */
     protected ExecutedScriptInfoSource executedScriptInfoSource;
-
+    
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should not be dropped. */
     protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
 
@@ -66,7 +66,6 @@ public class DefaultDBClearer implements DBClearer {
      * @param databases                The db support instances, not null
      * @param itemsToPreserve          The schema's, tables, triggers etc that should not be dropped, not null
      * @param constraintsDisabler      Disables of constraints before clearing the database, not null
-     * @param executedScriptInfoSource Clears the executed scripts table, not null
      */
     public DefaultDBClearer(Databases databases, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
         this.databases = databases;
@@ -92,10 +91,7 @@ public class DefaultDBClearer implements DBClearer {
             }
             clearDatabase(database);
         }
-
-        executedScriptInfoSource.clearAllExecutedScripts();
     }
-
 
     protected void clearDatabase(Database database) {
         for (String schemaName : database.getSchemaNames()) {
@@ -112,7 +108,7 @@ public class DefaultDBClearer implements DBClearer {
                 dropMaterializedViews(database, schemaName);
                 dropSequences(database, schemaName);
                 dropTables(database, schemaName);
-
+                dropStoredProcedures(database, schemaName);
                 dropTriggers(database, schemaName);
                 dropTypes(database, schemaName);
             }
@@ -266,6 +262,25 @@ public class DefaultDBClearer implements DBClearer {
                 multiPassErrorHandler.addError(e);
             }
         }
+    }
+    
+    protected void dropStoredProcedures(Database database, String schemaName) {
+    	if (!database.supportsStoredProcedures()) {
+    		return;
+    	}
+    	Set<String> storedProcedureNames = database.getStoredProcedureNames(schemaName);
+    	for (String storedProcedureName : storedProcedureNames) {
+            // check whether trigger needs to be preserved
+            if (itemsToPreserve.contains(getItemIdentifier(STORED_PROC, schemaName, storedProcedureName, database))) {
+                continue;
+            }
+            logger.debug("Dropping stored procedure " + storedProcedureName + " in database schema " + schemaName);
+            try {
+                database.dropStoredProcedure(schemaName, storedProcedureName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
+    	}
     }
 
     /**
