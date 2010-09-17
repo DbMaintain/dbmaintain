@@ -289,8 +289,8 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
     Ant tasks are provided for all DbMaintain operations. To be able to use these tasks, you have to declare them in your build file, e.g. as follows:
 	 
 +-----+
-<taskdef resource="dbmaintain-anttasks.xml" classpathref="dbmaintain.lib"/>
 <path id="dbmaintain-lib"><fileset dir="${dbmaintain.home}/lib"><include name="*.jar"/></fileset></path>
+<taskdef resource="dbmaintain-anttasks.xml" classpathref="dbmaintain.lib"/>
 +-----+
 
     You can perform a database update with the following task.

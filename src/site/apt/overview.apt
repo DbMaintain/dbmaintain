@@ -31,7 +31,6 @@ Overview
 
 * News
 ~~~~
-
 ** <<2010-08-16 - Release of DbMaintain 2.0>>
 
     Two new operations have been introduced: markErrorScriptPerformed and markErrorScriptReverted that can be used when a script execution fails.
@@ -46,6 +45,9 @@ Overview
 
 ** <<2010-04-25: Release of DbMaintain 1.1>>
 
+    DbMaintain 1.1 has been released. It's most important feature is the support for script qualifiers, which enables including or excluding certain scripts from execution depending on the target environment. Another feature is the possibility to execute scripts native tools such as sqlplus for oracle and clp for db2. The release also includes a number of bug fixes and patches. A complete list of changes can be found in the {{{http://jira.dbmaintain.org/secure/ReleaseNote.jspa?projectId=10010&styleName=Html&version=10021}release notes}}.
+
+	
 ** <<2009-02-21: Release of DbMaintain 1.0>>
 
     We're proud to announce the release 1.0 of DbMaintain, and the publication of the website. Thanks to everybody who's contributed
