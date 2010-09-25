@@ -69,6 +69,17 @@ public class FileSystemScriptLocation extends ScriptLocation {
 
 
     /**
+     * Asserts that the script root directory exists
+     *
+     * @param scriptLocation The location to validate, not null
+     */
+    protected void assertValidScriptLocation(File scriptLocation) {
+        if (scriptLocation == null || !scriptLocation.exists()) {
+            throw new DbMaintainException("Script location " + scriptLocation + " does not exist.");
+        }
+    }
+
+    /**
      * @return if a location properties file {@link #LOCATION_PROPERTIES_FILENAME} is available, a <code>Properties</code>
      *         file with the properties from this file. Returns null if such a file is not available.
      * @throws DbMaintainException if the properties file is invalid
@@ -112,7 +123,7 @@ public class FileSystemScriptLocation extends ScriptLocation {
      */
     protected void getScriptsAt(SortedSet<Script> scripts, String scriptRoot, String relativeLocation) {
         File currentLocation = new File(scriptRoot + "/" + relativeLocation);
-        if (currentLocation.isFile() && isScriptFile(currentLocation)) {
+        if (currentLocation.isFile() && isScriptFileName(currentLocation.getName())) {
             Script script = createScript(currentLocation, relativeLocation);
             scripts.add(script);
             return;
@@ -120,24 +131,9 @@ public class FileSystemScriptLocation extends ScriptLocation {
         // recursively scan sub folders for script files
         if (currentLocation.isDirectory()) {
             for (File subLocation : currentLocation.listFiles()) {
-                getScriptsAt(scripts, scriptRoot,
-                        "".equals(relativeLocation) ? subLocation.getName() : relativeLocation + '/' + subLocation.getName());
+                getScriptsAt(scripts, scriptRoot, "".equals(relativeLocation) ? subLocation.getName() : relativeLocation + '/' + subLocation.getName());
             }
         }
-    }
-
-    /**
-     * @param file The file, not null
-     * @return True if the given file is a database script, according to the configured script file extensions
-     */
-    protected boolean isScriptFile(File file) {
-        String name = file.getName();
-        for (String scriptFileExtension : scriptFileExtensions) {
-            if (name.endsWith(scriptFileExtension)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

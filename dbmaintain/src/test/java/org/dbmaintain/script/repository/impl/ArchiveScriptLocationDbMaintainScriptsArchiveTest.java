@@ -39,7 +39,7 @@ import static org.dbmaintain.util.CollectionUtils.asSortedSet;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class JarScriptLocationTest {
+public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
 
     private SortedSet<Script> scripts;
 

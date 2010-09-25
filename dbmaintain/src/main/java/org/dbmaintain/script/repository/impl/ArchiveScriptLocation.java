@@ -93,36 +93,58 @@ public class ArchiveScriptLocation extends ScriptLocation {
 
 
     /**
+     * Asserts that the script archive exists
+     *
+     * @param jarFile The location to validate, not null
+     */
+    protected void assertValidScriptLocation(File jarFile) {
+        File jarFileWithoutSubPath = getJarFileWithoutSubPath(jarFile);
+        if (jarFileWithoutSubPath == null || !jarFileWithoutSubPath.exists()) {
+            throw new DbMaintainException("Script jar " + jarFileWithoutSubPath + " does not exist.");
+        }
+    }
+
+    /**
      * Initializes the scripts from the given jar file
      *
      * @return The scripts, as loaded from the jar
      */
     protected SortedSet<Script> loadScripts(File scriptLocation) {
-        final JarFile jarFile = createJarFile(scriptLocation);
-        return loadScriptsFromJar(jarFile);
+        String subPath = getJarSubPath(scriptLocation);
+
+        JarFile jarFile = createJarFile(scriptLocation);
+        return loadScriptsFromJar(jarFile, subPath);
     }
 
-    protected SortedSet<Script> loadScriptsFromJar(final JarFile jarFile) {
+    protected SortedSet<Script> loadScriptsFromJar(final JarFile jarFile, String subPath) {
         SortedSet<Script> scripts = new TreeSet<Script>();
         for (Enumeration<JarEntry> jarEntries = jarFile.entries(); jarEntries.hasMoreElements();) {
-            JarEntry jarEntry = jarEntries.nextElement();
-            if (!LOCATION_PROPERTIES_FILENAME.equals(jarEntry.getName())) {
-                final JarEntry currentJarEntry = jarEntry;
-                ScriptContentHandle scriptContentHandle = new ScriptContentHandle(scriptEncoding, ignoreCarriageReturnsWhenCalculatingCheckSum) {
-                    @Override
-                    protected InputStream getScriptInputStream() {
-                        try {
-                            return jarFile.getInputStream(currentJarEntry);
-                        } catch (IOException e) {
-                            throw new DbMaintainException("Error while reading jar entry " + currentJarEntry, e);
-                        }
-                    }
-                };
-                String scriptName = jarEntry.getName();
-                Script script = new Script(scriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix,
-                        qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
-                scripts.add(script);
+            final JarEntry jarEntry = jarEntries.nextElement();
+            String fileName = jarEntry.getName();
+            if (LOCATION_PROPERTIES_FILENAME.equals(fileName) || !isScriptFileName(fileName)) {
+                continue;
             }
+
+            String relativeScriptName = jarEntry.getName();
+            if (subPath != null) {
+                if (!fileName.startsWith(subPath)) {
+                    continue;
+                }
+                relativeScriptName = relativeScriptName.substring(subPath.length());
+            }
+            ScriptContentHandle scriptContentHandle = new ScriptContentHandle(scriptEncoding, ignoreCarriageReturnsWhenCalculatingCheckSum) {
+                @Override
+                protected InputStream getScriptInputStream() {
+                    try {
+                        return jarFile.getInputStream(jarEntry);
+                    } catch (IOException e) {
+                        throw new DbMaintainException("Error while reading jar entry " + jarEntry, e);
+                    }
+                }
+            };
+            Script script = new Script(relativeScriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix,
+                    qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+            scripts.add(script);
         }
         return scripts;
     }
@@ -147,9 +169,13 @@ public class ArchiveScriptLocation extends ScriptLocation {
     protected Properties getCustomProperties(File scriptLocation) {
         InputStream configurationInputStream = null;
         try {
-            Properties configuration = new Properties();
             JarFile jarFile = createJarFile(scriptLocation);
             ZipEntry configurationEntry = jarFile.getEntry(LOCATION_PROPERTIES_FILENAME);
+            if (configurationEntry == null) {
+                // no custom config found in meta-inf folder, skipping
+                return null;
+            }
+            Properties configuration = new Properties();
             configurationInputStream = jarFile.getInputStream(configurationEntry);
             configuration.load(configurationInputStream);
             return configuration;
@@ -246,12 +272,49 @@ public class ArchiveScriptLocation extends ScriptLocation {
         jarOutputStream.closeEntry();
     }
 
-    protected JarFile createJarFile(File scriptLocation) {
+    protected JarFile createJarFile(File jarFile) {
         try {
-            return new JarFile(scriptLocation);
+            File jarFileWithoutSubPath = getJarFileWithoutSubPath(jarFile);
+            return new JarFile(jarFileWithoutSubPath);
         } catch (IOException e) {
-            throw new DbMaintainException("Error opening jar file " + scriptLocation, e);
+            throw new DbMaintainException("Error opening jar file " + jarFile, e);
         }
+    }
+
+    /**
+     * Gets the optional sub path in the jar file.
+     * E.g. dir/my_archive.jar!subpath/bla => returns subpath/bla/
+     *
+     * @param jarFile The jar file, not null
+     * @return the sub-path ending with /, null if there is no sub-path
+     */
+    protected String getJarSubPath(File jarFile) {
+        String jarFilePath = jarFile.getPath();
+        int index = jarFilePath.lastIndexOf('!');
+        if (index < 0 || index + 1 == jarFilePath.length()) {
+            return null;
+        }
+        String subPath = jarFilePath.substring(index + 1);
+        if (!subPath.endsWith("/")) {
+            subPath += "/";
+        }
+        return subPath;
+    }
+
+    /**
+     * Gets jar file with the sub-path stripped off
+     * E.g. dir/my_archive.jar!subpath/bla => returns dir/my_archive.jar
+     *
+     * @param jarFile The jar file, not null
+     * @return the jar file without sub-path, not null
+     */
+    protected File getJarFileWithoutSubPath(File jarFile) {
+        String jarFilePath = jarFile.getPath();
+        int index = jarFilePath.lastIndexOf('!');
+        if (index < 0) {
+            return jarFile;
+        }
+        return new File(jarFilePath.substring(0, index));
     }
 
 }

@@ -114,17 +114,13 @@ abstract public class ScriptLocation {
         return null;
     }
 
-
     /**
      * Asserts that the script root directory exists
      *
      * @param scriptLocation The location to validate, not null
      */
-    protected void assertValidScriptLocation(File scriptLocation) {
-        if (scriptLocation == null || !scriptLocation.exists()) {
-            throw new DbMaintainException("Script location " + scriptLocation + " does not exist.");
-        }
-    }
+    protected abstract void assertValidScriptLocation(File scriptLocation);
+
 
     /**
      * @return A description of the location, for logging purposes
@@ -225,6 +221,19 @@ abstract public class ScriptLocation {
                 throw new DbMaintainException("Script file extension " + extension + " should not start with a '.'");
             }
         }
+    }
+
+    /**
+     * @param fileName The file, not null
+     * @return True if the given file is a database script, according to the configured script file extensions
+     */
+    protected boolean isScriptFileName(String fileName) {
+        for (String scriptFileExtension : scriptFileExtensions) {
+            if (fileName.endsWith(scriptFileExtension)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected Set<Qualifier> createQualifiers(List<String> qualifierNames) {
