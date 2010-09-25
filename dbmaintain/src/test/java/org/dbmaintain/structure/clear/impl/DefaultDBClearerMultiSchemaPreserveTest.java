@@ -17,6 +17,7 @@ package org.dbmaintain.structure.clear.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -34,6 +35,7 @@ import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDatabases;
+import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -68,17 +70,18 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 
         // configure items to preserve
         Set<DbItemIdentifier> itemsToPreserve = asSet(
-            parseSchemaIdentifier("schema_c", databases),
-            parseItemIdentifier(TABLE, "test_table", databases),
-            parseItemIdentifier(TABLE, defaultDatabase.quoted("SCHEMA_A") + "." + defaultDatabase.quoted("TEST_TABLE"), databases),
-            parseItemIdentifier(VIEW, "test_view", databases),
-            parseItemIdentifier(VIEW, "schema_a." + defaultDatabase.quoted("TEST_VIEW"), databases),
-            parseItemIdentifier(SEQUENCE, "test_sequence", databases),
-            parseItemIdentifier(SEQUENCE, defaultDatabase.quoted("SCHEMA_A") + ".test_sequence", databases));
+                parseSchemaIdentifier("schema_c", databases),
+                parseItemIdentifier(TABLE, "test_table", databases),
+                parseItemIdentifier(TABLE, defaultDatabase.quoted("SCHEMA_A") + "." + defaultDatabase.quoted("TEST_TABLE"), databases),
+                parseItemIdentifier(VIEW, "test_view", databases),
+                parseItemIdentifier(VIEW, "schema_a." + defaultDatabase.quoted("TEST_VIEW"), databases),
+                parseItemIdentifier(SEQUENCE, "test_sequence", databases),
+                parseItemIdentifier(SEQUENCE, defaultDatabase.quoted("SCHEMA_A") + ".test_sequence", databases));
 
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
+        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler);
+        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
     }
 
 
@@ -97,7 +100,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_B").size());
         defaultDBClearer.clearDatabase();
-        assertEquals(2, defaultDatabase.getTableNames("PUBLIC").size()); // executed scripts table was created
+        assertEquals(1, defaultDatabase.getTableNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(0, defaultDatabase.getTableNames("SCHEMA_B").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_C").size());

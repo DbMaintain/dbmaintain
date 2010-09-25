@@ -93,7 +93,7 @@ public class DefaultDBClearerPreserveTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler);
+        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
     }
 
     @After
@@ -106,8 +106,7 @@ public class DefaultDBClearerPreserveTest {
     public void preserveTables() throws Exception {
         assertEquals(2, defaultDatabase.getTableNames().size());
         defaultDBClearer.clearDatabase();
-        System.out.println(defaultDatabase.getTableNames());
-        assertEquals(3, defaultDatabase.getTableNames().size()); // executed scripts table was created
+        assertEquals(2, defaultDatabase.getTableNames().size());
     }
 
     @Test

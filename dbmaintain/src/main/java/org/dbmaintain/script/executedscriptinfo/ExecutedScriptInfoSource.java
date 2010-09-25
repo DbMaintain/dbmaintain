@@ -84,4 +84,10 @@ public interface ExecutedScriptInfoSource {
      * Removes the failed scripts in the executed scripts table.
      */
     void removeErrorScripts();
+
+    /**
+     * Resets the cached state, for example when the scripts table was modified by another process.
+     * The scripts will be reloaded the next time.
+     */
+    void resetCachedState();
 }

@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -32,10 +33,9 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.util.HashSet;
 
-import static java.util.Arrays.asList;
 import static org.dbmaintain.util.SQLTestUtils.*;
+import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.*;
-import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
 
 /**
  * Test class for the {@link org.dbmaintain.structure.clear.DBClearer}.
@@ -63,7 +63,9 @@ public class DefaultDBClearerTest {
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler);
+        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
+
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -79,7 +81,7 @@ public class DefaultDBClearerTest {
     public void clearTables() throws Exception {
         assertEquals(2, defaultDatabase.getTableNames().size());
         defaultDBClearer.clearDatabase();
-        assertReflectionEquals(asList(defaultDatabase.toCorrectCaseIdentifier("dbmaintain_scripts")), defaultDatabase.getTableNames("PUBLIC"));
+        assertTrue(defaultDatabase.getTableNames("PUBLIC").isEmpty());
     }
 
     @Test

@@ -143,6 +143,9 @@ public abstract class TestUtils {
             public void removeErrorScripts() {
             }
 
+            public void resetCachedState() {
+            }
+
             public Set<ExecutedScript> getExecutedScripts() {
                 return executedScripts;
             }

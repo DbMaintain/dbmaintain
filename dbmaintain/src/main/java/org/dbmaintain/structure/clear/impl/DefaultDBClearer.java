@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.clear.DBClearer;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -44,16 +45,19 @@ import static org.dbmaintain.structure.model.DbItemType.*;
  */
 public class DefaultDBClearer implements DBClearer {
 
-
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultDBClearer.class);
 
     /* Disables of constraints before clearing the database */
     protected ConstraintsDisabler constraintsDisabler;
 
+    /* Clears the executed scripts table */
+    protected ExecutedScriptInfoSource executedScriptInfoSource;
+
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should not be dropped. */
     protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
 
+    /* The db support instances, not null */
     protected Databases databases;
 
     private MultiPassErrorHandler multiPassErrorHandler;
@@ -62,11 +66,13 @@ public class DefaultDBClearer implements DBClearer {
      * @param databases                The db support instances, not null
      * @param itemsToPreserve          The schema's, tables, triggers etc that should not be dropped, not null
      * @param constraintsDisabler      Disables of constraints before clearing the database, not null
+     * @param executedScriptInfoSource Clears the executed scripts table, not null
      */
-    public DefaultDBClearer(Databases databases, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler) {
+    public DefaultDBClearer(Databases databases, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
         this.databases = databases;
         this.itemsToPreserve = itemsToPreserve;
         this.constraintsDisabler = constraintsDisabler;
+        this.executedScriptInfoSource = executedScriptInfoSource;
         assertItemsToPreserveExist(itemsToPreserve);
     }
 
@@ -77,6 +83,9 @@ public class DefaultDBClearer implements DBClearer {
      * untouched.
      */
     public void clearDatabase() {
+        // clear executed scripts, also makes sure that the scripts table exists
+        executedScriptInfoSource.clearAllExecutedScripts();
+
         // Constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables
         constraintsDisabler.disableConstraints();
 
@@ -258,13 +267,13 @@ public class DefaultDBClearer implements DBClearer {
             }
         }
     }
-    
+
     protected void dropStoredProcedures(Database database, String schemaName) {
-    	if (!database.supportsStoredProcedures()) {
-    		return;
-    	}
-    	Set<String> storedProcedureNames = database.getStoredProcedureNames(schemaName);
-    	for (String storedProcedureName : storedProcedureNames) {
+        if (!database.supportsStoredProcedures()) {
+            return;
+        }
+        Set<String> storedProcedureNames = database.getStoredProcedureNames(schemaName);
+        for (String storedProcedureName : storedProcedureNames) {
             // check whether trigger needs to be preserved
             if (itemsToPreserve.contains(getItemIdentifier(STORED_PROC, schemaName, storedProcedureName, database))) {
                 continue;
@@ -275,7 +284,7 @@ public class DefaultDBClearer implements DBClearer {
             } catch (RuntimeException e) {
                 multiPassErrorHandler.addError(e);
             }
-    	}
+        }
     }
 
     /**

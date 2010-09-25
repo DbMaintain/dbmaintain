@@ -17,6 +17,7 @@ package org.dbmaintain.structure.clear.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
@@ -27,13 +28,12 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.util.HashSet;
 
-import static java.util.Arrays.asList;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDatabases;
+import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
 
 /**
  * Test class for the {@link org.dbmaintain.structure.clear.DBClearer} using multiple database schemas. <p/> This test is currenlty only implemented
@@ -59,8 +59,9 @@ public class DefaultDBClearerMultiSchemaTest {
         dataSource = defaultDatabase.getDataSource();
 
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
+        ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler);
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
 
         dropTestDatabase();
         createTestDatabase();
@@ -78,7 +79,7 @@ public class DefaultDBClearerMultiSchemaTest {
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_B").size());
         defaultDBClearer.clearDatabase();
-        assertReflectionEquals(asList(defaultDatabase.toCorrectCaseIdentifier("dbmaintain_scripts")), defaultDatabase.getTableNames("PUBLIC"));
+        assertTrue(defaultDatabase.getTableNames("PUBLIC").isEmpty());
         assertTrue(defaultDatabase.getTableNames("SCHEMA_A").isEmpty());
         assertTrue(defaultDatabase.getTableNames("SCHEMA_B").isEmpty());
     }

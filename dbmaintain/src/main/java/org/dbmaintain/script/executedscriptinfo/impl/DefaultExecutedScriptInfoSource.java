@@ -47,9 +47,10 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultExecutedScriptInfoSource.class);
 
+    protected SortedSet<ExecutedScript> cachedExecutedScripts;
+
     protected Database defaultDatabase;
     protected SQLHandler sqlHandler;
-    protected SortedSet<ExecutedScript> executedScripts;
     /* The name of the database table in which the executed script info is stored */
     protected String executedScriptsTableName;
     /* The name of the database column in which the script name is stored */
@@ -81,6 +82,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     protected String postProcessingScriptDirName;
     /* The baseline revision. If set, all scripts with a lower revision will be ignored */
     protected ScriptIndexes baseLineRevision;
+    /* True if the scripts table was checked and was valid */
+    protected boolean validExecutedScriptsTable = false;
 
 
     public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName,
@@ -116,16 +119,14 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @return All scripts that were registered as executed on the database
      */
     public SortedSet<ExecutedScript> getExecutedScripts() {
-        try {
-            return doGetExecutedScripts();
-
-        } catch (DbMaintainException e) {
-            if (checkExecutedScriptsTable()) {
-                throw e;
-            }
-            // try again, executed scripts table was not ok
-            return doGetExecutedScripts();
+        if (cachedExecutedScripts != null) {
+            return cachedExecutedScripts;
         }
+
+        checkExecutedScriptsTable();
+
+        cachedExecutedScripts = doGetExecutedScripts();
+        return cachedExecutedScripts;
     }
 
 
@@ -134,10 +135,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      *
      * @return All scripts that were registered as executed on the database
      */
-    protected SortedSet<ExecutedScript> doGetExecutedScripts() {
-        if (executedScripts != null) {
-            return executedScripts;
-        }
+    protected synchronized SortedSet<ExecutedScript> doGetExecutedScripts() {
+        TreeSet<ExecutedScript> executedScripts = new TreeSet<ExecutedScript>();
 
         Connection connection = null;
         Statement statement = null;
@@ -149,7 +148,6 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                     checksumColumnName + ", " + executedAtColumnName + ", " + succeededColumnName +
                     " from " + getQualifiedExecutedScriptsTableName());
 
-            executedScripts = new TreeSet<ExecutedScript>();
             while (resultSet.next()) {
                 String fileName = resultSet.getString(fileNameColumnName);
                 String checkSum = resultSet.getString(checksumColumnName);
@@ -183,6 +181,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @param executedScript The script that was executed on the database
      */
     public void registerExecutedScript(ExecutedScript executedScript) {
+        checkExecutedScriptsTable();
+
         if (getExecutedScripts().contains(executedScript)) {
             updateExecutedScript(executedScript);
         } else {
@@ -216,6 +216,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @param executedScript The script that needs to be updated, not null
      */
     public void updateExecutedScript(ExecutedScript executedScript) {
+        checkExecutedScriptsTable();
+
         getExecutedScripts().add(executedScript);
 
         String executedAt = timestampFormat.format(executedScript.getExecutedAt());
@@ -235,6 +237,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @param executedScript The executed script, which is no longer part of the executed scripts
      */
     public void deleteExecutedScript(ExecutedScript executedScript) {
+        checkExecutedScriptsTable();
+
         getExecutedScripts().remove(executedScript);
 
         String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName() +
@@ -250,6 +254,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @param renamedToScript the script to which the original script has been renamed
      */
     public void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript) {
+        checkExecutedScriptsTable();
+
         String renameSql = "update " + getQualifiedExecutedScriptsTableName() +
                 " set " + fileNameColumnName + " = '" + renamedToScript.getFileName() + "', " +
                 checksumColumnName + " = '" + renamedToScript.getCheckSum() + "', " +
@@ -261,6 +267,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
 
     public void deleteAllExecutedPostprocessingScripts() {
+        checkExecutedScriptsTable();
+
         for (Iterator<ExecutedScript> executedScriptsIterator = getExecutedScripts().iterator(); executedScriptsIterator.hasNext();) {
             ExecutedScript executedScript = executedScriptsIterator.next();
             if (executedScript.getScript().isPostProcessingScript()) {
@@ -272,16 +280,17 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         }
     }
 
-
     /**
      * Clears all script executions that have been registered. After having invoked this method,
      * {@link #getExecutedScripts()} will return an empty set.
      */
     public void clearAllExecutedScripts() {
-        getExecutedScripts().clear();
+        checkExecutedScriptsTable();
 
         String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName();
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDatabase.getDataSource());
+
+        resetCachedState();
     }
 
 
@@ -289,20 +298,24 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * Marks the failed scripts in the executed scripts table as successful.
      */
     public void markErrorScriptsAsSuccessful() {
+        checkExecutedScriptsTable();
+
         String deleteSql = "update " + getQualifiedExecutedScriptsTableName() + " set " + succeededColumnName + "=1 where " + succeededColumnName + "=0";
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDatabase.getDataSource());
-        // reset executed scripts
-        executedScripts = null;
+
+        resetCachedState();
     }
 
     /**
      * Removes the failed scripts in the executed scripts table.
      */
     public void removeErrorScripts() {
+        checkExecutedScriptsTable();
+
         String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName() + " where " + succeededColumnName + "=0";
         sqlHandler.executeUpdateAndCommit(deleteSql, defaultDatabase.getDataSource());
-        // reset executed scripts
-        executedScripts = null;
+
+        resetCachedState();
     }
 
 
@@ -313,8 +326,12 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @return false if the version table was not ok and therefore auto-created
      */
     protected boolean checkExecutedScriptsTable() {
+        if (validExecutedScriptsTable) {
+            return true;
+        }
         // check valid
         if (isExecutedScriptsTableValid()) {
+            validExecutedScriptsTable = true;
             return true;
         }
 
@@ -386,5 +403,13 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
     protected String getQualifiedExecutedScriptsTableName() {
         return defaultDatabase.qualified(defaultDatabase.getDefaultSchemaName(), executedScriptsTableName);
+    }
+
+    /**
+     * Resets the cached state, for example when the scripts table was modified by another process.
+     * The scripts will be reloaded the next time.
+     */
+    public void resetCachedState() {
+        cachedExecutedScripts = null;
     }
 }

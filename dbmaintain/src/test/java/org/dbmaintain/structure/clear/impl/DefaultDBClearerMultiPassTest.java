@@ -17,6 +17,7 @@ package org.dbmaintain.structure.clear.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
+import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.junit.Before;
@@ -43,8 +44,9 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     /* Tested object */
     private DefaultDBClearer defaultDBClearer;
 
-    private Mock<Database> database;
-    private Mock<ConstraintsDisabler> constraintsDisabler;
+    protected Mock<Database> database;
+    protected Mock<ConstraintsDisabler> constraintsDisabler;
+    protected Mock<ExecutedScriptInfoSource> executedScriptInfoSource;
 
     private static final String SCHEMA = "MYSCHEMA";
     private final Set<String> tableNames = asSet("TABLE1", "TABLE2", "TABLE3");
@@ -56,7 +58,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
     public void setUp() throws Exception {
         Databases databases = new Databases(asList(database.getMock()), new ArrayList<String>());
 
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler.getMock());
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
         database.returns(tableNames).getTableNames(SCHEMA);
         database.returns(asSet(SCHEMA)).getSchemaNames();
     }
