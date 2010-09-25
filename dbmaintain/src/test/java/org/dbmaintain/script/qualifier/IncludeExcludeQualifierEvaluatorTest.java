@@ -32,7 +32,11 @@ public class IncludeExcludeQualifierEvaluatorTest {
 
     @Test
     public void includedQualifiers() {
-        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(qualifiers("Q1"), qualifiers());
+        Set<Qualifier> registeredQualifiers = qualifiers("Q1");
+        Set<Qualifier> includedQualifiers = qualifiers("Q1");
+        Set<Qualifier> excludedQualifiers = qualifiers();
+
+        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(registeredQualifiers, includedQualifiers, excludedQualifiers);
         assertTrue(evaluator.evaluate(qualifiers("Q1")));
         assertTrue(evaluator.evaluate(qualifiers("Q1", "Q3")));
         assertFalse(evaluator.evaluate(qualifiers()));
@@ -40,17 +44,53 @@ public class IncludeExcludeQualifierEvaluatorTest {
     }
 
     @Test
-    public void excludedQualifiers() {
-        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(qualifiers(), qualifiers("Q1"));
+    public void includedQualifiers_unqualified() {
+        Set<Qualifier> registeredQualifiers = qualifiers("Q1");
+        Set<Qualifier> includedQualifiers = qualifiers("Q1", "<unqualified>");
+        Set<Qualifier> excludedQualifiers = qualifiers();
+
+        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(registeredQualifiers, includedQualifiers, excludedQualifiers);
         assertTrue(evaluator.evaluate(qualifiers()));
+    }
+
+
+    @Test
+    public void excludedQualifiers() {
+        Set<Qualifier> registeredQualifiers = qualifiers("Q1");
+        Set<Qualifier> includedQualifiers = qualifiers();
+        Set<Qualifier> excludedQualifiers = qualifiers("Q1");
+
+        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(registeredQualifiers, includedQualifiers, excludedQualifiers);
+        assertTrue(evaluator.evaluate(qualifiers()));
+        assertTrue(evaluator.evaluate(qualifiers("Q3")));
         assertFalse(evaluator.evaluate(qualifiers("Q1")));
+        assertFalse(evaluator.evaluate(qualifiers("Q1", "Q3")));
     }
 
     @Test
+    public void excludedQualifiers_unqualified() {
+        Set<Qualifier> registeredQualifiers = qualifiers("Q1");
+        Set<Qualifier> includedQualifiers = qualifiers();
+        Set<Qualifier> excludedQualifiers = qualifiers("Q1", "<unqualified>");
+
+        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(registeredQualifiers, includedQualifiers, excludedQualifiers);
+        assertFalse(evaluator.evaluate(qualifiers()));
+    }
+
+
+    @Test
     public void includedAndExcludedQualifiers() {
-        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(qualifiers("Q1"), qualifiers("Q2"));
+        Set<Qualifier> registeredQualifiers = qualifiers("Q1", "Q2");
+        Set<Qualifier> includedQualifiers = qualifiers("Q1");
+        Set<Qualifier> excludedQualifiers = qualifiers("Q2", "<unqualified>");
+
+        IncludeExcludeQualifierEvaluator evaluator = new IncludeExcludeQualifierEvaluator(registeredQualifiers, includedQualifiers, excludedQualifiers);
+        assertTrue(evaluator.evaluate(qualifiers("Q1")));
+        assertFalse(evaluator.evaluate(qualifiers()));
+        assertFalse(evaluator.evaluate(qualifiers("Q2")));
         assertFalse(evaluator.evaluate(qualifiers("Q1", "Q2")));
     }
+
 
     private Set<Qualifier> qualifiers(String... qualifiersStr) {
         Set<Qualifier> result = new HashSet<Qualifier>();

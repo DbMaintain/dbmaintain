@@ -28,7 +28,6 @@ import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -581,43 +580,6 @@ public class DbMaintainIntegrationTest {
         assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2, INCREMENTAL_4);
     }
 
-    @Test
-    @Ignore
-    // The qualifier expression functionality has been removed
-    public void qualifiersWithQualifierExpression() {
-        enableFromScratch();
-        createScripts(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-
-        setQualifierExpression("Q1 || Q2");
-        updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-
-        setQualifierExpression("Q1 && Q2");
-        updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-        assertScriptsNotExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2);
-
-        setQualifierExpression("Q1 && !Q2");
-        updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1);
-        assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-
-        setQualifierExpression("(Q1 && Q2) || Q2");
-        updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-        assertScriptsNotExecuted(INCREMENTAL_1_QUALIFIER1);
-
-        setQualifierExpression("Q1 || Q1 && Q2");
-        updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-        assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2);
-
-        setQualifierExpression("Q1 && (Q1 || Q2)");
-        updateDatabase();
-        assertScriptsCorrectlyExecuted(INCREMENTAL_1_QUALIFIER1, INCREMENTAL_2_QUALIFIER2);
-        assertScriptsNotExecuted(INCREMENTAL_3_QUALIFIER1_QUALIFIER2);
-    }
-
     @Test(expected = DbMaintainException.class)
     public void testErrorInCaseOfUnknownQualifier() {
         createScripts(INCREMENTAL_2_UNKNOWN_QUALIFIER);
@@ -670,11 +632,6 @@ public class DbMaintainIntegrationTest {
 
     private void allowOutOfSequenceExecutionOfPatches() {
         configuration.put(DbMaintainProperties.PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, "true");
-    }
-
-    private void setQualifierExpression(String qualifierExpression) {
-        // Note: this call has no effect, because qualifier expression support has been removed
-        configuration.put("dbMaintainer.qualifierExpression", qualifierExpression);
     }
 
     private void setIncludedAndExcludedQualifiers(String includedQualifiers, String excludedQualifiers) {

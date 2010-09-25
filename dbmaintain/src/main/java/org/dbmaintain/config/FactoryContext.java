@@ -103,20 +103,10 @@ public class FactoryContext {
 
 
     protected QualifierEvaluator createQualifierEvaluator(Set<ScriptLocation> scriptLocations) {
-        Set<Qualifier> includedQualifiers = createQualifiers(getStringList(PROPERTY_INCLUDED_QUALIFIERS, configuration, false));
-        ensureQualifiersRegistered(includedQualifiers, scriptLocations);
-        Set<Qualifier> excludedQualifiers = createQualifiers(getStringList(PROPERTY_EXCLUDED_QUALIFIERS, configuration, false));
-        ensureQualifiersRegistered(excludedQualifiers, scriptLocations);
-        return new IncludeExcludeQualifierEvaluator(includedQualifiers, excludedQualifiers);
-    }
-
-    protected void ensureQualifiersRegistered(Set<Qualifier> qualifiers, Set<ScriptLocation> scriptLocations) {
         Set<Qualifier> registeredQualifiers = getRegisteredQualifiers(scriptLocations);
-        for (Qualifier qualifier : qualifiers) {
-            if (!registeredQualifiers.contains(qualifier)) {
-                throw new IllegalArgumentException(qualifier + " is not registered");
-            }
-        }
+        Set<Qualifier> includedQualifiers = createQualifiers(getStringList(PROPERTY_INCLUDED_QUALIFIERS, configuration, false));
+        Set<Qualifier> excludedQualifiers = createQualifiers(getStringList(PROPERTY_EXCLUDED_QUALIFIERS, configuration, false));
+        return new IncludeExcludeQualifierEvaluator(registeredQualifiers, includedQualifiers, excludedQualifiers);
     }
 
     protected Set<Qualifier> getRegisteredQualifiers(Set<ScriptLocation> scriptLocations) {

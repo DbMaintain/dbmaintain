@@ -26,31 +26,57 @@ import java.util.Set;
  */
 public class IncludeExcludeQualifierEvaluator implements QualifierEvaluator {
 
+    public static final Qualifier UNQUALIFIED = new Qualifier("<unqualified>");
+    ;
+
     private final Set<Qualifier> includedQualifiers;
     private final Set<Qualifier> excludedQualifiers;
 
 
-    public IncludeExcludeQualifierEvaluator(Set<Qualifier> includedQualifiers, Set<Qualifier> excludedQualifiers) {
+    public IncludeExcludeQualifierEvaluator(Set<Qualifier> registeredQualifiers, Set<Qualifier> includedQualifiers, Set<Qualifier> excludedQualifiers) {
         this.includedQualifiers = includedQualifiers;
         this.excludedQualifiers = excludedQualifiers;
+        ensureQualifiersRegistered(registeredQualifiers, includedQualifiers);
+        ensureQualifiersRegistered(registeredQualifiers, excludedQualifiers);
     }
+
 
     public boolean evaluate(Set<Qualifier> qualifiers) {
         return (includedQualifiers.isEmpty() || containsIncludedQualifier(qualifiers))
                 && !containsExcludedQualifier(qualifiers);
     }
 
-    private boolean containsExcludedQualifier(Set<Qualifier> qualifiers) {
+
+    protected void ensureQualifiersRegistered(Set<Qualifier> registeredQualifiers, Set<Qualifier> qualifiers) {
         for (Qualifier qualifier : qualifiers) {
-            if (excludedQualifiers.contains(qualifier)) return true;
+            if (!UNQUALIFIED.equals(qualifier) && !registeredQualifiers.contains(qualifier)) {
+                throw new IllegalArgumentException(qualifier + " is not registered");
+            }
+        }
+    }
+
+    protected boolean containsExcludedQualifier(Set<Qualifier> qualifiers) {
+        if (qualifiers.isEmpty()) {
+            return excludedQualifiers.contains(UNQUALIFIED);
+        }
+        for (Qualifier qualifier : qualifiers) {
+            if (excludedQualifiers.contains(qualifier)) {
+                return true;
+            }
         }
         return false;
     }
 
     protected boolean containsIncludedQualifier(Set<Qualifier> qualifiers) {
+        if (qualifiers.isEmpty()) {
+            return includedQualifiers.contains(UNQUALIFIED);
+        }
         for (Qualifier qualifier : qualifiers) {
-            if (includedQualifiers.contains(qualifier)) return true;
+            if (includedQualifiers.contains(qualifier)) {
+                return true;
+            }
         }
         return false;
     }
+
 }
