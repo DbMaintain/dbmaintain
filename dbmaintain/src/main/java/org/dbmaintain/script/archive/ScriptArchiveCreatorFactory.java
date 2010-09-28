@@ -40,13 +40,14 @@ public class ScriptArchiveCreatorFactory extends FactoryWithoutDatabase<ScriptAr
         String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, getConfiguration());
         Set<Qualifier> registeredQualifiers = factoryContext.createQualifiers(getStringList(PROPERTY_QUALIFIERS, getConfiguration()));
         Set<Qualifier> patchQualifiers = factoryContext.createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, getConfiguration()));
-        String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, getConfiguration());
-        String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, getConfiguration());
+        String scriptIndexRegexp = getString(PROPERTY_SCRIPT_INDEX_REGEXP, getConfiguration());
+        String qualifierRegexp = getString(PROPERTY_SCRIPT_QUALIFIER_REGEXP, getConfiguration());
+        String targetDatabaseRegexp = getString(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, getConfiguration());
         Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, getConfiguration()));
         ScriptIndexes baselineRevision = factoryContext.getBaselineRevision();
         boolean ignoreCarriageReturnsWhenCalculatingCheckSum = getBoolean(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, getConfiguration());
 
-        return new DefaultScriptArchiveCreator(scriptRepository, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baselineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+        return new DefaultScriptArchiveCreator(scriptRepository, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baselineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 }

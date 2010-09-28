@@ -48,21 +48,23 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
     protected String postProcessingScriptDirName;
     protected Set<Qualifier> registeredQualifiers;
     protected Set<Qualifier> patchQualifiers;
-    protected String qualifierPrefix;
-    protected String targetDatabasePrefix;
+    protected String scriptIndexRegexp;
+    protected String qualifierRegexp;
+    protected String targetDatabaseRegexp;
     protected Set<String> scriptFileExtensions;
     protected ScriptIndexes baseLineRevision;
     protected boolean ignoreCarriageReturnsWhenCalculatingCheckSum;
 
 
-    public DefaultScriptArchiveCreator(ScriptRepository scriptRepository, String scriptEncoding, String postProcessingScriptDirName, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix, String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+    public DefaultScriptArchiveCreator(ScriptRepository scriptRepository, String scriptEncoding, String postProcessingScriptDirName, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp, String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.scriptRepository = scriptRepository;
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
         this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
-        this.qualifierPrefix = qualifierPrefix;
-        this.targetDatabasePrefix = targetDatabasePrefix;
+        this.scriptIndexRegexp = scriptIndexRegexp;
+        this.qualifierRegexp = qualifierRegexp;
+        this.targetDatabaseRegexp = targetDatabaseRegexp;
         this.scriptFileExtensions = scriptFileExtensions;
         this.baseLineRevision = baseLineRevision;
         this.ignoreCarriageReturnsWhenCalculatingCheckSum = ignoreCarriageReturnsWhenCalculatingCheckSum;
@@ -80,7 +82,7 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
         try {
             logger.info("Creating script archive: " + archiveFileName);
             SortedSet<Script> allScripts = scriptRepository.getAllScripts();
-            ArchiveScriptLocation archiveScriptLocation = new ArchiveScriptLocation(allScripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+            ArchiveScriptLocation archiveScriptLocation = new ArchiveScriptLocation(allScripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
             archiveScriptLocation.writeToJarFile(new File(archiveFileName));
 
         } catch (Exception e) {

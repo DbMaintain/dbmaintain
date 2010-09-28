@@ -80,7 +80,7 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
 
 
     public boolean isIncrementalScript() {
-        return indexes.get(indexes.size() - 1) != null;
+        return !indexes.isEmpty() && indexes.get(indexes.size() - 1) != null;
     }
 
 
@@ -90,13 +90,10 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
 
 
     protected void assertValidIndexes() {
-        if (indexes.size() == 0) {
-            throw new DbMaintainException("The script must contain at least one index");
-        }
         if (isRepeatableScript()) {
             for (Long index : indexes) {
                 if (index != null) {
-                    throw new DbMaintainException("Repeatable scripts cannot be located inside an indexed folder");
+                    throw new DbMaintainException("Repeatable scripts cannot be located inside an indexed folder.");
                 }
             }
         }

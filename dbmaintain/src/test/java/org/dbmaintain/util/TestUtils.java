@@ -21,6 +21,7 @@ import org.dbmaintain.database.impl.HsqldbDatabase;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
@@ -34,13 +35,9 @@ import org.dbmaintain.script.repository.impl.FileSystemScriptLocation;
 import javax.sql.DataSource;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
 import static org.dbmaintain.database.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
@@ -76,33 +73,50 @@ public abstract class TestUtils {
     }
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable, ScriptIndexes baselineRevision) {
+        ScriptFactory scriptFactory = new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", Collections.<Qualifier>emptySet(),
+                asSet(new Qualifier("patch")), "postprocessing", baselineRevision);
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
                 "dbmaintain_scripts", "file_name", 150, "file_last_modified_at", "checksum", 50, "executed_at", 50, "succeeded",
-                new SimpleDateFormat("dd/MM/yyyy"), database, new DefaultSQLHandler(), "@", "#", Collections.<Qualifier>emptySet(),
-                asSet(new Qualifier("patch")), "postprocessing", baselineRevision);
+                new SimpleDateFormat("dd/MM/yyyy"), database, new DefaultSQLHandler(), scriptFactory);
     }
 
     public static Script createScript(String fileName) {
-        return createScript(fileName, (ScriptIndexes) null);
+        return createScriptWithCheckSum(fileName, "checksum");
     }
 
-    public static Script createScript(String fileName, ScriptIndexes baseLineRevision) {
-        return new Script(fileName, 1L, "xxxxx", "@", "#", Collections.<Qualifier>emptySet(), asSet(new Qualifier("patch")), "postprocessing", baseLineRevision);
+    public static Script createScriptWithCheckSum(String fileName, String checkSum) {
+        return createScriptWithModificationDateAndCheckSum(fileName, 0L, checkSum);
     }
 
-    public static Script createScript(String fileName, String content) {
-        return new Script(fileName, 1L, new ScriptContentHandle.StringScriptContentHandle(content, "ISO-8859-1", false), "@", "#",
-                Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
+    public static Script createScriptWithModificationDateAndCheckSum(String fileName, Long fileLastModifiedAt, String checkSum) {
+        ScriptFactory scriptFactory = createScriptFactory();
+        return scriptFactory.createScriptWithoutContent(fileName, fileLastModifiedAt, checkSum);
+    }
+
+    public static Script createScriptWithContent(String fileName, String scriptContent) {
+        ScriptFactory scriptFactory = createScriptFactory();
+        return scriptFactory.createScriptWithContent(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1", false));
+    }
+
+    public static ScriptFactory createScriptFactory() {
+        return createScriptFactory(null);
+    }
+
+    public static ScriptFactory createScriptFactory(ScriptIndexes baseLineRevision) {
+        return new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", new HashSet<Qualifier>(), qualifiers("patch"), "postprocessing", baseLineRevision);
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
         return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "postprocessing", Collections.<Qualifier>emptySet(),
-                asSet(new Qualifier("patch")), "#", "@", asSet("sql"), null, false);
+                asSet(new Qualifier("patch")), "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql"), null, false);
     }
 
+    public static ArchiveScriptLocation createArchiveScriptLocation(SortedSet<Script> scripts, ScriptIndexes baseLineRevision) {
+        return new ArchiveScriptLocation(scripts, null, null, null, null, "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", null, baseLineRevision, false);
+    }
 
     public static ScriptRepository getScriptRepository(SortedSet<Script> scriptsToReturn) {
-        ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, null, null, null, null, false);
+        ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", null, null, false);
         QualifierEvaluator qualifierEvaluator = getTrivialQualifierEvaluator();
         return new ScriptRepository(asSet(scriptLocation), qualifierEvaluator);
     }
@@ -115,6 +129,15 @@ public abstract class TestUtils {
             }
         };
     }
+
+    public static Set<Qualifier> qualifiers(String... qualifierNames) {
+        Set<Qualifier> result = new HashSet<Qualifier>();
+        for (String qualifierStr : qualifierNames) {
+            result.add(new Qualifier(qualifierStr));
+        }
+        return result;
+    }
+
 
     public static ExecutedScriptInfoSource getExecutedScriptInfoSource(final SortedSet<ExecutedScript> executedScripts) {
         return new ExecutedScriptInfoSource() {

@@ -221,9 +221,9 @@ public class DbMaintainProperties {
 
     public static final String PROPERTY_SCRIPT_ENCODING = "dbMaintainer.script.encoding";
 
-    public static final String PROPERTY_SCRIPT_TARGETDATABASE_PREFIX = "dbMaintainer.script.targetDatabase.prefix";
-
-    public static final String PROPERTY_SCRIPT_QUALIFIER_PREFIX = "dbMaintainer.script.qualifier.prefix";
+    public static final String PROPERTY_SCRIPT_INDEX_REGEXP = "dbMaintainer.script.index.regexp";
+    public static final String PROPERTY_SCRIPT_TARGETDATABASE_REGEXP = "dbMaintainer.script.targetDatabase.regexp";
+    public static final String PROPERTY_SCRIPT_QUALIFIER_REGEXP = "dbMaintainer.script.qualifier.regexp";
 
     public static final String PROPERTY_BACKSLASH_ESCAPING_ENABLED = "dbMaintainer.script.backSlashEscapingEnabled";
 

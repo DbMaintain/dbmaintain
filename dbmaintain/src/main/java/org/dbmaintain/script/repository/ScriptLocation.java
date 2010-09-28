@@ -15,10 +15,10 @@
  */
 package org.dbmaintain.script.repository;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
@@ -35,9 +35,6 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
  */
 abstract public class ScriptLocation {
 
-    /* The logger instance for this class */
-    private static Log logger = LogFactory.getLog(ScriptLocation.class);
-
     /**
      * Name of the properties file that is packaged with the jar, that contains information about how
      * the scripts in the jar file are structured.
@@ -50,14 +47,16 @@ abstract public class ScriptLocation {
     protected String postProcessingScriptDirName;
     protected Set<Qualifier> registeredQualifiers;
     protected Set<Qualifier> patchQualifiers;
-    protected String qualifierPrefix;
-    protected String targetDatabasePrefix;
+    protected String scriptIndexRegexp;
+    protected String qualifierRegexp;
+    protected String targetDatabaseRegexp;
     protected Set<String> scriptFileExtensions;
     protected String scriptLocationName;
     /* The baseline revision. If set, all scripts with a lower revision will be ignored */
     protected ScriptIndexes baseLineRevision;
     /* If true, carriage return chars will be ignored when calculating check sums */
     protected boolean ignoreCarriageReturnsWhenCalculatingCheckSum;
+    protected ScriptFactory scriptFactory;
 
 
     /**
@@ -65,46 +64,57 @@ abstract public class ScriptLocation {
      * @param scriptEncoding              Encoding used to read the contents of the script, not null
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param registeredQualifiers        the registered qualifiers, not null
+     * @param scriptIndexRegexp           The regexp that identifies the version index in the filename, not null
+     * @param qualifierRegexp             The regexp that identifies a qualifier in the filename, not null
+     * @param targetDatabaseRegexp        The regexp that identifies the target database in the filename, not null
      * @param patchQualifiers             The qualifiers that indicate that this script is a patch script, not null
-     * @param qualifierPrefix             The prefix that identifies a qualifier in the filename, not null
-     * @param targetDatabasePrefix        The prefix that indicates the target database part in the filename, not null
      * @param scriptFileExtensions        The script file extensions
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     protected ScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
-                             Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix,
-                             String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
+                             Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp,
+                             String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
                              boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.scripts = scripts;
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
         this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
-        this.qualifierPrefix = qualifierPrefix;
-        this.targetDatabasePrefix = targetDatabasePrefix;
+        this.scriptIndexRegexp = scriptIndexRegexp;
+        this.qualifierRegexp = qualifierRegexp;
+        this.targetDatabaseRegexp = targetDatabaseRegexp;
         this.scriptFileExtensions = scriptFileExtensions;
         this.scriptLocationName = "<undefined>";
         this.baseLineRevision = baseLineRevision;
         this.ignoreCarriageReturnsWhenCalculatingCheckSum = ignoreCarriageReturnsWhenCalculatingCheckSum;
+        this.scriptFactory = createScriptFactory();
     }
 
     protected ScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
-                             Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
-                             String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes defaultBaseLineRevision,
+                             Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
+                             String defaultTargetDatabaseRegexp, Set<String> defaultScriptFileExtensions, ScriptIndexes defaultBaseLineRevision,
                              boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        this((SortedSet<Script>) null, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, defaultBaseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
         assertValidScriptLocation(scriptLocation);
-        this.scriptLocationName = scriptLocation.getAbsolutePath();
+
+        this.scriptEncoding = defaultScriptEncoding;
+        this.postProcessingScriptDirName = defaultPostProcessingScriptDirName;
+        this.registeredQualifiers = defaultRegisteredQualifiers;
+        this.patchQualifiers = defaultPatchQualifiers;
+        this.scriptIndexRegexp = defaultScriptIndexRegexp;
+        this.qualifierRegexp = defaultQualifierRegexp;
+        this.targetDatabaseRegexp = defaultTargetDatabaseRegexp;
+        this.scriptFileExtensions = defaultScriptFileExtensions;
+        this.baseLineRevision = defaultBaseLineRevision;
+        this.ignoreCarriageReturnsWhenCalculatingCheckSum = ignoreCarriageReturnsWhenCalculatingCheckSum;
 
         Properties customProperties = getCustomProperties(scriptLocation);
         overrideValuesWithCustomConfiguration(customProperties);
-        this.scripts = loadScripts(scriptLocation);
 
-        if (baseLineRevision != null) {
-            logger.info("The baseline revision is set to " + baseLineRevision.getIndexesString() + ". All script with a lower revision will be ignored");
-        }
+        this.scriptLocationName = scriptLocation.getAbsolutePath();
+        this.scriptFactory = createScriptFactory();
+        this.scripts = loadScripts(scriptLocation);
     }
 
 
@@ -146,12 +156,12 @@ abstract public class ScriptLocation {
         return patchQualifiers;
     }
 
-    public String getQualifierPrefix() {
-        return qualifierPrefix;
+    public String getQualifierRegexp() {
+        return qualifierRegexp;
     }
 
-    public String getTargetDatabasePrefix() {
-        return targetDatabasePrefix;
+    public String getTargetDatabaseRegexp() {
+        return targetDatabaseRegexp;
     }
 
     public Set<String> getScriptFileExtensions() {
@@ -188,11 +198,14 @@ abstract public class ScriptLocation {
         if (customProperties.containsKey(PROPERTY_SCRIPT_PATCH_QUALIFIERS)) {
             this.patchQualifiers = createQualifiers(PropertyUtils.getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, customProperties));
         }
-        if (customProperties.containsKey(PROPERTY_SCRIPT_QUALIFIER_PREFIX)) {
-            this.qualifierPrefix = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, customProperties);
+        if (customProperties.containsKey(PROPERTY_SCRIPT_INDEX_REGEXP)) {
+            this.scriptIndexRegexp = PropertyUtils.getString(PROPERTY_SCRIPT_INDEX_REGEXP, customProperties);
         }
-        if (customProperties.containsKey(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX)) {
-            this.targetDatabasePrefix = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, customProperties);
+        if (customProperties.containsKey(PROPERTY_SCRIPT_QUALIFIER_REGEXP)) {
+            this.qualifierRegexp = PropertyUtils.getString(PROPERTY_SCRIPT_QUALIFIER_REGEXP, customProperties);
+        }
+        if (customProperties.containsKey(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP)) {
+            this.targetDatabaseRegexp = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, customProperties);
         }
         if (customProperties.containsKey(PROPERTY_SCRIPT_FILE_EXTENSIONS)) {
             this.scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, customProperties));
@@ -242,5 +255,13 @@ abstract public class ScriptLocation {
             qualifiers.add(new Qualifier(qualifierName));
         }
         return qualifiers;
+    }
+
+    protected ScriptFactory createScriptFactory() {
+        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+    }
+
+    protected Script createScript(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle) {
+        return scriptFactory.createScriptWithContent(fileName, fileLastModifiedAt, scriptContentHandle);
     }
 }

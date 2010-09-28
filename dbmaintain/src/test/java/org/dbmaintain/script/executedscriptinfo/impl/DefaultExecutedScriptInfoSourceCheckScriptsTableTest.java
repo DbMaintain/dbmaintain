@@ -18,18 +18,17 @@ package org.dbmaintain.script.executedscriptinfo.impl;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-import java.util.Collections;
 
 import static org.apache.commons.lang.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.assertTableExists;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
+import static org.dbmaintain.util.TestUtils.createScript;
 
 /**
  * Test class for {@link DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -47,7 +46,7 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
     private Database defaultDatabase;
 
     private ExecutedScript executedScript;
-    private Script script = new Script("1_script1_renamed.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null);
+    private Script script;
 
 
     @Before
@@ -57,8 +56,8 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
 
         executedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        executedScript = new ExecutedScript(new Script("1_script1.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
-        script = new Script("1_script1_renamed.sql", 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.singleton(new Qualifier("patch")), "postprocessing", null);
+        executedScript = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        script = createScript("1_script1_renamed.sql");
 
         dropExecutedScriptsTable();
     }

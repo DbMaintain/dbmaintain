@@ -88,7 +88,7 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
 
     private ArchiveScriptLocation createArchiveScriptLocationFromFile(File file) {
         return new ArchiveScriptLocation(file, "ISO-8859-1", "postprocessing",
-                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "#",
-                "@", asSet("sql", "ddl"), null, false);
+                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
+                "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);
     }
 }

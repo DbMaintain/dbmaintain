@@ -17,8 +17,6 @@ package org.dbmaintain.script.analyzer;
 
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.qualifier.Qualifier;
-import org.dbmaintain.util.TestUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -27,7 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static org.dbmaintain.script.analyzer.ScriptUpdateType.*;
-import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.dbmaintain.util.TestUtils.*;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -55,10 +53,10 @@ public class ScriptUpdatesAnalyzerTest {
     private static final Script POSTPROCESSING_3_RENAMED_WITH_INDEX_1 = createRenamedScript(POSTPROCESSING_3, "postprocessing/1_postprocessing3.sql");
     private static final Script POSTPROCESSING_1_UPDATED = createScript("postprocessing/1_postprocessing1.sql", true);
 
-    ScriptUpdates scriptUpdates;
+    private ScriptUpdates scriptUpdates;
 
-    SortedSet<Script> scripts = new TreeSet<Script>();
-    SortedSet<ExecutedScript> executedScripts = new TreeSet<ExecutedScript>();
+    private SortedSet<Script> scripts = new TreeSet<Script>();
+    private SortedSet<ExecutedScript> executedScripts = new TreeSet<ExecutedScript>();
     private static int sequence = 0;
 
     @Test
@@ -255,18 +253,18 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
-        scriptUpdates = new ScriptUpdatesAnalyzer(TestUtils.getScriptRepository(scripts),
-                TestUtils.getExecutedScriptInfoSource(executedScripts), true, allowOutOfSequenceExecutionOfPatchScripts
+        scriptUpdates = new ScriptUpdatesAnalyzer(getScriptRepository(scripts),
+                getExecutedScriptInfoSource(executedScripts), true, allowOutOfSequenceExecutionOfPatchScripts
         ).calculateScriptUpdates();
     }
 
     private static Script createScript(String scriptName, boolean modified) {
         String checkSum = scriptName + (modified ? (++sequence) : "");
         Long lastModifiedAt = modified ? 1L : 0L;
-        return new Script(scriptName, lastModifiedAt, checkSum, "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing", null);
+        return createScriptWithModificationDateAndCheckSum(scriptName, lastModifiedAt, checkSum);
     }
 
     private static Script createRenamedScript(Script originalScript, String newName) {
-        return new Script(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum(), "@", "#", asSet(new Qualifier("qualifier")), asSet(new Qualifier("patch")), "postprocessing", null);
+        return createScriptWithModificationDateAndCheckSum(newName, originalScript.getFileLastModifiedAt(), originalScript.getCheckSum());
     }
 }

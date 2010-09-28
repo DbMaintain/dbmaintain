@@ -17,9 +17,7 @@ package org.dbmaintain.script.executedscriptinfo.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -28,7 +26,6 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.SortedSet;
 
 import static java.util.Arrays.asList;
@@ -97,7 +94,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
 
 
     private ExecutedScript createScript(String scriptName) throws ParseException {
-        return new ExecutedScript(new Script(scriptName, 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.<Qualifier>emptySet(), "postprocessing", null), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        return new ExecutedScript(TestUtils.createScript(scriptName), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
     private void dropExecutedScriptsTable() {

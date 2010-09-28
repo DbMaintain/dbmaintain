@@ -16,19 +16,15 @@
 package org.dbmaintain;
 
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContentHandle;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.script.runner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.unitils.UnitilsJUnit4;
 import org.unitils.mock.Mock;
 
-import java.util.Collections;
-
-import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
@@ -41,7 +37,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
     @Before
     public void initialize() {
-        script = new Script("01_filename.sql", 0L, new ScriptContentHandle.StringScriptContentHandle("content of script", "ISO-8859-1", false), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
+        script = TestUtils.createScriptWithContent("01_filename.sql", "content of script");
     }
 
 

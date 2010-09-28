@@ -15,18 +15,10 @@
  */
 package org.dbmaintain.script;
 
-import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.qualifier.Qualifier;
-import org.dbmaintain.util.DbMaintainException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import static org.apache.commons.lang.StringUtils.*;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
  * A class representing a script file and it's content.
@@ -59,72 +51,35 @@ public class Script implements Comparable<Script> {
 
 
     /**
-     * Creates a script with the given script fileName, whose content is provided by the given handle.
+     * Creates a script with the given fileName and content or checksum.
      *
-     * @param fileName                    the name of the script file, not null
-     * @param fileLastModifiedAt          the time when the file was last modified (in ms), not null
-     * @param scriptContentHandle         handle providing access to the contents of the script, not null
-     * @param targetDatabasePrefix        the prefix that indicates the target database part in the filename, not null
-     * @param qualifierPrefix             the prefix that identifies a qualifier in the filename, not null
-     * @param registeredQualifiers        the qualifiers that were registered and are thus allowed to be used, not null
-     * @param patchQualifiers             the qualifiers that indicate that this script is a patch script, not null
-     * @param postProcessingScriptDirName name of the post processing script dir
-     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
-     */
-    public Script(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle, String targetDatabasePrefix,
-                  String qualifierPrefix, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
-        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
-        this.scriptContentHandle = scriptContentHandle;
-    }
-
-
-    /**
-     * Creates a script with the given fileName and content checksum. The contents of the scripts itself
-     * are unknown, which makes a script that is created this way unsuitable for being executed. The reason
-     * that we provide this constructor is to be able to store information of the script without having to
-     * store it's contents. The availability of a checksum enables us to find out whether it's contents
-     * are equal to another script objects whose contents are provided.
+     * If rhe contents of the script is know, a script content handle should be provided and the checksum can be left null.
+     * Otherwise leave the script content handle null and provide a checksum. This makes it possible to perform checks
+     * with the script (e.g. verify that the contents are equal) without having the content. The script can then ofcourse
+     * not be executed.
      *
-     * @param fileName                    the name of the script file, not null
-     * @param fileLastModifiedAt          the time when the file was last modified (in ms), not null
-     * @param checkSum                    checksum calculated for the contents of the file
-     * @param targetDatabasePrefix        the prefix that indicates the target database part in the filename, not null
-     * @param qualifierPrefix             the prefix that identifies a qualifier in the filename, not null
-     * @param registeredQualifiers        all qualifiers that were registered and are thus allowed to be used, not null
-     * @param patchQualifiers             the qualifiers that indicate that a script is a patch script, not null
-     * @param postProcessingScriptDirName Name of the post processing script dir
-     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param fileName             The name of the script file, not null
+     * @param scriptIndexes        The indexes of the script, not null
+     * @param targetDatabaseName   The target database, null if there is no target database
+     * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
+     * @param checkSum             Checksum calculated for the contents of the file, leave null if a script content handle is provided
+     * @param scriptContentHandle  Handle providing access to the contents of the script, null if the content is unknown (a checksum is then required)
+     * @param postProcessingScript True if this script is a post processing script
+     * @param patchScript          True if this script is a patch script (has a patch qualifier)
+     * @param ignored              True if this script should be ignored (because the revision is lower than the baseline revision)
+     * @param qualifiers           The qualifiers of this script, not null
      */
-    public Script(String fileName, Long fileLastModifiedAt, String checkSum, String targetDatabasePrefix, String qualifierPrefix,
-                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
-        this(fileName, fileLastModifiedAt, targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
-        this.checkSum = checkSum;
-    }
-
-
-    /**
-     * Private constructor that only partly initializes.
-     *
-     * @param fileName                    the name of the script file, not null
-     * @param fileLastModifiedAt          the time when the file was last modified (in ms), not null
-     * @param targetDatabasePrefix        the prefix that indicates the target database part in the filename, not null
-     * @param qualifierPrefix             the prefix that identifies a qualifier in the filename, not null
-     * @param registeredQualifiers        all qualifiers that were registered and are thus allowed to be used, not null
-     * @param patchQualifiers             the qualifiers that indicate that this script is a patch script, not null
-     * @param postProcessingScriptDirName name of the post processing script dir
-     * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
-     */
-    private Script(String fileName, Long fileLastModifiedAt, String targetDatabasePrefix, String qualifierPrefix,
-                   Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
+    public Script(String fileName, ScriptIndexes scriptIndexes, String targetDatabaseName, Long fileLastModifiedAt, String checkSum, ScriptContentHandle scriptContentHandle, boolean postProcessingScript, boolean patchScript, boolean ignored, Set<Qualifier> qualifiers) {
         this.fileName = fileName;
-        this.scriptIndexes = createScriptIndexes(fileName);
-        List<String> allTokens = getTokensFromPath(asSet(qualifierPrefix, targetDatabasePrefix));
-        this.targetDatabaseName = getTargetDatabaseName(allTokens, targetDatabasePrefix);
-        this.qualifiers = selectQualifiersFromTokens(allTokens, qualifierPrefix, registeredQualifiers, patchQualifiers);
-        this.patchScript = hasQualifierFrom(patchQualifiers);
+        this.scriptIndexes = scriptIndexes;
+        this.targetDatabaseName = targetDatabaseName;
         this.fileLastModifiedAt = fileLastModifiedAt;
-        this.postProcessingScript = isPostProcessingScript(postProcessingScriptDirName);
-        this.ignored = isIgnored(baseLineRevision);
+        this.checkSum = checkSum;
+        this.scriptContentHandle = scriptContentHandle;
+        this.postProcessingScript = postProcessingScript;
+        this.patchScript = patchScript;
+        this.ignored = ignored;
+        this.qualifiers = qualifiers;
     }
 
 
@@ -135,6 +90,9 @@ public class Script implements Comparable<Script> {
         return fileName;
     }
 
+    /**
+     * @return The script name without the path, not null
+     */
     public String getFileNameWithoutPath() {
         int index = fileName.lastIndexOf('\\');
         if (index == -1) {
@@ -147,20 +105,11 @@ public class Script implements Comparable<Script> {
     }
 
     /**
-     * @return The version, not null
+     * @return The version indexes, not null
      */
-    public ScriptIndexes getVersion() {
+    public ScriptIndexes getScriptIndexes() {
         return scriptIndexes;
     }
-
-    /**
-     * @param baseLineRevision The baseline revision, null if there is not baseline
-     * @return True if a baseline revision was set and the revision of the script was below the baseline
-     */
-    protected boolean isIgnored(ScriptIndexes baseLineRevision) {
-        return baseLineRevision != null && baseLineRevision.compareTo(scriptIndexes) > 0;
-    }
-
 
     /**
      * @return Logical name that indicates the target database on which this script must be executed. Can be null to
@@ -182,7 +131,6 @@ public class Script implements Comparable<Script> {
         return fileLastModifiedAt;
     }
 
-
     /**
      * @return Checksum calculated for the content of the script, not null
      */
@@ -193,7 +141,6 @@ public class Script implements Comparable<Script> {
         return checkSum;
     }
 
-
     /**
      * @return Handle that provides access to the content of the script. May be null! If so, this
      *         object is not suitable for being executed. The checksum however cannot be null, so we can always
@@ -202,7 +149,6 @@ public class Script implements Comparable<Script> {
     public ScriptContentHandle getScriptContentHandle() {
         return scriptContentHandle;
     }
-
 
     /**
      * @param other                    Another script, not null
@@ -240,14 +186,12 @@ public class Script implements Comparable<Script> {
         return !isPostProcessingScript() && scriptIndexes.isRepeatableScript();
     }
 
-
     /**
      * @return True if this script is a postprocessing script
      */
     public boolean isPostProcessingScript() {
         return postProcessingScript;
     }
-
 
     /**
      * @return True if this script is ignored because it falls below the baseline revision
@@ -261,6 +205,13 @@ public class Script implements Comparable<Script> {
      */
     public boolean isPatchScript() {
         return patchScript;
+    }
+
+    /**
+     * @return The qualifiers of this script, not null
+     */
+    public Set<Qualifier> getQualifiers() {
+        return qualifiers;
     }
 
 
@@ -278,163 +229,11 @@ public class Script implements Comparable<Script> {
         if (isPostProcessingScript() && !script.isPostProcessingScript()) {
             return 1;
         }
-        int versionComparison = scriptIndexes.compareTo(script.getVersion());
+        int versionComparison = scriptIndexes.compareTo(script.getScriptIndexes());
         if (versionComparison != 0) {
             return versionComparison;
         }
         return fileName.compareTo(script.fileName);
-    }
-
-
-    /**
-     * Creates a version by extracting the indexes from the the given script file name.
-     *
-     * @param fileName The name op the script file relative to the script root, not null
-     * @return The version of the script file, not null
-     */
-    protected ScriptIndexes createScriptIndexes(String fileName) {
-        String[] pathParts = StringUtils.split(fileName, '/');
-        List<Long> versionIndexes = new ArrayList<Long>();
-        for (String pathPart : pathParts) {
-            versionIndexes.add(extractIndex(pathPart));
-        }
-        try {
-            return new ScriptIndexes(versionIndexes);
-        } catch (DbMaintainException e) {
-            throw new DbMaintainException("Error in script " + fileName + ": " + e.getMessage(), e);
-        }
-    }
-
-
-    protected List<String> getTokensFromPath(Set<String> tokenPrefixes) {
-        List<String> tokens = new ArrayList<String>();
-        String[] pathParts = StringUtils.split(getFileNameWithoutExtension(), '/');
-        for (String pathPart : pathParts) {
-            String[] words = StringUtils.split(pathPart, '_');
-            for (String word : words) {
-                for (String tokenPrefix : tokenPrefixes) {
-                    if (word.startsWith(tokenPrefix)) {
-                        tokens.add(word);
-                    }
-                }
-            }
-        }
-        return tokens;
-    }
-
-    private String getFileNameWithoutExtension() {
-        return StringUtils.substringBeforeLast(fileName, ".");
-    }
-
-
-    /**
-     * Extracts the index out of a given file name.
-     *
-     * @param pathPart The simple (only one part of path) directory or file name, not null
-     * @return The index, null if there is no index
-     */
-    protected Long extractIndex(String pathPart) {
-        String indexString = substringBefore(pathPart, "_");
-        if (isEmpty(indexString)) {
-            return null;
-        }
-
-        try {
-            return Long.parseLong(indexString);
-        } catch (NumberFormatException e) {
-            // was not a version index, just return null
-            return null;
-        }
-    }
-
-
-    protected Set<Qualifier> selectQualifiersFromTokens(List<String> tokens, String qualifierPrefix, Set<Qualifier> allowedQualifiers, Set<Qualifier> patchQualifiers) {
-        Set<Qualifier> qualifiers = new HashSet<Qualifier>();
-        for (String token : tokens) {
-            if (token.startsWith(qualifierPrefix)) {
-                Qualifier qualifier = new Qualifier(substringAfter(token, qualifierPrefix));
-                if (!allowedQualifiers.contains(qualifier) && !patchQualifiers.contains(qualifier)) {
-                    throw new DbMaintainException("Qualifier \"" + qualifier.getQualifierName() + "\" has not been registered.");
-                }
-                qualifiers.add(qualifier);
-            }
-        }
-        return qualifiers;
-    }
-
-
-    public Set<Qualifier> getQualifiers() {
-        return qualifiers;
-    }
-
-
-    /**
-     * @param qualifiers a set of script qualifiers
-     * @return whether the script is qualified with one of the given qualifiers
-     */
-    public boolean hasQualifierFrom(Set<Qualifier> qualifiers) {
-        for (Qualifier qualifier : qualifiers)
-            if (this.qualifiers.contains(qualifier))
-                return true;
-        return false;
-    }
-
-
-    /**
-     * Resolves the target database name from the given list of tokens
-     * <p/>
-     * E.g. 01_@databaseA_myscript.sql
-     * <p/>
-     * If the file name consists out of multiple path-parts, the last found target database is used
-     * <p/>
-     * E.g. 01_@database1/01_@database2_myscript.sql
-     * <p/>
-     * will return database2
-     *
-     * @param tokens               All tokens extracted from the path, not null
-     * @param targetDatabasePrefix The prefix that indicates the target database, not null
-     * @return The target database name, null if none found
-     */
-    protected String getTargetDatabaseName(List<String> tokens, String targetDatabasePrefix) {
-        for (int i = tokens.size() - 1; i >= 0; i--) {
-            String token = tokens.get(i);
-            if (token.startsWith(targetDatabasePrefix)) {
-                return substringAfter(token, targetDatabasePrefix);
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Implements the getTargetDatabaseNameFromPath for a single file name path-part.
-     *
-     * @param pathPart             The name to check, not null
-     * @param targetDatabasePrefix The prefix to look for, not null
-     * @return The target database name, null if none found
-     */
-    protected String extractTargetDatabase(String pathPart, String targetDatabasePrefix) {
-        Long index = extractIndex(pathPart);
-        String pathPartAfterIndex;
-        if (index == null) {
-            pathPartAfterIndex = pathPart;
-        } else {
-            pathPartAfterIndex = substringAfter(pathPart, "_");
-        }
-        if (pathPartAfterIndex.startsWith(targetDatabasePrefix) && pathPartAfterIndex.contains("_")) {
-            return substringBefore(pathPartAfterIndex, "_").substring(1);
-        }
-        return null;
-    }
-
-
-    /**
-     * @param postProcessingScriptDirName Name of the post processing script dir
-     * @return True if the given script is a post processing script according to the script source configuration
-     */
-    protected boolean isPostProcessingScript(String postProcessingScriptDirName) {
-        return !isEmpty(postProcessingScriptDirName) &&
-                (fileName.startsWith(postProcessingScriptDirName + '/') || fileName.startsWith(postProcessingScriptDirName + '\\'));
     }
 
 
@@ -445,7 +244,6 @@ public class Script implements Comparable<Script> {
     public int hashCode() {
         return 31 + ((fileName == null) ? 0 : fileName.hashCode());
     }
-
 
     /**
      * @param object The object to compare with
@@ -472,7 +270,6 @@ public class Script implements Comparable<Script> {
         }
         return true;
     }
-
 
     /**
      * Gets a string representation of this script.

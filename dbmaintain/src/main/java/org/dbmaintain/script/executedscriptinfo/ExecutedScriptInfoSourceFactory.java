@@ -18,6 +18,7 @@ package org.dbmaintain.script.executedscriptinfo;
 import org.dbmaintain.config.FactoryWithDatabase;
 import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.database.Database;
+import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.impl.DefaultExecutedScriptInfoSource;
 import org.dbmaintain.script.qualifier.Qualifier;
 
@@ -50,17 +51,19 @@ public class ExecutedScriptInfoSourceFactory extends FactoryWithDatabase<Execute
         int executedAtColumnSize = PropertyUtils.getInt(PROPERTY_EXECUTED_AT_COLUMN_SIZE, getConfiguration());
         String succeededColumnName = defaultDatabase.toCorrectCaseIdentifier(getString(PROPERTY_SUCCEEDED_COLUMN_NAME, getConfiguration()));
         DateFormat timestampFormat = new SimpleDateFormat(getString(PROPERTY_TIMESTAMP_FORMAT, getConfiguration()));
-        String targetDatabasePrefix = getString(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, getConfiguration());
-        String qualifierPrefix = getString(PROPERTY_SCRIPT_QUALIFIER_PREFIX, getConfiguration());
+        String scriptIndexRegexp = getString(PROPERTY_SCRIPT_INDEX_REGEXP, getConfiguration());
+        String targetDatabaseRegexp = getString(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, getConfiguration());
+        String qualifierRegexp = getString(PROPERTY_SCRIPT_QUALIFIER_REGEXP, getConfiguration());
         Set<Qualifier> registeredQualifiers = factoryWithDatabaseContext.createQualifiers(getStringList(PROPERTY_QUALIFIERS, getConfiguration()));
         Set<Qualifier> patchQualifiers = factoryWithDatabaseContext.createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, getConfiguration()));
         String postProcessingScriptsDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, getConfiguration());
         ScriptIndexes baselineRevision = factoryWithDatabaseContext.getBaselineRevision();
 
+        ScriptFactory scriptFactory = new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, registeredQualifiers, patchQualifiers, postProcessingScriptsDirName, baselineRevision);
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
                 fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
                 executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, defaultDatabase,
-                getSqlHandler(), targetDatabasePrefix, qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptsDirName, baselineRevision);
+                getSqlHandler(), scriptFactory);
     }
 
 }

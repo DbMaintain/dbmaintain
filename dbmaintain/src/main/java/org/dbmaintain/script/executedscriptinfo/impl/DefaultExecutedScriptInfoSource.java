@@ -21,9 +21,8 @@ import org.dbmaintain.database.Database;
 import org.dbmaintain.database.SQLHandler;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
-import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 
 import java.sql.Connection;
@@ -70,28 +69,15 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
     protected boolean autoCreateExecutedScriptsTable;
     /* Format of the contents of the executed_at column */
     protected DateFormat timestampFormat;
-    /* The prefix to use for locating the target database part in the filename, not null */
-    protected String targetDatabasePrefix;
-    /* The prefix that can be used in the filename to identify qualifiers */
-    protected String qualifierPefix;
-    /* The registered (allowed) custom qualifiers */
-    protected Set<Qualifier> registeredQualifiers;
-    /* The qualifiers that identify a script as a patch script, not null */
-    protected Set<Qualifier> patchQualifiers;
-    /* The name of the post processing dir*/
-    protected String postProcessingScriptDirName;
-    /* The baseline revision. If set, all scripts with a lower revision will be ignored */
-    protected ScriptIndexes baseLineRevision;
     /* True if the scripts table was checked and was valid */
     protected boolean validExecutedScriptsTable = false;
 
+    protected ScriptFactory scriptFactory;
 
     public DefaultExecutedScriptInfoSource(boolean autoCreateExecutedScriptsTable, String executedScriptsTableName, String fileNameColumnName,
                                            int fileNameColumnSize, String fileLastModifiedAtColumnName, String checksumColumnName, int checksumColumnSize,
                                            String executedAtColumnName, int executedAtColumnSize, String succeededColumnName, DateFormat timestampFormat,
-                                           Database defaultSupport, SQLHandler sqlHandler, String targetDatabasePrefix, String qualifierPrefix,
-                                           Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName,
-                                           ScriptIndexes baseLineRevision) {
+                                           Database defaultSupport, SQLHandler sqlHandler, ScriptFactory scriptFactory) {
 
         this.defaultDatabase = defaultSupport;
         this.sqlHandler = sqlHandler;
@@ -106,12 +92,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         this.executedAtColumnSize = executedAtColumnSize;
         this.succeededColumnName = defaultDatabase.toCorrectCaseIdentifier(succeededColumnName);
         this.timestampFormat = timestampFormat;
-        this.targetDatabasePrefix = targetDatabasePrefix;
-        this.qualifierPefix = qualifierPrefix;
-        this.registeredQualifiers = registeredQualifiers;
-        this.patchQualifiers = patchQualifiers;
-        this.postProcessingScriptDirName = postProcessingScriptDirName;
-        this.baseLineRevision = baseLineRevision;
+        this.scriptFactory = scriptFactory;
     }
 
 
@@ -160,7 +141,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 }
                 boolean succeeded = resultSet.getInt(succeededColumnName) == 1;
 
-                Script script = new Script(fileName, fileLastModifiedAt, checkSum, targetDatabasePrefix, qualifierPefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+                Script script = scriptFactory.createScriptWithoutContent(fileName, fileLastModifiedAt, checkSum);
                 if (!script.isIgnored()) {
                     ExecutedScript executedScript = new ExecutedScript(script, executedAt, succeeded);
                     executedScripts.add(executedScript);

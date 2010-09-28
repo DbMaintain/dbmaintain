@@ -17,8 +17,6 @@ package org.dbmaintain.script.executedscriptinfo.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.script.ExecutedScript;
-import org.dbmaintain.script.Script;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -26,12 +24,12 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.SortedSet;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
+import static org.dbmaintain.util.TestUtils.createScript;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.junit.Assert.assertTrue;
 import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
@@ -117,7 +115,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
 
 
     private ExecutedScript createFailedScript(String scriptName, boolean successful) throws ParseException {
-        return new ExecutedScript(new Script(scriptName, 10L, "xxx", "@", "#", Collections.<Qualifier>emptySet(), Collections.<Qualifier>emptySet(), "postprocessing", null), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), successful);
+        return new ExecutedScript(createScript(scriptName), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), successful);
     }
 
     private void dropExecutedScriptsTable() {

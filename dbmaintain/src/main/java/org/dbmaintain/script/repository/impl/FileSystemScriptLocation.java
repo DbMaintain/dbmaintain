@@ -55,16 +55,17 @@ public class FileSystemScriptLocation extends ScriptLocation {
      *                                    The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultRegisteredQualifiers The default registered qualifiers
      * @param defaultPatchQualifiers      The default qualfiers that indicate a patch file. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultQualifierPrefix      The default qualifier prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
-     * @param defaultTargetDatabasePrefix The default target database prefix. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultScriptIndexRegexp    The default script index regexp. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultQualifierRegexp      The default qualifier regexp. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultTargetDatabaseRegexp The default target database regexp. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultScriptFileExtensions The default script extensions. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
-    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPrefix,
-                                    String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPrefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
+                                    String defaultTargetDatabaseRegexp, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultScriptIndexRegexp, defaultQualifierRegexp, defaultTargetDatabaseRegexp, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -144,9 +145,9 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * @return The script, not null
      */
     protected Script createScript(File scriptFile, String relativeScriptFileName) {
+        Long fileLastModifiedAt = scriptFile.lastModified();
         ScriptContentHandle scriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(FileUtils.getUrl(scriptFile), scriptEncoding, ignoreCarriageReturnsWhenCalculatingCheckSum);
-        return new Script(relativeScriptFileName, scriptFile.lastModified(), scriptContentHandle, targetDatabasePrefix,
-                qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+        return scriptFactory.createScriptWithContent(relativeScriptFileName, fileLastModifiedAt, scriptContentHandle);
     }
 
 }

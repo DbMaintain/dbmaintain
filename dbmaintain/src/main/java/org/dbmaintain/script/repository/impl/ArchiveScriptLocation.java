@@ -53,18 +53,19 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param registeredQualifiers        the registered qualifiers, not null
      * @param patchQualifiers             The qualifiers that indicate that this script is a patch script, not null
-     * @param qualifierPrefix             The prefix that identifies a qualifier in the filename, not null
-     * @param targetDatabasePrefix        The prefix that indicates the target database part in the filename, not null
+     * @param scriptIndexRegexp           The regexp that identifies the script index in the filename, not null
+     * @param qualifierRegexp             The regexp that identifies a qualifier in the filename, not null
+     * @param targetDatabaseRegexp        The regexp that indicates the target database in the filename, not null
      * @param scriptFileExtensions        The script file extensions
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
-                                 Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String qualifierPrefix,
-                                 String targetDatabasePrefix, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
+                                 Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp,
+                                 String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
                                  boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, qualifierPrefix, targetDatabasePrefix, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -77,18 +78,19 @@ public class ArchiveScriptLocation extends ScriptLocation {
      *                                    the default postprocessing dir name
      * @param defaultRegisteredQualifiers the default registered (allowed) qualifiers
      * @param defaultPatchQualifiers      the default patch qualifiers
-     * @param defaultQualifierPefix       the default qualifier prefix
-     * @param defaultTargetDatabasePrefix the default target database prefix
+     * @param defaultScriptIndexRegexp    the default script index regexp
+     * @param defaultQualifierRegexp      the default qualifier regexp
+     * @param defaultTargetDatabaseRegexp the default target database regexp
      * @param defaultScriptFileExtensions the default script file extensions
      * @param baseLineRevision            The baseline revision. If set, all scripts with a lower revision will be ignored
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
     public ArchiveScriptLocation(File jarLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
-                                 Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultQualifierPefix,
-                                 String defaultTargetDatabasePrefix, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision,
+                                 Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
+                                 String defaultTargetDatabaseRegexp, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision,
                                  boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultQualifierPefix, defaultTargetDatabasePrefix, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultScriptIndexRegexp, defaultQualifierRegexp, defaultTargetDatabaseRegexp, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -142,8 +144,8 @@ public class ArchiveScriptLocation extends ScriptLocation {
                     }
                 }
             };
-            Script script = new Script(relativeScriptName, jarEntry.getTime(), scriptContentHandle, targetDatabasePrefix,
-                    qualifierPrefix, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+            Long fileLastModifiedAt = jarEntry.getTime();
+            Script script = scriptFactory.createScriptWithContent(relativeScriptName, fileLastModifiedAt, scriptContentHandle);
             scripts.add(script);
         }
         return scripts;
@@ -237,8 +239,9 @@ public class ArchiveScriptLocation extends ScriptLocation {
         configuration.put(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirName);
         configuration.put(PROPERTY_QUALIFIERS, toQualifiersPropertyValue(registeredQualifiers));
         configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, toQualifiersPropertyValue(patchQualifiers));
-        configuration.put(PROPERTY_SCRIPT_QUALIFIER_PREFIX, qualifierPrefix);
-        configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_PREFIX, targetDatabasePrefix);
+        configuration.put(PROPERTY_SCRIPT_INDEX_REGEXP, scriptIndexRegexp);
+        configuration.put(PROPERTY_SCRIPT_QUALIFIER_REGEXP, qualifierRegexp);
+        configuration.put(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, targetDatabaseRegexp);
         configuration.put(PROPERTY_SCRIPT_FILE_EXTENSIONS, StringUtils.join(scriptFileExtensions, ","));
         if (baseLineRevision != null) {
             configuration.put(PROPERTY_BASELINE_REVISION, baseLineRevision.getIndexesString());

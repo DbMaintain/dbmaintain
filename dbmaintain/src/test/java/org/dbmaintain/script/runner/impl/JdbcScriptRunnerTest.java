@@ -18,10 +18,10 @@ package org.dbmaintain.script.runner.impl;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.ScriptContentHandle.UrlScriptContentHandle;
+import org.dbmaintain.script.ScriptContentHandle;
+import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.parser.ScriptParserFactory;
 import org.dbmaintain.script.parser.impl.DefaultScriptParserFactory;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.After;
@@ -29,13 +29,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Collections.singleton;
 import static junit.framework.Assert.assertTrue;
 import static org.dbmaintain.util.SQLTestUtils.*;
+import static org.dbmaintain.util.TestUtils.createScriptFactory;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -160,6 +159,8 @@ public class JdbcScriptRunnerTest {
     }
 
     private Script createScript(String scriptName) {
-        return new Script(scriptName, 0L, new UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/" + scriptName), "ISO-8859-1", false), "@", "#", Collections.<Qualifier>emptySet(), singleton(new Qualifier("patch")), "postprocessing", null);
+        ScriptFactory scriptFactory = createScriptFactory();
+        return scriptFactory.createScriptWithContent(scriptName, 0L, new ScriptContentHandle.UrlScriptContentHandle(getClass().getResource("DefaultScriptRunnerTest/" + scriptName), "ISO-8859-1", false));
     }
+
 }

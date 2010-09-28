@@ -16,15 +16,13 @@
 package org.dbmaintain.script.repository;
 
 import org.dbmaintain.script.Script;
-import org.dbmaintain.script.repository.impl.ArchiveScriptLocation;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.createScript;
-import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.dbmaintain.util.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -48,8 +46,8 @@ public class ScriptRepositoryTest {
         postProcessing1 = createScript("postprocessing/01_post1.sql");
         postProcessing2 = createScript("postprocessing/02_post2.sql");
 
-        scriptLocation1 = new ArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1), null, null, null, null, null, null, null, null, false);
-        scriptLocation2 = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2), null, null, null, null, null, null, null, null, false);
+        scriptLocation1 = createArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1), null);
+        scriptLocation2 = createArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2), null);
     }
 
     @Test
@@ -63,13 +61,13 @@ public class ScriptRepositoryTest {
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateScript() {
-        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null, null, null, null, null, null, null, null, false);
+        ScriptLocation location = createArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null);
         new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
     }
 
     @Test(expected = DbMaintainException.class)
     public void errorInCaseOfDuplicateIndex() {
-        ScriptLocation location = new ArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null, null, null, null, null, null, null, null, false);
+        ScriptLocation location = createArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null);
         new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
     }
 

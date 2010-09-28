@@ -16,8 +16,8 @@
 package org.dbmaintain.script.repository;
 
 import org.dbmaintain.script.Script;
+import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.script.repository.impl.ArchiveScriptLocation;
 import org.junit.Test;
 
 import java.util.SortedSet;
@@ -25,8 +25,7 @@ import java.util.SortedSet;
 import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.createScript;
-import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.dbmaintain.util.TestUtils.*;
 import static org.junit.Assert.assertTrue;
 import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
 
@@ -83,14 +82,15 @@ public class ScriptRepositoryBaselineRevisionTest {
 
 
     private ScriptRepository createScriptRepository(ScriptIndexes baseLineRevision) {
-        Script script11 = createScript("1_folder/1_script.sql", baseLineRevision);
-        Script script12 = createScript("1_folder/2_script.sql", baseLineRevision);
-        Script script21 = createScript("2_folder/1_script.sql", baseLineRevision);
-        Script repeatableScript = createScript("repeatable/script.sql", baseLineRevision);
-        Script postProcessingScript = createScript("postprocessing/script.sql", baseLineRevision);
+        ScriptFactory scriptFactory = createScriptFactory(baseLineRevision);
+        Script script11 = scriptFactory.createScriptWithoutContent("1_folder/1_script.sql", 0L, "checksum");
+        Script script12 = scriptFactory.createScriptWithoutContent("1_folder/2_script.sql", 0L, "checksum");
+        Script script21 = scriptFactory.createScriptWithoutContent("2_folder/1_script.sql", 0L, "checksum");
+        Script repeatableScript = scriptFactory.createScriptWithoutContent("repeatable/script.sql", 0L, "checksum");
+        Script postProcessingScript = scriptFactory.createScriptWithoutContent("postprocessing/script.sql", 0L, "checksum");
         SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, postProcessingScript);
 
-        ScriptLocation scriptLocation = new ArchiveScriptLocation(scripts, null, null, null, null, null, null, null, baseLineRevision, false);
+        ScriptLocation scriptLocation = createArchiveScriptLocation(scripts, baseLineRevision);
         return new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator());
     }
 

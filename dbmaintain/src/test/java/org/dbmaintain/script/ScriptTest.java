@@ -15,17 +15,12 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import static java.util.Collections.singleton;
-import static junit.framework.Assert.*;
-import static org.dbmaintain.util.CollectionUtils.asSet;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.dbmaintain.util.TestUtils.createScript;
 
 /**
  * Tests for the script class
@@ -34,9 +29,6 @@ import static org.dbmaintain.util.CollectionUtils.asSet;
  * @author Tim Ducheyne
  */
 public class ScriptTest {
-
-    private static final Qualifier QUALIFIER1 = new Qualifier("qualifier1"), QUALIFIER2 = new Qualifier("qualifier2"),
-            QUALIFIER3 = new Qualifier("qualifier3");
 
     @Test
     public void testIsIncremental_incremental() {
@@ -56,98 +48,6 @@ public class ScriptTest {
     @Test(expected = DbMaintainException.class)
     public void testIsIncremental_repeatableScriptInsideIndexedFolder() {
         createScript("incremental/02_script1/repeatableScript.sql");
-    }
-
-    @Test
-    public void testIsPatchScript() {
-        Script script = createScript("incremental/02_sprint2/03_#patch_addUser.sql");
-        assertTrue(script.isPatchScript());
-    }
-
-
-    @Test
-    public void testIsPatchScript_patchInFolderName() {
-        Script script = createScript("incremental/02_#patch_sprint2/03_addUser.sql");
-        assertTrue(script.isPatchScript());
-    }
-
-
-    @Test
-    public void testIsPatchScript_patchWithoutIndex() {
-        Script script = createScript("#patch_incremental/02_sprint2/03_addUser.sql");
-        assertTrue(script.isPatchScript());
-    }
-
-
-    @Test
-    public void testIsPatchScript_noPatch() {
-        Script script = createScript("incremental/02_sprint2/03_addUser.sql");
-        assertFalse(script.isPatchScript());
-    }
-
-
-    /**
-     * The patch indicator should be case-insensitive.
-     */
-    @Test
-    public void testIsPatchScript_CaseInsensitive() {
-        Script script = createScript("incremental/02_sprint2/03_#PaTcH_addUser.sql");
-        assertTrue(script.isPatchScript());
-    }
-
-
-    @Test
-    public void testScriptWithQualifiers() {
-        Script script = createScript("#qualifier1_#qualifier2_script.sql");
-        assertEquals(asSet(QUALIFIER1, QUALIFIER2), script.getQualifiers());
-    }
-
-    @Test
-    public void testQualifiers_CaseInsensitive() {
-        Script script = createScript("#QuAlIfIeR1_#QUALIFIER2_script.sql");
-        assertEquals(asSet(QUALIFIER1, QUALIFIER2), script.getQualifiers());
-    }
-
-    @Test
-    public void testNoTargetDatabase() {
-        Script script = createScript("incremental/02_sprint2/03_addUser.sql");
-        assertNull(script.getTargetDatabaseName());
-        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
-    }
-
-
-    @Test
-    public void testTargetDatabaseNameInFileName() {
-        Script script = createScript("incremental/02_sprint2/03_@otherdb_addUser.sql");
-        assertEquals("otherdb", script.getTargetDatabaseName());
-        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
-    }
-
-
-    @Test
-    public void testGetTargetDatabaseName_inDirName() {
-        Script script = createScript("incremental/02_@otherdb_sprint2/03_addUser.sql");
-        assertEquals("otherdb", script.getTargetDatabaseName());
-        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
-    }
-
-
-    @Test
-    public void testGetTargetDatabaseName_inDirAndFileName() {
-        Script script = createScript("incremental/02_@otherdb_sprint2/03_@thisdb_addUser.sql");
-        assertEquals("thisdb", script.getTargetDatabaseName());
-        assertEquals(new ScriptIndexes(Arrays.asList(null, 2L, 3L)), script.getVersion());
-    }
-
-    @Test
-    public void testGetQualifiers() {
-        Script script = createScript("#qualifier1/folderName/folderName_#qualifier2/#qualifier3.sql");
-        assertEquals(asSet(QUALIFIER1, QUALIFIER2, QUALIFIER3), script.getQualifiers());
-    }
-
-    @Test(expected = DbMaintainException.class)
-    public void testUnregisteredQualifier() {
-        createScript("#unregisteredQualifier.sql");
     }
 
     @Test
@@ -171,17 +71,5 @@ public class ScriptTest {
             Script script2 = scripts[i + 1];
             assertEquals("Expected script " + script1 + " to come before " + script2 + " but it doesn't", -1, script1.compareTo(script2));
         }
-    }
-
-    private Script createScript(String fileName) {
-        return new Script(fileName, 10L, "xxx", "@", "#", getRegisteredQualifiers(), getPatchQualifier(), "postprocessing", null);
-    }
-
-    private Set<Qualifier> getPatchQualifier() {
-        return singleton(new Qualifier("patch"));
-    }
-
-    private Set<Qualifier> getRegisteredQualifiers() {
-        return asSet(QUALIFIER1, QUALIFIER2, QUALIFIER3);
     }
 }

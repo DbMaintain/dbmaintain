@@ -15,15 +15,11 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static java.util.Collections.singleton;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static org.dbmaintain.util.TestUtils.*;
 
 /**
  * Tests for checking whether 2 scripts have an equal content => checks for timestamp and check sums
@@ -61,23 +57,5 @@ public class ScriptIsContentEqualTest {
 
     private void assertDifferentScriptContent(Script script1, Script script2, boolean useLastModificationDates) {
         assertFalse(script1.isScriptContentEqualTo(script2, useLastModificationDates));
-    }
-
-    private Script createScriptWithContent(String fileName, String scriptContent) {
-        return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1", false),
-                "@", "#", new HashSet<Qualifier>(), getPatchQualifier(), "postprocessing", null);
-    }
-
-    private Script createScriptWithCheckSum(String fileName, String checkSum) {
-        return new Script(fileName, 0L, checkSum, "@", "#", new HashSet<Qualifier>(), getPatchQualifier(), "postprocessing", null);
-    }
-
-    private Script createScriptWithModificationDateAndCheckSum(String fileName, long fileLastModifiedAt, String checkSum) {
-        return new Script(fileName, fileLastModifiedAt, checkSum, "@", "#", new HashSet<Qualifier>(), getPatchQualifier(),
-                "postprocessing", null);
-    }
-
-    private Set<Qualifier> getPatchQualifier() {
-        return singleton(new Qualifier("patch"));
     }
 }

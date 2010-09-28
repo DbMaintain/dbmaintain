@@ -18,11 +18,11 @@ package org.dbmaintain.script.qualifier;
 import org.dbmaintain.script.qualifier.impl.IncludeExcludeQualifierEvaluator;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static org.dbmaintain.util.TestUtils.qualifiers;
 
 /**
  * @author Filip Neven
@@ -89,14 +89,5 @@ public class IncludeExcludeQualifierEvaluatorTest {
         assertFalse(evaluator.evaluate(qualifiers()));
         assertFalse(evaluator.evaluate(qualifiers("Q2")));
         assertFalse(evaluator.evaluate(qualifiers("Q1", "Q2")));
-    }
-
-
-    private Set<Qualifier> qualifiers(String... qualifiersStr) {
-        Set<Qualifier> result = new HashSet<Qualifier>();
-        for (String qualifierStr : qualifiersStr) {
-            result.add(new Qualifier(qualifierStr));
-        }
-        return result;
     }
 }

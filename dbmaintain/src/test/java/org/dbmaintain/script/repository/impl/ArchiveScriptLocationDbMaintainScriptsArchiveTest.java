@@ -47,8 +47,8 @@ public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
 
     @Before
     public void init() throws IOException {
-        Script script1 = TestUtils.createScript("folder1/script1.sql", "Script 1 content");
-        Script script2 = TestUtils.createScript("folder1/script2.sql", "Script 2 content");
+        Script script1 = TestUtils.createScriptWithContent("folder1/script1.sql", "Script 1 content");
+        Script script2 = TestUtils.createScriptWithContent("folder1/script2.sql", "Script 2 content");
         scripts = asSortedSet(script1, script2);
         jarFile = createTempFile("scriptjar", ".jar");
     }
@@ -56,12 +56,12 @@ public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
     @Test
     public void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
         ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(scripts, "ISO-8859-1", "postprocessing",
-                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "#",
-                "@", asSet("sql", "ddl"), null, false);
+                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
+                "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);
         originalScriptArchive.writeToJarFile(jarFile);
         ArchiveScriptLocation scriptArchiveFromFile = new ArchiveScriptLocation(jarFile, "ISO-8859-1", "postprocessing",
-                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "#",
-                "@", asSet("sql", "ddl"), null, false);
+                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
+                "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
         assertEqualProperties(originalScriptArchive, scriptArchiveFromFile);
@@ -86,8 +86,8 @@ public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
 
     private void assertEqualProperties(ScriptLocation originalScriptJar, ScriptLocation scriptJarFromFile) {
         assertEquals(originalScriptJar.getScriptFileExtensions(), scriptJarFromFile.getScriptFileExtensions());
-        assertEquals(originalScriptJar.getTargetDatabasePrefix(), scriptJarFromFile.getTargetDatabasePrefix());
-        assertEquals(originalScriptJar.getQualifierPrefix(), scriptJarFromFile.getQualifierPrefix());
+        assertEquals(originalScriptJar.getTargetDatabaseRegexp(), scriptJarFromFile.getTargetDatabaseRegexp());
+        assertEquals(originalScriptJar.getQualifierRegexp(), scriptJarFromFile.getQualifierRegexp());
         assertEquals(originalScriptJar.getRegisteredQualifiers(), scriptJarFromFile.getRegisteredQualifiers());
         assertEquals(originalScriptJar.getPatchQualifiers(), scriptJarFromFile.getPatchQualifiers());
         assertEquals(originalScriptJar.getPostProcessingScriptDirName(), scriptJarFromFile.getPostProcessingScriptDirName());

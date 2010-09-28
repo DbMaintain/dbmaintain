@@ -15,11 +15,9 @@
  */
 package org.dbmaintain.script;
 
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.junit.Test;
 
-import java.util.HashSet;
-
+import static org.dbmaintain.util.TestUtils.createScriptFactory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -77,7 +75,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
 
 
     private Script createScriptWithContent(String fileName, String scriptContent, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        return new Script(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1", ignoreCarriageReturnsWhenCalculatingCheckSum),
-                "@", "#", new HashSet<Qualifier>(), new HashSet<Qualifier>(), "postprocessing", null);
+        ScriptFactory scriptFactory = createScriptFactory();
+        return scriptFactory.createScriptWithContent(fileName, 0L, new ScriptContentHandle.StringScriptContentHandle(scriptContent, "ISO-8859-1", ignoreCarriageReturnsWhenCalculatingCheckSum));
     }
 }
