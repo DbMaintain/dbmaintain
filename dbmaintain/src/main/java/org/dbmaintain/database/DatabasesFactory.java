@@ -15,6 +15,8 @@
  */
 package org.dbmaintain.database;
 
+import org.dbmaintain.util.DbMaintainException;
+
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +66,7 @@ public class DatabasesFactory {
         DataSource dataSource = createDataSource(databaseInfo);
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
 
-        String databaseDialect = databaseInfo.getDialect();
+        String databaseDialect = getDatabaseDialect(databaseInfo);
         String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
         StoredIdentifierCase customStoredIdentifierCase = getCustomStoredIdentifierCase(databaseDialect);
 
@@ -75,6 +77,16 @@ public class DatabasesFactory {
         );
     }
 
+    public String getDatabaseDialect(DatabaseInfo databaseInfo) {
+        String dialect = databaseInfo.getDialect();
+        if (dialect == null) {
+            dialect = DatabaseDialectDetector.autoDetectDatabaseDialect(databaseInfo.getUrl());
+            if (dialect == null) {
+                throw new DbMaintainException("Unable to determine dialect from jdbc url. Please specify the dialect explicitly. E.g oracle, hsqldb, mysql, db2, postgresql, derby or mssql.");
+            }
+        }
+        return dialect;
+    }
 
     protected StoredIdentifierCase getCustomStoredIdentifierCase(String databaseDialect) {
         String storedIdentifierCasePropertyValue = getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, configuration);

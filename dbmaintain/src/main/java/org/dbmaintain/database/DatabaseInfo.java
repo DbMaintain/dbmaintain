@@ -57,9 +57,6 @@ public class DatabaseInfo {
     }
 
     public void validate() {
-        if (isBlank(dialect)) {
-            throw new DatabaseException("Invalid database configuration. No database dialect defined in properties or task configuration.");
-        }
         if (isBlank(driverClassName)) {
             throw new DatabaseException("Invalid database configuration. No driver class name defined in properties or task configuration.");
         }

@@ -39,7 +39,6 @@ public class Database {
     private boolean included = true;
     /**
      * @parameter
-     * @required
      */
     private String dialect;
     /**

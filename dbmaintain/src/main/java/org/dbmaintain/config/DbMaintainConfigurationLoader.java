@@ -40,11 +40,6 @@ public class DbMaintainConfigurationLoader {
      */
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "dbmaintain-default.properties";
 
-    /**
-     * Property in the defaults configuration file that contains the name of the custom configuration file
-     */
-    public static final String PROPKEY_CUSTOM_CONFIGURATION = "dbmaintain.configuration.customFileName";
-
 
     /**
      * Loads all properties as defined by the default configuration.
