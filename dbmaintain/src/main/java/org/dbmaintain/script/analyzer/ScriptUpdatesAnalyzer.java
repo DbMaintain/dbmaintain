@@ -97,6 +97,8 @@ public class ScriptUpdatesAnalyzer {
                 // Check if the content didn't change
                 if (!executedScript.getScript().isScriptContentEqualTo(scriptWithSameName, useScriptFileLastModificationDates)) {
                     registerScriptUpdate(scriptWithSameName);
+                } else if (!executedScript.isSuccessful() && executedScript.getScript().isPostProcessingScript()) {
+                    registerPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_FAILURE_RERUN, scriptWithSameName);
                 }
             }
         }

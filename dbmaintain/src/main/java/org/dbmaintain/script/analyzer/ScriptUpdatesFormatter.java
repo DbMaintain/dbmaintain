@@ -61,6 +61,8 @@ public class ScriptUpdatesFormatter {
                 return "updated postprocessing script: " + scriptUpdate.getScript().getFileName();
             case POSTPROCESSING_SCRIPT_DELETED:
                 return "deleted postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case POSTPROCESSING_SCRIPT_FAILURE_RERUN:
+                return "re-run of failed postprocessing script: " + scriptUpdate.getScript().getFileName();
             case INDEXED_SCRIPT_UPDATED:
                 return "updated indexed script: " + scriptUpdate.getScript().getFileName();
             case INDEXED_SCRIPT_DELETED:

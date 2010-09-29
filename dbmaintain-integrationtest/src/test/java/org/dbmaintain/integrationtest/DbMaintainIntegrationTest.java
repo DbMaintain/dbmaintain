@@ -474,6 +474,21 @@ public class DbMaintainIntegrationTest {
     }
 
     @Test
+    public void reExecutePostProcessingScriptIfItFailedDuringAPreviousRunAndNoOtherChanges() {
+        createScript("postprocessing/failing_script.sql", "xxxxx");
+        try {
+            updateDatabase();
+        } catch (DbMaintainException e) {
+            // expected
+        }
+        try {
+            updateDatabase();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "postprocessing/failing_script.sql");
+        }
+    }
+
+    @Test
     public void reExecuteAllPostProcessingScriptsIfOneOfThemIsModified() {
         disableFromScratch();
         createScripts(INCREMENTAL_1);
@@ -831,7 +846,6 @@ public class DbMaintainIntegrationTest {
 
     private void createScript(String scriptName, String scriptContent) {
         File scriptFile = new File(scriptsLocation.getAbsolutePath(), scriptName);
-        //noinspection ResultOfMethodCallIgnored
         scriptFile.getParentFile().mkdirs();
         writeContentToFile(scriptFile, scriptContent);
     }
@@ -846,7 +860,6 @@ public class DbMaintainIntegrationTest {
 
     private void removeScript(TestScript script) {
         File scriptFile = new File(scriptsLocation.getAbsolutePath(), script.scriptName);
-        //noinspection ResultOfMethodCallIgnored
         scriptFile.delete();
     }
 

@@ -35,7 +35,7 @@ public enum ScriptUpdateType {
     /**
      * Postprocessing script updates: these are also always allowed
      */
-    POSTPROCESSING_SCRIPT_ADDED, POSTPROCESSING_SCRIPT_UPDATED, POSTPROCESSING_SCRIPT_DELETED,
+    POSTPROCESSING_SCRIPT_ADDED, POSTPROCESSING_SCRIPT_UPDATED, POSTPROCESSING_SCRIPT_DELETED, POSTPROCESSING_SCRIPT_FAILURE_RERUN,
 
     /**
      * Irregular script updates: these cause an exception or trigger a recreation from scratch
