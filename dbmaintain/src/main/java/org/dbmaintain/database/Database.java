@@ -247,7 +247,6 @@ abstract public class Database {
         return getTriggerNames(defaultSchemaName);
     }
 
-
     /**
      * Retrieves the names of all triggers in the given schema.
      *
@@ -260,16 +259,34 @@ abstract public class Database {
 
 
     /**
+     * Retrieves the names of all stored procedures in the default schema.
+     *
+     * @return The names of all stored procedures in the database, not null
+     */
+    public Set<String> getStoredProcedureNames() {
+        return getStoredProcedureNames(defaultSchemaName);
+    }
+
+    /**
      * Retrieves the names of all stored procedures in the given schema.
      *
      * @param schemaName The schema, not null
      * @return The names of all stored procedures in the database, not null
      */
     public Set<String> getStoredProcedureNames(String schemaName) {
-    	throw new UnsupportedOperationException("Stored procedures not supported for " + getSupportedDatabaseDialect());
+        throw new UnsupportedOperationException("Stored procedures not supported for " + getSupportedDatabaseDialect());
     }
-    
-    
+
+
+    /**
+     * Retrieves the names of all types in the default schema.
+     *
+     * @return The names of all types in the database, not null
+     */
+    public Set<String> getTypeNames() {
+        return getTypeNames(defaultSchemaName);
+    }
+
     /**
      * Retrieves the names of all types in the given schema.
      *
@@ -280,6 +297,16 @@ abstract public class Database {
         throw new UnsupportedOperationException("Types are not supported for " + getSupportedDatabaseDialect());
     }
 
+
+    /**
+     * Removes the table with the given name from the default schema.
+     * Note: the table name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param tableName The table to drop (case-sensitive), not null
+     */
+    public void dropTable(String tableName) {
+        dropTable(defaultSchemaName, tableName);
+    }
 
     /**
      * Removes the table with the given name from the given schema.
@@ -294,6 +321,16 @@ abstract public class Database {
 
 
     /**
+     * Removes the view with the given name from the default schema
+     * Note: the view name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param viewName The view to drop (case-sensitive), not null
+     */
+    public void dropView(String viewName) {
+        dropView(defaultSchemaName, viewName);
+    }
+
+    /**
      * Removes the view with the given name from the given schema
      * Note: the view name is surrounded with quotes, making it case-sensitive.
      *
@@ -304,6 +341,16 @@ abstract public class Database {
         getSQLHandler().execute("drop view " + qualified(schemaName, viewName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
+
+    /**
+     * Removes the materialized view with the given name from the default schema
+     * Note: the view name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param viewName The view to drop (case-sensitive), not null
+     */
+    public void dropMaterializedView(String viewName) {
+        dropMaterializedView(defaultSchemaName, viewName);
+    }
 
     /**
      * Removes the materialized view with the given name from the given schema
@@ -318,6 +365,16 @@ abstract public class Database {
 
 
     /**
+     * Removes the synonym with the given name from the default schema
+     * Note: the synonym name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param synonymName The synonym to drop (case-sensitive), not null
+     */
+    public void dropSynonym(String synonymName) {
+        dropSynonym(defaultSchemaName, synonymName);
+    }
+
+    /**
      * Removes the synonym with the given name from the given schema
      * Note: the synonym name is surrounded with quotes, making it case-sensitive.
      *
@@ -328,6 +385,16 @@ abstract public class Database {
         getSQLHandler().execute("drop synonym " + qualified(schemaName, synonymName), getDataSource());
     }
 
+
+    /**
+     * Drops the sequence with the given name from the default schema
+     * Note: the sequence name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param sequenceName The sequence to drop (case-sensitive), not null
+     */
+    public void dropSequence(String sequenceName) {
+        dropSequence(defaultSchemaName, sequenceName);
+    }
 
     /**
      * Drops the sequence with the given name from the given schema
@@ -342,6 +409,16 @@ abstract public class Database {
 
 
     /**
+     * Drops the trigger with the given name from the default schema
+     * Note: the trigger name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param triggerName The trigger to drop (case-sensitive), not null
+     */
+    public void dropTrigger(String triggerName) {
+        dropTrigger(defaultSchemaName, triggerName);
+    }
+
+    /**
      * Drops the trigger with the given name from the given schema
      * Note: the trigger name is surrounded with quotes, making it case-sensitive.
      *
@@ -354,16 +431,36 @@ abstract public class Database {
 
 
     /**
+     * Drops the stored procedure with the given name from the default schema
+     * Note: the stored procedure name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param storedProcedureName The stored procedure to drop (case-sensitive), not null
+     */
+    public void dropStoredProcedure(String storedProcedureName) {
+        dropStoredProcedure(defaultSchemaName, storedProcedureName);
+    }
+
+    /**
      * Drops the stored procedure with the given name from the given schema
      * Note: the stored procedure name is surrounded with quotes, making it case-sensitive.
      *
-     * @param schemaName  The schema, not null
+     * @param schemaName          The schema, not null
      * @param storedProcedureName The stored procedure to drop (case-sensitive), not null
      */
     public void dropStoredProcedure(String schemaName, String storedProcedureName) {
         getSQLHandler().execute("drop procedure " + qualified(schemaName, storedProcedureName), getDataSource());
     }
-    
+
+    /**
+     * Drops the type with the given name from the default schema
+     * Note: the type name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param typeName The type to drop (case-sensitive), not null
+     */
+    public void dropType(String typeName) {
+        dropType(defaultSchemaName, typeName);
+    }
+
 
     /**
      * Drops the type with the given name from the given schema
@@ -432,6 +529,16 @@ abstract public class Database {
         throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
 
+
+    /**
+     * Sets the next value of the sequence with the given name to the given sequence value in the default schema.
+     *
+     * @param sequenceName     The sequence, not null
+     * @param newSequenceValue The value to set
+     */
+    public void incrementSequenceToValue(String sequenceName, long newSequenceValue) {
+        incrementSequenceToValue(defaultSchemaName, sequenceName, newSequenceValue);
+    }
 
     /**
      * Sets the next value of the sequence with the given sequence name to the given sequence value in the given schema.
@@ -731,14 +838,14 @@ abstract public class Database {
     public boolean supportsTriggers() {
         return false;
     }
-    
+
     /**
      * Indicates whether the underlying DBMS supports stored procedures
-     * 
+     *
      * @return True if stored procedures are supported, false other
      */
     public boolean supportsStoredProcedures() {
-    	return false;
+        return false;
     }
 
     /**
