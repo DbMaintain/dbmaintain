@@ -88,7 +88,7 @@ public class CreateScriptArchiveMojo extends BaseMojo {
      * Defines where the scripts can be found that must be added to the jar file. Multiple locations may be
      * configured, separated by comma's. Only folder names can be provided. Defaults to the current folder.
      *
-     * @parameter default-value="."
+     * @parameter default-value="${basedir}"
      */
     protected String scriptLocations;
     /**
