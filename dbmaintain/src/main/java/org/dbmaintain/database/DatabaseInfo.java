@@ -58,17 +58,21 @@ public class DatabaseInfo {
 
     public void validate() {
         if (isBlank(driverClassName)) {
-            throw new DatabaseException("Invalid database configuration. No driver class name defined in properties or task configuration.");
+            throw new DatabaseException(createValidationErrorMessage("no driver class name defined."));
         }
         if (isBlank(url)) {
-            throw new DatabaseException("Invalid database configuration. No database url defined in properties or task configuration.");
+            throw new DatabaseException(createValidationErrorMessage("no database url defined."));
         }
         if (isBlank(userName)) {
-            throw new DatabaseException("Invalid database configuration. No database user name defined in properties or task configuration.");
+            throw new DatabaseException(createValidationErrorMessage("no database user name defined."));
         }
         if (schemaNames.isEmpty()) {
-            throw new DatabaseException("Invalid database configuration. No schema name(s) defined in properties or task configuration.");
+            throw new DatabaseException(createValidationErrorMessage("no schema name(s) defined."));
         }
+    }
+
+    private String createValidationErrorMessage(String reason) {
+        return "Invalid database configuration for database with name " + name + ": " + reason;
     }
 
 
