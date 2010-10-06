@@ -90,6 +90,7 @@ public class MarkDatabaseAsUpToDateMojo extends BaseDatabaseMojo {
 
     @Override
     protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new MarkDatabaseAsUpToDateTask(databaseInfos, scriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
+        String allScriptLocations = getAllScriptLocations(scriptLocations, scriptArchiveDependencies);
+        return new MarkDatabaseAsUpToDateTask(databaseInfos, allScriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
     }
 }
