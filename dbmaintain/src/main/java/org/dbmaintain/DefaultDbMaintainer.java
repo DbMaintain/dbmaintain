@@ -34,6 +34,7 @@ import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.sequence.SequenceUpdater;
 import org.dbmaintain.util.DbMaintainException;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
@@ -423,18 +424,37 @@ public class DefaultDbMaintainer implements DbMaintainer {
             executedScriptInfoSource.updateExecutedScript(executedScript);
 
         } catch (DbMaintainException e) {
-            String message = "Error while executing script " + script.getFileName() + ":\n" + e.getMessage() + "\n\n";
-            message += "A rollback was performed but there could still be changes that were committed in the database (for example a creation of a table).\n" +
-                    getErrorScriptOptionsMessage(script) + "\n\n";
-            if (maxNrOfCharsWhenLoggingScriptContent > 0) {
-                String scriptContents = script.getScriptContentHandle().getScriptContentsAsString(maxNrOfCharsWhenLoggingScriptContent);
-                message += "Full contents of failed script " + script.getFileName() + ":\n";
-                message += "----------------------------------------------------\n";
-                message += scriptContents + "\n";
-                message += "----------------------------------------------------\n";
-            }
+            String message = getErrorMessage(script, e);
             throw new DbMaintainException(message, e.getCause());
         }
+    }
+
+
+    protected String getErrorMessage(Script script, DbMaintainException e) {
+        String exceptionMessage = e.getMessage();
+        Throwable cause = e.getCause();
+        if (cause != null) {
+            exceptionMessage += "\n\nCaused by: " + cause.getMessage();
+            if (cause instanceof SQLException) {
+                SQLException sqlException = (SQLException) cause;
+                if (!exceptionMessage.endsWith("\n")) {
+                    exceptionMessage += "\n";
+                }
+                exceptionMessage += "Error code: " + sqlException.getErrorCode() + ", sql state: " + sqlException.getSQLState();
+            }
+        }
+
+        String message = "\nError while executing script " + script.getFileName() + ": " + exceptionMessage + "\n\n";
+        message += "A rollback was performed but there could still be changes that were committed in the database (for example a creation of a table).\n" +
+                getErrorScriptOptionsMessage(script) + "\n\n";
+        if (maxNrOfCharsWhenLoggingScriptContent > 0) {
+            String scriptContents = script.getScriptContentHandle().getScriptContentsAsString(maxNrOfCharsWhenLoggingScriptContent);
+            message += "Full contents of failed script " + script.getFileName() + ":\n";
+            message += "----------------------------------------------------\n";
+            message += scriptContents + "\n";
+            message += "----------------------------------------------------\n";
+        }
+        return message;
     }
 
     protected String getErrorScriptOptionsMessage(Script script) {
