@@ -31,6 +31,22 @@ Overview
 
 * News
 ~~~~
+** <<2010-10-06 - Release of DbMaintain 2.1>>
+
+    This release contains a fix for the from-scratch behavior and some small improvements:
+
+    * the database dialect will now be autodetected from the jdbc url and is no longer a required property
+
+    * the file name patterns are now configurable using regular expressions
+
+    * failed post-processing scripts will always be run again at the next update
+
+    * stored procedures will also be dropped when dropping the database
+
+    []
+     
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10040}release notes}} for more details.
+
 ** <<2010-08-16 - Release of DbMaintain 2.0>>
 
     Two new operations have been introduced: markErrorScriptPerformed and markErrorScriptReverted that can be used when a script execution fails.

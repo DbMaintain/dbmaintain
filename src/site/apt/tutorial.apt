@@ -196,7 +196,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 
 +----+
 <updateDatabase scriptLocations="${database.archive}" qualifiers="postgres,mysql,everydbms,refdata" includedQualifiers="postgres,everydbms" excludedQualifiers="refdata">
-     <database dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
+     <database driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
 </updateDatabase>
 +----+
 
@@ -249,7 +249,17 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
     Modifying or removing them will no longer give an error. You could for example cleanup the old scripts or replace the old scripts with the export script.
 
     If you create a scripts archive, it will only contain scripts starting from this revision. In other words, it will only contain the deltas with the image. This results in smaller jar files
-    that only contain the actual changes for the next release.    
+    that only contain the actual changes for the next release.
+
+    Note: when a scripts folder or a script does not have a version, the version is set to the value 'x'.
+    For example, suppose you have following structure:
+
++-----+
+scripts/01_release_1/001_my_script.sql
++-----+
+
+    Then the version number of this script will be x.1.1. If you want to set this script as the first script of the baseline, you will have to set the baseline revision to x.1.1 and not to 1.1.
+
 
 
 * {Configure and run DbMaintain}
@@ -297,7 +307,7 @@ scripts/incremental/01_v1.0/01_products_and_orders.sql
 	 
 +-----+
 <updateDatabase scriptLocations="${database.archive}">
-     <database dialect="hsqldb" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
+     <database driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:mem:mydb" userName="admin" password="pwd" schemaNames="PUBLIC" />
 </updateDatabase>
 +-----+
 
@@ -326,7 +336,6 @@ dbMaintainer.updateDatabase(false);
     DbMaintain can be configured with one or more databases. If you use more than one database, the target database has to be specified in the script (see {{{#Multi-database__user_support}Multi-database / user support}}). To configure a single database in a properties file, add following properties:
 
 +-----+
-database.dialect=<the dialect>
 database.driverClassName=<fully qualified JDBC driver class name>
 database.url=<database URL>
 database.userName=<database username>
@@ -334,7 +343,7 @@ database.password=<database password>
 database.schemaNames=<comma separated list of all database schemas used>
 +-----+
 
-    If you configure multiple databases, you have to give a logical name to each of them, and list them in the property databases.names. The logical name has to be added to the property name to configure the dialect, url, etc. The logical name can also be used in the script filenames to indicate the target database. The database that is listed first automatically becomes the default database, which is the target database for scripts that don't specify one. For example, if we want to configure a database called users and orders:
+    If you configure multiple databases, you have to give a logical name to each of them, and list them in the property databases.names. The logical name has to be added to the property name to configure the driver, url, etc. The logical name can also be used in the script filenames to indicate the target database. The database that is listed first automatically becomes the default database, which is the target database for scripts that don't specify one. For example, if we want to configure a database called users and orders:
 	
 +-----+
 databases.names=users,orders
@@ -343,7 +352,7 @@ database.orders.driverClassName=<fully qualified JDBC driver class name>
 ...
 +-----+
 
-    If, for a certain property, all databases share the same value, you can use the default property name to configure it, e.g. if all databases the hsqdb database dialect. If you have one database but you need to connect using different database users to execute certain scripts, you can configure multiple databases that share all properties except their credentials. E.g.:
+    If, for a certain property, all databases share the same value, you can use the default property name to configure it, e.g. if all databases the hsqdb database driver. If you have one database but you need to connect using different database users to execute certain scripts, you can configure multiple databases that share all properties except their credentials. E.g.:
 	
 +-----+
 databases.names=admin,user,read
@@ -363,13 +372,13 @@ database.read.schemaNames=read
     If you use ant, you can configure the database(s) with a <database> subelement like follows:
 	
 +-----+
-<database dialect="<the dialect>" driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
+<database driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
 +-----+
 
     or with multiple <database> subelements having a <name> attribute:
 	
 +-----+
-<database name="<logical database name>" dialect="<the dialect>" driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
+<database name="<logical database name>" driverClassName="<fully qualified JDBC driver class name>" url="<database URL>" userName="admin" password="pwd" schemaNames="<comma separated list of all database schemas used>" />
 +-----+
 
     In some cases, you want to configure a database with a certain name but exclude it from execution. The scripts that have an excluded database as target will simply be ignored. This can be useful if you only want to execute the scripts with a certain target database on an end-to-end test database but not on a local test datatabase. When using command line configuration, simply add a property database.<logicalname>.included=false. When using ant, create a <database> element with a <name> attribute and an <included> attribute set to <false>.

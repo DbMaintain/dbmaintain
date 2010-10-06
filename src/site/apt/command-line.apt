@@ -8,8 +8,6 @@ Command line
     To launch DbMaintain from the command line, you have to create a properties file dbmaintain.properties that configures the location of your scripts and the target database, for example:
 	
 +-----+
-# This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb' and 'postgresql'.
-database.dialect=hsqldb
 database.driverClassName=org.hsqldb.jdbcDriver
 database.url=jdbc:hsqldb:mem:testdb
 database.userName=sa

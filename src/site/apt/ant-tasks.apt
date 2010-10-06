@@ -122,7 +122,7 @@ Ant tasks
 +----+
 <target name="update-db">
     <updateDatabase scriptLocations="scripts" autoCreateDbMaintainScriptsTable="true">
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>	    
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </updateDatabase>
 </target>
 +----+
@@ -147,7 +147,7 @@ Ant tasks
 +----+
 <target name="mark-error-script-performed">
     <markErrorScriptPerformed>
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </markErrorScriptPerformed>
 </target>
 +----+
@@ -172,7 +172,7 @@ Ant tasks
 +----+
 <target name="mark-error-script-reverted">
     <markErrorScriptReverted>
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </markErrorScriptReverted>
 </target>
 +----+
@@ -211,7 +211,7 @@ Ant tasks
 +----+
 <target name="mark-uptodate">
     <markDatabaseAsUpToDate scriptLocations="scripts" autoCreateDbMaintainScriptsTable="true">
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </markDatabaseAsUpToDate>
 </target>
 +----+
@@ -266,7 +266,7 @@ Ant tasks
 +----+
  <target name="dry-run">
     <checkScriptUpdates scriptLocations="scripts" autoCreateDbMaintainScriptsTable="true">
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </checkScriptUpdates>
 </target>
 +----+
@@ -291,7 +291,7 @@ Ant tasks
 +----+
 <target name="clear-db">
     <clearDatabase>
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </clearDatabase>
 </target>
 +----+
@@ -316,7 +316,7 @@ Ant tasks
 +----+
 <target name="clean-db">
     <cleanDatabase configfile="dbmaintain.properties">
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </cleanDatabase>
 </target>
 +----+
@@ -342,7 +342,7 @@ Ant tasks
 +----+
 <target name="disable-constraints">
     <disableConstraints>
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </disableConstraints>
 </target>
 +----+
@@ -370,7 +370,7 @@ Ant tasks
 +----+
 <target name="update-sequences">
     <updateSequences>
-        <database dialect="oracle" driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
+        <database driverClassName="oracle.jdbc.driver.OracleDriver" userName="user" password="pass" url="jdbc:oracle:thin:@//localhost:1521/XE" schemaNames="SCHEMA"/>
     </updateSequences>
 </target>
 +----+
@@ -387,7 +387,7 @@ Ant tasks
 *-------------+---------------+
 | included | Set to false if script for this database should be skipped. Defaults to true. |
 *-------------+---------------+
-| dialect | This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb', 'postgresql', 'derby' and 'mssql'. Required. |
+| dialect | This property specifies the underlying DBMS implementation. Supported values are 'oracle', 'db2', 'mysql', 'hsqldb', 'postgresql', 'derby' and 'mssql'. DbMaintain will try to detect the dialect from the JDBC url. You can set this property when DbMainain fails to auto-detect the dialect. |
 *-------------+---------------+
 | driverClassName | The class name of the database driver. Required |
 *-------------+---------------+
