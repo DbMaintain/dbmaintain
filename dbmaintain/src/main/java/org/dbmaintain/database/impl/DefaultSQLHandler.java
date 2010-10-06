@@ -87,7 +87,7 @@ public class DefaultSQLHandler implements SQLHandler {
             statement.execute(sql);
 
         } catch (Exception e) {
-            throw new DatabaseException("Error while performing database statement: " + sql, e);
+            throw new DatabaseException("Could not perform database statement: " + sql, e);
         } finally {
             closeQuietly(statement);
         }

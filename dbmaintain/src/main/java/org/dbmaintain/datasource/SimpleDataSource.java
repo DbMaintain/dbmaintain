@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.database;
+package org.dbmaintain.datasource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.database.DatabaseException;
+import org.dbmaintain.database.DatabaseInfo;
 
 import javax.sql.DataSource;
 import java.lang.reflect.InvocationHandler;

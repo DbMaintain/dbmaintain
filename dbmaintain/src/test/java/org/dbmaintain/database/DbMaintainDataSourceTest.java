@@ -22,7 +22,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static org.dbmaintain.database.SimpleDataSource.createDataSource;
+import static org.dbmaintain.datasource.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.TestUtils.getHsqlDatabaseInfo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

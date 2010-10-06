@@ -18,6 +18,7 @@ package org.dbmaintain;
 import org.dbmaintain.config.*;
 import org.dbmaintain.database.*;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
+import org.dbmaintain.datasource.impl.SimpleDataSourceFactory;
 import org.dbmaintain.script.archive.ScriptArchiveCreator;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.script.runner.ScriptRunner;
@@ -134,7 +135,7 @@ public class MainFactory {
 
     protected Databases getDatabases() {
         if (databases == null) {
-            DatabasesFactory databasesFactory = new DatabasesFactory(configuration, getSqlHandler());
+            DatabasesFactory databasesFactory = new DatabasesFactory(configuration, getSqlHandler(), new SimpleDataSourceFactory());
             databases = databasesFactory.createDatabases(getDatabaseInfos());
         }
         return databases;

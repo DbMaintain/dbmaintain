@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.database;
 
+import org.dbmaintain.datasource.DataSourceFactory;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
@@ -26,7 +27,6 @@ import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
 import static org.dbmaintain.config.PropertyUtils.getString;
-import static org.dbmaintain.database.SimpleDataSource.createDataSource;
 import static org.dbmaintain.database.StoredIdentifierCase.*;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
@@ -38,11 +38,13 @@ public class DatabasesFactory {
 
     protected Properties configuration;
     protected SQLHandler sqlHandler;
+    protected DataSourceFactory dataSourceFactory;
 
 
-    public DatabasesFactory(Properties configuration, SQLHandler sqlHandler) {
+    public DatabasesFactory(Properties configuration, SQLHandler sqlHandler, DataSourceFactory dataSourceFactory) {
         this.configuration = configuration;
         this.sqlHandler = sqlHandler;
+        this.dataSourceFactory = dataSourceFactory;
     }
 
 
@@ -63,7 +65,7 @@ public class DatabasesFactory {
 
     public Database createDatabase(DatabaseInfo databaseInfo) {
         databaseInfo.validate();
-        DataSource dataSource = createDataSource(databaseInfo);
+        DataSource dataSource = dataSourceFactory.createDataSource(databaseInfo);
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
 
         String databaseDialect = getDatabaseDialect(databaseInfo);

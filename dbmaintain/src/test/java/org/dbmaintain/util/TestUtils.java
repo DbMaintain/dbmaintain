@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static org.dbmaintain.database.SimpleDataSource.createDataSource;
+import static org.dbmaintain.datasource.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**

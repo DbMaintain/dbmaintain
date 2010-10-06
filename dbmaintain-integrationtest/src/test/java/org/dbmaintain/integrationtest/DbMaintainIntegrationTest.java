@@ -23,6 +23,7 @@ import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.database.*;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
+import org.dbmaintain.datasource.impl.SimpleDataSourceFactory;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.util.DbMaintainException;
@@ -327,7 +328,7 @@ public class DbMaintainIntegrationTest {
             updateDatabase();
             fail();
         } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "Error while performing database statement");
+            assertMessageContains(e.getMessage(), "Could not perform database statement");
         }
         assertScriptsNotExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
 
@@ -899,7 +900,7 @@ public class DbMaintainIntegrationTest {
         List<DatabaseInfo> databaseInfos = propertiesDatabaseInfoLoader.getDatabaseInfos();
 
         SQLHandler sqlHandler = new DefaultSQLHandler();
-        DatabasesFactory databasesFactory = new DatabasesFactory(configuration, sqlHandler);
+        DatabasesFactory databasesFactory = new DatabasesFactory(configuration, sqlHandler, new SimpleDataSourceFactory());
         Databases databases = databasesFactory.createDatabases(databaseInfos);
 
         defaultDatabase = databases.getDefaultDatabase();
