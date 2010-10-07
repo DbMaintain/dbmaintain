@@ -5,7 +5,7 @@
     <groupId>org.dbmaintain</groupId>
     <artifactId>dbmaintain-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.1</version>
+    <version>2.2-SNAPSHOT</version>
 
     <!-- Project information -->
     <name>dbmaintain-parent</name>
@@ -36,9 +36,9 @@
         <url>http://jira.unitils.org/browse/DBM</url>
     </issueManagement>
     <scm>
-        <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases/dbmaintain-parent-2.1</connection>
-        <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases/dbmaintain-parent-2.1</developerConnection>
-        <url>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases/dbmaintain-parent-2.1</url>
+        <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</connection>
+        <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</developerConnection>
+        <url>http://dbmaintain.svn.sourceforge.net/viewvc/dbmaintain/</url>
     </scm>
     <mailingLists>
         <mailingList>
