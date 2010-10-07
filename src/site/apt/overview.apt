@@ -31,7 +31,7 @@ Overview
 
 * News
 ~~~~
-** <<2010-10-06 - Release of DbMaintain 2.1>>
+** <<2010-10-07 - Release of DbMaintain 2.1>>
 
     This release contains a fix for the from-scratch behavior and some small improvements:
 
@@ -45,7 +45,7 @@ Overview
 
     []
      
-    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10040}release notes}} for more details.
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10050}release notes}} for more details.
 
 ** <<2010-08-16 - Release of DbMaintain 2.0>>
 
