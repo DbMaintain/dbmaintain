@@ -41,8 +41,6 @@ Overview
 
     * failed post-processing scripts will always be run again at the next update
 
-    * stored procedures will also be dropped when dropping the database
-
     []
      
     Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10050}release notes}} for more details.
