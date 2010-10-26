@@ -328,7 +328,7 @@ public class MsSqlDatabase extends Database {
                     if (dataType.equals("NCHAR") || dataType.equals("NVARCHAR")) {
                         maxLength = String.valueOf(Integer.parseInt(maxLength) / 2);
                     }
-                    dataType += "(" + maxLength + ")";
+                    dataType += "(" + ("-1".equals(maxLength) ? "MAX" : String.valueOf(maxLength)) + ")";
                 }
                 // remove the not-null constraint
                 sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " " + dataType + " null", getDataSource());
