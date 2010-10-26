@@ -714,6 +714,7 @@ abstract public class Database {
      * @return True if the identifier starts and ends with identifier quotes
      */
     public boolean isQuoted(String identifier) {
+        if (identifierQuoteString == null) return false;
         return identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString);
     }
 
