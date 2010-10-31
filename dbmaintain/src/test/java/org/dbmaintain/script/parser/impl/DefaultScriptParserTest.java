@@ -124,15 +124,9 @@ public class DefaultScriptParserTest extends ScriptParserTestBase {
     @Test
     public void replaceParameters() {
         Properties scriptParameters = new Properties();
-        scriptParameters.put("param", "paramValue");
-        ScriptParser parser = createScriptParser(new StringReader("parameter ${param} must be replaced;"), scriptParameters);
-        assertEquals("parameter paramValue must be replaced", parser.getNextStatement());
-    }
-
-    @Test
-    public void replaceParameters_ParameterNotAvailable() {
-        Properties scriptParameters = new Properties();
-        ScriptParser parser = createScriptParser(new StringReader("parameter ${param} must not be replaced;"), scriptParameters);
-        assertEquals("parameter ${param} must not be replaced", parser.getNextStatement());
+        scriptParameters.put("param1", "param1Value");
+        ScriptParser parser = createScriptParser(new StringReader(
+                "parameter ${param0} must not be replaced, parameter ${param1} must be replaced;"), scriptParameters);
+        assertEquals("parameter ${param0} must not be replaced, parameter param1Value must be replaced", parser.getNextStatement());
     }
 }

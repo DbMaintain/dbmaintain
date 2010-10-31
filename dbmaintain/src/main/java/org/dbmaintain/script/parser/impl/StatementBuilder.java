@@ -157,12 +157,15 @@ public class StatementBuilder {
      */
     public String buildStatement() {
         if (currentLineHasExecutableContent) flushCurrentLine();
-        String statement = this.statement.toString();
         if (scriptParameters != null) statement = replaceScriptParameters(statement);
-        return statement;
+        return statement.toString();
     }
 
-    private String replaceScriptParameters(String statement) {
+    /**
+     * @param statement statement that might contain parameters
+     * @return the statement with the parameters replaced by their corresponding parameter values
+     */
+    private StringBuilder replaceScriptParameters(StringBuilder statement) {
         Matcher parameterMatcher = PARAMETER_PATTERN.matcher(statement);
         boolean parameterFound = parameterMatcher.find();
         if (!parameterFound) return statement;
@@ -176,7 +179,7 @@ public class StatementBuilder {
             parameterFound = parameterMatcher.find();
         }
         parameterMatcher.appendTail(result);
-        return result.toString();
+        return new StringBuilder(result);
     }
 
     /**
