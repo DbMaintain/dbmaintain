@@ -18,6 +18,8 @@ package org.dbmaintain.script.parser.impl;
 import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 import org.dbmaintain.script.parser.parsingstate.impl.MySqlPlSqlBlockMatcher;
 
+import java.util.Properties;
+
 /**
  * @author Ken Dombeck
  * @author Tim Ducheyne
@@ -25,8 +27,8 @@ import org.dbmaintain.script.parser.parsingstate.impl.MySqlPlSqlBlockMatcher;
  */
 public class MySqlScriptParserFactory extends DefaultScriptParserFactory {
 
-    public MySqlScriptParserFactory(boolean backSlashEscapingEnabled) {
-        super(backSlashEscapingEnabled);
+    public MySqlScriptParserFactory(boolean backSlashEscapingEnabled, Properties scriptParameters) {
+        super(backSlashEscapingEnabled, scriptParameters);
     }
 
     @Override

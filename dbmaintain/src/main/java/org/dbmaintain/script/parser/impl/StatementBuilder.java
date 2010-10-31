@@ -15,7 +15,12 @@
  */
 package org.dbmaintain.script.parser.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.script.parser.parsingstate.ParsingState;
+
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
 
@@ -31,8 +36,13 @@ public class StatementBuilder {
 
     private static final Character CARRIAGE_RETURN = '\r', NEWLINE = '\n';
 
+    private static final Pattern PARAMETER_PATTERN = Pattern.compile("\\$\\{(\\w+)\\}");
+
     /* Content of the statement being built */
     private StringBuilder statement = new StringBuilder();
+
+    /* Parameters that must be replaced in the script. Null if there are no such parameters */
+    private Properties scriptParameters;
 
     /* Content of the current line of the statement being built */
     private StringBuilder currentLine = new StringBuilder();
@@ -58,9 +68,11 @@ public class StatementBuilder {
      * Creates a new instance with the given parsing state as the initial state
      *
      * @param initialParsingState the initial state
+     * @param scriptParameters parameters that must be replaced in the script. Null if there are no such parameters
      */
-    public StatementBuilder(ParsingState initialParsingState) {
+    public StatementBuilder(ParsingState initialParsingState, Properties scriptParameters) {
         currentParsingState = initialParsingState;
+        this.scriptParameters = scriptParameters;
     }
 
 
@@ -145,7 +157,26 @@ public class StatementBuilder {
      */
     public String buildStatement() {
         if (currentLineHasExecutableContent) flushCurrentLine();
-        return statement.toString();
+        String statement = this.statement.toString();
+        if (scriptParameters != null) statement = replaceScriptParameters(statement);
+        return statement;
+    }
+
+    private String replaceScriptParameters(String statement) {
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(statement);
+        boolean parameterFound = parameterMatcher.find();
+        if (!parameterFound) return statement;
+        StringBuffer result = new StringBuffer();
+        while (parameterFound) {
+            String parameterName = parameterMatcher.group(1);
+            String parameterValue = scriptParameters.getProperty(parameterName);
+            if (parameterValue != null) {
+                parameterMatcher.appendReplacement(result, parameterValue);
+            }
+            parameterFound = parameterMatcher.find();
+        }
+        parameterMatcher.appendTail(result);
+        return result.toString();
     }
 
     /**

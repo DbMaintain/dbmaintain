@@ -107,7 +107,7 @@ public class Db2ScriptParserTest extends ScriptParserTestBase {
 
     @Override
     protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new Db2ScriptParserFactory(true);
+        ScriptParserFactory factory = new Db2ScriptParserFactory(true, null);
         return factory.createScriptParser(scriptReader);
     }
 }

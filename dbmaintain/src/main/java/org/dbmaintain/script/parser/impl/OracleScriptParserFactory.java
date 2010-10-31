@@ -18,14 +18,16 @@ package org.dbmaintain.script.parser.impl;
 import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 import org.dbmaintain.script.parser.parsingstate.impl.OraclePlSqlBlockMatcher;
 
+import java.util.Properties;
+
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class OracleScriptParserFactory extends DefaultScriptParserFactory {
 
-    public OracleScriptParserFactory(boolean backSlashEscapingEnabled) {
-        super(backSlashEscapingEnabled);
+    public OracleScriptParserFactory(boolean backSlashEscapingEnabled, Properties scriptParameters) {
+        super(backSlashEscapingEnabled, scriptParameters);
     }
 
     @Override

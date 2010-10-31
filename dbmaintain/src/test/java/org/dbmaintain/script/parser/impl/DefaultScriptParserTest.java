@@ -15,8 +15,14 @@
  */
 package org.dbmaintain.script.parser.impl;
 
+import org.dbmaintain.script.parser.ScriptParser;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Test;
+
+import java.io.StringReader;
+import java.util.Properties;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * Tests the SQL script parser
@@ -113,5 +119,20 @@ public class DefaultScriptParserTest extends ScriptParserTestBase {
     public void replaceCarriageReturnsByNewLines() {
         assertOneStatementEqualTo("statement\non\nmultiple\nlines",
                 "statement\ron\r\nmultiple\nlines;");
+    }
+
+    @Test
+    public void replaceParameters() {
+        Properties scriptParameters = new Properties();
+        scriptParameters.put("param", "paramValue");
+        ScriptParser parser = createScriptParser(new StringReader("parameter ${param} must be replaced;"), scriptParameters);
+        assertEquals("parameter paramValue must be replaced", parser.getNextStatement());
+    }
+
+    @Test
+    public void replaceParameters_ParameterNotAvailable() {
+        Properties scriptParameters = new Properties();
+        ScriptParser parser = createScriptParser(new StringReader("parameter ${param} must not be replaced;"), scriptParameters);
+        assertEquals("parameter ${param} must not be replaced", parser.getNextStatement());
     }
 }

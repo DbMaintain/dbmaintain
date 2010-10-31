@@ -23,11 +23,17 @@ import org.dbmaintain.script.parser.ScriptParserFactory;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.structure.model.DbItemType;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_BACKSLASH_ESCAPING_ENABLED;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PARAMETER_FILE;
 import static org.dbmaintain.config.PropertyUtils.getString;
 import static org.dbmaintain.config.PropertyUtils.getStringList;
 import static org.dbmaintain.structure.model.DbItemIdentifier.*;
@@ -89,12 +95,28 @@ public class FactoryWithDatabaseContext extends FactoryContext {
     public Map<String, ScriptParserFactory> getDatabaseDialectScriptParserFactoryMap() {
         Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
         boolean backSlashEscapingEnabled = PropertyUtils.getBoolean(PROPERTY_BACKSLASH_ESCAPING_ENABLED, getConfiguration());
+        Properties scriptParameters = getScriptParameters();
         for (String databaseDialect : getDatabaseDialectsInUse()) {
             Class<? extends ScriptParserFactory> scriptParserFactoryClass = getConfiguredClass(ScriptParserFactory.class, getConfiguration(), databaseDialect);
-            ScriptParserFactory factory = createInstanceOfType(scriptParserFactoryClass, false, new Class<?>[]{boolean.class}, new Object[]{backSlashEscapingEnabled});
+            ScriptParserFactory factory = createInstanceOfType(scriptParserFactoryClass, false, new Class<?>[]{boolean.class, Properties.class}, new Object[]{backSlashEscapingEnabled, scriptParameters});
             databaseDialectScriptParserClassMap.put(databaseDialect, factory);
         }
         return databaseDialectScriptParserClassMap;
+    }
+
+    protected Properties getScriptParameters() {
+        String scriptParameterFile = PropertyUtils.getString(PROPERTY_SCRIPT_PARAMETER_FILE, null, getConfiguration());
+        try {
+            Properties scriptParameters = null;
+            if (scriptParameterFile != null) {
+                scriptParameters = new Properties();
+                String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, getConfiguration());
+                scriptParameters.load(new InputStreamReader(new FileInputStream(scriptParameterFile), scriptEncoding));
+            }
+            return scriptParameters;
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load script parameter file " + scriptParameterFile, e);
+        }
     }
 
     public Set<String> getDatabaseDialectsInUse() {

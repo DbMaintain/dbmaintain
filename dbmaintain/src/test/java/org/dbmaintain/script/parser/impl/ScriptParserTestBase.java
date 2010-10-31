@@ -20,6 +20,7 @@ import org.dbmaintain.script.parser.ScriptParserFactory;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -64,7 +65,11 @@ public abstract class ScriptParserTestBase {
     }
 
     protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new DefaultScriptParserFactory(true);
+        return createScriptParser(scriptReader, null);
+    }
+
+    protected ScriptParser createScriptParser(Reader scriptReader, Properties scriptParameters) {
+        ScriptParserFactory factory = new DefaultScriptParserFactory(true, scriptParameters);
         return factory.createScriptParser(scriptReader);
     }
 

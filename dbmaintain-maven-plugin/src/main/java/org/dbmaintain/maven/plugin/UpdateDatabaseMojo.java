@@ -156,12 +156,20 @@ public class UpdateDatabaseMojo extends BaseDatabaseMojo {
      * @parameter
      */
     protected String scriptFileExtensions;
+    /**
+     * Sets the scriptParameterFile property. If set, the corresponding properties file will be loaded and all
+     * occurrences of parameters in the script that match a property will be replaced by the corresponding property value.
+     * Script parameters are formatted as in ${param}.
+     *
+     * @parameter
+     */
+    protected String scriptParameterFile;
 
 
     @Override
     protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
         String allScriptLocations = getAllScriptLocations(scriptLocations, scriptArchiveDependencies);
-        return new UpdateDatabaseTask(databaseInfos, allScriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
+        return new UpdateDatabaseTask(databaseInfos, allScriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
     }
 
 }

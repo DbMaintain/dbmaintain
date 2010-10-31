@@ -18,14 +18,16 @@ package org.dbmaintain.script.parser.impl;
 import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 import org.dbmaintain.script.parser.parsingstate.PostgreSqlPlSqlBlockMatcher;
 
+import java.util.Properties;
+
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
  */
 public class PostgreSqlScriptParserFactory extends DefaultScriptParserFactory {
 
-    public PostgreSqlScriptParserFactory(boolean backSlashEscapingEnabled) {
-        super(backSlashEscapingEnabled);
+    public PostgreSqlScriptParserFactory(boolean backSlashEscapingEnabled, Properties scriptParameters) {
+        super(backSlashEscapingEnabled, scriptParameters);
     }
 
     @Override

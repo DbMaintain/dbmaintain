@@ -113,7 +113,7 @@ public class MySqlScriptParserTest extends ScriptParserTestBase {
 
     @Override
     protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new MySqlScriptParserFactory(true);
+        ScriptParserFactory factory = new MySqlScriptParserFactory(true, null);
         return factory.createScriptParser(scriptReader);
     }
 }

@@ -44,11 +44,11 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     private Boolean updateSequences;
     private Boolean useLastModificationDates;
     private String scriptFileExtensions;
-
+    private String scriptParameterFile;
 
     @Override
     protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new UpdateDatabaseTask(databaseInfos, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions);
+        return new UpdateDatabaseTask(databaseInfos, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
     }
 
     /**
@@ -216,4 +216,14 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     }
 
 
+    /**
+     * If set, the given properties file will be loaded and all occurrences of parameters in the script that match
+     * a property will be replaced by the corresponding property value. Script parameters are formatted as in
+     * <code>${param}</code>.
+     * 
+     * @param scriptParameterFile path of the properties file to be loaded
+     */
+    public void setScriptParameterFile(String scriptParameterFile) {
+        this.scriptParameterFile = scriptParameterFile;
+    }
 }

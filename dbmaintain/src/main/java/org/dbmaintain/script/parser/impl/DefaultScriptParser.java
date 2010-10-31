@@ -22,6 +22,7 @@ import org.dbmaintain.util.DbMaintainException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Properties;
 
 /**
  * A class for parsing statements out of sql scripts.
@@ -40,7 +41,7 @@ public class DefaultScriptParser implements ScriptParser {
 
 
     /**
-     * The reader for the script content stream.
+     * The reader for the script content stream
      */
     protected Reader scriptReader;
 
@@ -50,7 +51,12 @@ public class DefaultScriptParser implements ScriptParser {
     protected boolean backSlashEscapingEnabled;
 
     /**
-     * The starting state.
+     * Parameters that must be replaced in the script. Null if there are no such parameters
+     */
+    protected Properties scriptParameters;
+
+    /**
+     * The starting state
      */
     protected ParsingState initialParsingState;
 
@@ -70,12 +76,15 @@ public class DefaultScriptParser implements ScriptParser {
      *
      * @param scriptReader             the reader that will provide the script content, not null
      * @param initialParsingState      the inial state when starting to parse a script, not null
-     * @param backSlashEscapingEnabled True if backslash escaping is enabled
+     * @param backSlashEscapingEnabled true if backslash escaping is enabled
+     * @param scriptParameters         parameters that must be replaced in the script. null if there are no such parameters.
      */
-    public DefaultScriptParser(Reader scriptReader, ParsingState initialParsingState, boolean backSlashEscapingEnabled) {
+    public DefaultScriptParser(Reader scriptReader, ParsingState initialParsingState, boolean backSlashEscapingEnabled,
+                               Properties scriptParameters) {
         this.scriptReader = scriptReader;
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
         this.initialParsingState = initialParsingState;
+        this.scriptParameters = scriptParameters;
         this.scriptReader = new BufferedReader(scriptReader);
     }
 
@@ -135,7 +144,7 @@ public class DefaultScriptParser implements ScriptParser {
      * @return The statement builder, not null
      */
     protected StatementBuilder createStatementBuilder() {
-        return new StatementBuilder(initialParsingState);
+        return new StatementBuilder(initialParsingState, scriptParameters);
     }
 
 }

@@ -75,7 +75,7 @@ public class OracleScriptParserTest extends ScriptParserTestBase {
 
     @Override
     protected ScriptParser createScriptParser(Reader scriptReader) {
-        ScriptParserFactory factory = new OracleScriptParserFactory(true);
+        ScriptParserFactory factory = new OracleScriptParserFactory(true, null);
         return factory.createScriptParser(scriptReader);
     }
 }

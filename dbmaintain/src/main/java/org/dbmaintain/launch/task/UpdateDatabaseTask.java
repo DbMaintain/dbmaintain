@@ -46,8 +46,9 @@ public class UpdateDatabaseTask extends DbMaintainDatabaseTask {
     private Boolean updateSequences;
     private Boolean useLastModificationDates;
     private String scriptFileExtensions;
+    private String scriptParameterFile;
 
-    public UpdateDatabaseTask(List<DatabaseInfo> databaseInfos, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, Boolean cleanDb, Boolean disableConstraints, Boolean updateSequences, Boolean useLastModificationDates, String scriptFileExtensions) {
+    public UpdateDatabaseTask(List<DatabaseInfo> databaseInfos, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, Boolean cleanDb, Boolean disableConstraints, Boolean updateSequences, Boolean useLastModificationDates, String scriptFileExtensions, String scriptParameterFile) {
         super(databaseInfos);
         this.scriptLocations = scriptLocations;
         this.scriptEncoding = scriptEncoding;
@@ -64,6 +65,7 @@ public class UpdateDatabaseTask extends DbMaintainDatabaseTask {
         this.updateSequences = updateSequences;
         this.useLastModificationDates = useLastModificationDates;
         this.scriptFileExtensions = scriptFileExtensions;
+        this.scriptParameterFile = scriptParameterFile;
     }
 
 
@@ -84,6 +86,7 @@ public class UpdateDatabaseTask extends DbMaintainDatabaseTask {
         taskConfiguration.addConfigurationIfSet(PROPERTY_UPDATE_SEQUENCES, updateSequences);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
         taskConfiguration.addConfigurationIfSet(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, useLastModificationDates);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_PARAMETER_FILE, scriptParameterFile);
     }
 
     @Override

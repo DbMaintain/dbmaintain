@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -77,10 +78,16 @@ public class DbMaintainIntegrationTest {
         POST_PROCESSING_NOTINDEXED("postprocessing/postProcessing_notindexed.sql");
 
         TestScript(String scriptName) {
+            this(scriptName, null);
+        }
+
+        TestScript(String scriptName, String scriptContent) {
             this.scriptName = scriptName;
+            this.scriptContent = scriptContent;
         }
 
         private String scriptName;
+        private String scriptContent;
     }
 
     private static final String BEFORE_INITIAL_TABLE = "before_initial";
@@ -619,6 +626,14 @@ public class DbMaintainIntegrationTest {
         }
     }
 
+    @Test
+    public void useScriptParameters() throws IOException {
+        File propertiesFile = writePropertiesFile("param", "PARAMETERIZED_TABLE_NAME");
+        configuration.put(PROPERTY_SCRIPT_PARAMETER_FILE, propertiesFile.getPath());
+        createScript("01_parameterizedScript.sql", "create table ${param} (test varchar(10));");
+        updateDatabase();
+        assertTrue(getTableNames().contains("PARAMETERIZED_TABLE_NAME"));
+    }
 
     ////////////// PRIVATE HELPER METHODS ////////////////////
 
@@ -685,7 +700,7 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertScriptsCorrectlyExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
+        Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
             assertTrue("Table " + tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
@@ -693,7 +708,7 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertUpdatedScriptsExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
+        Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
             assertTrue("Table " + tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
@@ -701,7 +716,7 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertScriptsNotExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
+        Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
             assertFalse("Table " + tableName + " exists, so the script " + script + " has been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
@@ -709,7 +724,7 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertUpdatedScriptsNotExecuted(TestScript... scripts) {
-        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
+        Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
             assertFalse("Table " + tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
@@ -717,13 +732,11 @@ public class DbMaintainIntegrationTest {
     }
 
     private void assertTableExists(String tableName) {
-        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
-        assertTrue("Table " + tableName + " doesn't exist", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+        assertTrue("Table " + tableName + " doesn't exist", getTableNames().contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
     }
 
     private void assertTableDoesntExist(String tableName) {
-        Set<String> tableNames = defaultDatabase.getTableNames("PUBLIC");
-        assertFalse("Table " + tableName + " exists, while it shouldn't", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+        assertFalse("Table " + tableName + " exists, while it shouldn't", getTableNames().contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
     }
 
     private boolean updateDatabase() {
@@ -770,7 +783,9 @@ public class DbMaintainIntegrationTest {
     }
 
     private void createIncrementalScript(TestScript script) {
-        createScript(script, getCreateTableStatement(getTableNameForScript(script)));
+        String content = script.scriptContent != null ?
+                script.scriptContent : getCreateTableStatement(getTableNameForScript(script));
+        createScript(script, content);
     }
 
     private void updateIncrementalScript(TestScript script) {
@@ -880,6 +895,18 @@ public class DbMaintainIntegrationTest {
             dropTestTables(defaultDatabase, getTableNameForScript(script));
             dropTestTables(defaultDatabase, getUpdatedTableNameForScript(script));
         }
+    }
+
+    private Set<String> getTableNames() {
+        return defaultDatabase.getTableNames("PUBLIC");
+    }
+
+    private File writePropertiesFile(String propertyName, String propertyValue) throws IOException {
+        File propertiesFile = File.createTempFile("scriptParams", "properties");
+        Properties properties = new Properties();
+        properties.put(propertyName, propertyValue);
+        properties.store(new FileWriter(propertiesFile), null);
+        return propertiesFile;
     }
 
     private void initConfiguration() {

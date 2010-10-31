@@ -21,6 +21,7 @@ import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 import org.dbmaintain.script.parser.parsingstate.impl.*;
 
 import java.io.Reader;
+import java.util.Properties;
 
 
 /**
@@ -31,14 +32,16 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
 
     protected boolean backSlashEscapingEnabled;
 
+    protected Properties scriptParameters;
 
-    public DefaultScriptParserFactory(boolean backSlashEscapingEnabled) {
+    public DefaultScriptParserFactory(boolean backSlashEscapingEnabled, Properties scriptParameters) {
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
+        this.scriptParameters = scriptParameters;
     }
 
 
     public ScriptParser createScriptParser(Reader scriptReader) {
-        return new DefaultScriptParser(scriptReader, createNormalParsingStates(), backSlashEscapingEnabled);
+        return new DefaultScriptParser(scriptReader, createNormalParsingStates(), backSlashEscapingEnabled, scriptParameters);
     }
 
 
@@ -53,6 +56,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         SqlStatementNormalParsingState normalParsingState = createSqlStatementNormalParsingState();
         InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();
         InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
+        InCurlyBraceBlockCommentParsingState inCurlyBraceBlockCommentParsingState = createInCurlyBraceBlockCommentParsingState();
         InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
         InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
         EscapingParsingState escapingParsingState = createEscapingParsingState();
@@ -61,10 +65,12 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         // link normal (not stored procedure) states
         inLineCommentParsingState.linkParsingStates(normalParsingState);
         inBlockCommentParsingState.linkParsingStates(normalParsingState);
+        inCurlyBraceBlockCommentParsingState.linkParsingStates(normalParsingState);
         inSingleQuotesParsingState.linkParsingStates(normalParsingState);
         inDoubleQuotesParsingState.linkParsingStates(normalParsingState);
         escapingParsingState.linkParsingStates(normalParsingState);
-        normalParsingState.linkParsingStates(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, plSqlBlockNormalParsingState);
+        normalParsingState.linkParsingStates(inLineCommentParsingState, inBlockCommentParsingState, inCurlyBraceBlockCommentParsingState,
+                inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, plSqlBlockNormalParsingState);
 
         // the normal state is the begin-state
         return normalParsingState;
@@ -81,6 +87,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         PlSqlBlockNormalParsingState plSqlBlockNormalParsingState = createStoredProcedureNormalParsingState();
         InLineCommentParsingState inLineCommentParsingState = createInLineCommentParsingState();
         InBlockCommentParsingState inBlockCommentParsingState = createInBlockCommentParsingState();
+        InCurlyBraceBlockCommentParsingState inCurlyBlockCommentParsingState = createInCurlyBraceBlockCommentParsingState();
         InSingleQuotesParsingState inSingleQuotesParsingState = createInSingleQuotesParsingState();
         InDoubleQuotesParsingState inDoubleQuotesParsingState = createInDoubleQuotesParsingState();
         EscapingParsingState escapingParsingState = createEscapingParsingState();
@@ -91,7 +98,8 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
         inSingleQuotesParsingState.linkParsingStates(plSqlBlockNormalParsingState);
         inDoubleQuotesParsingState.linkParsingStates(plSqlBlockNormalParsingState);
         escapingParsingState.linkParsingStates(plSqlBlockNormalParsingState);
-        plSqlBlockNormalParsingState.linkParsingStates(inLineCommentParsingState, inBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, plSqlBlockNormalParsingState);
+        plSqlBlockNormalParsingState.linkParsingStates(inLineCommentParsingState, inBlockCommentParsingState,
+                inCurlyBlockCommentParsingState, inSingleQuotesParsingState, inDoubleQuotesParsingState, escapingParsingState, plSqlBlockNormalParsingState);
 
         return plSqlBlockNormalParsingState;
     }
@@ -103,7 +111,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      */
     protected SqlStatementNormalParsingState createSqlStatementNormalParsingState() {
         PlSqlBlockMatcher plSqlBlockMatcher = createStoredProcedureMatcher();
-        return new SqlStatementNormalParsingState(backSlashEscapingEnabled, plSqlBlockMatcher);
+        return new SqlStatementNormalParsingState(backSlashEscapingEnabled, isCurlyBraceBlockCommentSupported(), plSqlBlockMatcher);
     }
 
 
@@ -113,7 +121,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      * @return The normal stored procedure state, not null
      */
     protected PlSqlBlockNormalParsingState createStoredProcedureNormalParsingState() {
-        return new PlSqlBlockNormalParsingState(backSlashEscapingEnabled);
+        return new PlSqlBlockNormalParsingState(backSlashEscapingEnabled, isCurlyBraceBlockCommentSupported());
     }
 
 
@@ -138,6 +146,16 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
 
 
     /**
+     * Factory method for the in-block comment ({ comment }) parsing state.
+     *
+     * @return The normal state, not null
+     */
+    protected InCurlyBraceBlockCommentParsingState createInCurlyBraceBlockCommentParsingState() {
+        return new InCurlyBraceBlockCommentParsingState();
+    }
+
+
+    /**
      * Factory method for the single quotes ('text') parsing state.
      *
      * @return The normal state, not null
@@ -157,7 +175,7 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
     }
 
 
-    private EscapingParsingState createEscapingParsingState() {
+    protected EscapingParsingState createEscapingParsingState() {
         return new EscapingParsingState();
     }
 
@@ -168,5 +186,13 @@ public class DefaultScriptParserFactory implements ScriptParserFactory {
      */
     protected PlSqlBlockMatcher createStoredProcedureMatcher() {
         return new NeverMatchingPlSqlBlockMatcher();
+    }
+
+
+    /**
+     * @return whether informix-style block comments using curly braces {} are supported
+     */
+    protected boolean isCurlyBraceBlockCommentSupported() {
+        return false;
     }
 }

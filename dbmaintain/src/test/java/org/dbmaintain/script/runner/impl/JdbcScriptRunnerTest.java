@@ -74,7 +74,7 @@ public class JdbcScriptRunnerTest {
         dataSource = databases.getDefaultDatabase().getDataSource();
 
         Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
-        databaseDialectScriptParserClassMap.put("hsqldb", new DefaultScriptParserFactory(false));
+        databaseDialectScriptParserClassMap.put("hsqldb", new DefaultScriptParserFactory(false, null));
         defaultScriptRunner = new JdbcScriptRunner(databaseDialectScriptParserClassMap, databases, new DefaultSQLHandler());
 
         script1 = createScript("script1.sql");

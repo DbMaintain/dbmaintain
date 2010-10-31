@@ -239,6 +239,7 @@ public class DbMaintainProperties {
 
     public static final String PROPERTY_BASELINE_REVISION = "dbMaintainer.baseline.revision";
 
+    public static final String PROPERTY_SCRIPT_PARAMETER_FILE = "dbMaintainer.scriptParameterFile";
 
     /**
      * Private constructor to prevent instantiation
