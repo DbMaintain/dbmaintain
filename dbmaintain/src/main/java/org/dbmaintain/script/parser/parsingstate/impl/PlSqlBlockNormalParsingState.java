@@ -25,8 +25,8 @@ import static org.dbmaintain.util.CharacterUtils.isNewLineCharacter;
 public class PlSqlBlockNormalParsingState extends BaseNormalParsingState {
 
 
-    public PlSqlBlockNormalParsingState(boolean backSlashEscapingEnabled) {
-        super(backSlashEscapingEnabled, new NeverMatchingPlSqlBlockMatcher());
+    public PlSqlBlockNormalParsingState(boolean backSlashEscapingEnabled, boolean curlyBraceBlockCommentSupported) {
+        super(backSlashEscapingEnabled, curlyBraceBlockCommentSupported, new NeverMatchingPlSqlBlockMatcher());
     }
 
 

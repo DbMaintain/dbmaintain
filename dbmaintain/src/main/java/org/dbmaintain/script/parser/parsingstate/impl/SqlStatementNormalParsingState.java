@@ -25,8 +25,8 @@ import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 public class SqlStatementNormalParsingState extends BaseNormalParsingState {
 
 
-    public SqlStatementNormalParsingState(boolean backSlashEscapingEnabled, PlSqlBlockMatcher plSqlBlockMatcher) {
-        super(backSlashEscapingEnabled, plSqlBlockMatcher);
+    public SqlStatementNormalParsingState(boolean backSlashEscapingEnabled, boolean curlyBraceBlockCommentSupported, PlSqlBlockMatcher plSqlBlockMatcher) {
+        super(backSlashEscapingEnabled, curlyBraceBlockCommentSupported, plSqlBlockMatcher);
     }
 
 

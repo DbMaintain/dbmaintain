@@ -36,9 +36,14 @@ abstract public class BaseNormalParsingState implements ParsingState {
     protected static final Character SINGLE_QUOTE = '\'';
     protected static final Character DOUBLE_QUOTE = '"';
     protected static final Character SEMICOLON = ';';
+    protected static final Character OPEN_CURLY_BRACE = '{';
 
     /* Determines whether backslashes can be used to escape characters, e.g. \" for a double quote (= "")    */
     protected boolean backSlashEscapingEnabled;
+
+    /* Determines whether informix-style block comments, using curly braces {} are supported */
+    protected boolean curlyBraceBlockCommentSupported;
+
 
     /* Determines whether a string indicates a start of a pl-sql block */
     protected PlSqlBlockMatcher plSqlBlockMatcher;
@@ -55,6 +60,8 @@ abstract public class BaseNormalParsingState implements ParsingState {
     protected HandleNextCharacterResult toInLineCommentResult;
     /* Found the start of a block comment */
     protected HandleNextCharacterResult toInBlockCommentResult;
+    /* Found the start of an informix style block comment (with curly braces) */
+    protected HandleNextCharacterResult toCurlyBraceBlockCommentResult;
     /* Found the start of a '' value */
     protected HandleNextCharacterResult toInSingleQuotesStateResult;
     /* Found the start of a "" value */
@@ -63,8 +70,9 @@ abstract public class BaseNormalParsingState implements ParsingState {
     protected HandleNextCharacterResult toInPlSqlBlockStateResult;
 
 
-    protected BaseNormalParsingState(boolean backSlashEscapingEnabled, PlSqlBlockMatcher plSqlBlockMatcher) {
+    protected BaseNormalParsingState(boolean backSlashEscapingEnabled, boolean curlyBraceBlockCommentSupported, PlSqlBlockMatcher plSqlBlockMatcher) {
         this.backSlashEscapingEnabled = backSlashEscapingEnabled;
+        this.curlyBraceBlockCommentSupported = curlyBraceBlockCommentSupported;
         this.plSqlBlockMatcher = plSqlBlockMatcher;
     }
 
@@ -73,19 +81,22 @@ abstract public class BaseNormalParsingState implements ParsingState {
      *
      * @param inLineCommentParsingState    the inline comment state, not null
      * @param inBlockCommentParsingState   the block comment state, not null
+     * @param inCurlyBraceBlockCommentParsingState the curly brace block comment state, not null
      * @param inSingleQuotesParsingState   the single quote literal state, not null
      * @param inDoubleQuotesParsingState   the double quote literal state, not null
      * @param escapingParsingState         the escaping parsing state, not null
      * @param plSqlBlockNormalParsingState the pl-sql block parsing state, not null
      */
-    public void linkParsingStates(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inSingleQuotesParsingState,
-                                  ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState, ParsingState plSqlBlockNormalParsingState) {
+    public void linkParsingStates(ParsingState inLineCommentParsingState, ParsingState inBlockCommentParsingState, ParsingState inCurlyBraceBlockCommentParsingState,
+                                  ParsingState inSingleQuotesParsingState, ParsingState inDoubleQuotesParsingState, ParsingState escapingParsingState,
+                                  ParsingState plSqlBlockNormalParsingState) {
 
         this.endOfStatementResult = new HandleNextCharacterResult(null, false);
         this.stayInNormalNotExecutableResult = new HandleNextCharacterResult(this, false);
         this.stayInNormalExecutableResult = new HandleNextCharacterResult(this, true);
         this.toInLineCommentResult = new HandleNextCharacterResult(inLineCommentParsingState, false);
         this.toInBlockCommentResult = new HandleNextCharacterResult(inBlockCommentParsingState, false);
+        this.toCurlyBraceBlockCommentResult = new HandleNextCharacterResult(inCurlyBraceBlockCommentParsingState, false);
         this.toInSingleQuotesStateResult = new HandleNextCharacterResult(inSingleQuotesParsingState, true);
         this.toInDoubleQuotesStateResult = new HandleNextCharacterResult(inDoubleQuotesParsingState, true);
         this.toEscapingParsingStateResult = new HandleNextCharacterResult(escapingParsingState, false);
@@ -120,6 +131,10 @@ abstract public class BaseNormalParsingState implements ParsingState {
         if (SLASH.equals(currentChar) && ASTERIX.equals(nextChar)) {
             return toInBlockCommentResult;
         }
+        // check informix style block comment (if supported)
+        if (curlyBraceBlockCommentSupported && OPEN_CURLY_BRACE.equals(currentChar)) {
+            return toCurlyBraceBlockCommentResult;
+        }
         // check identifier with single quotes
         if (SINGLE_QUOTE.equals(currentChar)) {
             return toInSingleQuotesStateResult;
@@ -143,6 +158,15 @@ abstract public class BaseNormalParsingState implements ParsingState {
     abstract protected boolean isStatementSeparator(Character currentChar);
 
     abstract protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder);
+	
+    /**
+     * @return true if the given current and next character indicate the start of a block comment
+     */
+    protected boolean isStartOfBlockComment(Character currentChar, Character nextChar)
+    {
+        return SLASH.equals(currentChar) && ASTERIX.equals(nextChar);
+    }
+
 
     protected boolean isWhitespace(Character character) {
         return character == null || Character.isWhitespace(character);

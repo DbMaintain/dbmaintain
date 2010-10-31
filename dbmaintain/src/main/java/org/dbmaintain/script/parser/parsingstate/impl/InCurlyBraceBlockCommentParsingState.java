@@ -25,10 +25,9 @@ import org.dbmaintain.script.parser.parsingstate.ParsingState;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class InBlockCommentParsingState implements ParsingState {
+public class InCurlyBraceBlockCommentParsingState implements ParsingState {
 
-    private static final Character SLASH = '/';
-    private static final Character ASTERIX = '*';
+    private static final Character RIGHT_CURLY_BRACE = '}';
 
     /**
      * The normal parsing state, that should be returned when the comment end is reached.
@@ -59,18 +58,17 @@ public class InBlockCommentParsingState implements ParsingState {
      * @return The next parsing state, null if the end of the statement is reached
      */
     public HandleNextCharacterResult getNextParsingState(Character previousChar, Character currentChar, Character nextChar, StatementBuilder statementBuilder) {
-        if (isEndOfBlockComment(previousChar, currentChar)) {
+        if (isEndOfBlockComment(currentChar)) {
             return backToNormalResult;
         }
         return stayInBlockCommentResult;
     }
-	
+
     /**
      * @return true if the given previous and current character indicate the end of the block comment
      */
-    protected boolean isEndOfBlockComment(Character previousChar, Character currentChar)
+    protected boolean isEndOfBlockComment(Character currentChar)
     {
-        return ASTERIX.equals(previousChar) && SLASH.equals(currentChar);
+        return RIGHT_CURLY_BRACE.equals(currentChar);
     }
-
 }
