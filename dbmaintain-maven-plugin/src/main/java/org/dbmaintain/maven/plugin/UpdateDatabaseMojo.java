@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabase;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.UpdateDatabaseTask;
 
 import java.util.List;
@@ -167,9 +167,9 @@ public class UpdateDatabaseMojo extends BaseDatabaseMojo {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+    protected DbMaintainTask createDbMaintainTask(List<DbMaintainDatabase> dbMaintainDatabases) {
         String allScriptLocations = getAllScriptLocations(scriptLocations, scriptArchiveDependencies);
-        return new UpdateDatabaseTask(databaseInfos, allScriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
+        return new UpdateDatabaseTask(dbMaintainDatabases, allScriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
     }
 
 }

@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.ClearDatabaseTask;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
-
-import java.util.List;
+import org.dbmaintain.launch.task.DbMaintainTask;
 
 /**
  * Task that removes all database items like tables, views etc from the database and empties the DBMAINTAIN_SCRIPTS table.
@@ -31,7 +28,7 @@ public class ClearDatabaseAntTask extends BaseDatabaseAntTask {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new ClearDatabaseTask(databaseInfos);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new ClearDatabaseTask(databases);
     }
 }

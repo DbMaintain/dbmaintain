@@ -16,7 +16,6 @@
 package org.dbmaintain.launch.task;
 
 import org.dbmaintain.MainFactory;
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.structure.sequence.SequenceUpdater;
 
 import java.util.List;
@@ -31,23 +30,33 @@ import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_LOWEST_ACCEPTA
  */
 public class UpdateSequencesTask extends DbMaintainDatabaseTask {
 
-    private Long lowestAcceptableSequenceValue;
+    protected Long lowestAcceptableSequenceValue;
 
 
-    public UpdateSequencesTask(List<DatabaseInfo> databaseInfos, Long lowestAcceptableSequenceValue) {
-        super(databaseInfos);
+    public UpdateSequencesTask() {
+    }
+
+    public UpdateSequencesTask(List<DbMaintainDatabase> taskDatabases, Long lowestAcceptableSequenceValue) {
+        super(taskDatabases);
         this.lowestAcceptableSequenceValue = lowestAcceptableSequenceValue;
     }
 
 
     @Override
-    protected void addTaskConfiguration(TaskConfiguration configuration) {
-        configuration.addConfigurationIfSet(PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, lowestAcceptableSequenceValue);
+    protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addDatabaseConfigurations(databases);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_LOWEST_ACCEPTABLE_SEQUENCE_VALUE, lowestAcceptableSequenceValue);
     }
 
     @Override
-    protected void doExecute(MainFactory mainFactory) {
+    protected boolean doExecute(MainFactory mainFactory) {
         SequenceUpdater sequenceUpdater = mainFactory.createSequenceUpdater();
         sequenceUpdater.updateSequences();
+        return true;
+    }
+
+
+    public void setLowestAcceptableSequenceValue(Long lowestAcceptableSequenceValue) {
+        this.lowestAcceptableSequenceValue = lowestAcceptableSequenceValue;
     }
 }

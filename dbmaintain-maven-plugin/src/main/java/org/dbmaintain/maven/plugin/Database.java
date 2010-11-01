@@ -15,14 +15,6 @@
  */
 package org.dbmaintain.maven.plugin;
 
-import org.apache.commons.lang.StringUtils;
-import org.dbmaintain.database.DatabaseInfo;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-
 /**
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -65,13 +57,13 @@ public class Database {
      * @parameter
      * @required
      */
-    private String schemaNamesCommaSeparated;
+    private String schemaNames;
 
 
     public Database() {
     }
 
-    public Database(String name, boolean included, String dialect, String driverClassName, String url, String userName, String password, String schemaNamesCommaSeparated) {
+    public Database(String name, boolean included, String dialect, String driverClassName, String url, String userName, String password, String schemaNames) {
         this.name = name;
         this.included = included;
         this.dialect = dialect;
@@ -79,7 +71,7 @@ public class Database {
         this.url = url;
         this.userName = userName;
         this.password = password;
-        this.schemaNamesCommaSeparated = schemaNamesCommaSeparated;
+        this.schemaNames = schemaNames;
     }
 
 
@@ -99,6 +91,9 @@ public class Database {
         this.included = included;
     }
 
+    public String getDialect() {
+        return dialect;
+    }
 
     public void setDialect(String dialect) {
         this.dialect = dialect;
@@ -108,35 +103,39 @@ public class Database {
         this.driverClassName = driverClassName;
     }
 
+    public String getDriverClassName() {
+        return driverClassName;
+    }
+
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public void setSchemaNames(String schemaNamesCommaSeparated) {
-        this.schemaNamesCommaSeparated = schemaNamesCommaSeparated;
+    public String getPassword() {
+        return password;
     }
 
-
-    public DatabaseInfo createDatabaseInfo() {
-        List<String> schemaNames = getSchemaNames();
-        return new DatabaseInfo(name, dialect, driverClassName, url, userName, password, schemaNames, !included);
+    public void setSchemaNames(String schemaNames) {
+        this.schemaNames = schemaNames;
     }
 
-    protected List<String> getSchemaNames() {
-        if (schemaNamesCommaSeparated == null) {
-            return new ArrayList<String>();
-        }
-        String[] schemaNamesArray = StringUtils.split(schemaNamesCommaSeparated, ',');
-        return asList(schemaNamesArray);
+    public String getSchemaNames() {
+        return schemaNames;
     }
-
-
 }

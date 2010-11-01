@@ -15,9 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
-import org.dbmaintain.launch.task.DbMaintainTask;
+
+import org.dbmaintain.launch.task.DbMaintainDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,17 +30,7 @@ import java.util.List;
  */
 public abstract class BaseDatabaseAntTask extends BaseAntTask {
 
-    protected List<Database> databases = new ArrayList<Database>();
-
-
-    @Override
-    protected DbMaintainTask createDbMaintainTask() {
-        List<DatabaseInfo> databaseInfos = createDatabaseInfos();
-        return createDbMaintainDatabaseTask(databaseInfos);
-    }
-
-    protected abstract DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos);
-
+    protected List<DbMaintainDatabase> databases = new ArrayList<DbMaintainDatabase>();
 
     /**
      * Registers a target database on which a task (e.g. update) can be executed.
@@ -49,16 +38,15 @@ public abstract class BaseDatabaseAntTask extends BaseAntTask {
      * @param database The configuration of the database
      */
     public void addDatabase(Database database) {
-        databases.add(database);
-    }
-
-
-    protected List<DatabaseInfo> createDatabaseInfos() {
-        List<DatabaseInfo> databaseInfos = new ArrayList<DatabaseInfo>();
-        for (Database database : databases) {
-            DatabaseInfo databaseInfo = database.createDatabaseInfo();
-            databaseInfos.add(databaseInfo);
-        }
-        return databaseInfos;
+        DbMaintainDatabase dbMaintainDatabase = new DbMaintainDatabase();
+        dbMaintainDatabase.setName(database.getName());
+        dbMaintainDatabase.setIncluded(database.isIncluded());
+        dbMaintainDatabase.setDialect(database.getDialect());
+        dbMaintainDatabase.setDriverClassName(database.getDriverClassName());
+        dbMaintainDatabase.setUrl(database.getUrl());
+        dbMaintainDatabase.setUserName(database.getUserName());
+        dbMaintainDatabase.setPassword(database.getPassword());
+        dbMaintainDatabase.setSchemaNames(database.getSchemaNames());
+        databases.add(dbMaintainDatabase);
     }
 }

@@ -15,9 +15,9 @@
  */
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.ClearDatabaseTask;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabase;
+import org.dbmaintain.launch.task.DbMaintainTask;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ import java.util.List;
 public class ClearDatabaseMojo extends BaseDatabaseMojo {
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new ClearDatabaseTask(databaseInfos);
+    protected DbMaintainTask createDbMaintainTask(List<DbMaintainDatabase> dbMaintainDatabases) {
+        return new ClearDatabaseTask(dbMaintainDatabases);
     }
 }

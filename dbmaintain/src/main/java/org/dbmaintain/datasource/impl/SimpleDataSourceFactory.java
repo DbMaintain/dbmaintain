@@ -27,7 +27,10 @@ import javax.sql.DataSource;
  */
 public class SimpleDataSourceFactory implements DataSourceFactory {
 
+
     public DataSource createDataSource(DatabaseInfo databaseInfo) {
+        databaseInfo.validateFull();
         return SimpleDataSource.createDataSource(databaseInfo);
     }
+
 }

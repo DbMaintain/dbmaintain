@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabase;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.MarkDatabaseAsUpToDateTask;
 
 import java.util.List;
@@ -89,8 +89,8 @@ public class MarkDatabaseAsUpToDateMojo extends BaseDatabaseMojo {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
+    protected DbMaintainTask createDbMaintainTask(List<DbMaintainDatabase> dbMaintainDatabases) {
         String allScriptLocations = getAllScriptLocations(scriptLocations, scriptArchiveDependencies);
-        return new MarkDatabaseAsUpToDateTask(databaseInfos, allScriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
+        return new MarkDatabaseAsUpToDateTask(dbMaintainDatabases, allScriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
     }
 }

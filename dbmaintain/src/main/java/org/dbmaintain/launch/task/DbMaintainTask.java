@@ -32,7 +32,9 @@ package org.dbmaintain.launch.task;
 import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 
+import javax.sql.DataSource;
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -43,16 +45,22 @@ import java.util.Properties;
  */
 public abstract class DbMaintainTask {
 
+    /* A file contain custom configuration, null if there is no custom config */
+    private File configFile;
+    /* Environment properties such as ANT or MVN properties (not the system properties, these will be added automatically) */
+    private Properties environmentProperties;
+
 
     /**
-     * @param customConfigFile      A file contain custom configuration, null if there is no custom config
-     * @param environmentProperties Environment properties such as ANT or MVN properties (not the system properties, these will be added automatically)
+     * Performs the task (e.g. updating the database)
+     *
+     * @return True if the task was performed, false if nothing needed to be done
      */
-    public void execute(File customConfigFile, Properties environmentProperties) {
-        Properties configuration = getCustomConfiguration(customConfigFile);
-        configuration.putAll(environmentProperties);
-        MainFactory mainFactory = createMainFactory(configuration);
-        doExecute(mainFactory);
+    public boolean execute() {
+        TaskConfiguration taskConfiguration = getTaskConfiguration(configFile);
+        taskConfiguration.addAllConfiguration(environmentProperties);
+        MainFactory mainFactory = createMainFactory(taskConfiguration);
+        return doExecute(mainFactory);
     }
 
 
@@ -67,59 +75,35 @@ public abstract class DbMaintainTask {
      * Implement by invoking the actual behavior
      *
      * @param mainFactory The main factory, not null
+     * @return True if the task was performed
      */
-    protected abstract void doExecute(MainFactory mainFactory);
+    protected abstract boolean doExecute(MainFactory mainFactory);
 
 
     /**
      * @param customConfigFile A file contain custom configuration, null if there is no custom config
      * @return The DbMaintain configuration for this task
      */
-    protected Properties getCustomConfiguration(File customConfigFile) {
+    protected TaskConfiguration getTaskConfiguration(File customConfigFile) {
         Properties configuration = new DbMaintainConfigurationLoader().loadConfiguration(customConfigFile);
 
-        TaskConfiguration taskConfiguration = new TaskConfiguration();
+        TaskConfiguration taskConfiguration = new TaskConfiguration(configuration);
         addTaskConfiguration(taskConfiguration);
-        configuration.putAll(taskConfiguration.getConfiguration());
-
-        return configuration;
+        return taskConfiguration;
     }
 
-    protected MainFactory createMainFactory(Properties configuration) {
-        return new MainFactory(configuration);
+    protected MainFactory createMainFactory(TaskConfiguration taskConfiguration) {
+        Properties configuration = taskConfiguration.getConfiguration();
+        Map<String, DataSource> dataSourcesPerDatabaseName = taskConfiguration.getDataSourcesPerDatabaseName();
+        return new MainFactory(configuration, dataSourcesPerDatabaseName);
     }
 
 
-    public static class TaskConfiguration {
+    public void setConfigFile(File configFile) {
+        this.configFile = configFile;
+    }
 
-        private Properties configuration = new Properties();
-
-
-        public void addAllConfiguration(Properties customConfiguration) {
-            configuration.putAll(customConfiguration);
-        }
-
-        public void addConfigurationIfSet(String propertyName, String propertyValue) {
-            if (propertyValue != null) {
-                configuration.put(propertyName, propertyValue);
-            }
-        }
-
-        public void addConfigurationIfSet(String propertyName, Boolean propertyValue) {
-            if (propertyValue != null) {
-                configuration.put(propertyName, String.valueOf(propertyValue));
-            }
-        }
-
-        public void addConfigurationIfSet(String propertyName, Long propertyValue) {
-            if (propertyValue != null) {
-                configuration.put(propertyName, String.valueOf(propertyValue));
-            }
-        }
-
-
-        public Properties getConfiguration() {
-            return configuration;
-        }
+    public void setEnvironmentProperties(Properties environmentProperties) {
+        this.environmentProperties = environmentProperties;
     }
 }

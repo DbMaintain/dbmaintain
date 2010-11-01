@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.launch.ant;
+package org.dbmaintain.database;
 
-import org.dbmaintain.launch.task.CleanDatabaseTask;
-import org.dbmaintain.launch.task.DbMaintainTask;
+import java.util.List;
 
 /**
- * Task that removes the data of all database tables, except for the DBMAINTAIN_SCRIPTS table.
- *
- * @author Filip Neven
  * @author Tim Ducheyne
+ * @author Filip Neven
  */
-public class CleanDatabaseAntTask extends BaseDatabaseAntTask {
+public interface DatabaseConnectionManager {
 
+    DatabaseConnection getDatabaseConnection(String databaseName);
 
-    @Override
-    protected DbMaintainTask createDbMaintainTask() {
-        return new CleanDatabaseTask(databases);
-    }
+    List<DatabaseConnection> getDatabaseConnections();
 
 }

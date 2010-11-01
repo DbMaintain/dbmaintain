@@ -25,15 +25,11 @@ import org.dbmaintain.structure.model.DbItemType;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
 import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_BACKSLASH_ESCAPING_ENABLED;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_ENCODING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PARAMETER_FILE;
+import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.config.PropertyUtils.getString;
 import static org.dbmaintain.config.PropertyUtils.getStringList;
 import static org.dbmaintain.structure.model.DbItemIdentifier.*;

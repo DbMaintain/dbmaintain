@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.UpdateSequencesTask;
-
-import java.util.List;
 
 /**
  * Task that updates all sequences and identity columns to a minimum value.
@@ -33,8 +30,8 @@ public class UpdateSequencesAntTask extends BaseDatabaseAntTask {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new UpdateSequencesTask(databaseInfos, lowestAcceptableSequenceValue);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new UpdateSequencesTask(databases, lowestAcceptableSequenceValue);
     }
 
 

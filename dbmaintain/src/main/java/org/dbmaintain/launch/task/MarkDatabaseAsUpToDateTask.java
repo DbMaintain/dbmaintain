@@ -17,7 +17,6 @@ package org.dbmaintain.launch.task;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.MainFactory;
-import org.dbmaintain.database.DatabaseInfo;
 
 import java.util.List;
 
@@ -32,15 +31,19 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
  */
 public class MarkDatabaseAsUpToDateTask extends DbMaintainDatabaseTask {
 
-    private String scriptLocations;
-    private Boolean autoCreateDbMaintainScriptsTable;
-    private String qualifiers;
-    private String includedQualifiers;
-    private String excludedQualifiers;
-    private String scriptFileExtensions;
+    protected String scriptLocations;
+    protected Boolean autoCreateDbMaintainScriptsTable;
+    protected String qualifiers;
+    protected String includedQualifiers;
+    protected String excludedQualifiers;
+    protected String scriptFileExtensions;
 
-    public MarkDatabaseAsUpToDateTask(List<DatabaseInfo> databaseInfos, String scriptLocations, Boolean autoCreateDbMaintainScriptsTable, String qualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions) {
-        super(databaseInfos);
+
+    public MarkDatabaseAsUpToDateTask() {
+    }
+
+    public MarkDatabaseAsUpToDateTask(List<DbMaintainDatabase> taskDatabases, String scriptLocations, Boolean autoCreateDbMaintainScriptsTable, String qualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions) {
+        super(taskDatabases);
         this.scriptLocations = scriptLocations;
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
         this.qualifiers = qualifiers;
@@ -51,18 +54,45 @@ public class MarkDatabaseAsUpToDateTask extends DbMaintainDatabaseTask {
 
 
     @Override
-    protected void addTaskConfiguration(TaskConfiguration configuration) {
-        configuration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
-        configuration.addConfigurationIfSet(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
-        configuration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
-        configuration.addConfigurationIfSet(PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
-        configuration.addConfigurationIfSet(PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
-        configuration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
+    protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addDatabaseConfigurations(databases);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_INCLUDED_QUALIFIERS, includedQualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_EXCLUDED_QUALIFIERS, excludedQualifiers);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
     }
 
     @Override
-    protected void doExecute(MainFactory mainFactory) {
+    protected boolean doExecute(MainFactory mainFactory) {
         DbMaintainer dbMaintainer = mainFactory.createDbMaintainer();
         dbMaintainer.markDatabaseAsUpToDate();
+        return true;
+    }
+
+
+    public void setScriptLocations(String scriptLocations) {
+        this.scriptLocations = scriptLocations;
+    }
+
+    public void setAutoCreateDbMaintainScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {
+        this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
+    }
+
+    public void setQualifiers(String qualifiers) {
+        this.qualifiers = qualifiers;
+    }
+
+    public void setIncludedQualifiers(String includedQualifiers) {
+        this.includedQualifiers = includedQualifiers;
+    }
+
+    public void setExcludedQualifiers(String excludedQualifiers) {
+        this.excludedQualifiers = excludedQualifiers;
+    }
+
+    public void setScriptFileExtensions(String scriptFileExtensions) {
+        this.scriptFileExtensions = scriptFileExtensions;
     }
 }

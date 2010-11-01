@@ -37,7 +37,7 @@ public class DatabaseInfoFactory {
     }
 
 
-    public List<DatabaseInfo> getDatabaseInfos() {
+    public List<DatabaseInfo> createDatabaseInfos() {
         List<DatabaseInfo> databaseInfos = new ArrayList<DatabaseInfo>();
 
         List<String> databaseNames = getStringList(PROPERTY_DATABASE_NAMES, configuration);
@@ -61,7 +61,7 @@ public class DatabaseInfoFactory {
         String password = getProperty(null, PROPERTY_PASSWORD_END);
         String databaseDialect = getProperty(null, PROPERTY_DIALECT_END);
         List<String> schemaNames = getListProperty(null, PROPERTY_SCHEMANAMES_END);
-        return new DatabaseInfo("<no-name>", databaseDialect, driverClassName, url, userName, password, schemaNames, false);
+        return new DatabaseInfo(null, databaseDialect, driverClassName, url, userName, password, schemaNames, false);
     }
 
 
@@ -93,11 +93,11 @@ public class DatabaseInfoFactory {
         if (databaseName != null) {
             String customPropertyName = PROPERTY_DATABASE_START + '.' + databaseName + '.' + propertyNameEnd;
             if (containsProperty(customPropertyName, configuration)) {
-                return getString(customPropertyName, "", configuration);
+                return getString(customPropertyName, null, configuration);
             }
         }
         String defaultPropertyName = PROPERTY_DATABASE_START + '.' + propertyNameEnd;
-        return getString(defaultPropertyName, "", configuration);
+        return getString(defaultPropertyName, null, configuration);
     }
 
     protected List<String> getListProperty(String databaseName, String propertyNameEnd) {

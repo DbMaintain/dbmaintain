@@ -51,6 +51,9 @@ public class Databases {
     }
 
     public Database getDatabase(String databaseName) {
+        if (isDisabledDatabase(databaseName)) {
+            throw new DatabaseException("Database with name " + databaseName + " is disabled.");
+        }
         Database database = nameDatabaseMap.get(databaseName);
         if (database == null) {
             throw new DatabaseException("No database configured with name: " + databaseName);
@@ -64,7 +67,7 @@ public class Databases {
 
 
     public boolean isConfiguredDatabase(String databaseName) {
-        return nameDatabaseMap.containsKey(databaseName) || disabledDatabaseNames.contains(databaseName);
+        return nameDatabaseMap.containsKey(databaseName) || isDisabledDatabase(databaseName);
     }
 
     public boolean isDisabledDatabase(String databaseName) {

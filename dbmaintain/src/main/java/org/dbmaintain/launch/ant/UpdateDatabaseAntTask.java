@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.UpdateDatabaseTask;
-
-import java.util.List;
 
 /**
  * Task that updates the database to the latest version.
@@ -46,9 +43,10 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
     private String scriptFileExtensions;
     private String scriptParameterFile;
 
+
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new UpdateDatabaseTask(databaseInfos, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new UpdateDatabaseTask(databases, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
     }
 
     /**
@@ -220,7 +218,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
      * If set, the given properties file will be loaded and all occurrences of parameters in the script that match
      * a property will be replaced by the corresponding property value. Script parameters are formatted as in
      * <code>${param}</code>.
-     * 
+     *
      * @param scriptParameterFile path of the properties file to be loaded
      */
     public void setScriptParameterFile(String scriptParameterFile) {

@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.MarkErrorScriptRevertedTask;
-
-import java.util.List;
 
 /**
  * Task that indicates that the failed script was manually reverted.
@@ -33,8 +30,8 @@ public class MarkErrorScriptRevertedAntTask extends BaseDatabaseAntTask {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new MarkErrorScriptRevertedTask(databaseInfos);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new MarkErrorScriptRevertedTask(databases);
     }
 
 }

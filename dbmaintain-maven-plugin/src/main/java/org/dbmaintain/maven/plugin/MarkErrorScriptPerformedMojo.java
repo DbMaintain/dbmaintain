@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.maven.plugin;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabase;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.MarkErrorScriptPerformedTask;
 
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.List;
 public class MarkErrorScriptPerformedMojo extends BaseDatabaseMojo {
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new MarkErrorScriptPerformedTask(databaseInfos);
+    protected DbMaintainTask createDbMaintainTask(List<DbMaintainDatabase> dbMaintainDatabases) {
+        return new MarkErrorScriptPerformedTask(dbMaintainDatabases);
     }
 }

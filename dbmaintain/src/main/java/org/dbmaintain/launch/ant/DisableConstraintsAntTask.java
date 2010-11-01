@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.DisableConstraintsTask;
-
-import java.util.List;
 
 /**
  * Task that disables or drops all foreign key and not null constraints.
@@ -30,7 +27,7 @@ import java.util.List;
 public class DisableConstraintsAntTask extends BaseDatabaseAntTask {
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new DisableConstraintsTask(databaseInfos);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new DisableConstraintsTask(databases);
     }
 }

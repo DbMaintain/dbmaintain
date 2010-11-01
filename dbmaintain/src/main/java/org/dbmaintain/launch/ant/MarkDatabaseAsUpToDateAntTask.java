@@ -16,11 +16,8 @@
 package org.dbmaintain.launch.ant;
 
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.MarkDatabaseAsUpToDateTask;
-
-import java.util.List;
 
 /**
  * This operation updates the state of the database to indicate that all scripts have been executed, without actually
@@ -41,8 +38,8 @@ public class MarkDatabaseAsUpToDateAntTask extends BaseDatabaseAntTask {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new MarkDatabaseAsUpToDateTask(databaseInfos, scriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new MarkDatabaseAsUpToDateTask(databases, scriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
     }
 
 

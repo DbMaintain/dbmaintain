@@ -22,7 +22,9 @@ import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
 import org.dbmaintain.database.*;
+import org.dbmaintain.database.impl.DefaultDatabaseConnectionManager;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
+import org.dbmaintain.datasource.DataSourceFactory;
 import org.dbmaintain.datasource.impl.SimpleDataSourceFactory;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
@@ -34,7 +36,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -923,12 +924,12 @@ public class DbMaintainIntegrationTest {
         configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "false");
         configuration.put(PROPERTY_QUALIFIERS, "special,q1,q2");
 
-        DatabaseInfoFactory propertiesDatabaseInfoLoader = new DatabaseInfoFactory(configuration);
-        List<DatabaseInfo> databaseInfos = propertiesDatabaseInfoLoader.getDatabaseInfos();
-
         SQLHandler sqlHandler = new DefaultSQLHandler();
-        DatabasesFactory databasesFactory = new DatabasesFactory(configuration, sqlHandler, new SimpleDataSourceFactory());
-        Databases databases = databasesFactory.createDatabases(databaseInfos);
+        DataSourceFactory dataSourceFactory = new SimpleDataSourceFactory();
+        DatabaseConnectionManager databaseConnectionManager = new DefaultDatabaseConnectionManager(configuration, sqlHandler, dataSourceFactory);
+
+        DatabasesFactory databasesFactory = new DatabasesFactory(configuration, databaseConnectionManager);
+        Databases databases = databasesFactory.createDatabases();
 
         defaultDatabase = databases.getDefaultDatabase();
     }

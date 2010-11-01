@@ -33,14 +33,17 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
  */
 public class CreateScriptArchiveTask extends DbMaintainTask {
 
-    private String archiveFileName;
-    private String scriptLocations;
-    private String scriptEncoding;
-    private String postProcessingScriptDirectoryName;
-    private String qualifiers;
-    private String patchQualifiers;
-    private String scriptFileExtensions;
+    protected String archiveFileName;
+    protected String scriptLocations;
+    protected String scriptEncoding;
+    protected String postProcessingScriptDirectoryName;
+    protected String qualifiers;
+    protected String patchQualifiers;
+    protected String scriptFileExtensions;
 
+
+    public CreateScriptArchiveTask() {
+    }
 
     public CreateScriptArchiveTask(String archiveFileName, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, String qualifiers, String patchQualifiers, String scriptFileExtensions) {
         this.archiveFileName = archiveFileName;
@@ -54,9 +57,10 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
 
 
     @Override
-    public void doExecute(MainFactory mainFactory) {
+    public boolean doExecute(MainFactory mainFactory) {
         ScriptArchiveCreator scriptArchiveCreator = mainFactory.createScriptArchiveCreator();
         scriptArchiveCreator.createScriptArchive(archiveFileName);
+        return true;
     }
 
     @Override
@@ -67,5 +71,34 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
         taskConfiguration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_FILE_EXTENSIONS, scriptFileExtensions);
+    }
+
+
+    public void setArchiveFileName(String archiveFileName) {
+        this.archiveFileName = archiveFileName;
+    }
+
+    public void setScriptLocations(String scriptLocations) {
+        this.scriptLocations = scriptLocations;
+    }
+
+    public void setScriptEncoding(String scriptEncoding) {
+        this.scriptEncoding = scriptEncoding;
+    }
+
+    public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {
+        this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
+    }
+
+    public void setQualifiers(String qualifiers) {
+        this.qualifiers = qualifiers;
+    }
+
+    public void setPatchQualifiers(String patchQualifiers) {
+        this.patchQualifiers = patchQualifiers;
+    }
+
+    public void setScriptFileExtensions(String scriptFileExtensions) {
+        this.scriptFileExtensions = scriptFileExtensions;
     }
 }

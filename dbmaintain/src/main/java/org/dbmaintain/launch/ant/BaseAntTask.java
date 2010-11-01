@@ -45,10 +45,11 @@ public abstract class BaseAntTask extends Task {
         Properties environmentProperties = getAntProperties();
 
         DbMaintainTask dbMaintainTask = createDbMaintainTask();
+        dbMaintainTask.setConfigFile(customConfigFile);
+        dbMaintainTask.setEnvironmentProperties(environmentProperties);
         try {
-            dbMaintainTask.execute(customConfigFile, environmentProperties);
+            dbMaintainTask.execute();
         } catch (Exception e) {
-            e.printStackTrace();
             throw new BuildException("Unable to perform db maintain task. " + e.getMessage(), e);
         }
     }

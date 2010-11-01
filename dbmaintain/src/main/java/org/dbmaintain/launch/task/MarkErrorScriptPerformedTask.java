@@ -16,7 +16,6 @@
 package org.dbmaintain.launch.task;
 
 import org.dbmaintain.MainFactory;
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 
 import java.util.List;
@@ -32,18 +31,24 @@ import java.util.List;
 public class MarkErrorScriptPerformedTask extends DbMaintainDatabaseTask {
 
 
-    public MarkErrorScriptPerformedTask(List<DatabaseInfo> databaseInfos) {
-        super(databaseInfos);
+    public MarkErrorScriptPerformedTask() {
+    }
+
+    public MarkErrorScriptPerformedTask(List<DbMaintainDatabase> taskDatabases) {
+        super(taskDatabases);
+    }
+
+
+    @Override
+    protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addDatabaseConfigurations(databases);
     }
 
     @Override
-    protected void addTaskConfiguration(TaskConfiguration configuration) {
-        // no extra configuration needed
-    }
-
-    @Override
-    protected void doExecute(MainFactory mainFactory) {
+    protected boolean doExecute(MainFactory mainFactory) {
         ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
         executedScriptInfoSource.markErrorScriptsAsSuccessful();
+        return true;
     }
+
 }

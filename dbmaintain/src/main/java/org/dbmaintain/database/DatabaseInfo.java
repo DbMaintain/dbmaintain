@@ -56,7 +56,8 @@ public class DatabaseInfo {
         this.disabled = disabled;
     }
 
-    public void validate() {
+
+    public void validateFull() {
         if (isBlank(driverClassName)) {
             throw new DatabaseException(createValidationErrorMessage("no driver class name defined."));
         }
@@ -66,15 +67,30 @@ public class DatabaseInfo {
         if (isBlank(userName)) {
             throw new DatabaseException(createValidationErrorMessage("no database user name defined."));
         }
-        if (schemaNames.isEmpty()) {
+        validateMinimal();
+    }
+
+    public void validateMinimal() {
+        if (schemaNames == null || schemaNames.isEmpty()) {
             throw new DatabaseException(createValidationErrorMessage("no schema name(s) defined."));
         }
     }
 
+
     private String createValidationErrorMessage(String reason) {
+        if (isBlank(name)) {
+            return "Invalid database configuration: " + reason;
+        }
         return "Invalid database configuration for database with name " + name + ": " + reason;
     }
 
+
+    public boolean hasName(String name) {
+        if (this.name == null && name == null) {
+            return true;
+        }
+        return this.name != null && this.name.equals(name);
+    }
 
     public String getName() {
         return name;

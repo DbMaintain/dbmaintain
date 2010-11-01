@@ -86,7 +86,9 @@ public abstract class BaseMojo extends AbstractMojo {
         Properties environmentProperties = getMavenProperties();
 
         DbMaintainTask dbMaintainTask = createDbMaintainTask();
-        dbMaintainTask.execute(configFile, environmentProperties);
+        dbMaintainTask.setConfigFile(configFile);
+        dbMaintainTask.setEnvironmentProperties(environmentProperties);
+        dbMaintainTask.execute();
 
         performAfterTaskActions();
     }

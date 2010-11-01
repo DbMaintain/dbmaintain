@@ -64,12 +64,13 @@ public class InBlockCommentParsingState implements ParsingState {
         }
         return stayInBlockCommentResult;
     }
-	
+
     /**
+     * @param previousChar The previous char, 0 if none
+     * @param currentChar  The current char
      * @return true if the given previous and current character indicate the end of the block comment
      */
-    protected boolean isEndOfBlockComment(Character previousChar, Character currentChar)
-    {
+    protected boolean isEndOfBlockComment(Character previousChar, Character currentChar) {
         return ASTERIX.equals(previousChar) && SLASH.equals(currentChar);
     }
 

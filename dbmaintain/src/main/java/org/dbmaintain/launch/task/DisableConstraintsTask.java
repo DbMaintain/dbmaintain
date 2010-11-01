@@ -16,7 +16,6 @@
 package org.dbmaintain.launch.task;
 
 import org.dbmaintain.MainFactory;
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 
 import java.util.List;
@@ -30,19 +29,24 @@ import java.util.List;
 public class DisableConstraintsTask extends DbMaintainDatabaseTask {
 
 
-    public DisableConstraintsTask(List<DatabaseInfo> databaseInfos) {
-        super(databaseInfos);
+    public DisableConstraintsTask() {
+    }
+
+    public DisableConstraintsTask(List<DbMaintainDatabase> taskDatabases) {
+        super(taskDatabases);
     }
 
 
     @Override
-    protected void addTaskConfiguration(TaskConfiguration configuration) {
-        // no extra configuration needed
+    protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addDatabaseConfigurations(databases);
     }
 
     @Override
-    protected void doExecute(MainFactory mainFactory) {
+    protected boolean doExecute(MainFactory mainFactory) {
         ConstraintsDisabler constraintsDisabler = mainFactory.createConstraintsDisabler();
         constraintsDisabler.disableConstraints();
+        return true;
     }
+
 }

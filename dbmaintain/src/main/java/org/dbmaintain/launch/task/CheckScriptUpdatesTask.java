@@ -17,7 +17,6 @@ package org.dbmaintain.launch.task;
 
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.MainFactory;
-import org.dbmaintain.database.DatabaseInfo;
 
 import java.util.List;
 
@@ -33,22 +32,25 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
  */
 public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
 
-    private String scriptLocations;
-    private String scriptEncoding;
-    private String postProcessingScriptDirectoryName;
-    private Boolean fromScratchEnabled;
-    private Boolean autoCreateDbMaintainScriptsTable;
-    private Boolean allowOutOfSequenceExecutionOfPatches;
-    private String qualifiers;
-    private String patchQualifiers;
-    private String includedQualifiers;
-    private String excludedQualifiers;
-    private String scriptFileExtensions;
-    private Boolean useLastModificationDates;
+    protected String scriptLocations;
+    protected String scriptEncoding;
+    protected String postProcessingScriptDirectoryName;
+    protected Boolean fromScratchEnabled;
+    protected Boolean autoCreateDbMaintainScriptsTable;
+    protected Boolean allowOutOfSequenceExecutionOfPatches;
+    protected String qualifiers;
+    protected String patchQualifiers;
+    protected String includedQualifiers;
+    protected String excludedQualifiers;
+    protected String scriptFileExtensions;
+    protected Boolean useLastModificationDates;
 
 
-    public CheckScriptUpdatesTask(List<DatabaseInfo> databaseInfos, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions, Boolean useLastModificationDates) {
-        super(databaseInfos);
+    public CheckScriptUpdatesTask() {
+    }
+
+    public CheckScriptUpdatesTask(List<DbMaintainDatabase> taskDatabases, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions, Boolean useLastModificationDates) {
+        super(taskDatabases);
         this.scriptLocations = scriptLocations;
         this.scriptEncoding = scriptEncoding;
         this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
@@ -66,6 +68,7 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
 
     @Override
     protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addDatabaseConfigurations(databases);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
         taskConfiguration.addConfigurationIfSet(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
@@ -81,8 +84,58 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
     }
 
     @Override
-    protected void doExecute(MainFactory mainFactory) {
+    protected boolean doExecute(MainFactory mainFactory) {
         DbMaintainer dbMaintainer = mainFactory.createDbMaintainer();
         dbMaintainer.updateDatabase(true);
+        return true;
+    }
+
+
+    public void setScriptLocations(String scriptLocations) {
+        this.scriptLocations = scriptLocations;
+    }
+
+    public void setScriptEncoding(String scriptEncoding) {
+        this.scriptEncoding = scriptEncoding;
+    }
+
+    public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {
+        this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
+    }
+
+    public void setFromScratchEnabled(Boolean fromScratchEnabled) {
+        this.fromScratchEnabled = fromScratchEnabled;
+    }
+
+    public void setAutoCreateDbMaintainScriptsTable(Boolean autoCreateDbMaintainScriptsTable) {
+        this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
+    }
+
+    public void setAllowOutOfSequenceExecutionOfPatches(Boolean allowOutOfSequenceExecutionOfPatches) {
+        this.allowOutOfSequenceExecutionOfPatches = allowOutOfSequenceExecutionOfPatches;
+    }
+
+    public void setQualifiers(String qualifiers) {
+        this.qualifiers = qualifiers;
+    }
+
+    public void setPatchQualifiers(String patchQualifiers) {
+        this.patchQualifiers = patchQualifiers;
+    }
+
+    public void setIncludedQualifiers(String includedQualifiers) {
+        this.includedQualifiers = includedQualifiers;
+    }
+
+    public void setExcludedQualifiers(String excludedQualifiers) {
+        this.excludedQualifiers = excludedQualifiers;
+    }
+
+    public void setUseLastModificationDates(Boolean useLastModificationDates) {
+        this.useLastModificationDates = useLastModificationDates;
+    }
+
+    public void setScriptFileExtensions(String scriptFileExtensions) {
+        this.scriptFileExtensions = scriptFileExtensions;
     }
 }

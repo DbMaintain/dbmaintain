@@ -16,7 +16,6 @@
 package org.dbmaintain.launch.task;
 
 import org.dbmaintain.MainFactory;
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.structure.clean.DBCleaner;
 
 import java.util.List;
@@ -30,18 +29,24 @@ import java.util.List;
 public class CleanDatabaseTask extends DbMaintainDatabaseTask {
 
 
-    public CleanDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        super(databaseInfos);
+    public CleanDatabaseTask() {
+    }
+
+    public CleanDatabaseTask(List<DbMaintainDatabase> taskDatabases) {
+        super(taskDatabases);
+    }
+
+
+    @Override
+    protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
+        taskConfiguration.addDatabaseConfigurations(databases);
     }
 
     @Override
-    protected void addTaskConfiguration(TaskConfiguration configuration) {
-        // no extra config needed
-    }
-
-    @Override
-    protected void doExecute(MainFactory mainFactory) {
+    protected boolean doExecute(MainFactory mainFactory) {
         DBCleaner dbCleaner = mainFactory.createDBCleaner();
         dbCleaner.cleanDatabase();
+        return true;
     }
+
 }

@@ -16,8 +16,13 @@
 package org.dbmaintain;
 
 import org.dbmaintain.config.*;
-import org.dbmaintain.database.*;
+import org.dbmaintain.database.DatabaseConnectionManager;
+import org.dbmaintain.database.Databases;
+import org.dbmaintain.database.DatabasesFactory;
+import org.dbmaintain.database.SQLHandler;
+import org.dbmaintain.database.impl.DefaultDatabaseConnectionManager;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
+import org.dbmaintain.datasource.DataSourceFactory;
 import org.dbmaintain.datasource.impl.SimpleDataSourceFactory;
 import org.dbmaintain.script.archive.ScriptArchiveCreator;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
@@ -26,9 +31,10 @@ import org.dbmaintain.structure.clean.DBCleaner;
 import org.dbmaintain.structure.clear.DBClearer;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.sequence.SequenceUpdater;
-import org.dbmaintain.util.DbMaintainException;
 
-import java.util.List;
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.dbmaintain.config.ConfigUtils.getFactoryClass;
@@ -41,26 +47,28 @@ import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 public class MainFactory {
 
     protected Properties configuration;
-    protected List<DatabaseInfo> databaseInfos;
-    protected Databases databases;
     protected SQLHandler sqlHandler;
+    protected DatabaseConnectionManager databaseConnectionManager;
+    protected Map<String, DataSource> dataSourcesPerDatabaseName;
+    protected Databases databases;
 
     protected FactoryContext factoryContext;
     protected FactoryWithDatabaseContext factoryWithDatabaseContext;
 
 
     public MainFactory(Properties configuration) {
-        this.configuration = configuration;
+        this(configuration, new HashMap<String, DataSource>());
     }
 
-    public MainFactory(Properties configuration, List<DatabaseInfo> databaseInfos) {
-        this.configuration = configuration;
-        this.databaseInfos = databaseInfos;
+    public MainFactory(Properties configuration, DatabaseConnectionManager databaseConnectionManager) {
+        this(configuration, new HashMap<String, DataSource>());
+        this.databaseConnectionManager = databaseConnectionManager;
     }
 
-    public MainFactory(Properties configuration, Databases databases) {
+    public MainFactory(Properties configuration, Map<String, DataSource> dataSourcesPerDatabaseName) {
         this.configuration = configuration;
-        this.databases = databases;
+        this.sqlHandler = createSqlHandler();
+        this.dataSourcesPerDatabaseName = dataSourcesPerDatabaseName;
     }
 
 
@@ -120,7 +128,7 @@ public class MainFactory {
     protected synchronized FactoryWithDatabaseContext createFactoryWithDatabaseContext() {
         if (factoryWithDatabaseContext == null) {
             Databases databases = getDatabases();
-            factoryWithDatabaseContext = new FactoryWithDatabaseContext(configuration, this, databases, getSqlHandler());
+            factoryWithDatabaseContext = new FactoryWithDatabaseContext(configuration, this, databases, sqlHandler);
         }
         return factoryWithDatabaseContext;
     }
@@ -135,28 +143,22 @@ public class MainFactory {
 
     protected Databases getDatabases() {
         if (databases == null) {
-            DatabasesFactory databasesFactory = new DatabasesFactory(configuration, getSqlHandler(), new SimpleDataSourceFactory());
-            databases = databasesFactory.createDatabases(getDatabaseInfos());
+            DatabaseConnectionManager databaseConnectionManager = getDatabaseConnectionManager();
+            DatabasesFactory databasesFactory = new DatabasesFactory(configuration, databaseConnectionManager);
+            databases = databasesFactory.createDatabases();
         }
         return databases;
     }
 
-    protected List<DatabaseInfo> getDatabaseInfos() {
-        if (databaseInfos == null || databaseInfos.isEmpty()) {
-            DatabaseInfoFactory propertiesDatabaseInfoLoader = new DatabaseInfoFactory(configuration);
-            databaseInfos = propertiesDatabaseInfoLoader.getDatabaseInfos();
-
-            if (databaseInfos == null || databaseInfos.isEmpty()) {
-                throw new DbMaintainException("No database configuration found. At least one database should be defined in the properties or in the task configuration.");
-            }
+    protected DatabaseConnectionManager getDatabaseConnectionManager() {
+        if (databaseConnectionManager == null) {
+            DataSourceFactory dataSourceFactory = new SimpleDataSourceFactory();
+            databaseConnectionManager = new DefaultDatabaseConnectionManager(configuration, sqlHandler, dataSourceFactory, dataSourcesPerDatabaseName);
         }
-        return databaseInfos;
+        return databaseConnectionManager;
     }
 
-    protected SQLHandler getSqlHandler() {
-        if (sqlHandler == null) {
-            sqlHandler = new DefaultSQLHandler();
-        }
-        return sqlHandler;
+    protected SQLHandler createSqlHandler() {
+        return new DefaultSQLHandler();
     }
 }

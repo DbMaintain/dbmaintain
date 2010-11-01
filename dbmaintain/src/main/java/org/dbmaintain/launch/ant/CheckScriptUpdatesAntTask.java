@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.launch.task.CheckScriptUpdatesTask;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
-
-import java.util.List;
+import org.dbmaintain.launch.task.DbMaintainTask;
 
 /**
  * Performs a dry run of the database update. May be used to verify if there are any updates or in a test that fails
@@ -27,7 +24,6 @@ import java.util.List;
  *
  * @author Filip Neven
  * @author Tim Ducheyne
- * @since 10-feb-2009
  */
 public class CheckScriptUpdatesAntTask extends BaseDatabaseAntTask {
 
@@ -46,8 +42,8 @@ public class CheckScriptUpdatesAntTask extends BaseDatabaseAntTask {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new CheckScriptUpdatesTask(databaseInfos, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new CheckScriptUpdatesTask(databases, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
     }
 
 

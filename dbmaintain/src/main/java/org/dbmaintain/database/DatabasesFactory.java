@@ -15,14 +15,13 @@
  */
 package org.dbmaintain.database;
 
-import org.dbmaintain.datasource.DataSourceFactory;
 import org.dbmaintain.util.DbMaintainException;
 
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
@@ -37,38 +36,33 @@ import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 public class DatabasesFactory {
 
     protected Properties configuration;
-    protected SQLHandler sqlHandler;
-    protected DataSourceFactory dataSourceFactory;
+    protected DatabaseConnectionManager databaseConnectionManager;
 
 
-    public DatabasesFactory(Properties configuration, SQLHandler sqlHandler, DataSourceFactory dataSourceFactory) {
+    public DatabasesFactory(Properties configuration, DatabaseConnectionManager databaseConnectionManager) {
         this.configuration = configuration;
-        this.sqlHandler = sqlHandler;
-        this.dataSourceFactory = dataSourceFactory;
+        this.databaseConnectionManager = databaseConnectionManager;
     }
 
 
-    public Databases createDatabases(List<DatabaseInfo> databaseInfos) {
+    public Databases createDatabases() {
         List<Database> databases = new ArrayList<Database>();
         List<String> disabledDatabaseNames = new ArrayList<String>();
 
-        for (DatabaseInfo databaseInfo : databaseInfos) {
+        for (DatabaseConnection databaseConnection : databaseConnectionManager.getDatabaseConnections()) {
+            DatabaseInfo databaseInfo = databaseConnection.getDatabaseInfo();
             if (databaseInfo.isDisabled()) {
                 disabledDatabaseNames.add(databaseInfo.getName());
             } else {
-                databases.add(createDatabase(databaseInfo));
+                databases.add(createDatabase(databaseConnection));
             }
         }
         return new Databases(databases, disabledDatabaseNames);
     }
 
 
-    public Database createDatabase(DatabaseInfo databaseInfo) {
-        databaseInfo.validate();
-        DataSource dataSource = dataSourceFactory.createDataSource(databaseInfo);
-        DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
-
-        String databaseDialect = getDatabaseDialect(databaseInfo);
+    protected Database createDatabase(DatabaseConnection databaseConnection) {
+        String databaseDialect = getDatabaseDialect(databaseConnection);
         String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
         StoredIdentifierCase customStoredIdentifierCase = getCustomStoredIdentifierCase(databaseDialect);
 
@@ -79,9 +73,11 @@ public class DatabasesFactory {
         );
     }
 
-    public String getDatabaseDialect(DatabaseInfo databaseInfo) {
+
+    protected String getDatabaseDialect(DatabaseConnection databaseConnection) {
+        DatabaseInfo databaseInfo = databaseConnection.getDatabaseInfo();
         String dialect = databaseInfo.getDialect();
-        if (dialect == null) {
+        if (isBlank(dialect)) {
             dialect = DatabaseDialectDetector.autoDetectDatabaseDialect(databaseInfo.getUrl());
             if (dialect == null) {
                 throw new DbMaintainException("Unable to determine dialect from jdbc url. Please specify the dialect explicitly. E.g oracle, hsqldb, mysql, db2, postgresql, derby or mssql.");
@@ -91,7 +87,7 @@ public class DatabasesFactory {
     }
 
     protected StoredIdentifierCase getCustomStoredIdentifierCase(String databaseDialect) {
-        String storedIdentifierCasePropertyValue = getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, configuration);
+        String storedIdentifierCasePropertyValue = getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, "auto", configuration);
         if ("lower_case".equals(storedIdentifierCasePropertyValue)) {
             return LOWER_CASE;
         } else if ("upper_case".equals(storedIdentifierCasePropertyValue)) {
@@ -105,7 +101,7 @@ public class DatabasesFactory {
     }
 
     protected String getCustomIdentifierQuoteString(String databaseDialect) {
-        String identifierQuoteStringPropertyValue = getString(PROPERTY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, configuration);
+        String identifierQuoteStringPropertyValue = getString(PROPERTY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, "auto", configuration);
         if ("none".equals(identifierQuoteStringPropertyValue)) {
             return "";
         }

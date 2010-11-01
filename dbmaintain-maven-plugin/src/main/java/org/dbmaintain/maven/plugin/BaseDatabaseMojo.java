@@ -16,8 +16,7 @@
 package org.dbmaintain.maven.plugin;
 
 import org.apache.maven.artifact.Artifact;
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainDatabase;
 import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.util.DbMaintainException;
 
@@ -42,27 +41,34 @@ public abstract class BaseDatabaseMojo extends BaseMojo {
     protected List<Database> databases;
 
 
+    protected abstract DbMaintainTask createDbMaintainTask(List<DbMaintainDatabase> dbMaintainDatabases);
+
+
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        List<DatabaseInfo> databaseInfos = createDatabaseInfos();
-        return createDbMaintainDatabaseTask(databaseInfos);
+        List<DbMaintainDatabase> dbMaintainDatabases = getDbMaintainDatabases();
+        return createDbMaintainTask(dbMaintainDatabases);
     }
 
-
-    protected abstract DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos);
-
-
-    protected List<DatabaseInfo> createDatabaseInfos() {
-        List<DatabaseInfo> databaseInfos = new ArrayList<DatabaseInfo>();
-        if (databases != null) {
-            for (Database database : databases) {
-                DatabaseInfo databaseInfo = database.createDatabaseInfo();
-                databaseInfos.add(databaseInfo);
-            }
+    protected List<DbMaintainDatabase> getDbMaintainDatabases() {
+        List<DbMaintainDatabase> dbMaintainDatabases = new ArrayList<DbMaintainDatabase>();
+        if (databases == null) {
+            return dbMaintainDatabases;
         }
-        return databaseInfos;
+        for (Database database : databases) {
+            DbMaintainDatabase dbMaintainDatabase = new DbMaintainDatabase();
+            dbMaintainDatabase.setName(database.getName());
+            dbMaintainDatabase.setIncluded(database.isIncluded());
+            dbMaintainDatabase.setDialect(database.getDialect());
+            dbMaintainDatabase.setDriverClassName(database.getDriverClassName());
+            dbMaintainDatabase.setUrl(database.getUrl());
+            dbMaintainDatabase.setUserName(database.getUserName());
+            dbMaintainDatabase.setPassword(database.getPassword());
+            dbMaintainDatabase.setSchemaNames(database.getSchemaNames());
+            dbMaintainDatabases.add(dbMaintainDatabase);
+        }
+        return dbMaintainDatabases;
     }
-
 
     protected String getAllScriptLocations(String scriptLocations, List<ScriptArchiveDependency> scriptArchiveDependencies) {
         StringBuilder allScriptLocations = getScriptArchiveDependenciesAsString(scriptArchiveDependencies);

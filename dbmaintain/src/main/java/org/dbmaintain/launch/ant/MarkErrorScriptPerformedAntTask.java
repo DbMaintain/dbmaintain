@@ -15,11 +15,8 @@
  */
 package org.dbmaintain.launch.ant;
 
-import org.dbmaintain.database.DatabaseInfo;
-import org.dbmaintain.launch.task.DbMaintainDatabaseTask;
+import org.dbmaintain.launch.task.DbMaintainTask;
 import org.dbmaintain.launch.task.MarkErrorScriptPerformedTask;
-
-import java.util.List;
 
 /**
  * Task that indicates that the failed script was manually performed.
@@ -33,8 +30,8 @@ public class MarkErrorScriptPerformedAntTask extends BaseDatabaseAntTask {
 
 
     @Override
-    protected DbMaintainDatabaseTask createDbMaintainDatabaseTask(List<DatabaseInfo> databaseInfos) {
-        return new MarkErrorScriptPerformedTask(databaseInfos);
+    protected DbMaintainTask createDbMaintainTask() {
+        return new MarkErrorScriptPerformedTask(databases);
     }
 
 }
