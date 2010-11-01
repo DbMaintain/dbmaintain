@@ -38,7 +38,6 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
     /* The database supports to disable the constraints for */
     protected Databases databases;
 
-
     /**
      * Creates the constraints disabler.
      *
@@ -53,45 +52,31 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
      * Disable every foreign key or not-null constraint
      */
     public void disableConstraints() {
+        // first disable referential constraints to avoid conflicts
+        disableReferentialConstraints();
+        // disable not-null and check constraints
+        disableValueConstraints();
+    }
+
+    @Override
+    public void disableReferentialConstraints() {
+         for (Database database : databases.getDatabases()) {
+            for (String schemaName : database.getSchemaNames()) {
+                logger.info("Disabling referential constraints in database schema " + schemaName);
+                database.disableReferentialConstraints(schemaName);
+            }
+        }
+    }
+
+    @Override
+    public void disableValueConstraints() {
         for (Database database : databases.getDatabases()) {
             for (String schemaName : database.getSchemaNames()) {
-                logger.info("Disabling constraints in database schema " + schemaName);
-
-                // first disable referential constraints to avoid conflicts
-                disableReferentialConstraints(schemaName, database);
-                // disable not-null and check constraints
-                disableValueConstraints(schemaName, database);
+                logger.info("Disabling value constraints in database schema " + schemaName);
+                database.disableValueConstraints(schemaName);
             }
         }
     }
 
 
-    /**
-     * Disables all referential constraints (e.g. foreign keys) on all tables in the schema
-     *
-     * @param schemaName The schema name, not null
-     * @param database   The database, not null
-     */
-    protected void disableReferentialConstraints(String schemaName, Database database) {
-        try {
-            database.disableReferentialConstraints(schemaName);
-        } catch (Throwable t) {
-            logger.error("Unable to remove referential constraints.", t);
-        }
-    }
-
-
-    /**
-     * Disables all value constraints (e.g. not null) on all tables in the schema
-     *
-     * @param schemaName The schema name, not null
-     * @param database   The database, not null
-     */
-    protected void disableValueConstraints(String schemaName, Database database) {
-        try {
-            database.disableValueConstraints(schemaName);
-        } catch (Throwable t) {
-            logger.error("Unable to remove value constraints.", t);
-        }
-    }
 }

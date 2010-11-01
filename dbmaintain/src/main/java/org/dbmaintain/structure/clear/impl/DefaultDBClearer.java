@@ -86,8 +86,8 @@ public class DefaultDBClearer implements DBClearer {
         // clear executed scripts, also makes sure that the scripts table exists
         executedScriptInfoSource.clearAllExecutedScripts();
 
-        // Constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables
-        constraintsDisabler.disableConstraints();
+        // Referential constraints are removed before clearing the database, to be sure there will be no conflicts when dropping tables
+        constraintsDisabler.disableReferentialConstraints();
 
         for (Database database : databases.getDatabases()) {
             if (database == null) {

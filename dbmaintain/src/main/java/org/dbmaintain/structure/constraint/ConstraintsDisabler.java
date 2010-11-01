@@ -32,4 +32,8 @@ public interface ConstraintsDisabler {
      */
     void disableConstraints();
 
+    void disableReferentialConstraints();
+
+    void disableValueConstraints();
+
 }
