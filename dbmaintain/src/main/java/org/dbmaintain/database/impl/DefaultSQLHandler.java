@@ -282,7 +282,7 @@ public class DefaultSQLHandler implements SQLHandler {
 
     /**
      * Returns a Connection to the given DataSource. The first time a Connection is requested, a new one is created
-     * using the given DataSource. All subsequenct calls with the same DataSource as parameter will return the same
+     * using the given DataSource. All subsequent calls with the same DataSource as parameter will return the same
      * Connection instance.
      *
      * @param dataSource provides access to the database
