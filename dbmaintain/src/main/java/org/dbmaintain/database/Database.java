@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.dbmaintain.database.StoredIdentifierCase.*;
 
 /**
@@ -714,6 +715,9 @@ abstract public class Database {
      * @return True if the identifier starts and ends with identifier quotes
      */
     public boolean isQuoted(String identifier) {
+        if (isBlank(identifierQuoteString)) {
+            return false;
+        }
         return identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString);
     }
 
@@ -722,6 +726,9 @@ abstract public class Database {
      * @return The identifier, removing identifier quotes if necessary, not null
      */
     public String removeIdentifierQuotes(String identifier) {
+        if (isBlank(identifierQuoteString)) {
+            return identifier;
+        }
         if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
             return identifier.substring(1, identifier.length() - 1);
         }
@@ -769,7 +776,7 @@ abstract public class Database {
      */
     protected String determineIdentifierQuoteString(String customIdentifierQuoteString) {
         if (customIdentifierQuoteString != null) {
-            return StringUtils.trimToNull(customIdentifierQuoteString);
+            return StringUtils.trim(customIdentifierQuoteString);
         }
 
         Connection connection = null;
