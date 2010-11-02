@@ -31,7 +31,7 @@ public class MarkErrorScriptRevertedAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new MarkErrorScriptRevertedTask(databases);
+        return new MarkErrorScriptRevertedTask(getDbMaintainDatabases());
     }
 
 }

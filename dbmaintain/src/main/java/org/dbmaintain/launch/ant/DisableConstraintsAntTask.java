@@ -28,6 +28,6 @@ public class DisableConstraintsAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new DisableConstraintsTask(databases);
+        return new DisableConstraintsTask(getDbMaintainDatabases());
     }
 }

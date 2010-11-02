@@ -29,6 +29,6 @@ public class ClearDatabaseAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new ClearDatabaseTask(databases);
+        return new ClearDatabaseTask(getDbMaintainDatabases());
     }
 }

@@ -31,7 +31,7 @@ public class UpdateSequencesAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new UpdateSequencesTask(databases, lowestAcceptableSequenceValue);
+        return new UpdateSequencesTask(getDbMaintainDatabases(), lowestAcceptableSequenceValue);
     }
 
 

@@ -39,7 +39,7 @@ public class MarkDatabaseAsUpToDateAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new MarkDatabaseAsUpToDateTask(databases, scriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
+        return new MarkDatabaseAsUpToDateTask(getDbMaintainDatabases(), scriptLocations, autoCreateDbMaintainScriptsTable, qualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions);
     }
 
 

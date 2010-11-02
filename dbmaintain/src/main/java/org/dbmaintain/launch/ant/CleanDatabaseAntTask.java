@@ -29,7 +29,7 @@ public class CleanDatabaseAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new CleanDatabaseTask(databases);
+        return new CleanDatabaseTask(getDbMaintainDatabases());
     }
 
 }
