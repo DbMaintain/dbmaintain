@@ -19,7 +19,11 @@ import org.dbmaintain.database.*;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
@@ -148,27 +152,35 @@ public class MsSqlDatabase extends Database {
         getSQLHandler().execute("DBCC CHECKIDENT ('" + qualified(schemaName, tableName) + "', reseed, " + identityValue + ")", getDataSource());
     }
 
-
     /**
      * Disables all referential constraints (e.g. foreign keys) on all table in the schema
      *
-     * @param schemaName The schema name, not null
+     * @param schemaName The schema, not null
      */
     @Override
     public void disableReferentialConstraints(String schemaName) {
-        Set<String> tableNames = getTableNames(schemaName);
-        for (String tableName : tableNames) {
-            disableReferentialConstraints(schemaName, tableName);
-        }
-    }
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
 
-    // todo refactor (see oracle)
-
-    protected void disableReferentialConstraints(String schemaName, String tableName) {
-        SQLHandler sqlHandler = getSQLHandler();
-        Set<String> constraintNames = sqlHandler.getItemsAsStringSet("select f.name from sys.foreign_keys f, sys.tables t, sys.schemas s where f.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
-        for (String constraintName : constraintNames) {
-            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName), getDataSource());
+            // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
+            resultSet = queryStatement.executeQuery("select t.name as tablename, f.name as constraintname from sys.foreign_keys f, sys.tables t, sys.schemas s " +
+                    "where f.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "' and f.is_disabled = 0");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("tablename");
+                String constraintName = resultSet.getString("constraintname");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Unable to disable referential constraints for schema name: " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
         }
     }
 
@@ -179,31 +191,171 @@ public class MsSqlDatabase extends Database {
      */
     @Override
     public void disableValueConstraints(String schemaName) {
-        Set<String> tableNames = getTableNames(schemaName);
-        for (String tableName : tableNames) {
-            disableValueConstraints(schemaName, tableName);
+        disableUniqueConstraints(schemaName);
+        disableCheckConstraints(schemaName);
+        disableNotNullConstraints(schemaName);
+    }
+
+    /**
+     * Drops all unique constraints from the given schema (not the primary key constraints)
+     *
+     * @param schemaName the schema name, not null
+     */
+    public void disableUniqueConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
+
+            resultSet = queryStatement.executeQuery("select t.name as tablename, k.name as constraintname from sys.key_constraints k, sys.tables t, sys.schemas s " +
+                    "where k.type = 'UQ' and k.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("tablename");
+                String constraintName = resultSet.getString("constraintname");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Unable to disable referential constraints for schema name: " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
         }
     }
 
-    // todo refactor (see oracle)
+    /**
+     * Drops all check constraints from the given schema
+     * @param schemaName the schema name, not null
+     */
+    public void disableCheckConstraints(String schemaName) {
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            queryStatement = connection.createStatement();
+            alterStatement = connection.createStatement();
 
-    protected void disableValueConstraints(String schemaName, String tableName) {
+            resultSet = queryStatement.executeQuery("select t.name as tablename, c.name as constraintname from sys.check_constraints c, sys.tables t, sys.schemas s " +
+                    "where c.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "' and is_disabled = 0");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("tablename");
+                String constraintName = resultSet.getString("constraintname");
+                alterStatement.executeUpdate("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(constraintName));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Unable to disable referential constraints for schema name: " + schemaName, e);
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
+        }
+    }
+
+    /**
+     * Drops not-null constraints on the given table.
+     * <p/>
+     * For primary keys, row-guid, identity and computed columns not-null constrains cannot be disabled in MS-Sql.
+     *
+     * @param schemaName the schema name, not null
+     */
+    public void disableNotNullConstraints(String schemaName) {
         SQLHandler sqlHandler = getSQLHandler();
+        Map<String, Set<String>> tablePrimaryKeyColumnsMap = getTablePrimaryKeyColumnsMap(schemaName);
 
-        // disable all unique constraints
-        Set<String> keyConstraintNames = sqlHandler.getItemsAsStringSet("select k.name from sys.key_constraints k, sys.tables t, sys.schemas s where k.type = 'UQ' and k.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
-        for (String keyConstraintName : keyConstraintNames) {
-            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(keyConstraintName), getDataSource());
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getDataSource().getConnection();
+            statement = connection.createStatement();
+
+            // get all not-null columns but not row-guid, identity and computed columns (these cannot be altered in MS-Sql)
+            resultSet = statement.executeQuery("select t.name table_name, c.name column_name, upper(y.name) data_type, c.max_length, c.precision, c.scale " +
+                    "from sys.types y, sys.columns c, sys.tables t, sys.schemas s " +
+                    "where c.is_nullable = 0 and c.is_rowguidcol = 0 and c.is_identity = 0 and c.is_computed = 0 " +
+                    "and y.user_type_id = c.user_type_id and c.object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("table_name");
+                String columnName = resultSet.getString("column_name");
+                Set<String> primaryKeyColumnNames = tablePrimaryKeyColumnsMap.get(tableName);
+                if (primaryKeyColumnNames != null && primaryKeyColumnNames.contains(columnName)) {
+                    // skip primary key columns
+                    continue;
+                }
+
+                String dataType = resultSet.getString("data_type");
+                if ("TIMESTAMP".equals(dataType)) {
+                    // timestamp columns cannot be altered in MS-Sql
+                    continue;
+                }
+
+                // handle data types that require a length and precision
+                if ("NUMERIC".equals(dataType) || "DECIMAL".equals(dataType)) {
+                    String precision = resultSet.getString("precision");
+                    /* Patch provided by Jan Ischebeck */
+                    String scale = resultSet.getString("scale");
+                    dataType += "(" + precision + ", " + scale + ")";
+                } else if (dataType.contains("CHAR")) {
+                    String maxLength = resultSet.getString("max_length");
+                    /* Patch provided by Thomas Queste */
+                    // NChar or NVarchar always count as the double of their real size in the sys.columns table
+                    // that means we should divide this value by two to have a correct size.
+                    if (dataType.equals("NCHAR") || dataType.equals("NVARCHAR")) {
+                        maxLength = String.valueOf(Integer.parseInt(maxLength) / 2);
+                    }
+                    // If the maxLenght == -1, we are dealing with a VARCHAR(MAX) datatype
+                    dataType += "(" + ("-1".equals(maxLength) ? "MAX" : String.valueOf(maxLength)) + ")";
+                }
+                // remove the not-null constraint
+                sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " " + dataType + " null", getDataSource());
+            }
+        } catch (Exception e) {
+            throw new DatabaseException("Unable to disable not null constraints for schema name: " + schemaName, e);
+        } finally {
+            closeQuietly(connection, statement, resultSet);
         }
+    }
 
-        // disable all check constraints
-        Set<String> checkConstraintNames = sqlHandler.getItemsAsStringSet("select c.name from sys.check_constraints c, sys.tables t, sys.schemas s where c.parent_object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
-        for (String checkConstraintName : checkConstraintNames) {
-            sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " drop constraint " + quoted(checkConstraintName), getDataSource());
+    /**
+     * @param schemaName the schema name, not null
+     * @return a map with the table names of the given schema as key and a set containing the primary key column names
+     * as value
+     */
+    protected Map<String, Set<String>> getTablePrimaryKeyColumnsMap(String schemaName) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getDataSource().getConnection();
+            statement = connection.createStatement();
+
+            Map<String, Set<String>> tablePrimaryKeyColumnsMap = new HashMap<String, Set<String>>();
+            resultSet = statement.executeQuery("select t.name table_name, c.name column_name from sys.key_constraints k, sys.index_columns i, sys.columns c, sys.tables t, sys.schemas s " +
+                        "where k.type = 'PK' and i.index_id = k.unique_index_id and i.column_id = c.column_id " +
+                        "  and c.object_id = t.object_id and k.parent_object_id = t.object_id and i.object_id = t.object_id " +
+                        " and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+            while (resultSet.next()) {
+                String tableName = resultSet.getString("table_name");
+                String columnName = resultSet.getString("column_name");
+                Set<String> tablePrimaryKeyColumns = tablePrimaryKeyColumnsMap.get(tableName);
+                if (tablePrimaryKeyColumns == null) {
+                    tablePrimaryKeyColumns = new HashSet<String>();
+                    tablePrimaryKeyColumnsMap.put(tableName, tablePrimaryKeyColumns);
+                }
+                tablePrimaryKeyColumns.add(columnName);
+            }
+            return tablePrimaryKeyColumnsMap;
+        } catch (Exception e) {
+            throw new DatabaseException("Error while retrieving primary key column names for schema: " + schemaName, e);
+        } finally {
+            closeQuietly(connection, statement, resultSet);
         }
-
-        // disable all not null constraints
-        disableNotNullConstraints(schemaName, tableName);
     }
 
     /**
@@ -269,75 +421,6 @@ public class MsSqlDatabase extends Database {
     @Override
     public boolean supportsIdentityColumns() {
         return true;
-    }
-
-
-    /**
-     * Disables not-null constraints on the given table.
-     * <p/>
-     * For primary keys, row-guid, identity and computed columns not-null constrains cannot be disabled in MS-Sql.
-     *
-     * @param schemaName the schema name, not null
-     * @param tableName  The table, not null
-     */
-    protected void disableNotNullConstraints(String schemaName, String tableName) {
-        SQLHandler sqlHandler = getSQLHandler();
-
-        // retrieve the name of the primary key, since we cannot remove the not-null constraint on this column
-        Set<String> primaryKeyColumnNames = sqlHandler.getItemsAsStringSet("select c.name from sys.key_constraints k, sys.index_columns i, sys.columns c, sys.tables t, sys.schemas s " +
-                "where k.type = 'PK' and i.index_id = k.unique_index_id and i.column_id = c.column_id " +
-                "  and c.object_id = t.object_id and k.parent_object_id = t.object_id and i.object_id = t.object_id " +
-                "  and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
-
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = getDataSource().getConnection();
-            statement = connection.createStatement();
-
-            // get all not-null columns but not row-guid, identity and computed columns (these cannot be altered in MS-Sql)
-            resultSet = statement.executeQuery("select c.name column_name, upper(y.name) data_type, c.max_length, c.precision, c.scale from sys.types y, sys.columns c, sys.tables t, sys.schemas s " +
-                    "where c.is_nullable = 0 and c.is_rowguidcol = 0 and c.is_identity = 0 and c.is_computed = 0 " +
-                    "and y.user_type_id = c.user_type_id and c.object_id = t.object_id and t.name = '" + tableName + "' and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
-
-            while (resultSet.next()) {
-                String columnName = resultSet.getString("column_name");
-                if (primaryKeyColumnNames.contains(columnName)) {
-                    // skip primary key columns
-                    continue;
-                }
-
-                String dataType = resultSet.getString("data_type");
-                if ("TIMESTAMP".equals(dataType)) {
-                    // timestamp columns cannot be altered in MS-Sql
-                    continue;
-                }
-
-                // handle data types that require a length and precision
-                if ("NUMERIC".equals(dataType) || "DECIMAL".equals(dataType)) {
-                    String precision = resultSet.getString("precision");
-                    /* Patch provided by Jan Ischebeck */
-                    String scale = resultSet.getString("scale");
-                    dataType += "(" + precision + ", " + scale + ")";
-                } else if (dataType.contains("CHAR")) {
-                    String maxLength = resultSet.getString("max_length");
-                    /* Patch provided by Thomas Queste */
-                    // NChar or NVarchar always count as the double of their real size in the sys.columns table
-                    // that means we should divide this value by two to have a correct size.
-                    if (dataType.equals("NCHAR") || dataType.equals("NVARCHAR")) {
-                        maxLength = String.valueOf(Integer.parseInt(maxLength) / 2);
-                    }
-                    dataType += "(" + ("-1".equals(maxLength) ? "MAX" : String.valueOf(maxLength)) + ")";
-                }
-                // remove the not-null constraint
-                sqlHandler.execute("alter table " + qualified(schemaName, tableName) + " alter column " + quoted(columnName) + " " + dataType + " null", getDataSource());
-            }
-        } catch (Exception e) {
-            throw new DatabaseException("Unable to disable not null constraints for schema name: " + schemaName + ", table name: " + tableName, e);
-        } finally {
-            closeQuietly(connection, statement, resultSet);
-        }
     }
 
 }
