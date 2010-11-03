@@ -15,8 +15,6 @@
  */
 package org.dbmaintain.database;
 
-import org.apache.commons.lang.StringUtils;
-
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -25,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.trimToNull;
 import static org.dbmaintain.database.StoredIdentifierCase.*;
 
 /**
@@ -715,7 +713,7 @@ abstract public class Database {
      * @return True if the identifier starts and ends with identifier quotes
      */
     public boolean isQuoted(String identifier) {
-        if (isBlank(identifierQuoteString)) {
+        if (identifierQuoteString == null) {
             return false;
         }
         return identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString);
@@ -726,7 +724,7 @@ abstract public class Database {
      * @return The identifier, removing identifier quotes if necessary, not null
      */
     public String removeIdentifierQuotes(String identifier) {
-        if (isBlank(identifierQuoteString)) {
+        if (identifierQuoteString == null) {
             return identifier;
         }
         if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
@@ -776,7 +774,7 @@ abstract public class Database {
      */
     protected String determineIdentifierQuoteString(String customIdentifierQuoteString) {
         if (customIdentifierQuoteString != null) {
-            return StringUtils.trim(customIdentifierQuoteString);
+            return trimToNull(customIdentifierQuoteString);
         }
 
         Connection connection = null;
@@ -785,7 +783,7 @@ abstract public class Database {
 
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             String quoteString = databaseMetaData.getIdentifierQuoteString();
-            return StringUtils.trimToNull(quoteString);
+            return trimToNull(quoteString);
 
         } catch (SQLException e) {
             throw new DatabaseException("Unable to determine identifier quote string.", e);
