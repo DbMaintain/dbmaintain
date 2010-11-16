@@ -18,7 +18,7 @@ package org.dbmaintain.database.impl;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseConnection;
 import org.dbmaintain.database.DatabaseException;
-import org.dbmaintain.database.StoredIdentifierCase;
+import org.dbmaintain.database.IdentifierProcessor;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -37,9 +37,8 @@ import static org.apache.commons.dbutils.DbUtils.closeQuietly;
  */
 public class InformixDatabase extends Database {
 
-    public InformixDatabase(DatabaseConnection databaseConnection, String customIdentifierQuoteString,
-                            StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase);
+    public InformixDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
+        super(databaseConnection, identifierProcessor);
     }
 
     @Override

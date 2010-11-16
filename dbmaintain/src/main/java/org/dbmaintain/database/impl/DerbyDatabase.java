@@ -39,8 +39,8 @@ import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 public class DerbyDatabase extends Database {
 
 
-    public DerbyDatabase(DatabaseConnection databaseConnection, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase);
+    public DerbyDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
+        super(databaseConnection, identifierProcessor);
     }
 
 

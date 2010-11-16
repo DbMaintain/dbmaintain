@@ -15,10 +15,7 @@
  */
 package org.dbmaintain.database.impl;
 
-import org.dbmaintain.database.Database;
-import org.dbmaintain.database.DatabaseConnection;
-import org.dbmaintain.database.SQLHandler;
-import org.dbmaintain.database.StoredIdentifierCase;
+import org.dbmaintain.database.*;
 
 import java.util.Set;
 
@@ -39,8 +36,8 @@ import java.util.Set;
 public class MySqlDatabase extends Database {
 
 
-    public MySqlDatabase(DatabaseConnection databaseConnection, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase);
+    public MySqlDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
+        super(databaseConnection, identifierProcessor);
     }
 
 
@@ -191,12 +188,12 @@ public class MySqlDatabase extends Database {
     @Override
     public String toCorrectCaseIdentifier(String identifier) {
         identifier = identifier.trim();
-        String identifierQuoteString = getIdentifierQuoteString();
+        String identifierQuoteString = identifierProcessor.getIdentifierQuoteString();
         if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
             identifier = identifier.substring(1, identifier.length() - 1);
         }
 
-        StoredIdentifierCase storedIdentifierCase = getStoredIdentifierCase();
+        StoredIdentifierCase storedIdentifierCase = identifierProcessor.getStoredIdentifierCase();
         if (storedIdentifierCase == StoredIdentifierCase.UPPER_CASE) {
             return identifier.toUpperCase();
         } else if (storedIdentifierCase == StoredIdentifierCase.LOWER_CASE) {

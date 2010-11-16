@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static org.dbmaintain.database.StoredIdentifierCase.UPPER_CASE;
 import static org.dbmaintain.datasource.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 
@@ -64,7 +65,8 @@ public abstract class TestUtils {
         DataSource dataSource = createDataSource(databaseInfo);
         SQLHandler sqlHandler = new DefaultSQLHandler();
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
-        Database database = new HsqldbDatabase(databaseConnection, null, null);
+        IdentifierProcessor identifierProcessor = new IdentifierProcessor(UPPER_CASE, "\"", databaseInfo.getDefaultSchemaName());
+        Database database = new HsqldbDatabase(databaseConnection, identifierProcessor);
         return new Databases(asList(database), new ArrayList<String>());
     }
 

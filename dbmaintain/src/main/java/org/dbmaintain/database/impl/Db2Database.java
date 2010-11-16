@@ -17,8 +17,8 @@ package org.dbmaintain.database.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseConnection;
+import org.dbmaintain.database.IdentifierProcessor;
 import org.dbmaintain.database.SQLHandler;
-import org.dbmaintain.database.StoredIdentifierCase;
 
 import java.util.Set;
 
@@ -33,8 +33,8 @@ import java.util.Set;
 public class Db2Database extends Database {
 
 
-    public Db2Database(DatabaseConnection databaseConnection, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase);
+    public Db2Database(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
+        super(databaseConnection, identifierProcessor);
     }
 
 

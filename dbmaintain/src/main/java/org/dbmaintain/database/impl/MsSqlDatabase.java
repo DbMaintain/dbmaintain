@@ -40,8 +40,8 @@ import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 public class MsSqlDatabase extends Database {
 
 
-    public MsSqlDatabase(DatabaseConnection databaseConnection, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase);
+    public MsSqlDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
+        super(databaseConnection, identifierProcessor);
     }
 
 
@@ -111,12 +111,12 @@ public class MsSqlDatabase extends Database {
      * @return The names of all stored procedures in the database
      */
     @Override
-	public Set<String> getStoredProcedureNames(String schemaName) {
-    	return getSQLHandler().getItemsAsStringSet("SELECT sys.procedures.name FROM sys.procedures INNER JOIN sys.schemas ON sys.procedures.schema_id = sys.schemas.schema_id where sys.schemas.name = '" + schemaName + "'", getDataSource());
-	}
+    public Set<String> getStoredProcedureNames(String schemaName) {
+        return getSQLHandler().getItemsAsStringSet("SELECT sys.procedures.name FROM sys.procedures INNER JOIN sys.schemas ON sys.procedures.schema_id = sys.schemas.schema_id where sys.schemas.name = '" + schemaName + "'", getDataSource());
+    }
 
 
-	/**
+    /**
      * Retrieves the names of all the types in the database schema.
      *
      * @return The names of all types in the database
@@ -228,6 +228,7 @@ public class MsSqlDatabase extends Database {
 
     /**
      * Drops all check constraints from the given schema
+     *
      * @param schemaName the schema name, not null
      */
     public void disableCheckConstraints(String schemaName) {
@@ -324,7 +325,7 @@ public class MsSqlDatabase extends Database {
     /**
      * @param schemaName the schema name, not null
      * @return a map with the table names of the given schema as key and a set containing the primary key column names
-     * as value
+     *         as value
      */
     protected Map<String, Set<String>> getTablePrimaryKeyColumnsMap(String schemaName) {
         Connection connection = null;
@@ -337,9 +338,9 @@ public class MsSqlDatabase extends Database {
 
             Map<String, Set<String>> tablePrimaryKeyColumnsMap = new HashMap<String, Set<String>>();
             resultSet = statement.executeQuery("select t.name table_name, c.name column_name from sys.key_constraints k, sys.index_columns i, sys.columns c, sys.tables t, sys.schemas s " +
-                        "where k.type = 'PK' and i.index_id = k.unique_index_id and i.column_id = c.column_id " +
-                        "  and c.object_id = t.object_id and k.parent_object_id = t.object_id and i.object_id = t.object_id " +
-                        " and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+                    "where k.type = 'PK' and i.index_id = k.unique_index_id and i.column_id = c.column_id " +
+                    "  and c.object_id = t.object_id and k.parent_object_id = t.object_id and i.object_id = t.object_id " +
+                    " and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
             while (resultSet.next()) {
                 String tableName = resultSet.getString("table_name");
                 String columnName = resultSet.getString("column_name");
@@ -398,12 +399,12 @@ public class MsSqlDatabase extends Database {
      * @return True
      */
     @Override
-	public boolean supportsStoredProcedures() {
-    	return true;
-	}
+    public boolean supportsStoredProcedures() {
+        return true;
+    }
 
 
-	/**
+    /**
      * Types are supported
      *
      * @return true

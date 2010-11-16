@@ -16,15 +16,8 @@
 package org.dbmaintain.database;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.apache.commons.dbutils.DbUtils.closeQuietly;
-import static org.apache.commons.lang.StringUtils.trimToNull;
-import static org.dbmaintain.database.StoredIdentifierCase.*;
 
 /**
  * Helper class that implements a number of common operations on a database schema. Operations that can be implemented
@@ -37,21 +30,14 @@ import static org.dbmaintain.database.StoredIdentifierCase.*;
  */
 abstract public class Database {
 
-    private DatabaseConnection databaseConnection;
-    private String defaultSchemaName;
-    private Set<String> schemaNames;
-    /* Indicates whether database identifiers are stored in lowercase, uppercase or mixed case */
-    private StoredIdentifierCase storedIdentifierCase;
-    /* The string that is used to quote identifiers to make them case sensitive, e.g. ", null means quoting not supported*/
-    private String identifierQuoteString;
+    protected DatabaseConnection databaseConnection;
+    protected Set<String> schemaNames;
+    protected IdentifierProcessor identifierProcessor;
 
-
-    protected Database(DatabaseConnection databaseConnection, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
+    protected Database(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
         this.databaseConnection = databaseConnection;
-        this.identifierQuoteString = determineIdentifierQuoteString(customIdentifierQuoteString);
-        this.storedIdentifierCase = determineStoredIdentifierCase(customStoredIdentifierCase);
+        this.identifierProcessor = identifierProcessor;
 
-        this.defaultSchemaName = toCorrectCaseIdentifier(getDatabaseInfo().getDefaultSchemaName());
         this.schemaNames = new HashSet<String>();
         for (String schemaName : getDatabaseInfo().getSchemaNames()) {
             this.schemaNames.add(toCorrectCaseIdentifier(schemaName));
@@ -67,6 +53,14 @@ abstract public class Database {
      */
     public abstract String getSupportedDatabaseDialect();
 
+
+    public StoredIdentifierCase getStoredIdentifierCase() {
+        return identifierProcessor.getStoredIdentifierCase();
+    }
+
+    public String getIdentifierQuoteString() {
+        return identifierProcessor.getIdentifierQuoteString();
+    }
 
     public DatabaseInfo getDatabaseInfo() {
         return databaseConnection.getDatabaseInfo();
@@ -95,7 +89,7 @@ abstract public class Database {
     }
 
     public String getDefaultSchemaName() {
-        return defaultSchemaName;
+        return identifierProcessor.getDefaultSchemaName();
     }
 
     public Set<String> getSchemaNames() {
@@ -103,31 +97,12 @@ abstract public class Database {
     }
 
     /**
-     * Gets the identifier quote string.
-     *
-     * @return the quote string, null if not supported
-     */
-    public String getIdentifierQuoteString() {
-        return identifierQuoteString;
-    }
-
-    /**
-     * Gets the stored identifier case.
-     *
-     * @return the case, not null
-     */
-    public StoredIdentifierCase getStoredIdentifierCase() {
-        return storedIdentifierCase;
-    }
-
-
-    /**
      * Returns the names of all tables in the default schema.
      *
      * @return The names of all tables in the database
      */
     public Set<String> getTableNames() {
-        return getTableNames(defaultSchemaName);
+        return getTableNames(getDefaultSchemaName());
     }
 
     /**
@@ -146,7 +121,7 @@ abstract public class Database {
      * @return The names of the columns of the table with the given name
      */
     public Set<String> getColumnNames(String tableName) {
-        return getColumnNames(defaultSchemaName, tableName);
+        return getColumnNames(getDefaultSchemaName(), tableName);
     }
 
     /**
@@ -165,7 +140,7 @@ abstract public class Database {
      * @return The names of all views in the database
      */
     public Set<String> getViewNames() {
-        return getViewNames(defaultSchemaName);
+        return getViewNames(getDefaultSchemaName());
     }
 
     /**
@@ -183,7 +158,7 @@ abstract public class Database {
      * @return The names of all materialized views in the database
      */
     public Set<String> getMaterializedViewNames() {
-        return getMaterializedViewNames(defaultSchemaName);
+        return getMaterializedViewNames(getDefaultSchemaName());
     }
 
     /**
@@ -203,7 +178,7 @@ abstract public class Database {
      * @return The names of all synonyms in the database
      */
     public Set<String> getSynonymNames() {
-        return getSynonymNames(defaultSchemaName);
+        return getSynonymNames(getDefaultSchemaName());
     }
 
     /**
@@ -223,7 +198,7 @@ abstract public class Database {
      * @return The names of all sequences in the database, not null
      */
     public Set<String> getSequenceNames() {
-        return getSequenceNames(defaultSchemaName);
+        return getSequenceNames(getDefaultSchemaName());
     }
 
     /**
@@ -243,7 +218,7 @@ abstract public class Database {
      * @return The names of all triggers in the database, not null
      */
     public Set<String> getTriggerNames() {
-        return getTriggerNames(defaultSchemaName);
+        return getTriggerNames(getDefaultSchemaName());
     }
 
     /**
@@ -263,7 +238,7 @@ abstract public class Database {
      * @return The names of all stored procedures in the database, not null
      */
     public Set<String> getStoredProcedureNames() {
-        return getStoredProcedureNames(defaultSchemaName);
+        return getStoredProcedureNames(getDefaultSchemaName());
     }
 
     /**
@@ -283,7 +258,7 @@ abstract public class Database {
      * @return The names of all types in the database, not null
      */
     public Set<String> getTypeNames() {
-        return getTypeNames(defaultSchemaName);
+        return getTypeNames(getDefaultSchemaName());
     }
 
     /**
@@ -304,7 +279,7 @@ abstract public class Database {
      * @param tableName The table to drop (case-sensitive), not null
      */
     public void dropTable(String tableName) {
-        dropTable(defaultSchemaName, tableName);
+        dropTable(getDefaultSchemaName(), tableName);
     }
 
     /**
@@ -326,7 +301,7 @@ abstract public class Database {
      * @param viewName The view to drop (case-sensitive), not null
      */
     public void dropView(String viewName) {
-        dropView(defaultSchemaName, viewName);
+        dropView(getDefaultSchemaName(), viewName);
     }
 
     /**
@@ -348,7 +323,7 @@ abstract public class Database {
      * @param viewName The view to drop (case-sensitive), not null
      */
     public void dropMaterializedView(String viewName) {
-        dropMaterializedView(defaultSchemaName, viewName);
+        dropMaterializedView(getDefaultSchemaName(), viewName);
     }
 
     /**
@@ -370,7 +345,7 @@ abstract public class Database {
      * @param synonymName The synonym to drop (case-sensitive), not null
      */
     public void dropSynonym(String synonymName) {
-        dropSynonym(defaultSchemaName, synonymName);
+        dropSynonym(getDefaultSchemaName(), synonymName);
     }
 
     /**
@@ -392,7 +367,7 @@ abstract public class Database {
      * @param sequenceName The sequence to drop (case-sensitive), not null
      */
     public void dropSequence(String sequenceName) {
-        dropSequence(defaultSchemaName, sequenceName);
+        dropSequence(getDefaultSchemaName(), sequenceName);
     }
 
     /**
@@ -414,7 +389,7 @@ abstract public class Database {
      * @param triggerName The trigger to drop (case-sensitive), not null
      */
     public void dropTrigger(String triggerName) {
-        dropTrigger(defaultSchemaName, triggerName);
+        dropTrigger(getDefaultSchemaName(), triggerName);
     }
 
     /**
@@ -436,7 +411,7 @@ abstract public class Database {
      * @param storedProcedureName The stored procedure to drop (case-sensitive), not null
      */
     public void dropStoredProcedure(String storedProcedureName) {
-        dropStoredProcedure(defaultSchemaName, storedProcedureName);
+        dropStoredProcedure(getDefaultSchemaName(), storedProcedureName);
     }
 
     /**
@@ -457,7 +432,7 @@ abstract public class Database {
      * @param typeName The type to drop (case-sensitive), not null
      */
     public void dropType(String typeName) {
-        dropType(defaultSchemaName, typeName);
+        dropType(getDefaultSchemaName(), typeName);
     }
 
 
@@ -477,7 +452,7 @@ abstract public class Database {
      * Disables all referential constraints (e.g. foreign keys) on all table in the default schema
      */
     public void disableReferentialConstraints() {
-        disableReferentialConstraints(defaultSchemaName);
+        disableReferentialConstraints(getDefaultSchemaName());
     }
 
     /**
@@ -492,7 +467,7 @@ abstract public class Database {
      * Disables all value constraints (e.g. not null) on all tables in the default schema
      */
     public void disableValueConstraints() {
-        disableValueConstraints(defaultSchemaName);
+        disableValueConstraints(getDefaultSchemaName());
     }
 
     /**
@@ -512,7 +487,7 @@ abstract public class Database {
      * @return The value of the sequence with the given name
      */
     public long getSequenceValue(String sequenceName) {
-        return getSequenceValue(defaultSchemaName, sequenceName);
+        return getSequenceValue(getDefaultSchemaName(), sequenceName);
     }
 
     /**
@@ -536,7 +511,7 @@ abstract public class Database {
      * @param newSequenceValue The value to set
      */
     public void incrementSequenceToValue(String sequenceName, long newSequenceValue) {
-        incrementSequenceToValue(defaultSchemaName, sequenceName, newSequenceValue);
+        incrementSequenceToValue(getDefaultSchemaName(), sequenceName, newSequenceValue);
     }
 
     /**
@@ -558,7 +533,7 @@ abstract public class Database {
      * @return The names of the identity columns of the table with the given name
      */
     public Set<String> getIdentityColumnNames(String tableName) {
-        return getIdentityColumnNames(defaultSchemaName, tableName);
+        return getIdentityColumnNames(getDefaultSchemaName(), tableName);
     }
 
     /**
@@ -582,7 +557,7 @@ abstract public class Database {
      * @param identityValue      The new value
      */
     public void incrementIdentityColumnToValue(String tableName, String identityColumnName, long identityValue) {
-        incrementIdentityColumnToValue(defaultSchemaName, tableName, identityColumnName, identityValue);
+        incrementIdentityColumnToValue(getDefaultSchemaName(), tableName, identityColumnName, identityValue);
     }
 
     /**
@@ -637,7 +612,7 @@ abstract public class Database {
      * @return The qualified database object name
      */
     public String qualified(String databaseObjectName) {
-        return qualified(defaultSchemaName, databaseObjectName);
+        return identifierProcessor.qualified(databaseObjectName);
     }
 
     /**
@@ -651,7 +626,7 @@ abstract public class Database {
      * @return The qualified database object name
      */
     public String qualified(String schemaName, String databaseObjectName) {
-        return quoted(schemaName) + "." + quoted(databaseObjectName);
+        return identifierProcessor.qualified(schemaName, databaseObjectName);
     }
 
 
@@ -663,10 +638,7 @@ abstract public class Database {
      * @return Quoted version of the given databaseObjectName, if supported by the underlying DBMS
      */
     public String quoted(String databaseObjectName) {
-        if (identifierQuoteString == null) {
-            return databaseObjectName;
-        }
-        return identifierQuoteString + databaseObjectName + identifierQuoteString;
+        return identifierProcessor.quoted(databaseObjectName);
     }
 
 
@@ -687,25 +659,7 @@ abstract public class Database {
      * @return The name converted to correct case if needed, not null
      */
     public String toCorrectCaseIdentifier(String identifier) {
-        identifier = identifier.trim();
-
-        int index = identifier.indexOf('.');
-        if (index != -1) {
-            String schemaNamePart = identifier.substring(0, index);
-            String identifierPart = identifier.substring(index + 1);
-            return toCorrectCaseIdentifier(schemaNamePart) + "." + toCorrectCaseIdentifier(identifierPart);
-        }
-
-        if (isQuoted(identifier)) {
-            return removeIdentifierQuotes(identifier);
-        }
-        if (storedIdentifierCase == UPPER_CASE) {
-            return identifier.toUpperCase();
-        } else if (storedIdentifierCase == LOWER_CASE) {
-            return identifier.toLowerCase();
-        } else {
-            return identifier;
-        }
+        return identifierProcessor.toCorrectCaseIdentifier(identifier);
     }
 
     /**
@@ -713,10 +667,7 @@ abstract public class Database {
      * @return True if the identifier starts and ends with identifier quotes
      */
     public boolean isQuoted(String identifier) {
-        if (identifierQuoteString == null) {
-            return false;
-        }
-        return identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString);
+        return identifierProcessor.isQuoted(identifier);
     }
 
     /**
@@ -724,73 +675,9 @@ abstract public class Database {
      * @return The identifier, removing identifier quotes if necessary, not null
      */
     public String removeIdentifierQuotes(String identifier) {
-        if (identifierQuoteString == null) {
-            return identifier;
-        }
-        if (identifier.startsWith(identifierQuoteString) && identifier.endsWith(identifierQuoteString)) {
-            return identifier.substring(1, identifier.length() - 1);
-        }
-        return identifier;
+        return identifierProcessor.removeIdentifierQuotes(identifier);
     }
 
-    /**
-     * Determines the case the database uses to store non-quoted identifiers. This will use the connections
-     * database metadata to determine the correct case.
-     *
-     * @param customStoredIdentifierCase The stored case: possible values 'lower_case', 'upper_case', 'mixed_case' and 'auto'
-     * @return The stored case, not null
-     */
-    private StoredIdentifierCase determineStoredIdentifierCase(StoredIdentifierCase customStoredIdentifierCase) {
-        if (customStoredIdentifierCase != null) {
-            return customStoredIdentifierCase;
-        }
-
-        Connection connection = null;
-        try {
-            connection = getDataSource().getConnection();
-
-            DatabaseMetaData databaseMetaData = connection.getMetaData();
-            if (databaseMetaData.storesUpperCaseIdentifiers()) {
-                return UPPER_CASE;
-            } else if (databaseMetaData.storesLowerCaseIdentifiers()) {
-                return LOWER_CASE;
-            } else {
-                return MIXED_CASE;
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Unable to determine stored identifier case.", e);
-        } finally {
-            closeQuietly(connection, null, null);
-        }
-    }
-
-    /**
-     * Determines the string used to quote identifiers to make them case-sensitive. This will use the connections
-     * database metadata to determine the quote string.
-     *
-     * @param customIdentifierQuoteString If not null, it specifies a custom identifier quote string that replaces the one
-     *                                    specified by the JDBC DatabaseMetaData object
-     * @return The quote string, null if quoting is not supported
-     */
-    protected String determineIdentifierQuoteString(String customIdentifierQuoteString) {
-        if (customIdentifierQuoteString != null) {
-            return trimToNull(customIdentifierQuoteString);
-        }
-
-        Connection connection = null;
-        try {
-            connection = getDataSource().getConnection();
-
-            DatabaseMetaData databaseMetaData = connection.getMetaData();
-            String quoteString = databaseMetaData.getIdentifierQuoteString();
-            return trimToNull(quoteString);
-
-        } catch (SQLException e) {
-            throw new DatabaseException("Unable to determine identifier quote string.", e);
-        } finally {
-            closeQuietly(connection, null, null);
-        }
-    }
 
     /**
      * Enables or disables the setting of identity value in insert and update statements in the default schema.
@@ -801,7 +688,7 @@ abstract public class Database {
      * @param enabled   True to enable, false to disable
      */
     public void setSettingIdentityColumnValueEnabled(String tableName, boolean enabled) {
-        setSettingIdentityColumnValueEnabled(defaultSchemaName, tableName, enabled);
+        setSettingIdentityColumnValueEnabled(getDefaultSchemaName(), tableName, enabled);
     }
 
     /**

@@ -18,7 +18,7 @@ package org.dbmaintain.database.impl;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseConnection;
 import org.dbmaintain.database.DatabaseException;
-import org.dbmaintain.database.StoredIdentifierCase;
+import org.dbmaintain.database.IdentifierProcessor;
 
 import java.sql.*;
 import java.util.Set;
@@ -38,8 +38,8 @@ public class HsqldbDatabase extends Database {
     private Integer hsqlMajorVersionNumber;
 
 
-    public HsqldbDatabase(DatabaseConnection databaseConnection, String customIdentifierQuoteString, StoredIdentifierCase customStoredIdentifierCase) {
-        super(databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase);
+    public HsqldbDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
+        super(databaseConnection, identifierProcessor);
     }
 
 

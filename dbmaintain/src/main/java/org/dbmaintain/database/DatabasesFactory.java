@@ -17,16 +17,13 @@ package org.dbmaintain.database;
 
 import org.dbmaintain.util.DbMaintainException;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
-import static org.dbmaintain.config.PropertyUtils.getString;
-import static org.dbmaintain.database.StoredIdentifierCase.*;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 
 /**
@@ -37,11 +34,13 @@ public class DatabasesFactory {
 
     protected Properties configuration;
     protected DatabaseConnectionManager databaseConnectionManager;
+    protected IdentifierProcessorFactory identifierProcessorFactory;
 
 
     public DatabasesFactory(Properties configuration, DatabaseConnectionManager databaseConnectionManager) {
         this.configuration = configuration;
         this.databaseConnectionManager = databaseConnectionManager;
+        this.identifierProcessorFactory = new IdentifierProcessorFactory(configuration);
     }
 
 
@@ -63,13 +62,14 @@ public class DatabasesFactory {
 
     protected Database createDatabase(DatabaseConnection databaseConnection) {
         String databaseDialect = getDatabaseDialect(databaseConnection);
-        String customIdentifierQuoteString = getCustomIdentifierQuoteString(databaseDialect);
-        StoredIdentifierCase customStoredIdentifierCase = getCustomStoredIdentifierCase(databaseDialect);
+        DataSource dataSource = databaseConnection.getDataSource();
+        String defaultSchemaName = databaseConnection.getDatabaseInfo().getDefaultSchemaName();
+        IdentifierProcessor identifierProcessor = identifierProcessorFactory.createIdentifierProcessor(databaseDialect, defaultSchemaName, dataSource);
 
         Class<Database> clazz = getConfiguredClass(Database.class, configuration, databaseDialect);
         return createInstanceOfType(clazz, false,
-                new Class<?>[]{DatabaseConnection.class, String.class, StoredIdentifierCase.class},
-                new Object[]{databaseConnection, customIdentifierQuoteString, customStoredIdentifierCase}
+                new Class<?>[]{DatabaseConnection.class, IdentifierProcessor.class},
+                new Object[]{databaseConnection, identifierProcessor}
         );
     }
 
@@ -85,30 +85,4 @@ public class DatabasesFactory {
         }
         return dialect;
     }
-
-    protected StoredIdentifierCase getCustomStoredIdentifierCase(String databaseDialect) {
-        String storedIdentifierCasePropertyValue = getString(PROPERTY_STORED_IDENTIFIER_CASE + "." + databaseDialect, "auto", configuration);
-        if ("lower_case".equals(storedIdentifierCasePropertyValue)) {
-            return LOWER_CASE;
-        } else if ("upper_case".equals(storedIdentifierCasePropertyValue)) {
-            return UPPER_CASE;
-        } else if ("mixed_case".equals(storedIdentifierCasePropertyValue)) {
-            return MIXED_CASE;
-        } else if ("auto".equals(storedIdentifierCasePropertyValue)) {
-            return null;
-        }
-        throw new DatabaseException("Unable to determine stored identifier case. Unknown value " + storedIdentifierCasePropertyValue + " for property " + PROPERTY_STORED_IDENTIFIER_CASE + ". It should be one of lower_case, upper_case, mixed_case or auto.");
-    }
-
-    protected String getCustomIdentifierQuoteString(String databaseDialect) {
-        String identifierQuoteStringPropertyValue = getString(PROPERTY_IDENTIFIER_QUOTE_STRING + '.' + databaseDialect, "auto", configuration);
-        if ("none".equals(identifierQuoteStringPropertyValue)) {
-            return "";
-        }
-        if ("auto".equals(identifierQuoteStringPropertyValue)) {
-            return null;
-        }
-        return identifierQuoteStringPropertyValue;
-    }
-
 }
