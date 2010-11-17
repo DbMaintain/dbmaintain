@@ -50,7 +50,8 @@ public abstract class BaseAntTask extends Task {
         try {
             dbMaintainTask.execute();
         } catch (Exception e) {
-            throw new BuildException("Unable to perform db maintain task. " + e.getMessage(), e);
+            String messages = getAllMessages(e);
+            throw new BuildException("Unable to perform db maintain task.\n" + messages, e);
         }
     }
 
@@ -78,5 +79,20 @@ public abstract class BaseAntTask extends Task {
 
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
+    }
+
+
+    private String getAllMessages(Throwable t) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while (t != null) {
+            String message = t.getMessage();
+            if (message != null) {
+                stringBuilder.append(message);
+                stringBuilder.append("\n");
+            }
+            t = t.getCause();
+        }
+        return stringBuilder.toString();
     }
 }
