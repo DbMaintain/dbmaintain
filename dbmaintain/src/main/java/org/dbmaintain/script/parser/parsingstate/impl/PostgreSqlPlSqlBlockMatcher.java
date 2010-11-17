@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dbmaintain.script.parser.parsingstate;
+package org.dbmaintain.script.parser.parsingstate.impl;
+
+import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 
 import java.util.regex.Pattern;
 
@@ -24,7 +26,7 @@ import java.util.regex.Pattern;
  */
 public class PostgreSqlPlSqlBlockMatcher implements PlSqlBlockMatcher {
 
-    private static final Pattern PL_SQL_PATTERN = Pattern.compile("^CREATE (OR REPLACE )?FUNCTION");
+    private static final Pattern PL_SQL_PATTERN = Pattern.compile("^(CREATE (OR REPLACE )?(FUNCTION|RULE)|BEGIN)");
 
     public boolean isStartOfPlSqlBlock(StringBuilder statementWithoutCommentsOrWhitespace) {
         return PL_SQL_PATTERN.matcher(statementWithoutCommentsOrWhitespace).matches();

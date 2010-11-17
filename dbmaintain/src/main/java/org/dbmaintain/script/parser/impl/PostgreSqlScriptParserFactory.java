@@ -16,7 +16,7 @@
 package org.dbmaintain.script.parser.impl;
 
 import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
-import org.dbmaintain.script.parser.parsingstate.PostgreSqlPlSqlBlockMatcher;
+import org.dbmaintain.script.parser.parsingstate.impl.PostgreSqlPlSqlBlockMatcher;
 
 import java.util.Properties;
 
