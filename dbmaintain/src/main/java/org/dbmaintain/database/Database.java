@@ -270,6 +270,16 @@ abstract public class Database {
     public Set<String> getTypeNames(String schemaName) {
         throw new UnsupportedOperationException("Types are not supported for " + getSupportedDatabaseDialect());
     }
+    
+    /**
+     * Retrieves the names of all rules in the given schema.
+     *
+     * @param schemaName The schema, not null
+     * @return The names of all rules in the database, not null
+     */
+    public Set<String> getRuleNames(String schemaName) {
+    	throw new UnsupportedOperationException("Rules are not supported for " + getSupportedDatabaseDialect());
+    }
 
 
     /**
@@ -447,6 +457,16 @@ abstract public class Database {
         getSQLHandler().execute("drop type " + qualified(schemaName, typeName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
 
+    /**
+     * Drops the rule with the given name from the given schema
+     * Note: the rule name is surrounded with quotes, making it case-sensitive.
+     *
+     * @param schemaName The schema, not null
+     * @param ruleName   The rule to drop (case-sensitive), not null
+     */
+    public void dropRule(String schemaName, String ruleName) {
+        getSQLHandler().execute("drop rule " + qualified(schemaName, ruleName) + (supportsCascade() ? " cascade" : ""), getDataSource());
+    }
 
     /**
      * Disables all referential constraints (e.g. foreign keys) on all table in the default schema
@@ -746,6 +766,15 @@ abstract public class Database {
      * @return True if types are supported, false otherwise
      */
     public boolean supportsTypes() {
+        return false;
+    }
+
+    /**
+     * Indicates whether the underlying DBMS supports database rules
+     *
+     * @return True if rules are supported, false otherwise
+     */
+    public boolean supportsRules() {
         return false;
     }
 

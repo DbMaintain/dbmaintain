@@ -115,6 +115,7 @@ public class DefaultDBClearer implements DBClearer {
                 dropStoredProcedures(database, schemaName);
                 dropTriggers(database, schemaName);
                 dropTypes(database, schemaName);
+                dropRules(database, schemaName);
             }
             while (multiPassErrorHandler.continueExecutionAfterPass());
 
@@ -312,6 +313,30 @@ public class DefaultDBClearer implements DBClearer {
         }
     }
 
+    /**
+     * Drops all rules.
+     *
+     * @param database   The database support, not null
+     * @param schemaName The name of the schema to drop rules from, not null
+     */
+    protected void dropRules(Database database, String schemaName) {
+        if (!database.supportsRules()) {
+            return;
+        }
+        Set<String> ruleNames = database.getRuleNames(schemaName);
+        for (String ruleName : ruleNames) {
+            // check whether rule needs to be preserved
+            if (itemsToPreserve.contains(getItemIdentifier(TYPE, schemaName, ruleName, database))) {
+                continue;
+            }
+            logger.debug("Dropping rule " + ruleName + " in database schema " + schemaName);
+            try {
+                database.dropRule(schemaName, ruleName);
+            } catch (RuntimeException e) {
+                multiPassErrorHandler.addError(e);
+            }
+        }
+    }
 
     protected void assertItemsToPreserveExist(Set<DbItemIdentifier> itemsToPreserve) {
         Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTables = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();

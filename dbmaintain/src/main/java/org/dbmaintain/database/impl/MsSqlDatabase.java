@@ -126,6 +126,15 @@ public class MsSqlDatabase extends Database {
         return getSQLHandler().getItemsAsStringSet("select t.name from sys.types t, sys.schemas s where t.schema_id = s.schema_id and s.name = '" + schemaName + "'", getDataSource());
     }
 
+	/**
+     * Retrieves the names of all the rules in the database schema.
+     *
+     * @return The names of all rules in the database
+     */
+    @Override
+    public Set<String> getRuleNames(String schemaName) {
+        return getSQLHandler().getItemsAsStringSet("SELECT ao.name FROM sys.all_objects ao INNER JOIN sys.schemas s ON s.schema_id = ao.schema_id WHERE type = 'R' and s.name = '" + schemaName + "'", getDataSource());
+    }
 
     /**
      * Gets the names of all identity columns of the given table.
@@ -414,7 +423,18 @@ public class MsSqlDatabase extends Database {
         return true;
     }
 
-    /**
+	/**
+     * Rules are supported
+     *
+     * @return true
+     */
+    @Override
+	public boolean supportsRules() {
+		return true;
+	}
+
+
+	/**
      * Identity columns are supported.
      *
      * @return True
