@@ -23,6 +23,8 @@ import java.util.List;
  */
 public interface DatabaseConnectionManager {
 
+    SQLHandler getSqlHandler();
+
     DatabaseConnection getDatabaseConnection(String databaseName);
 
     List<DatabaseConnection> getDatabaseConnections();

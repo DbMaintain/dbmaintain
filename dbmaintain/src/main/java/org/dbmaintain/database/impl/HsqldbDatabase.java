@@ -125,6 +125,8 @@ public class HsqldbDatabase extends Database {
      */
     @Override
     public void disableReferentialConstraints(String schemaName) {
+        int hsqlMajorVersionNumber = getHsqldbMajorVersionNumber();
+
         Connection connection = null;
         Statement queryStatement = null;
         Statement alterStatement = null;
@@ -134,7 +136,7 @@ public class HsqldbDatabase extends Database {
             queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
-            if (getHsqldbMajorVersionNumber() < 2) {
+            if (hsqlMajorVersionNumber < 2) {
                 resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
             } else {
                 resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
@@ -169,6 +171,8 @@ public class HsqldbDatabase extends Database {
      * @param schemaName The schema name, not null
      */
     protected void disableCheckAndUniqueConstraints(String schemaName) {
+        int hsqlMajorVersionNumber = getHsqldbMajorVersionNumber();
+
         Connection connection = null;
         Statement queryStatement = null;
         Statement alterStatement = null;
@@ -178,7 +182,7 @@ public class HsqldbDatabase extends Database {
             queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
-            if (getHsqldbMajorVersionNumber() < 2) {
+            if (hsqlMajorVersionNumber < 2) {
                 resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
             } else {
                 resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
@@ -202,6 +206,8 @@ public class HsqldbDatabase extends Database {
      * @param schemaName The schema name, not null
      */
     protected void disableNotNullConstraints(String schemaName) {
+        int hsqlMajorVersionNumber = getHsqldbMajorVersionNumber();
+
         Connection connection = null;
         Statement queryStatement = null;
         Statement alterStatement = null;
@@ -212,7 +218,7 @@ public class HsqldbDatabase extends Database {
             alterStatement = connection.createStatement();
 
             // Do not remove PK constraints
-            if (getHsqldbMajorVersionNumber() < 2) {
+            if (hsqlMajorVersionNumber < 2) {
                 resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEM = '" + schemaName + "' " +
                         "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
             } else {

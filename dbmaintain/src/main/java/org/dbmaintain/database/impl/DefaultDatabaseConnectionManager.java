@@ -49,6 +49,10 @@ public class DefaultDatabaseConnectionManager implements DatabaseConnectionManag
     }
 
 
+    public SQLHandler getSqlHandler() {
+        return sqlHandler;
+    }
+
     public DatabaseConnection getDatabaseConnection(String databaseName) {
         DatabaseConnection databaseConnection = databaseConnectionsPerDatabaseName.get(databaseName);
         if (databaseConnection == null) {

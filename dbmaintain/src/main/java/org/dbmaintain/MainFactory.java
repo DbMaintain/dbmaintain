@@ -61,8 +61,10 @@ public class MainFactory {
     }
 
     public MainFactory(Properties configuration, DatabaseConnectionManager databaseConnectionManager) {
-        this(configuration, new HashMap<String, DataSource>());
+        this.configuration = configuration;
+        this.sqlHandler = databaseConnectionManager.getSqlHandler();
         this.databaseConnectionManager = databaseConnectionManager;
+        this.dataSourcesPerDatabaseName = new HashMap<String, DataSource>();
     }
 
     public MainFactory(Properties configuration, Map<String, DataSource> dataSourcesPerDatabaseName) {
