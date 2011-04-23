@@ -71,10 +71,6 @@
                 <version>2.5</version>
                 <configuration>
                     <requirements>
-                        <!--
-                          NOTE: Maven 2.x does not interpolate properties of the form project.*|pom.* so the Maven Plugin Plugin
-                          gets garbage when manually examining the config of the Maven Compiler Plugin.
-                        -->
                         <jdk>${project.build.java.target}</jdk>
                     </requirements>
                 </configuration>

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>5</version>
+        <version>7</version>
     </parent>
 
     <groupId>org.dbmaintain</groupId>
@@ -44,7 +44,7 @@
     <scm>
         <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</connection>
         <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</developerConnection>
-        <url>http://dbmaintain.svn.sourceforge.net/viewvc/dbmaintain/</url>
+        <url>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</url>
     </scm>
     <mailingLists>
         <mailingList>
@@ -60,22 +60,6 @@
             <name>Filip Neven</name>
         </developer>
     </developers>
-    <ciManagement>
-        <system>hudson</system>
-        <url>http://davidkarlsen.com/hudson/job/dbmaintain/</url>
-        <notifiers>
-            <notifier>
-                <type>email</type>
-                <sendOnError>true</sendOnError>
-                <sendOnFailure>true</sendOnFailure>
-                <sendOnSuccess>true</sendOnSuccess>
-                <sendOnWarning>true</sendOnWarning>
-                <configuration>
-                    <address>david@davidkarlsen.com</address>
-                </configuration>
-            </notifier>
-        </notifiers>
-    </ciManagement>
 
     <!-- Build Settings -->
     <properties>
@@ -83,7 +67,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <parent-basedir>${basedir}</parent-basedir>
-        <mvn.version>2.0.9</mvn.version>
+        <mvn.version>2.2.1</mvn.version>
     </properties>
 
     <build>
@@ -113,6 +97,11 @@
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.2-beta-4</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.6.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -122,6 +111,7 @@
                 <configuration>
                     <goals>deploy package assembly:assembly</goals>
                     <tagBase>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/tags/releases</tagBase>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
                 </configuration>
             </plugin>
             <plugin>
@@ -146,7 +136,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.6.1</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>

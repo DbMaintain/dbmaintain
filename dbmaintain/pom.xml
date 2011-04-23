@@ -131,36 +131,4 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>commandline-package</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>appassembler-maven-plugin</artifactId>
-                        <version>1.0-beta-2</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>assemble</goal>
-                                </goals>
-                                <configuration>
-                                    <programs>
-                                        <program>
-                                            <mainClass>org.dbmaintain.launch.commandline.CommandLine</mainClass>
-                                            <name>dbmaintain</name>
-                                        </program>
-                                    </programs>
-                                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                                    <repositoryLayout>flat</repositoryLayout>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>
