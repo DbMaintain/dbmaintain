@@ -135,7 +135,8 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
                 Long fileLastModifiedAt = resultSet.getLong(fileLastModifiedAtColumnName);
                 Date executedAt = null;
                 try {
-                    executedAt = timestampFormat.parse(resultSet.getString(executedAtColumnName));
+                    String executedAtStr = resultSet.getString(executedAtColumnName);
+                    if (executedAtStr != null) executedAt = timestampFormat.parse(executedAtStr);
                 } catch (ParseException e) {
                     throw new DbMaintainException("Error when parsing date " + executedAt + " using format " + timestampFormat, e);
                 }
