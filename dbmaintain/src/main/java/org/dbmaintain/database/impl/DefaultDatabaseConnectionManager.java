@@ -89,7 +89,7 @@ public class DefaultDatabaseConnectionManager implements DatabaseConnectionManag
                 return databaseInfo;
             }
         }
-        throw new DatabaseException("No database configuration found for database with name " + databaseName + ".");
+        throw new DatabaseException("No database configuration found for " + (databaseName == null ? "default database" : "database with name " + databaseName) + ".");
     }
 
     protected List<DatabaseInfo> getDatabaseInfos() {
