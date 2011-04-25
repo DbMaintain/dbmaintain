@@ -310,7 +310,7 @@ public class MsSqlDatabase extends Database {
                     /* Patch provided by Jan Ischebeck */
                     String scale = resultSet.getString("scale");
                     dataType += "(" + precision + ", " + scale + ")";
-                } else if (dataType.contains("CHAR")) {
+                } else if (dataType.contains("CHAR") || dataType.contains("BINARY")) {
                     String maxLength = resultSet.getString("max_length");
                     /* Patch provided by Thomas Queste */
                     // NChar or NVarchar always count as the double of their real size in the sys.columns table
@@ -318,7 +318,7 @@ public class MsSqlDatabase extends Database {
                     if (dataType.equals("NCHAR") || dataType.equals("NVARCHAR")) {
                         maxLength = String.valueOf(Integer.parseInt(maxLength) / 2);
                     }
-                    // If the maxLenght == -1, we are dealing with a VARCHAR(MAX) datatype
+                    // If the maxLenght == -1, we are dealing with a VARCHAR(MAX), NVARCHAR(MAX) or VARBINARY(MAX) datatype
                     dataType += "(" + ("-1".equals(maxLength) ? "MAX" : String.valueOf(maxLength)) + ")";
                 }
                 // remove the not-null constraint
