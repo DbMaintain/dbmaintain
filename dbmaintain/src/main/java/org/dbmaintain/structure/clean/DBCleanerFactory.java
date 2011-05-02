@@ -39,10 +39,10 @@ public class DBCleanerFactory extends FactoryWithDatabase<DBCleaner> {
 
 
     protected Set<DbItemIdentifier> getItemsToPreserve() {
-        Set<DbItemIdentifier> executedScriptsTable = factoryWithDatabaseContext.getExecutedScriptsTables();
+        DbItemIdentifier executedScriptsTable = factoryWithDatabaseContext.getExecutedScriptsTable();
 
         Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
-        itemsToPreserve.addAll(executedScriptsTable);
+        itemsToPreserve.add(executedScriptsTable);
 
         itemsToPreserve.addAll(factoryWithDatabaseContext.getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS));
         itemsToPreserve.addAll(factoryWithDatabaseContext.getSchemasToPreserve(PROPERTY_PRESERVE_DATA_SCHEMAS));

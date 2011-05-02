@@ -53,14 +53,10 @@ public class FactoryWithDatabaseContext extends FactoryContext {
     }
 
 
-    public Set<DbItemIdentifier> getExecutedScriptsTables() {
-        Set<DbItemIdentifier> executedScriptsTables = new HashSet<DbItemIdentifier>();
-        for (Database database : databases.getDatabases()) {
-            String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, getConfiguration());
-            Database defaultDatabase = databases.getDefaultDatabase();
-            executedScriptsTables.add(getItemIdentifier(TABLE, defaultDatabase.getDefaultSchemaName(), executedScriptsTableName, database, true));
-        }
-        return executedScriptsTables;
+    public DbItemIdentifier getExecutedScriptsTable() {
+        String executedScriptsTableName = getString(PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME, getConfiguration());
+        Database defaultDatabase = databases.getDefaultDatabase();
+        return getItemIdentifier(TABLE, defaultDatabase.getDefaultSchemaName(), executedScriptsTableName, defaultDatabase, true);
     }
 
     /**
