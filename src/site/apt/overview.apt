@@ -33,6 +33,12 @@ Overview
 ~~~~
 ** <<2010-10-07 - Release of DbMaintain 2.1>>
 
+    This release contains some small fixes and internal refactorings for better integration with unitils:
+
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10060}release notes}} for more details.
+    
+** <<2010-10-07 - Release of DbMaintain 2.1>>
+
     This release contains a fix for the from-scratch behavior and some small improvements:
 
     * the database dialect will now be autodetected from the jdbc url and is no longer a required property
