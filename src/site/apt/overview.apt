@@ -31,9 +31,9 @@ Overview
 
 * News
 ~~~~
-** <<2010-10-07 - Release of DbMaintain 2.1>>
+** <<2010-05-04 - Release of DbMaintain 2.2>>
 
-    This release contains some small fixes and internal refactorings for better integration with unitils:
+    In this release, we've added spring support, fixed some small issues and performed internal refactorings for better integration with unitils.
 
     Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10060}release notes}} for more details.
     
