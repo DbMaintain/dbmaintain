@@ -31,7 +31,7 @@ Overview
 
 * News
 ~~~~
-** <<2010-05-04 - Release of DbMaintain 2.2>>
+** <<2011-05-04 - Release of DbMaintain 2.2>>
 
     In this release, we've added spring support, fixed some small issues and performed internal refactorings for better integration with unitils.
 
