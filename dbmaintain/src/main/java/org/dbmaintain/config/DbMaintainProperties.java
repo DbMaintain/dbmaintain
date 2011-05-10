@@ -59,6 +59,7 @@ public class DbMaintainProperties {
      * End of property names that indicate whether the database is included: i.e. it is active and must be updated
      */
     public static final String PROPERTY_INCLUDED_END = "included";
+    public static final String PROPERTY_INCLUDED = PROPERTY_DATABASE_START + '.' + PROPERTY_INCLUDED_END;
 
     /**
      * Property key of the SQL dialect of the underlying DBMS implementation
