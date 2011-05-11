@@ -68,6 +68,10 @@ public class FactoryWithDatabaseContext extends FactoryContext {
         List<String> schemasToPreserve = getStringList(propertyPreserveSchemas, getConfiguration());
         for (String schemaToPreserve : schemasToPreserve) {
             DbItemIdentifier itemIdentifier = parseSchemaIdentifier(schemaToPreserve, databases);
+            if (itemIdentifier == null) {
+                // the database is disabled, ignore item identifier
+                continue;
+            }
             result.add(itemIdentifier);
         }
         return result;
@@ -84,6 +88,10 @@ public class FactoryWithDatabaseContext extends FactoryContext {
         List<String> items = getStringList(itemsToPreserveProperty, getConfiguration());
         for (String itemToPreserve : items) {
             DbItemIdentifier itemIdentifier = parseItemIdentifier(dbItemType, itemToPreserve, databases);
+            if (itemIdentifier == null) {
+                // the database is disabled, ignore item identifier
+                continue;
+            }
             itemsToPreserve.add(itemIdentifier);
         }
     }

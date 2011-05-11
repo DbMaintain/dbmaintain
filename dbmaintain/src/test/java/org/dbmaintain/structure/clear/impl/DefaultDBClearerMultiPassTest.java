@@ -56,7 +56,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Before
     public void setUp() throws Exception {
-        Databases databases = new Databases(asList(database.getMock()), new ArrayList<String>());
+        Databases databases = new Databases(database.getMock(), asList(database.getMock()), new ArrayList<String>());
 
         defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
         database.returns(tableNames).getTableNames(SCHEMA);

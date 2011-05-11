@@ -125,7 +125,8 @@ public class DbItemIdentifier {
             String databaseName = identifierParts[0];
             database = databases.getDatabase(databaseName);
             if (database == null) {
-                throw new DbMaintainException("No database configured with the name " + databaseName);
+                // database is disabled
+                return null;
             }
             schemaName = identifierParts[1];
             itemName = identifierParts[2];
@@ -154,7 +155,8 @@ public class DbItemIdentifier {
             String databaseName = identifierParts[0];
             database = databases.getDatabase(databaseName);
             if (database == null) {
-                throw new DbMaintainException("No database configured with the name " + databaseName);
+                // database is disabled
+                return null;
             }
             schemaName = identifierParts[1];
         } else if (identifierParts.length == 1) {

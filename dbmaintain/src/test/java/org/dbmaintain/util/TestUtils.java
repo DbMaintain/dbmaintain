@@ -57,7 +57,7 @@ public abstract class TestUtils {
         if (schemaNames == null || schemaNames.length == 0) {
             schemaNames = new String[]{"PUBLIC"};
         }
-        return new DatabaseInfo("mydatabase", "hsqldb", "org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "", asList(schemaNames), false);
+        return new DatabaseInfo("mydatabase", "hsqldb", "org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:unitils", "sa", "", asList(schemaNames), false, true);
     }
 
     public static Databases getDatabases(String... schemaNames) {
@@ -67,7 +67,7 @@ public abstract class TestUtils {
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
         IdentifierProcessor identifierProcessor = new IdentifierProcessor(UPPER_CASE, "\"", databaseInfo.getDefaultSchemaName());
         Database database = new HsqldbDatabase(databaseConnection, identifierProcessor);
-        return new Databases(asList(database), new ArrayList<String>());
+        return new Databases(database, asList(database), new ArrayList<String>());
     }
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable) {

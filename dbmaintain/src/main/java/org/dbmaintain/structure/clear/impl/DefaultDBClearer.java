@@ -349,6 +349,10 @@ public class DefaultDBClearer implements DBClearer {
 
         for (DbItemIdentifier itemToPreserve : itemsToPreserve) {
             Database database = databases.getDatabase(itemToPreserve.getDatabaseName());
+            if (database == null) {
+                // the database is disabled, skip
+                continue;
+            }
             switch (itemToPreserve.getType()) {
                 case SCHEMA:
                     if (!database.getSchemaNames().contains(itemToPreserve.getSchemaName())) {

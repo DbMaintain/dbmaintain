@@ -113,6 +113,10 @@ public class DefaultDBCleaner implements DBCleaner {
         Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTableNames = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
         for (DbItemIdentifier itemToPreserve : this.itemsToPreserve) {
             Database database = databases.getDatabase(itemToPreserve.getDatabaseName());
+            if (database == null) {
+                // the database is disabled, skip
+                continue;
+            }
             switch (itemToPreserve.getType()) {
                 case SCHEMA:
                     if (!database.getSchemaNames().contains(itemToPreserve.getSchemaName())) {

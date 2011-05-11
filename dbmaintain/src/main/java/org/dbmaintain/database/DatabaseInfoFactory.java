@@ -45,10 +45,14 @@ public class DatabaseInfoFactory {
             databaseInfos.add(getUnnamedDatabaseInfo());
             return databaseInfos;
         }
+
+        // the first database is the default database
+        boolean defaultDatabase = true;
         for (String databaseName : databaseNames) {
             boolean disabled = !isDatabaseIncluded(databaseName);
-            DatabaseInfo databaseInfo = createDatabaseInfo(databaseName, disabled);
+            DatabaseInfo databaseInfo = createDatabaseInfo(databaseName, disabled, defaultDatabase);
             databaseInfos.add(databaseInfo);
+            defaultDatabase = false;
         }
         return databaseInfos;
     }
@@ -61,23 +65,24 @@ public class DatabaseInfoFactory {
         String password = getProperty(null, PROPERTY_PASSWORD_END);
         String databaseDialect = getProperty(null, PROPERTY_DIALECT_END);
         List<String> schemaNames = getListProperty(null, PROPERTY_SCHEMANAMES_END);
-        return new DatabaseInfo(null, databaseDialect, driverClassName, url, userName, password, schemaNames, false);
+        return new DatabaseInfo(null, databaseDialect, driverClassName, url, userName, password, schemaNames, false, true);
     }
 
 
     /**
-     * @param databaseName The name that identifies the database, not null
-     * @param disabled     True if this database is disabled
+     * @param databaseName    The name that identifies the database, not null
+     * @param disabled        True if this database is disabled
+     * @param defaultDatabase True if this database is the default database, there should only be 1 default database
      * @return a DataSource that connects with the database as configured for the given database name
      */
-    protected DatabaseInfo createDatabaseInfo(String databaseName, boolean disabled) {
+    protected DatabaseInfo createDatabaseInfo(String databaseName, boolean disabled, boolean defaultDatabase) {
         String driverClassName = getProperty(databaseName, PROPERTY_DRIVERCLASSNAME_END);
         String url = getProperty(databaseName, PROPERTY_URL_END);
         String userName = getProperty(databaseName, PROPERTY_USERNAME_END);
         String password = getProperty(databaseName, PROPERTY_PASSWORD_END);
         String databaseDialect = getProperty(databaseName, PROPERTY_DIALECT_END);
         List<String> schemaNames = getListProperty(databaseName, PROPERTY_SCHEMANAMES_END);
-        return new DatabaseInfo(databaseName, databaseDialect, driverClassName, url, userName, password, schemaNames, disabled);
+        return new DatabaseInfo(databaseName, databaseDialect, driverClassName, url, userName, password, schemaNames, disabled, defaultDatabase);
     }
 
     /**

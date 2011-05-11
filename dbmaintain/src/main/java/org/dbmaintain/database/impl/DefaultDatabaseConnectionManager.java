@@ -53,6 +53,14 @@ public class DefaultDatabaseConnectionManager implements DatabaseConnectionManag
         return sqlHandler;
     }
 
+    /**
+     * Gets the connection for the database with the given name.
+     * The data source will be null if the database is disabled
+     * The default database always has a data source even if disabled
+     *
+     * @param databaseName The name
+     * @return The connection, not null
+     */
     public DatabaseConnection getDatabaseConnection(String databaseName) {
         DatabaseConnection databaseConnection = databaseConnectionsPerDatabaseName.get(databaseName);
         if (databaseConnection == null) {
@@ -74,9 +82,12 @@ public class DefaultDatabaseConnectionManager implements DatabaseConnectionManag
 
     protected DatabaseConnection createDatabaseConnection(String databaseName) {
         DatabaseInfo databaseInfo = getDatabaseInfo(databaseName);
-        DataSource dataSource = dataSourcesPerDatabaseName.get(databaseName);
-        if (dataSource == null) {
-            dataSource = dataSourceFactory.createDataSource(databaseInfo);
+        DataSource dataSource = null;
+        if (!databaseInfo.isDisabled() || databaseInfo.isDefaultDatabase()) {
+            dataSource = dataSourcesPerDatabaseName.get(databaseName);
+            if (dataSource == null) {
+                dataSource = dataSourceFactory.createDataSource(databaseInfo);
+            }
         }
         return new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
     }

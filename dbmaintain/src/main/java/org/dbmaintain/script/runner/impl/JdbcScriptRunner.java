@@ -117,7 +117,11 @@ public class JdbcScriptRunner implements ScriptRunner {
     protected Database getTargetDatabaseDatabase(Script script) {
         String databaseName = script.getTargetDatabaseName();
         if (databaseName == null) {
-            return databases.getDefaultDatabase();
+            Database database = databases.getDefaultDatabase();
+            if (database.getDatabaseInfo().isDisabled()) {
+                return null;
+            }
+            return database;
         }
         if (!databases.isConfiguredDatabase(databaseName)) {
             throw new DbMaintainException("Error executing script " + script.getFileName() + ". No database initialized with the name " + script.getTargetDatabaseName());

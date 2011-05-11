@@ -48,15 +48,26 @@ public class DatabasesFactory {
         List<Database> databases = new ArrayList<Database>();
         List<String> disabledDatabaseNames = new ArrayList<String>();
 
+        Database defaultDatabase = null;
         for (DatabaseConnection databaseConnection : databaseConnectionManager.getDatabaseConnections()) {
             DatabaseInfo databaseInfo = databaseConnection.getDatabaseInfo();
-            if (databaseInfo.isDisabled()) {
+
+            boolean disabled = databaseInfo.isDisabled();
+            if (disabled) {
                 disabledDatabaseNames.add(databaseInfo.getName());
-            } else {
+            }
+
+            if (databaseInfo.isDefaultDatabase()) {
+                defaultDatabase = createDatabase(databaseConnection);
+                if (!disabled) {
+                    databases.add(defaultDatabase);
+                }
+
+            } else if (!disabled) {
                 databases.add(createDatabase(databaseConnection));
             }
         }
-        return new Databases(databases, disabledDatabaseNames);
+        return new Databases(defaultDatabase, databases, disabledDatabaseNames);
     }
 
 

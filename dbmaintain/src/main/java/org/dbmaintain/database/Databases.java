@@ -32,12 +32,12 @@ public class Databases {
     private Map<String, Database> nameDatabaseMap = new HashMap<String, Database>();
 
 
-    public Databases(List<Database> databases, List<String> disabledDatabaseNames) {
+    public Databases(Database defaultDatabase, List<Database> databases, List<String> disabledDatabaseNames) {
         if (databases.isEmpty()) {
             throw new DatabaseException("Unable to configure databases. No database instances provided.");
         }
         this.databases = databases;
-        this.defaultDatabase = databases.get(0);
+        this.defaultDatabase = defaultDatabase;
 
         for (Database database : databases) {
             this.nameDatabaseMap.put(database.getDatabaseName(), database);
@@ -50,9 +50,16 @@ public class Databases {
         return defaultDatabase;
     }
 
+    /**
+     * Returns the database with the given name.
+     * Null is returned if the database is disabled. An exception is raised if the database is unknown.
+     *
+     * @param databaseName The name
+     * @return The database, null if disabled
+     */
     public Database getDatabase(String databaseName) {
         if (isDisabledDatabase(databaseName)) {
-            throw new DatabaseException("Database with name " + databaseName + " is disabled.");
+            return null;
         }
         Database database = nameDatabaseMap.get(databaseName);
         if (database == null) {
