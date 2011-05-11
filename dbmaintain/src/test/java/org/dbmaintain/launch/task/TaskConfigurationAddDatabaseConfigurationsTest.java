@@ -30,7 +30,8 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
         DbMaintainDatabase unnamedDatabase = new DbMaintainDatabase(null, true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(asList(unnamedDatabase));
 
-        assertUnnamedDatabasePropertiesSet();
+        assertNamedDatabasePropertiesSet("<unnamed>");
+        assertPropertySet("databases.names", "<unnamed>");
     }
 
     @Test
@@ -39,6 +40,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
         taskConfiguration.addDatabaseConfigurations(asList(namedDatabase));
 
         assertNamedDatabasePropertiesSet("db1");
+        assertPropertySet("databases.names", "db1");
     }
 
     @Test
@@ -47,8 +49,20 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
         DbMaintainDatabase namedDatabase = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(asList(unnamedDatabase, namedDatabase));
 
-        assertUnnamedDatabasePropertiesSet();
+        assertNamedDatabasePropertiesSet("<unnamed>");
         assertNamedDatabasePropertiesSet("db1");
+        assertPropertySet("databases.names", "<unnamed>,db1");
+    }
+
+    @Test
+    public void unnamedDatabaseShouldBePutAsFirstDatabase() {
+        DbMaintainDatabase namedDatabase = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
+        DbMaintainDatabase unnamedDatabase = new DbMaintainDatabase(null, true, "dialect", "driver", "url", "user", "pass", "schemas", null);
+        taskConfiguration.addDatabaseConfigurations(asList(namedDatabase, unnamedDatabase));
+
+        assertNamedDatabasePropertiesSet("<unnamed>");
+        assertNamedDatabasePropertiesSet("db1");
+        assertPropertySet("databases.names", "<unnamed>,db1");
     }
 
     @Test
@@ -59,6 +73,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
 
         assertNamedDatabasePropertiesSet("db1");
         assertNamedDatabasePropertiesSet("db2");
+        assertPropertySet("databases.names", "db1,db2");
     }
 
     private void assertNamedDatabasePropertiesSet(String name) {
@@ -69,17 +84,6 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
         assertPropertySet("database." + name + ".password", "pass");
         assertPropertySet("database." + name + ".schemaNames", "schemas");
         assertPropertySet("database." + name + ".included", "true");
-    }
-
-
-    private void assertUnnamedDatabasePropertiesSet() {
-        assertPropertySet("database.dialect", "dialect");
-        assertPropertySet("database.driverClassName", "driver");
-        assertPropertySet("database.url", "url");
-        assertPropertySet("database.userName", "user");
-        assertPropertySet("database.password", "pass");
-        assertPropertySet("database.schemaNames", "schemas");
-        assertPropertySet("database.included", "true");
     }
 
     private void assertPropertySet(String property, String expected) {

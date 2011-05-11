@@ -22,6 +22,11 @@ package org.dbmaintain.config;
 public class DbMaintainProperties {
 
     /**
+     * The database name that maven/ant/spring tasks will use if no name was specified
+     */
+    public static final String UNNAMED_DATABASE_NAME = "<unnamed>";
+
+    /**
      * Logical names for the databases. This property is only required if there's more than one database configured.
      */
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";

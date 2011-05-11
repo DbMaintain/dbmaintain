@@ -49,25 +49,24 @@ public class TaskConfiguration {
     }
 
     public void addDatabaseConfigurations(List<? extends DbMaintainDatabase> dbMaintainDatabases) {
-        boolean defaultDatabaseFound = false;
-        Set<String> databaseNames = new HashSet<String>();
+        List<String> databaseNames = new ArrayList<String>();
 
         for (DbMaintainDatabase dbMaintainDatabase : dbMaintainDatabases) {
             String name = dbMaintainDatabase.getName();
             if (isBlank(name)) {
-                if (defaultDatabaseFound) {
+                name = UNNAMED_DATABASE_NAME;
+                if (databaseNames.contains(name)) {
                     throw new DatabaseException("Invalid database configuration. More than one unnamed database found.");
                 }
-                defaultDatabaseFound = true;
-                addDefaultDatabaseConfiguration(dbMaintainDatabase);
+                // unnamed database is put as first element so that it becomes the default database
+                databaseNames.add(0, name);
             } else {
-
-                boolean duplicate = databaseNames.add(name);
-                if (!duplicate) {
+                if (databaseNames.contains(name)) {
                     throw new DatabaseException("Invalid database configuration. More than one database with name " + name + " found.");
                 }
-                addDatabaseConfiguration(dbMaintainDatabase, name);
+                databaseNames.add(name);
             }
+            addDatabaseConfiguration(dbMaintainDatabase, name);
 
             DataSource dataSource = dbMaintainDatabase.getDataSource();
             if (dataSource != null) {
@@ -75,16 +74,6 @@ public class TaskConfiguration {
             }
         }
         configuration.put(PROPERTY_DATABASE_NAMES, join(databaseNames, ','));
-    }
-
-    protected void addDefaultDatabaseConfiguration(DbMaintainDatabase taskDatabase) {
-        addConfigurationIfSet(PROPERTY_DIALECT, taskDatabase.getDialect());
-        addConfigurationIfSet(PROPERTY_DRIVERCLASSNAME, taskDatabase.getDriverClassName());
-        addConfigurationIfSet(PROPERTY_URL, taskDatabase.getUrl());
-        addConfigurationIfSet(PROPERTY_USERNAME, taskDatabase.getUserName());
-        addConfigurationIfSet(PROPERTY_PASSWORD, taskDatabase.getPassword());
-        addConfigurationIfSet(PROPERTY_SCHEMANAMES, taskDatabase.getSchemaNames());
-        addConfigurationIfSet(PROPERTY_INCLUDED, taskDatabase.isIncluded());
     }
 
     protected void addDatabaseConfiguration(DbMaintainDatabase taskDatabase, String name) {
