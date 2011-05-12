@@ -36,7 +36,7 @@ Overview
     This release contains some important fixes when working with multiple databases. We've resolved some problems that occurred when
     configuring a named database and fixed the behavior of the disabled property.
 
-    Check the release notes for more details.
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10070}release notes}} for more details.
 
 ** <<2011-05-04 - Release of DbMaintain 2.2>>
 
