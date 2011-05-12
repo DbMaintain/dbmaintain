@@ -31,6 +31,13 @@ Overview
 
 * News
 ~~~~
+** <<2011-05-12 - Release of DbMaintain 2.3>>
+
+    This release contains some important fixes when working with multiple databases. We've resolved some problems that occurred when
+    configuring a named database and fixed the behavior of the disabled property.
+
+    Check the release notes for more details.
+
 ** <<2011-05-04 - Release of DbMaintain 2.2>>
 
     In this release, we've added spring support, fixed some small issues and performed internal refactorings for better integration with unitils.
