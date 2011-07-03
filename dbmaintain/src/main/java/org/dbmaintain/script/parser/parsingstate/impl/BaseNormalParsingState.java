@@ -22,7 +22,7 @@ import org.dbmaintain.script.parser.parsingstate.PlSqlBlockMatcher;
 
 /**
  * The default initial parsing state that is able to recognize the beginning of line comments, block comments,
- * single and double quote literals and the ending of a statment.
+ * single and double quote literals and the ending of a statement.
  *
  * @author Tim Ducheyne
  * @author Filip Neven
@@ -81,7 +81,8 @@ abstract public class BaseNormalParsingState implements ParsingState {
      *
      * @param inLineCommentParsingState    the inline comment state, not null
      * @param inBlockCommentParsingState   the block comment state, not null
-     * @param inCurlyBraceBlockCommentParsingState the curly brace block comment state, not null
+     * @param inCurlyBraceBlockCommentParsingState
+     *                                     the curly brace block comment state, not null
      * @param inSingleQuotesParsingState   the single quote literal state, not null
      * @param inDoubleQuotesParsingState   the double quote literal state, not null
      * @param escapingParsingState         the escaping parsing state, not null
@@ -105,12 +106,12 @@ abstract public class BaseNormalParsingState implements ParsingState {
 
 
     /**
-     * Determines the next state. This will look for the beginning of a line comment, a block comment, a single qoute
+     * Determines the next state. This will look for the beginning of a line comment, a block comment, a single quote
      * literal and a double quote literal. A semi-colon indicates the end of the statement.
      *
-     * @param previousChar     The previous char, 0 if none
+     * @param previousChar     The previous char, null if none
      * @param currentChar      The current char
-     * @param nextChar         The next char, 0 if none
+     * @param nextChar         The next char, null if none
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
@@ -158,14 +159,6 @@ abstract public class BaseNormalParsingState implements ParsingState {
     abstract protected boolean isStatementSeparator(Character currentChar);
 
     abstract protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder);
-	
-    /**
-     * @return true if the given current and next character indicate the start of a block comment
-     */
-    protected boolean isStartOfBlockComment(Character currentChar, Character nextChar)
-    {
-        return SLASH.equals(currentChar) && ASTERIX.equals(nextChar);
-    }
 
 
     protected boolean isWhitespace(Character character) {

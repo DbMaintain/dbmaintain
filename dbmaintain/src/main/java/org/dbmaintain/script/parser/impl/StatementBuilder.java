@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.script.parser.impl;
 
-import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.script.parser.parsingstate.ParsingState;
 
 import java.util.Properties;
@@ -68,7 +67,7 @@ public class StatementBuilder {
      * Creates a new instance with the given parsing state as the initial state
      *
      * @param initialParsingState the initial state
-     * @param scriptParameters parameters that must be replaced in the script. Null if there are no such parameters
+     * @param scriptParameters    parameters that must be replaced in the script. Null if there are no such parameters
      */
     public StatementBuilder(ParsingState initialParsingState, Properties scriptParameters) {
         currentParsingState = initialParsingState;
@@ -91,7 +90,9 @@ public class StatementBuilder {
         // return the content of the current line
         if (currentParsingState != null) {
             appendToCurrentLine(currentChar);
-            if (currentChar == null || isNewLineCharacter(currentChar)) flushCurrentLine();
+            if (currentChar == null || isNewLineCharacter(currentChar)) {
+                flushCurrentLine();
+            }
         }
         appendToStatementWithoutCommentsAndWhitespace(currentChar, handleNextCharacterResult);
 

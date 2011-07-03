@@ -27,6 +27,9 @@ import org.dbmaintain.script.parser.parsingstate.ParsingState;
  */
 public class InSingleQuotesParsingState implements ParsingState {
 
+    private static final Character SINGLE_QUOTE = '\'';
+    private static final Character BACKSLASH = '\\';
+
     /* Determines whether backslashes can be used to escape characters, e.g. \' for a single quote (= '') */
     protected boolean backSlashEscapingEnabled;
 
@@ -62,9 +65,9 @@ public class InSingleQuotesParsingState implements ParsingState {
      * Determines whether the end of the literal is reached.
      * If that is the case, the normal parsing state is returned.
      *
-     * @param previousChar     The previous char, 0 if none
+     * @param previousChar     The previous char, null if none
      * @param currentChar      The current char
-     * @param nextChar         The next char, 0 if none
+     * @param nextChar         The next char, null if none
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */
@@ -75,17 +78,17 @@ public class InSingleQuotesParsingState implements ParsingState {
             return stayInSingleQuotesStateResult;
         }
         // check for escaped single quotes
-        if (currentChar == '\'' && nextChar == '\'') {
+        if (SINGLE_QUOTE.equals(currentChar) && SINGLE_QUOTE.equals(nextChar)) {
             escaping = true;
             return stayInSingleQuotesStateResult;
         }
         // check escaped characters
-        if (currentChar == '\\' && backSlashEscapingEnabled) {
+        if (BACKSLASH.equals(currentChar) && backSlashEscapingEnabled) {
             escaping = true;
             return stayInSingleQuotesStateResult;
         }
         // check for ending quote
-        if (currentChar == '\'') {
+        if (SINGLE_QUOTE.equals(currentChar)) {
             return backToNormalResult;
         }
         return stayInSingleQuotesStateResult;

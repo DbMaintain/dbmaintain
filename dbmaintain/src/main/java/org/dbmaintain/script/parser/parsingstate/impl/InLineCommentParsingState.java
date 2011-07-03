@@ -48,9 +48,9 @@ public class InLineCommentParsingState implements ParsingState {
      * Determines whether the end of the line comment is reached.
      * If that is the case, the normal parsing state is returned.
      *
-     * @param previousChar     The previous char, 0 if none
+     * @param previousChar     The previous char, null if none
      * @param currentChar      The current char
-     * @param nextChar         The next char, 0 if none
+     * @param nextChar         The next char, null if none
      * @param statementBuilder The statement builder, not null
      * @return The next parsing state, null if the end of the statement is reached
      */

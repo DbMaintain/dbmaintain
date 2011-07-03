@@ -113,9 +113,13 @@ public class DefaultScriptParser implements ScriptParser {
         StatementBuilder statementBuilder = createStatementBuilder();
         // Make sure that we read currentChar when we start reading a new script. If not null, currentChar was already
         // set to the first character of the next statement when we read the previous statement.
-        if (currentChar == null) currentChar = readNextCharacter();
+        if (currentChar == null) {
+            currentChar = readNextCharacter();
+        }
         while (!endOfScriptReached) {
-            if (currentChar == null) endOfScriptReached = true;
+            if (currentChar == null) {
+                endOfScriptReached = true;
+            }
             nextChar = readNextCharacter();
             statementBuilder.addCharacter(currentChar, nextChar);
             currentChar = nextChar;

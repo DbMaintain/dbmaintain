@@ -35,7 +35,7 @@ public class PlSqlBlockNormalParsingState extends BaseNormalParsingState {
     }
 
     protected boolean isEndOfStatement(Character previousChar, Character currentChar, StatementBuilder statementBuilder) {
-        return (currentChar == null || isNewLineCharacter(currentChar)) && statementBuilder.getCurrentLine().trim().startsWith("/");
+        return (currentChar == null || isNewLineCharacter(currentChar)) && statementBuilder.getCurrentLine().trim().equals("/");
     }
 
 }

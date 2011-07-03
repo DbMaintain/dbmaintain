@@ -52,6 +52,16 @@ public class OracleScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
+    public void plsqlWithSingleLineBlockComment() {
+        assertOneStatement("" +
+                "begin\n" +
+                "  /* single line block comment inside begin end block */\n" +
+                "  procedure something();\n" +
+                "end\n" +
+                "/\n");
+    }
+
+    @Test
     public void scriptWithQuotes() {
         assertOneStatement("begin 'within quotes, slashes are ignored:\n/\n' end;\n" +
                 "/\n");

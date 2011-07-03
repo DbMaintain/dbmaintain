@@ -45,8 +45,11 @@ public abstract class ScriptParserTestBase {
         ScriptParser parser = createScriptParser(new StringReader(script));
         String statement = parser.getNextStatement();
         assertNotNull(statement);
-        if (expectedStatement != null) assertEquals(expectedStatement, statement);
-        assertNull(parser.getNextStatement());
+        if (expectedStatement != null) {
+            assertEquals(expectedStatement, statement);
+        }
+        String nextStatement = parser.getNextStatement();
+        assertNull("expected no more statements but found: " + nextStatement, nextStatement);
     }
 
     protected void assertTwoStatements(String script) {
