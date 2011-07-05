@@ -121,7 +121,9 @@ public class StatementBuilder {
 
     protected void appendToStatementWithoutCommentsAndWhitespace(Character currentChar, HandleNextCharacterResult handleNextCharacterResult) {
         if (handleNextCharacterResult.isExecutable()) {
-            statementInUppercaseWithoutCommentsAndWhitespace.append(Character.toUpperCase(currentChar));
+            if (currentChar != null) {
+                statementInUppercaseWithoutCommentsAndWhitespace.append(Character.toUpperCase(currentChar));
+            }
         } else {
             if (isWhitespace(currentChar) && statementInUppercaseWithoutCommentsAndWhitespace.length() > 0
                     && getLastCharacter(statementInUppercaseWithoutCommentsAndWhitespace) != ' ') {
