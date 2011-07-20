@@ -31,6 +31,13 @@ Overview
 
 * News
 ~~~~
+** <<2011-07-20 - Release of DbMaintain 2.4>>
+
+    This release contains some important fixes for the parsing of oracle PL-SQL. By default dbmaintain also no longer outputs the
+    full script content when a failure occurs. This can be re-enabled by setting the dbMaintainer.maxNrOfCharsWhenLoggingScriptContent property.
+
+    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10080}release notes}} for more details.
+    
 ** <<2011-05-12 - Release of DbMaintain 2.3>>
 
     This release contains some important fixes when working with multiple databases. We've resolved some problems that occurred when
