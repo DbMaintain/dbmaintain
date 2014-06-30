@@ -2,6 +2,7 @@
     <id>src</id>
     <formats>
         <format>zip</format>
+        <format>tar.gz</format>
     </formats>
     <baseDirectory>dbmaintain-${project.version}</baseDirectory>
     <fileSets>
@@ -23,14 +24,15 @@
             <directory>dbmaintain/commandline</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
-                <include>dbmaintain.*</include>
+                <include>*.sh</include>
             </includes>
+            <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
             <directory>dbmaintain/commandline</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
-                <include>setJdbcDriver.*</include>
+                <include>*.bat</include>
             </includes>
         </fileSet>
         <fileSet>
