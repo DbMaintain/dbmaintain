@@ -99,6 +99,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     /* The baseline revision. If set, all scripts with a lower revision will be ignored */
     protected ScriptIndexes baseLineRevision;
 
+    private boolean ignoreDeletions;
 
     /**
      * Creates a new instance
@@ -125,11 +126,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param maxNrOfCharsWhenLoggingScriptContent
      *                                 The maximum length of a script that is logged in an exception, 0 to not log any script content
      * @param baseLineRevision         The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param ignoreDeletions          ignores deleted scripts in the database
      */
-    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-                               boolean fromScratchEnabled, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-                               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
-                               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler, long maxNrOfCharsWhenLoggingScriptContent, ScriptIndexes baseLineRevision) {
+     public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository,
+            ExecutedScriptInfoSource executedScriptInfoSource, boolean fromScratchEnabled, boolean useScriptFileLastModificationDates,
+            boolean allowOutOfSequenceExecutionOfPatchScripts, boolean cleanDb, boolean disableConstraints, boolean updateSequences,
+            DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater,
+            ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler, long maxNrOfCharsWhenLoggingScriptContent,
+            ScriptIndexes baseLineRevision, boolean ignoreDeletions) {
 
         this.scriptRunner = scriptRunner;
         this.scriptRepository = scriptRepository;
@@ -148,6 +152,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.sqlHandler = sqlHandler;
         this.maxNrOfCharsWhenLoggingScriptContent = maxNrOfCharsWhenLoggingScriptContent;
         this.baseLineRevision = baseLineRevision;
+        this.ignoreDeletions = ignoreDeletions;
     }
 
 
@@ -166,6 +171,11 @@ public class DefaultDbMaintainer implements DbMaintainer {
         try {
             ScriptUpdates scriptUpdates = getScriptUpdates();
 
+            if (scriptUpdates.hasIgnoredScriptsAndScriptChanges()) {
+                throw new DbMaintainException(
+                        "DB-State is newer than current script release and scripts of current release are different to the corresponding script in the database");
+            }
+
             if (!getIncrementalScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
                 ExecutedScript failedExecutedScriptScript = getIncrementalScriptsThatFailedDuringLastUpdate().first();
                 throw new DbMaintainException("During the latest update, the execution of the following incremental script failed: " +
@@ -182,7 +192,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
                             "before any other updates can be performed.");
                 }
             }
-
+            if (scriptUpdates.hasIgnoredScripts()) {
+                logger.info("Database is newer than current release! Following scripts in database state are ignored:");
+                for (ScriptUpdate ignoredScript : scriptUpdates.getIgnoredScripts()) {
+                    logger.info("Script: " + ignoredScript.getScript().getFileName());
+                }
+                logger.info("Check the scripts and maybe repeat the deployment with a newer database release!");
+            }
             if (scriptUpdates.isEmpty()) {
                 logger.info("The database is up to date");
                 return false;
@@ -281,7 +297,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      */
     public ScriptUpdates getScriptUpdates() {
         return new ScriptUpdatesAnalyzer(scriptRepository, executedScriptInfoSource, useScriptFileLastModificationDates,
-                allowOutOfSequenceExecutionOfPatchScripts).calculateScriptUpdates();
+                allowOutOfSequenceExecutionOfPatchScripts, ignoreDeletions).calculateScriptUpdates();
     }
 
 

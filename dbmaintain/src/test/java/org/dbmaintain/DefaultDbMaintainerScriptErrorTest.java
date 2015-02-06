@@ -93,7 +93,8 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
 
     private DefaultDbMaintainer createDefaultDbMaintainer(long maxNrOfCharsWhenLoggingScriptContent) {
-        return new DefaultDbMaintainer(scriptRunner.getMock(), null, executedScriptInfoSource.getMock(), false, false, false, false, false, false, null, null, null, null, null, null, maxNrOfCharsWhenLoggingScriptContent, null);
+        return new DefaultDbMaintainer(scriptRunner.getMock(), null, executedScriptInfoSource.getMock(), false, false, false, false, false,
+                false, null, null, null, null, null, null, maxNrOfCharsWhenLoggingScriptContent, null, false);
     }
 
 }

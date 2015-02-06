@@ -247,6 +247,8 @@ public class DbMaintainProperties {
 
     public static final String PROPERTY_SCRIPT_PARAMETER_FILE = "dbMaintainer.scriptParameterFile";
 
+    public static final String PROPERTY_IGNORE_DELETIONS = "dbMaintainer.ignoreDeletions";
+
     /**
      * Private constructor to prevent instantiation
      */

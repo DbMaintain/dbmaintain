@@ -45,6 +45,7 @@ public class DbMaintainerFactory extends FactoryWithDatabase<DbMaintainer> {
         boolean allowOutOfSequenceExecutionOfPatchScripts = PropertyUtils.getBoolean(PROPERTY_PATCH_ALLOWOUTOFSEQUENCEEXECUTION, getConfiguration());
         boolean disableConstraintsEnabled = PropertyUtils.getBoolean(PROPERTY_DISABLE_CONSTRAINTS, getConfiguration());
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, getConfiguration());
+        boolean ignoreDeletions = PropertyUtils.getBoolean(PROPERTY_IGNORE_DELETIONS, false, getConfiguration());        
         long maxNrOfCharsWhenLoggingScriptContent = PropertyUtils.getLong(PROPERTY_MAX_NR_CHARS_WHEN_LOGGING_SCRIPT_CONTENT, getConfiguration());
         ScriptIndexes baseLineRevision = factoryWithDatabaseContext.getBaselineRevision();
 
@@ -56,11 +57,10 @@ public class DbMaintainerFactory extends FactoryWithDatabase<DbMaintainer> {
         ScriptRunner scriptRunner = mainFactory.createScriptRunner();
         ScriptUpdatesFormatter scriptUpdatesFormatter = createScriptUpdatesFormatter();
         ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
-
-
-        return new DefaultDbMaintainer(scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, useScriptFileLastModificationDates,
-                allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled, dbClearer, dbCleaner,
-                constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, getSqlHandler(), maxNrOfCharsWhenLoggingScriptContent, baseLineRevision);
+        return new DefaultDbMaintainer(scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled,
+                useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled,
+                updateSequencesEnabled, dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter,
+                getSqlHandler(), maxNrOfCharsWhenLoggingScriptContent, baseLineRevision, ignoreDeletions);
     }
 
 

@@ -92,6 +92,17 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
+    public void indexedScriptIgnoreDeleted() {
+        executedScripts(INDEXED_1, INDEXED_2);
+        scripts(INDEXED_1);
+        calculateScriptUpdates(true, true);
+        assertTrue(scriptUpdates.hasIgnoredScripts());
+        assertTrue(!scriptUpdates.hasIgnoredScriptsAndScriptChanges());
+        assertTrue(scriptUpdates.getIgnoredScripts().contains(new ScriptUpdate(INDEXED_SCRIPT_DELETED, INDEXED_2)));
+
+    }
+
+    @Test
     public void newRepeatableScript() {
         executedScripts(REPEATABLE_1);
         scripts(REPEATABLE_1, REPEATABLE_2);
@@ -116,10 +127,20 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
+    public void repeatableScriptIgnoreDeleted() {
+        executedScripts(REPEATABLE_1, REPEATABLE_2);
+        scripts(REPEATABLE_1);
+        calculateScriptUpdates(true, true);
+        assertTrue(scriptUpdates.hasIgnoredScripts());
+        assertTrue(!scriptUpdates.hasIgnoredScriptsAndScriptChanges());
+        assertTrue(scriptUpdates.getIgnoredScripts().contains(new ScriptUpdate(INDEXED_SCRIPT_DELETED, REPEATABLE_2)));
+    }
+
+    @Test
     public void newLowerIndexPatchScript_outOfSequenceExecutionOfPatchesAllowed() {
         executedScripts(INDEXED_2);
         scripts(PATCH_1, INDEXED_2);
-        calculateScriptUpdates(true);
+        calculateScriptUpdates(true, false);
         assertRegularPatchScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, PATCH_1);
     }
 
@@ -127,7 +148,7 @@ public class ScriptUpdatesAnalyzerTest {
     public void newLowerIndexPatchScript_outOfSequenceExecutionOfPatchesNotAllowed() {
         executedScripts(INDEXED_2);
         scripts(PATCH_1, INDEXED_2);
-        calculateScriptUpdates(false);
+        calculateScriptUpdates(false, false);
         assertIrregularScriptUpdate(LOWER_INDEX_PATCH_SCRIPT_ADDED, PATCH_1);
     }
 
@@ -153,6 +174,16 @@ public class ScriptUpdatesAnalyzerTest {
         scripts(POSTPROCESSING_2);
         calculateScriptUpdates();
         assertPostProcessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, POSTPROCESSING_1);
+    }
+
+    @Test
+    public void postprocessingScriptIgnoreDeleted() {
+        executedScripts(POSTPROCESSING_1, POSTPROCESSING_2);
+        scripts(POSTPROCESSING_2);
+        calculateScriptUpdates(true, true);
+        assertTrue(scriptUpdates.hasIgnoredScripts());
+        assertTrue(!scriptUpdates.hasIgnoredScriptsAndScriptChanges());
+        assertTrue(scriptUpdates.getIgnoredScripts().contains(new ScriptUpdate(INDEXED_SCRIPT_DELETED, POSTPROCESSING_1)));
     }
 
     @Test
@@ -233,7 +264,8 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void assertPostProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedScript) {
-        assertTrue(scriptUpdates.getRegularPostprocessingScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, originalScript, renamedScript)));
+        assertTrue(scriptUpdates.getRegularPostprocessingScriptUpdates().contains(
+                new ScriptUpdate(scriptUpdateType, originalScript, renamedScript)));
     }
 
     private void assertRegularScriptRenames(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedScript) {
@@ -249,13 +281,12 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     private void calculateScriptUpdates() {
-        calculateScriptUpdates(true);
+        calculateScriptUpdates(true, false);
     }
 
-    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts) {
-        scriptUpdates = new ScriptUpdatesAnalyzer(getScriptRepository(scripts),
-                getExecutedScriptInfoSource(executedScripts), true, allowOutOfSequenceExecutionOfPatchScripts
-        ).calculateScriptUpdates();
+    private void calculateScriptUpdates(boolean allowOutOfSequenceExecutionOfPatchScripts, boolean ignoreDeletions) {
+        scriptUpdates = new ScriptUpdatesAnalyzer(getScriptRepository(scripts), getExecutedScriptInfoSource(executedScripts), true,
+                allowOutOfSequenceExecutionOfPatchScripts, ignoreDeletions).calculateScriptUpdates();
     }
 
     private static Script createScript(String scriptName, boolean modified) {

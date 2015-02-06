@@ -48,6 +48,7 @@ public class ScriptUpdatesAnalyzer {
     private final SortedSet<ScriptUpdate> regularlyAddedPatchScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> regularlyUpdatedPostprocessingScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> regularlyRenamedScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> ignoredScripts = new TreeSet<ScriptUpdate>();
 
     /* Sets that contain working data that is assembled during the analysis */
     private final Map<ExecutedScript, Script> renamedIndexedScripts = new HashMap<ExecutedScript, Script>();
@@ -56,6 +57,8 @@ public class ScriptUpdatesAnalyzer {
     /* Lazily initialized data, that is cached during analysis to avoid repeated calculation of the contents */
     private Map<String, Script> scriptNameScriptMap;
     private Map<String, Set<Script>> checkSumScriptMap;
+    private boolean ignoreDeletions; // Ignore if the db state is newer, i.e. there are allready
+                                     // successor skripts in the database
 
     /**
      * Creates a new instance that will compare the info from the given {@link ExecutedScriptInfoSource} with the current
@@ -70,11 +73,12 @@ public class ScriptUpdatesAnalyzer {
      *                                 whether scripts marked as patch scripts may be executed out-of-sequence
      */
     public ScriptUpdatesAnalyzer(ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-                                 boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts) {
+            boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts, boolean ignoreDeletions) {
         this.scriptRepository = scriptRepository;
         this.executedScriptInfoSource = executedScriptInfoSource;
         this.useScriptFileLastModificationDates = useScriptFileLastModificationDates;
         this.allowOutOfSequenceExecutionOfPatchScripts = allowOutOfSequenceExecutionOfPatchScripts;
+        this.ignoreDeletions = ignoreDeletions;
     }
 
     /**
@@ -116,7 +120,11 @@ public class ScriptUpdatesAnalyzer {
                     if (newScriptWithSameContent != null) {
                         registerScriptRename(executedScript, newScriptWithSameContent);
                     } else {
-                        registerScriptDeletion(executedScript.getScript());
+                        if (ignoreDeletions) {
+                            registerIgnoredScript(executedScript.getScript());
+                        } else {
+                            registerScriptDeletion(executedScript.getScript());
+                        }
                     }
                 }
             }
@@ -138,10 +146,14 @@ public class ScriptUpdatesAnalyzer {
             }
         }
 
-        return new ScriptUpdates(regularlyAddedOrModifiedScripts, irregularlyUpdatedScripts, regularlyDeletedRepeatableScripts, regularlyAddedPatchScripts,
-                regularlyUpdatedPostprocessingScripts, regularlyRenamedScripts);
+        return new ScriptUpdates(regularlyAddedOrModifiedScripts, irregularlyUpdatedScripts, regularlyDeletedRepeatableScripts,
+                regularlyAddedPatchScripts, regularlyUpdatedPostprocessingScripts, regularlyRenamedScripts, ignoredScripts);
     }
 
+    private void registerIgnoredScript(Script script) {
+        ignoredScripts.add(new ScriptUpdate(INDEXED_SCRIPT_DELETED, script));
+
+    }
 
     /**
      * Register the given script as a newly added one
