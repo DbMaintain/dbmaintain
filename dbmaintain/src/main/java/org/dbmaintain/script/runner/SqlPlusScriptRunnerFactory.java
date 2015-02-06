@@ -30,6 +30,6 @@ public class SqlPlusScriptRunnerFactory extends FactoryWithDatabase<ScriptRunner
 
     public ScriptRunner createInstance() {
         String sqlPlusCommand = PropertyUtils.getString(PROPERTY_SQL_PLUS_COMMAND, getConfiguration());
-        return new SqlPlusScriptRunner(getDatabases(), sqlPlusCommand);
+        return new SqlPlusScriptRunner(getDatabases(), getConfiguration(), sqlPlusCommand);
     }
 }
