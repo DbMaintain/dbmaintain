@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.IdentifierParser;
 
 import static org.dbmaintain.database.StoredIdentifierCase.MIXED_CASE;
 
@@ -29,15 +30,13 @@ import static org.dbmaintain.database.StoredIdentifierCase.MIXED_CASE;
 public class DbItemIdentifier {
 
     private DbItemType type;
-    private String databaseName;
     private String schemaName;
     private String itemName;
     private boolean dbMaintainIdentifier;
 
 
-    private DbItemIdentifier(DbItemType type, String databaseName, String schemaName, String itemName, boolean dbMaintainIdentifier) {
+    private DbItemIdentifier(DbItemType type, String schemaName, String itemName, boolean dbMaintainIdentifier) {
         this.type = type;
-        this.databaseName = databaseName;
         this.schemaName = schemaName;
         this.itemName = itemName;
         this.dbMaintainIdentifier = dbMaintainIdentifier;
@@ -46,10 +45,6 @@ public class DbItemIdentifier {
 
     public DbItemType getType() {
         return type;
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
     }
 
     public String getSchemaName() {
@@ -61,7 +56,7 @@ public class DbItemIdentifier {
     }
 
     public DbItemIdentifier getSchema() {
-        return new DbItemIdentifier(DbItemType.SCHEMA, databaseName, schemaName, null, false);
+        return new DbItemIdentifier(DbItemType.SCHEMA, schemaName, null, false);
     }
 
     public boolean isDbMaintainIdentifier() {
@@ -73,7 +68,6 @@ public class DbItemIdentifier {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((databaseName == null) ? 0 : databaseName.hashCode());
         result = prime * result + ((itemName == null) ? 0 : itemName.hashCode());
         result = prime * result + ((schemaName == null) ? 0 : schemaName.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -92,13 +86,6 @@ public class DbItemIdentifier {
             return false;
         }
         DbItemIdentifier other = (DbItemIdentifier) obj;
-        if (databaseName == null) {
-            if (other.databaseName != null) {
-                return false;
-            }
-        } else if (!databaseName.equals(other.databaseName)) {
-            return false;
-        }
         if (itemName == null) {
             if (other.itemName != null) {
                 return false;
@@ -115,10 +102,15 @@ public class DbItemIdentifier {
         }
         return true;
     }
-
+    
+    @Override
+    public String toString() {
+    	return schemaName+"."+itemName;
+    }    
 
     public static DbItemIdentifier parseItemIdentifier(DbItemType type, String identifierAsString, Databases databases) {
-        String[] identifierParts = StringUtils.split(identifierAsString, '.');
+    	IdentifierParser parser = new IdentifierParser('.');
+    	String[] identifierParts = parser.parse(identifierAsString);
         String schemaName, itemName;
         Database database;
         if (identifierParts.length == 3) {
@@ -193,6 +185,6 @@ public class DbItemIdentifier {
         if (itemName != null) {
             correctCaseItemName = database.toCorrectCaseIdentifier(itemName);
         }
-        return new DbItemIdentifier(type, database.getDatabaseName(), correctCaseSchemaName, correctCaseItemName, dbMaintainIdentifier);
+        return new DbItemIdentifier(type, correctCaseSchemaName, correctCaseItemName, dbMaintainIdentifier);
     }
 }

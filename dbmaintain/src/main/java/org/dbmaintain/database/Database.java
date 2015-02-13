@@ -15,9 +15,18 @@
  */
 package org.dbmaintain.database;
 
-import javax.sql.DataSource;
+import static org.dbmaintain.structure.model.DbItemType.SCHEMA;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import javax.sql.DataSource;
+
+import org.dbmaintain.structure.model.DbItemType;
 
 /**
  * Helper class that implements a number of common operations on a database schema. Operations that can be implemented
@@ -112,7 +121,53 @@ abstract public class Database {
      * @return The names of all tables in the database
      */
     public abstract Set<String> getTableNames(String schemaName);
+    
+    /**
+     * Return the names of all tables in the given schema sorted according to the foreign key constraints.
+     * 
+     * For example: If TabA has a Parent TabB and TabA is parent of TabC the returned order would be TabB, TabA, TabC
+     * 
+     * Warning: Cycles like TabA refers to TabB which refers to TabA are not guaranteed to be handled correctly or to be detected
+     * 
+     * @param schemaName The schema, not null
+     * @return The names of all tables in the database - sorted
+     */
+    public List<String> getTableNamesSortedAccordingToConstraints(String schemaName) {
+    	return new ArrayList<String>(getTableNames(schemaName));
+    }
 
+    
+    /**
+     * Sorts the given tables according to parent child relations passed as 2nd parameter.
+     * @param tableNames Tables to be sorted
+     * @param childParentRelations Parent child relations
+     * @return The passed tables sorted
+     */
+    public static List<String> sortAccordingToConstraints(List<String> tableNames, final Map<String, Set<String>> childParentRelations) {
+    	// Using Collections.sort doesn't work since the sort order isn't associative
+    	for (int i = 0; i < tableNames.size(); i++) {
+    		for (int j = i + 1; j < tableNames.size(); j++) {
+        		if (compareTables(tableNames.get(i), tableNames.get(j), childParentRelations) > 0) {
+        			Collections.swap(tableNames, i, j);
+        		}
+        	}	
+    	}
+    	return tableNames;
+    }
+    
+    private static int compareTables(String t1, String t2, Map<String, Set<String>> childParentRelations) {
+		if (childParentRelations.containsKey(t1) 
+				&& childParentRelations.get(t1).contains(t2)) {
+			return 1;
+		}
+		else if (childParentRelations.containsKey(t2) 
+				&& childParentRelations.get(t2).contains(t1)) {
+			return -1;
+		}
+		else {
+			return 0;
+		}
+    }
 
     /**
      * Gets the names of all columns of the given table in the default schema.
@@ -211,6 +266,24 @@ abstract public class Database {
         throw new UnsupportedOperationException("Sequences not supported for " + getSupportedDatabaseDialect());
     }
 
+    /**
+    * Retrieves the names of all database links in the default schema.
+    *
+    * @return The names of all database links in the database, not null
+    */
+    public Set<String> getDatabaseLinkNames() {
+    	return getDatabaseLinkNames(getDefaultSchemaName());
+    }
+    
+    /**
+	* Retrieves the names of all database links in the given schema.
+	*
+	* @param schemaName The schema, not null
+	* @return The names of all database links in the database, not null
+    */
+    public Set<String> getDatabaseLinkNames(String schemaName) {
+		throw new UnsupportedOperationException("Database Links not supported for " + getSupportedDatabaseDialect());
+	}    
 
     /**
      * Retrieves the names of all triggers in the default schema.
@@ -240,6 +313,44 @@ abstract public class Database {
     public Set<String> getStoredProcedureNames() {
         return getStoredProcedureNames(getDefaultSchemaName());
     }
+    
+    /**
+    * Retrieves the names of all functions in the default schema.
+    *
+    * @return The names of all functions in the database, not null
+    */
+    public Set<String> getFunctionNames() {
+    	return getFunctionNames(getDefaultSchemaName());
+    }
+    
+    /**
+    * Retrieves the names of all functions in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all function in the database, not null
+    */
+    public Set<String> getFunctionNames(String schemaName) {
+    	throw new UnsupportedOperationException("Functions not supported for " + getSupportedDatabaseDialect());
+    }
+    
+    /**
+    * Retrieves the names of all packages in the default schema.
+    *
+    * @return The names of all packages in the database, not null
+    */
+    public Set<String> getPackagesNames() {
+    	return getPackageNames(getDefaultSchemaName());
+    }
+     
+    /**
+    * Retrieves the names of all packages in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all packages in the database, not null
+    */
+    public Set<String> getPackageNames(String schemaName) {
+    	throw new UnsupportedOperationException("Packages not supported for " + getSupportedDatabaseDialect());
+    }    
 
     /**
      * Retrieves the names of all stored procedures in the given schema.
@@ -280,6 +391,55 @@ abstract public class Database {
     public Set<String> getRuleNames(String schemaName) {
     	throw new UnsupportedOperationException("Rules are not supported for " + getSupportedDatabaseDialect());
     }
+    
+    /**
+     * Retrieves the names of all DB items for the given type 
+     * in the default schema.
+     * @param type Determines which item type shall be returned
+     * @return The names of all DB items for the given type, not null
+     */
+    final public Set<String> getDbItemsOfType(DbItemType type) {
+    	if (type == SCHEMA)
+    		return getSchemaNames();
+    	return getDbItemsOfType(type, getDefaultSchemaName());
+    }
+    
+    /**
+     * Retrieves the names of all DB items for the given type and schema.
+     * @param type Determines which item type shall be returned
+     * @param schema The schema, not null
+     * @return The names of all DB items for the given type, not null
+     */
+    final public Set<String> getDbItemsOfType(DbItemType type, String schema) {
+    	switch (type) {
+    		case DATABASE_LINK:
+    			return getDatabaseLinkNames(schema);
+    		case FUNCTION:
+    			return getFunctionNames(schema);
+    		case MATERIALIZED_VIEW:
+    			return getMaterializedViewNames(schema);
+    		case PACKAGE:
+    			return getPackageNames(schema);
+    		case SEQUENCE:
+    			return getSequenceNames(schema);
+    		case STORED_PROC:
+    			return getStoredProcedureNames(schema);
+    		case SYNONYM:
+    			return getSynonymNames(schema);
+    		case TRIGGER:
+    			return getTriggerNames(schema);
+    		case TYPE:
+    			return getTypeNames(schema);
+    		case VIEW:
+    			return getViewNames(schema);
+    		case TABLE:
+    			return getTableNames(schema);
+    		case RULE:
+    			return getRuleNames(schema);
+    		default:
+    			throw new IllegalArgumentException(type+" is not a valid argument for getDbItemsOfType");
+    	}
+    }    
 
 
     /**
@@ -369,6 +529,26 @@ abstract public class Database {
         getSQLHandler().execute("drop synonym " + qualified(schemaName, synonymName), getDataSource());
     }
 
+    /**
+    * Removes the database link with the given name from the default schema
+    * Note: the database link name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param databaseLinkName The synonym to drop (case-sensitive), not null
+    */
+    public void dropDatabaseLink(String databaseLinkName) {
+    	dropSynonym(getDefaultSchemaName(), databaseLinkName);
+    }
+     
+    /**
+    * Removes the database link with the given name from the given schema
+    * Note: the database link name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName  The schema, not null
+    * @param databaseLinkName The database link to drop (case-sensitive), not null
+    */
+    public void dropDatabaseLink(String schemaName, String databaseLinkName) {
+    	getSQLHandler().execute("drop database link " + qualified(schemaName, databaseLinkName), getDataSource());
+    }
 
     /**
      * Drops the sequence with the given name from the default schema
@@ -467,7 +647,107 @@ abstract public class Database {
     public void dropRule(String schemaName, String ruleName) {
         getSQLHandler().execute("drop rule " + qualified(schemaName, ruleName) + (supportsCascade() ? " cascade" : ""), getDataSource());
     }
+    
+    /**
+    * Drops the function with the given name from the default schema
+    * Note: the function name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param functionName The function to drop (case-sensitive), not null
+    */
+    public void dropFunction(String functionName) {
+    	dropFunction(getDefaultSchemaName(), functionName);
+    }
+    
+    /**
+    * Drops the function with the given name from the given schema
+    * Note: the function name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName          The schema, not null
+    * @param functionName The function to drop (case-sensitive), not null
+    */
+    public void dropFunction(String schemaName, String functionName) {
+    	getSQLHandler().execute("drop function " + qualified(schemaName, functionName), getDataSource());
+    }
+        
+    /**
+    * Drops the package with the given name from the default schema
+    * Note: the package name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param packageName The package to drop (case-sensitive), not null
+    */
+    public void dropPackage(String packageName) {
+    	dropPackage(getDefaultSchemaName(), packageName);
+    }
+    
+    /**
+    * Drops the package with the given name from the given schema
+    * Note: the package name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName          The schema, not null
+    * @param packageName The package to drop (case-sensitive), not null
+    */
+    public void dropPackage(String schemaName, String packageName) {
+    	getSQLHandler().execute("drop package " + qualified(schemaName, packageName), getDataSource());
+    }        
 
+    /**
+    * Drops the DB item with the given type and name in the default schema.
+    * @param type Type of the item which shall be dropped
+    * @param itemName Name of the item which shall be dropped, not null
+    */
+    final public void drop(DbItemType type, String itemName) {
+    	drop(type, getDefaultSchemaName(), itemName);
+    }
+     
+    /**
+    * Drops the DB item with the given type and name in the given schema.
+    * @param type Type of the item which shall be dropped
+    * @param schemaName The schema, not null
+    * @param itemName Name of the item which shall be dropped, not null
+    */
+    final public void drop(DbItemType type, String schemaName, String itemName) {
+    	switch (type) {
+    		case DATABASE_LINK:
+    			dropDatabaseLink(schemaName, itemName);
+    			break;
+    		case FUNCTION:
+    			dropFunction(schemaName, itemName);
+    			break;
+    		case MATERIALIZED_VIEW:
+    			dropMaterializedView(schemaName, itemName);
+    			break;
+    		case PACKAGE:
+    			dropPackage(schemaName, itemName);
+    			break;
+    		case SEQUENCE:
+    			dropSequence(schemaName, itemName);
+    			break;
+    		case STORED_PROC:
+    			dropStoredProcedure(schemaName, itemName);
+    			break;
+    		case SYNONYM:
+    			dropSynonym(schemaName, itemName);
+    			break;
+    		case TRIGGER:
+    			dropTrigger(schemaName, itemName);
+    			break;
+    		case TYPE:
+    			dropType(schemaName, itemName);
+    			break;
+    		case VIEW:  
+    			dropView(schemaName, itemName);
+    			break;
+    		case TABLE:
+    			dropTable(schemaName, itemName);
+    			break;
+    		case RULE:
+    			dropRule(schemaName, itemName);
+    			break;
+    		default:
+    			throw new IllegalArgumentException(type+" is not a valid argument for drop");
+    	}    
+    }    
+    
     /**
      * Disables all referential constraints (e.g. foreign keys) on all table in the default schema
      */
@@ -732,6 +1012,15 @@ abstract public class Database {
     public boolean supportsSynonyms() {
         return false;
     }
+    
+    /**
+    * Indicates whether the underlying DBMS supports database links
+    *
+    * @return True if database links are supported, false otherwise
+    */
+    public boolean supportsDatabaseLinks() {
+    	return false;
+    }
 
     /**
      * Indicates whether the underlying DBMS supports sequences
@@ -759,6 +1048,24 @@ abstract public class Database {
     public boolean supportsStoredProcedures() {
         return false;
     }
+    
+    /**
+    * Indicates whether the underlying DBMS supports functions
+    *
+    * @return True if functions are supported, false other
+    */
+    public boolean supportsFunctions() {
+    	return false;
+    }
+        
+    /**
+    * Indicates whether the underlying DBMS supports packages
+    *
+    * @return True if packages are supported, false other
+    */
+    public boolean supportsPackages() {
+    	return false;
+    }
 
     /**
      * Indicates whether the underlying DBMS supports database types
@@ -768,7 +1075,7 @@ abstract public class Database {
     public boolean supportsTypes() {
         return false;
     }
-
+    
     /**
      * Indicates whether the underlying DBMS supports database rules
      *
@@ -777,6 +1084,42 @@ abstract public class Database {
     public boolean supportsRules() {
         return false;
     }
+    
+    /**
+    * Indicates whether the underlying DBMS support the given DB item type
+    * @param type Type of the DB item
+    * @return True if the given type is supported, false otherwise
+    */
+    final public boolean supports(DbItemType type) {
+	    switch (type) {
+	    	case DATABASE_LINK:
+	    		return supportsDatabaseLinks();
+	    	case FUNCTION:
+	    		return supportsFunctions();
+	    	case MATERIALIZED_VIEW:
+	    		return supportsMaterializedViews();
+	    	case PACKAGE:
+	    		return supportsPackages();
+	    	case SEQUENCE:
+	    		return supportsSequences();
+	    	case STORED_PROC:
+	    		return supportsStoredProcedures();
+	    	case SYNONYM:
+	    		return supportsSynonyms();
+	    	case TRIGGER:
+	    		return supportsTriggers();
+	    	case TYPE:
+	    		return supportsTypes();
+	    	case RULE:
+	    		return supportsRules();
+	    	case VIEW:               
+	    	case SCHEMA:
+	    	case TABLE:
+	    		return true;
+	    	default:
+	    		throw new IllegalArgumentException(type + " is not a valid argument for supports");
+	    }
+    }    
 
     /**
      * Indicates whether the underlying DBMS supports identity columns

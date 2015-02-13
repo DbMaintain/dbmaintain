@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.structure.clear.impl;
 
+import java.util.HashSet;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
@@ -81,7 +82,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
     }
 
 

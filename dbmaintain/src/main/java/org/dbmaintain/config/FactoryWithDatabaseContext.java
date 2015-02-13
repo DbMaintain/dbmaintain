@@ -78,22 +78,18 @@ public class FactoryWithDatabaseContext extends FactoryContext {
     }
 
     /**
-     * Adds the items to preserve configured by the given property to the given list.
+     * Adds the items requiring special handling configured by the given property to the given list.
      *
-     * @param dbItemType              The type of item, not null
-     * @param itemsToPreserveProperty The property to get the preserved items, not null
-     * @param itemsToPreserve         The set to add the items to, not null
+     * @param dbItemType                   The type of item, not null
+     * @param specialHandlingItemProperty  The property to get the special handling items, not null
+     * @param specialHandlingItems         The set to add the items to, not null
      */
-    public void addItemsToPreserve(DbItemType dbItemType, String itemsToPreserveProperty, Set<DbItemIdentifier> itemsToPreserve) {
-        List<String> items = getStringList(itemsToPreserveProperty, getConfiguration());
-        for (String itemToPreserve : items) {
-            DbItemIdentifier itemIdentifier = parseItemIdentifier(dbItemType, itemToPreserve, databases);
-            if (itemIdentifier == null) {
-                // the database is disabled, ignore item identifier
-                continue;
-            }
-            itemsToPreserve.add(itemIdentifier);
-        }
+    public void addSpecialHandlingItems(DbItemType dbItemType, String specialHandlingItemProperty, Set<DbItemIdentifier> specialHandlingItems) {
+    	List<String> items = getStringList(specialHandlingItemProperty, getConfiguration());
+    	for (String specialHandlingItem : items) {
+    		DbItemIdentifier itemIdentifier = parseItemIdentifier(dbItemType, specialHandlingItem, databases);
+    		specialHandlingItems.add(itemIdentifier);
+    	}
     }
 
     public Map<String, ScriptParserFactory> getDatabaseDialectScriptParserFactoryMap() {

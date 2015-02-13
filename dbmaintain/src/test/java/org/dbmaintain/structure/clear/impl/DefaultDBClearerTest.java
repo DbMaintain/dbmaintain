@@ -65,7 +65,7 @@ public class DefaultDBClearerTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
 
         cleanupTestDatabase();
         createTestDatabase();
@@ -212,7 +212,6 @@ public class DefaultDBClearerTest {
      * @author Filip Neven
      * @author Tim Ducheyne
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static class TestTrigger implements Trigger {
 
         public void fire(int i, String string, String string1, Object[] objects, Object[] objects1) {

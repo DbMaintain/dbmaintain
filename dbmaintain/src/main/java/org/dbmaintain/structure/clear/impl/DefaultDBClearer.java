@@ -20,11 +20,11 @@ import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.structure.StructureUtils;
 import org.dbmaintain.structure.clear.DBClearer;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.structure.model.DbItemType;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
 
@@ -56,6 +56,9 @@ public class DefaultDBClearer implements DBClearer {
 
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should not be dropped. */
     protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
+    
+    /* Schemas, tables, views, materialized views, sequences, triggers and types that should be dropped in addition. */
+    protected Set<DbItemIdentifier> itemsToPurge = new HashSet<DbItemIdentifier>();
 
     /* The db support instances, not null */
     protected Databases databases;
@@ -65,15 +68,20 @@ public class DefaultDBClearer implements DBClearer {
     /**
      * @param databases                The db support instances, not null
      * @param itemsToPreserve          The schema's, tables, triggers etc that should not be dropped, not null
+     * @param itemsToPurge			   The tables, triggers, types etc that should be dropped in addition to the schema objects, not null 
      * @param constraintsDisabler      Disables of constraints before clearing the database, not null
      * @param executedScriptInfoSource Clears the executed scripts table, not null
      */
-    public DefaultDBClearer(Databases databases, Set<DbItemIdentifier> itemsToPreserve, ConstraintsDisabler constraintsDisabler, ExecutedScriptInfoSource executedScriptInfoSource) {
+    public DefaultDBClearer(Databases databases, 
+    		Set<DbItemIdentifier> itemsToPreserve, 
+    		Set<DbItemIdentifier> itemsToPurge, 
+    		ConstraintsDisabler constraintsDisabler, 
+    		ExecutedScriptInfoSource executedScriptInfoSource) {
         this.databases = databases;
         this.itemsToPreserve = itemsToPreserve;
+        this.itemsToPurge = itemsToPurge;
         this.constraintsDisabler = constraintsDisabler;
         this.executedScriptInfoSource = executedScriptInfoSource;
-        assertItemsToPreserveExist(itemsToPreserve);
     }
 
 
@@ -83,6 +91,8 @@ public class DefaultDBClearer implements DBClearer {
      * untouched.
      */
     public void clearDatabase() {
+    	StructureUtils.assertItemsToPreserveExist(databases, itemsToPreserve);
+    	
         // clear executed scripts, also makes sure that the scripts table exists
         executedScriptInfoSource.clearAllExecutedScripts();
 
@@ -98,6 +108,10 @@ public class DefaultDBClearer implements DBClearer {
     }
 
     protected void clearDatabase(Database database) {
+    	DbItemType[] typesToClear = {
+    			TABLE, VIEW, MATERIALIZED_VIEW, SYNONYM,
+    			DATABASE_LINK, SEQUENCE, TRIGGER, TYPE, 
+    			STORED_PROC, FUNCTION, PACKAGE, RULE};
         for (String schemaName : database.getSchemaNames()) {
             multiPassErrorHandler = new MultiPassErrorHandler();
 
@@ -107,23 +121,64 @@ public class DefaultDBClearer implements DBClearer {
             }
             logger.info("Clearing database schema " + schemaName);
             do {
-                dropSynonyms(database, schemaName);
-                dropViews(database, schemaName);
-                dropMaterializedViews(database, schemaName);
-                dropSequences(database, schemaName);
-                dropTables(database, schemaName);
-                dropStoredProcedures(database, schemaName);
-                dropTriggers(database, schemaName);
-                dropTypes(database, schemaName);
-                dropRules(database, schemaName);
+            	for(DbItemType type : typesToClear) {
+            		dropDbItemsOfType(type, database, schemaName);
+            	}
             }
             while (multiPassErrorHandler.continueExecutionAfterPass());
-
-            // todo drop functions, stored procedures.
         }
+        multiPassErrorHandler = new MultiPassErrorHandler();
+        do {
+        	dropPurgeItems(database);
+        } while (multiPassErrorHandler.continueExecutionAfterPass());        
     }
+    
+    protected void dropPurgeItems(Database database) {
+    	Iterator<DbItemIdentifier> items = itemsToPurge.iterator();
+    	while (items.hasNext()) {
+    		DbItemIdentifier item = items.next();
+    		if (!database.supports(item.getType()))
+    			continue;
+    		if (!database
+    				.getDbItemsOfType(item.getType(), item.getSchemaName())
+    				.contains(
+    					database.removeIdentifierQuotes(
+    						item.getItemName()))) {
+    			logger.info(item + " could not be found and will therefore not be dropped");
+    			continue;
+    		}
+    		dropDbItemOfType(
+    			item.getType(), database,
+    				item.getSchemaName(), item.getItemName());
+    	}
+    }
+    
+    protected void dropDbItemsOfType(DbItemType type,
+    		Database database,
+    		String schemaName) {
+    	if (!database.supports(type)) {
+    		return;
+    	}
+    	Set<String> itemNames = database.getDbItemsOfType(type, schemaName);
+    	for (String itemName: itemNames) {
+    		dropDbItemOfType(type, database, schemaName, itemName);
+	    }
+	}
 
-
+	protected void dropDbItemOfType(DbItemType type, Database database,
+			String schemaName, String itemName) {
+		// check whether item needs to be preserved
+		if (itemsToPreserve.contains(getItemIdentifier(type, schemaName, itemName, database))) {
+			return;
+        }
+		logger.debug("Dropping " + type + " " + itemName + " in database schema " + schemaName);
+		try {
+			database.drop(type, schemaName, itemName);
+		} catch (RuntimeException e) {
+			multiPassErrorHandler.addError(e);
+		}
+	}
+	
     /**
      * Drops all tables.
      *
@@ -336,142 +391,5 @@ public class DefaultDBClearer implements DBClearer {
                 multiPassErrorHandler.addError(e);
             }
         }
-    }
-
-    protected void assertItemsToPreserveExist(Set<DbItemIdentifier> itemsToPreserve) {
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTables = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaViews = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaMaterializedViews = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaSequences = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaSynonyms = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTriggers = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTypes = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-
-        for (DbItemIdentifier itemToPreserve : itemsToPreserve) {
-            Database database = databases.getDatabase(itemToPreserve.getDatabaseName());
-            if (database == null) {
-                // the database is disabled, skip
-                continue;
-            }
-            switch (itemToPreserve.getType()) {
-                case SCHEMA:
-                    if (!database.getSchemaNames().contains(itemToPreserve.getSchemaName())) {
-                        throw new DbMaintainException("Schema to preserve does not exist: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which schema's need to be preserved. To assure nothing is dropped by mistake, no schema's will be dropped.");
-                    }
-                    break;
-                case TABLE:
-                    Set<DbItemIdentifier> tableNames = schemaTables.get(itemToPreserve.getSchema());
-                    if (tableNames == null) {
-                        tableNames = toDbItemIdentifiers(TABLE, database, itemToPreserve.getSchemaName(), database.getTableNames(itemToPreserve.getSchemaName()));
-                        schemaTables.put(itemToPreserve.getSchema(), tableNames);
-                    }
-
-                    if (!itemToPreserve.isDbMaintainIdentifier() && !tableNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Table to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which tables need to be preserved. To assure nothing is dropped by mistake, no tables will be dropped.");
-                    }
-                    break;
-                case VIEW:
-                    Set<DbItemIdentifier> viewNames = schemaViews.get(itemToPreserve.getSchema());
-                    if (viewNames == null) {
-                        viewNames = toDbItemIdentifiers(VIEW, database, itemToPreserve.getSchemaName(), database.getViewNames(itemToPreserve.getSchemaName()));
-                        schemaViews.put(itemToPreserve.getSchema(), viewNames);
-                    }
-
-                    if (!viewNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("View to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which views need to be preserved. To assure nothing is dropped by mistake, no views will be dropped.");
-                    }
-                    break;
-                case MATERIALIZED_VIEW:
-                    Set<DbItemIdentifier> materializedViewNames = schemaMaterializedViews.get(itemToPreserve.getSchema());
-                    if (materializedViewNames == null) {
-                        if (database.supportsMaterializedViews()) {
-                            materializedViewNames = toDbItemIdentifiers(MATERIALIZED_VIEW, database, itemToPreserve.getSchemaName(), database.getMaterializedViewNames(itemToPreserve.getSchemaName()));
-                        } else {
-                            materializedViewNames = Collections.emptySet();
-                        }
-                        schemaMaterializedViews.put(itemToPreserve.getSchema(), materializedViewNames);
-                    }
-
-                    if (!materializedViewNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Materialized view to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which materialized views need to be preserved. To assure nothing is dropped by mistake, no materialized views will be dropped.");
-                    }
-                    break;
-                case SEQUENCE:
-                    Set<DbItemIdentifier> sequenceNames = schemaSequences.get(itemToPreserve.getSchema());
-                    if (sequenceNames == null) {
-                        if (database.supportsSequences()) {
-                            sequenceNames = toDbItemIdentifiers(SEQUENCE, database, itemToPreserve.getSchemaName(), database.getSequenceNames(itemToPreserve.getSchemaName()));
-                        } else {
-                            sequenceNames = Collections.emptySet();
-                        }
-                        schemaSequences.put(itemToPreserve.getSchema(), sequenceNames);
-                    }
-                    if (!sequenceNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Sequence to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which sequences need to be preserved. To assure nothing is dropped by mistake, no sequences will be dropped.");
-                    }
-                    break;
-                case SYNONYM:
-                    Set<DbItemIdentifier> synonymNames = schemaSynonyms.get(itemToPreserve.getSchema());
-                    if (synonymNames == null) {
-                        if (database.supportsSynonyms()) {
-                            synonymNames = toDbItemIdentifiers(SYNONYM, database, itemToPreserve.getSchemaName(), database.getSynonymNames(itemToPreserve.getSchemaName()));
-                        } else {
-                            synonymNames = Collections.emptySet();
-                        }
-                        schemaSynonyms.put(itemToPreserve.getSchema(), synonymNames);
-                    }
-
-                    if (!synonymNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Synonym to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which synonyms need to be preserved. To assure nothing is dropped by mistake, no synonyms will be dropped.");
-                    }
-                    break;
-                case TRIGGER:
-                    Set<DbItemIdentifier> triggerNames = schemaTriggers.get(itemToPreserve.getSchema());
-                    if (triggerNames == null) {
-                        if (database.supportsTriggers()) {
-                            triggerNames = toDbItemIdentifiers(TRIGGER, database, itemToPreserve.getSchemaName(), database.getTriggerNames(itemToPreserve.getSchemaName()));
-                        } else {
-                            triggerNames = Collections.emptySet();
-                        }
-                        schemaTriggers.put(itemToPreserve.getSchema(), triggerNames);
-                    }
-
-                    if (!triggerNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Trigger to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which triggers need to be preserved. To assure nothing is dropped by mistake, no triggers will be dropped.");
-                    }
-                    break;
-                case TYPE:
-                    Set<DbItemIdentifier> typeNames = schemaTypes.get(itemToPreserve.getSchema());
-                    if (typeNames == null) {
-                        if (database.supportsTypes()) {
-                            typeNames = toDbItemIdentifiers(TYPE, database, itemToPreserve.getSchemaName(), database.getTypeNames(itemToPreserve.getSchemaName()));
-                        } else {
-                            typeNames = Collections.emptySet();
-                        }
-                        schemaTypes.put(itemToPreserve.getSchema(), typeNames);
-                    }
-
-                    if (!typeNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Type to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which types need to be preserved. To assure nothing is dropped by mistake, no types will be dropped.");
-                    }
-                    break;
-            }
-        }
-    }
-
-    protected Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType type, Database database, String schemaName, Set<String> itemNames) {
-        Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        for (String itemName : itemNames) {
-            result.add(getItemIdentifier(type, schemaName, itemName, database));
-        }
-        return result;
     }
 }
