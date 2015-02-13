@@ -22,7 +22,7 @@ import org.dbmaintain.launch.task.DbMaintainTask;
 import java.io.File;
 import java.util.Properties;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Base DbMaintain task

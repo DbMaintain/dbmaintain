@@ -17,7 +17,7 @@ package org.dbmaintain.script.runner.impl.db2;
 
 import org.dbmaintain.util.DbMaintainException;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class Db2ConnectionInfo {
 

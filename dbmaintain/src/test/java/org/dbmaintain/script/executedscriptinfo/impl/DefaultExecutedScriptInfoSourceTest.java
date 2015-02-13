@@ -29,7 +29,7 @@ import java.text.ParseException;
 import java.util.Set;
 
 import static junit.framework.Assert.*;
-import static org.apache.commons.lang.time.DateUtils.parseDate;
+import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.createScript;

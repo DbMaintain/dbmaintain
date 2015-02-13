@@ -16,7 +16,7 @@
 package org.dbmaintain.script.runner.impl;
 
 import static java.lang.System.currentTimeMillis;
-import static org.apache.commons.lang.StringUtils.deleteWhitespace;
+import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.util.FileUtils.createFile;
 

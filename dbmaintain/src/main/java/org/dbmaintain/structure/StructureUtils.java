@@ -6,7 +6,7 @@ import static org.dbmaintain.structure.model.DbItemType.SCHEMA;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.structure.model.DbItemIdentifier;

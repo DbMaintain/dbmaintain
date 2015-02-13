@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.structure.model;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.util.DbMaintainException;

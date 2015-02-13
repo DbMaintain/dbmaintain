@@ -57,7 +57,7 @@
                 <configuration>
                     <artifactSet>
                         <includes>
-                            <include>commons-lang:commons-lang</include>
+                            <include>org.apache.commons:commons-lang3</include>
                             <include>commons-dbutils:commons-dbutils</include>
                             <include>commons-io:commons-io</include>
                             <include>commons-logging:commons-logging</include>
@@ -65,8 +65,8 @@
                     </artifactSet>
                     <relocations>
                         <relocation>
-                            <pattern>org.apache.commons.lang</pattern>
-                            <shadedPattern>thirdparty.org.apache.commons.lang</shadedPattern>
+                            <pattern>org.apache.commons.lang3</pattern>
+                            <shadedPattern>thirdparty.org.apache.commons.lang3</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>org.apache.commons.dbutils</pattern>
@@ -92,8 +92,8 @@
             <artifactId>commons-logging</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-dbutils</groupId>

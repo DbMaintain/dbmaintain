@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 
-import static org.apache.commons.lang.time.DateUtils.parseDate;
+import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.assertTableExists;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.createScript;

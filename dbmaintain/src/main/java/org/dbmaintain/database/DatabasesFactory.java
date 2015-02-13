@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.dbmaintain.config.ConfigUtils.getConfiguredClass;
 import static org.dbmaintain.util.ReflectionUtils.createInstanceOfType;
 

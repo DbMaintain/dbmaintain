@@ -5,8 +5,8 @@ import org.dbmaintain.database.DatabaseException;
 import javax.sql.DataSource;
 import java.util.*;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 
 /**

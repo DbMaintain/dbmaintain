@@ -16,7 +16,7 @@
 package org.dbmaintain.integrationtest;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
@@ -42,7 +42,7 @@ import java.util.Set;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.apache.commons.lang.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.*;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.*;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;

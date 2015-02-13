@@ -29,7 +29,7 @@ import java.text.ParseException;
 import java.util.SortedSet;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.time.DateUtils.parseDate;
+import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
 import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
 

@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.script.analyzer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.SortedSet;
 

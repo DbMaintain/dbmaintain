@@ -20,7 +20,7 @@ package org.dbmaintain.script.runner.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import java.io.File;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.database.Databases;

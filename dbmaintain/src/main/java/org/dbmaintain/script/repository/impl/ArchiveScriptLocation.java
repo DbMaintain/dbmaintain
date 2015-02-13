@@ -15,7 +15,7 @@
  */
 package org.dbmaintain.script.repository.impl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;

@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
-import static org.apache.commons.lang.StringUtils.trimToNull;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_IDENTIFIER_QUOTE_STRING;
 import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_STORED_IDENTIFIER_CASE;
 import static org.dbmaintain.config.PropertyUtils.getString;

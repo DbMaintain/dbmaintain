@@ -20,7 +20,7 @@ import org.dbmaintain.launch.task.DbMaintainTask;
 
 import java.io.File;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Task that enables creating a jar file that packages all database update scripts. This jar can then be used as
