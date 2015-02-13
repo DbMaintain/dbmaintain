@@ -1,9 +1,13 @@
 language: java
 jdk:
   - oraclejdk7
+matrix:
+  include:
+  - branches: master
+    script: script: mvn -q deploy --settings .travis-settings.xml
+  - branches: develop
+    script: mvn -q install --settings .travis-settings.xml
 branches:
   only:
   - master
-  script: mvn -q deploy --settings .travis-settings.xml
   - develop
-  script: mvn -q install --settings .travis-settings.xml
