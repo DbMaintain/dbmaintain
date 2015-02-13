@@ -63,7 +63,8 @@
 
     <!-- Build Settings -->
     <properties>
-        <project.build.java.target>1.5</project.build.java.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <parent-basedir>${basedir}</parent-basedir>
@@ -75,12 +76,7 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.3</version>
-                    <configuration>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                        <source>${project.build.java.target}</source>
-                        <target>${project.build.java.target}</target>
-                    </configuration>
+                    <version>2.3.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -90,7 +86,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.0</version>
+                    <version>2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
