@@ -1,7 +1,9 @@
 language: java
-script: mvn -q deploy --settings .travis-settings.xml
 jdk:
   - oraclejdk7
 branches:
   only:
   - master
+  script: mvn -q deploy --settings .travis-settings.xml
+  - develop
+  script: mvn -q install --settings .travis-settings.xml
