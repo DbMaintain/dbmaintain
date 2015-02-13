@@ -327,6 +327,8 @@ public class DbMaintainProperties {
 
     public static final String PROPERTY_SCRIPT_PARAMETER_FILE = "dbMaintainer.scriptParameterFile";
 
+    public static final String PROPERTY_IGNORE_DELETIONS = "dbMaintainer.ignoreDeletions";
+
     public static final String PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH = "dbMaintainer.sqlPlusScriptRunner.preScriptFilePath";
     public static final String PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH = "dbMaintainer.sqlPlusScriptRunner.postScriptFilePath";
 

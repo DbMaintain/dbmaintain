@@ -32,16 +32,19 @@ public class ScriptUpdates {
     private SortedSet<ScriptUpdate> regularlyAddedPatchScripts;
     private SortedSet<ScriptUpdate> regularPostprocessingScriptUpdates;
     private SortedSet<ScriptUpdate> regularlyRenamedScripts;
+    private SortedSet<ScriptUpdate> ignoredScripts;
 
     protected ScriptUpdates(SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts, SortedSet<ScriptUpdate> irregularScriptUpdates,
                             SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts, SortedSet<ScriptUpdate> regularlyAddedPatchScripts,
-                            SortedSet<ScriptUpdate> regularPostprocessingScriptUpdates, SortedSet<ScriptUpdate> regularlyRenamedScripts) {
+                            SortedSet<ScriptUpdate> regularPostprocessingScriptUpdates, SortedSet<ScriptUpdate> regularlyRenamedScripts,
+                            SortedSet<ScriptUpdate> ignoredScripts) {
         this.regularlyAddedOrModifiedScripts = regularlyAddedOrModifiedScripts;
         this.irregularScriptUpdates = irregularScriptUpdates;
         this.regularlyDeletedRepeatableScripts = regularlyDeletedRepeatableScripts;
         this.regularlyAddedPatchScripts = regularlyAddedPatchScripts;
         this.regularPostprocessingScriptUpdates = regularPostprocessingScriptUpdates;
         this.regularlyRenamedScripts = regularlyRenamedScripts;
+        this.ignoredScripts = ignoredScripts;
     }
 
 
@@ -49,6 +52,9 @@ public class ScriptUpdates {
         return regularlyAddedOrModifiedScripts;
     }
 
+    public SortedSet<ScriptUpdate> getIgnoredScripts() {
+        return ignoredScripts;
+    }
 
     public SortedSet<ScriptUpdate> getIrregularScriptUpdates() {
         return irregularScriptUpdates;
@@ -85,6 +91,13 @@ public class ScriptUpdates {
         return irregularScriptUpdates.size() > 0;
     }
 
+    public boolean hasIgnoredScripts() {
+        return ignoredScripts.size() > 0;
+    }
+
+    public boolean hasIgnoredScriptsAndScriptChanges() {
+        return hasIgnoredScripts() && getRegularScriptUpdates().size() > 0;
+    }
 
     public boolean noUpdatesOtherThanRepeatableScriptDeletionsOrRenames() {
         return regularlyAddedOrModifiedScripts.size() == 0 && irregularScriptUpdates.size() == 0 &&
