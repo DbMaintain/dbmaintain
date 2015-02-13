@@ -85,6 +85,7 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
 
     protected File createTemporaryScriptFile(Script script) throws IOException {
         File temporaryScriptsDir = createTemporaryScriptsDir();
+        temporaryScriptsDir.deleteOnExit();
         File temporaryScriptFile = new File(temporaryScriptsDir, getTemporaryScriptName(script));
         temporaryScriptFile.deleteOnExit();
 
