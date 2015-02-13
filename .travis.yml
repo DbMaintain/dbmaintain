@@ -2,10 +2,6 @@ language: java
 script: mvn -q install --settings .travis-settings.xml
 jdk:
   - oraclejdk7
-matrix:
-  include:
-  - branches: master
-  - branches: develop
 branches:
   only:
   - master
