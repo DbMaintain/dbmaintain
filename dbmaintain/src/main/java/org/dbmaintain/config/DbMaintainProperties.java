@@ -27,8 +27,7 @@ public class DbMaintainProperties {
     public static final String UNNAMED_DATABASE_NAME = "<unnamed>";
 
     /**
-     * Logical names for the databases. This property is only required if there's more than one
-     * database configured.
+     * Logical names for the databases. This property is only required if there's more than one database configured.
      */
     public static final String PROPERTY_DATABASE_NAMES = "databases.names";
 
@@ -62,8 +61,7 @@ public class DbMaintainProperties {
     public static final String PROPERTY_PASSWORD = PROPERTY_DATABASE_START + '.' + PROPERTY_PASSWORD_END;
 
     /**
-     * End of property names that indicate whether the database is included: i.e. it is active and
-     * must be updated
+     * End of property names that indicate whether the database is included: i.e. it is active and must be updated
      */
     public static final String PROPERTY_INCLUDED_END = "included";
     public static final String PROPERTY_INCLUDED = PROPERTY_DATABASE_START + '.' + PROPERTY_INCLUDED_END;
@@ -81,12 +79,14 @@ public class DbMaintainProperties {
     public static final String PROPERTY_SCHEMANAMES = PROPERTY_DATABASE_START + '.' + PROPERTY_SCHEMANAMES_END;
 
     /**
-     * Property key for the default identifier casing (lower_case, upper_case, mixed_case, auto)
+     * Property key for the default identifier casing (lower_case, upper_case,
+     * mixed_case, auto)
      */
     public static final String PROPERTY_STORED_IDENTIFIER_CASE = "database.storedIndentifierCase";
 
     /**
-     * Property key for the default identifier quote string (empty value for not supported, auto)
+     * Property key for the default identifier quote string (empty value for not
+     * supported, auto)
      */
     public static final String PROPERTY_IDENTIFIER_QUOTE_STRING = "database.identifierQuoteString";
 
@@ -101,20 +101,17 @@ public class DbMaintainProperties {
     public static final String PROPERTY_FROM_SCRATCH_ENABLED = "dbMaintainer.fromScratch.enabled";
 
     /**
-     * Property indicating if the database constraints should org disabled after updating the
-     * database
+     * Property indicating if the database constraints should org disabled after updating the database
      */
     public static final String PROPERTY_DISABLE_CONSTRAINTS = "dbMaintainer.disableConstraints";
 
     /**
-     * Property indicating if the database constraints should org disabled after updating the
-     * database
+     * Property indicating if the database constraints should org disabled after updating the database
      */
     public static final String PROPERTY_UPDATE_SEQUENCES = "dbMaintainer.updateSequences";
 
     /**
-     * Property for the maximum nr of chars of the script content to log when exception occurs, 0 to
-     * not log any script content
+     * Property for the maximum nr of chars of the script content to log when exception occurs, 0 to not log any script content
      */
     public static final String PROPERTY_MAX_NR_CHARS_WHEN_LOGGING_SCRIPT_CONTENT = "dbMaintainer.maxNrOfCharsWhenLoggingScriptContent";
 
@@ -132,6 +129,11 @@ public class DbMaintainProperties {
      * The key of the property that specifies which tables should not be dropped
      */
     public static final String PROPERTY_PRESERVE_TABLES = "dbMaintainer.preserve.tables";
+    
+    /**
+     * The key of the property that specifies which database links should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_DATABASE_LINKS = "dbMaintainer.preserve.databaseLinks";    
 
     /**
      * The key of the property that specifies which views should not be dropped
@@ -143,6 +145,21 @@ public class DbMaintainProperties {
      */
     public static final String PROPERTY_PRESERVE_MATERIALIZED_VIEWS = "dbMaintainer.preserve.materializedViews";
 
+    /**
+     * The key of the property that specifies which functions should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_FUNCTIONS = "dbMaintainer.preserve.functions";
+
+    /**
+     * The key of the property that specifies which packages should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_PACKAGES = "dbMaintainer.preserve.packages";
+    
+    /**
+     * The key of the property that specifies which procedures should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_PROCEDURES = "dbMaintainer.preserve.procedures";    
+    
     /**
      * The key of the property that specifies which synonyms should not be dropped
      */
@@ -172,6 +189,62 @@ public class DbMaintainProperties {
      * Property key for the tables that should not be cleaned
      */
     public static final String PROPERTY_PRESERVE_DATA_TABLES = "dbMaintainer.preserveDataOnly.tables";
+    
+    /**
+    * Property key for the tables that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_TABLES = "dbMaintainer.purge.tables";
+        
+    /**
+    * Property key for the database links that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_DATABASE_LINKS = "dbMaintainer.purge.databaseLinks";
+        
+    /**
+    * Property key for the views that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_VIEWS = "dbMaintainer.purge.views";
+        
+    /**
+    * Property key for the materialized views that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_MATERIALIZED_VIEWS = "dbMaintainer.purge.materializedViews";
+        
+    /**
+    * The key of the property that specifies which functions should not be dropped
+    */
+    public static final String PROPERTY_PURGE_FUNCTIONS = "dbMaintainer.purge.functions";
+        
+    /**
+    * The key of the property that specifies which packages should not be dropped
+    */
+    public static final String PROPERTY_PURGE_PACKAGES = "dbMaintainer.purge.packages";
+    
+    /**
+    * The key of the property that specifies which procedures should not be dropped
+    */
+    public static final String PROPERTY_PURGE_PROCEDURES = "dbMaintainer.purge.procedures";
+    
+    
+    /**
+    * Property key for the synonyms that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_SYNONYMS = "dbMaintainer.purge.synonyms";
+    
+    /**
+    * Property key for the sequences that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_SEQUENCES = "dbMaintainer.purge.sequences";
+    
+    /**
+    * The key of the property that specifies which triggers should not be dropped
+    */
+    public static final String PROPERTY_PURGE_TRIGGERS = "dbMaintainer.purge.triggers";
+    
+    /**
+    * The key of the property that specifies which types should not be dropped
+    */
+    public static final String PROPERTY_PURGE_TYPES = "dbMaintainer.purge.types";    
 
     /* The key of the property that specifies the database table in which the DB version is stored */
     public static final String PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME = "dbMaintainer.executedScriptsTableName";
@@ -180,36 +253,21 @@ public class DbMaintainProperties {
     public static final String PROPERTY_FILE_NAME_COLUMN_NAME = "dbMaintainer.fileNameColumnName";
     public static final String PROPERTY_FILE_NAME_COLUMN_SIZE = "dbMaintainer.fileNameColumnSize";
 
-    /*
-     * The key of the property that specifies the column in which the last modification timestamp is
-     * stored
-     */
+    /* The key of the property that specifies the column in which the last modification timestamp is stored */
     public static final String PROPERTY_FILE_LAST_MODIFIED_AT_COLUMN_NAME = "dbMaintainer.fileLastModifiedAtColumnName";
 
-    /*
-     * The key of the property that specifies the column in which the last modification timestamp is
-     * stored
-     */
+    /* The key of the property that specifies the column in which the last modification timestamp is stored */
     public static final String PROPERTY_CHECKSUM_COLUMN_NAME = "dbMaintainer.checksumColumnName";
     public static final String PROPERTY_CHECKSUM_COLUMN_SIZE = "dbMaintainer.checksumColumnSize";
 
-    /*
-     * The key of the property that specifies the column in which is stored whether the last update
-     * succeeded.
-     */
+    /* The key of the property that specifies the column in which is stored whether the last update succeeded. */
     public static final String PROPERTY_EXECUTED_AT_COLUMN_NAME = "dbMaintainer.executedAtColumnName";
     public static final String PROPERTY_EXECUTED_AT_COLUMN_SIZE = "dbMaintainer.executedAtColumnSize";
 
-    /*
-     * The key of the property that specifies the column in which is stored whether the last update
-     * succeeded.
-     */
+    /* The key of the property that specifies the column in which is stored whether the last update succeeded. */
     public static final String PROPERTY_SUCCEEDED_COLUMN_NAME = "dbMaintainer.succeededColumnName";
 
-    /*
-     * The key of the property that specifies whether the executed scripts table should be created
-     * automatically.
-     */
+    /* The key of the property that specifies whether the executed scripts table should be created automatically. */
     public static final String PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE = "dbMaintainer.autoCreateDbMaintainScriptsTable";
 
     public static final String PROPERTY_TIMESTAMP_FORMAT = "dbMaintainer.timestampFormat";
@@ -232,8 +290,7 @@ public class DbMaintainProperties {
     public static final String PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME = "dbMaintainer.postProcessingScript.directoryName";
 
     /**
-     * Property key for the patch indicator. I.e. the keyword to use in the filename to indicate
-     * that the script is a patch script.
+     * Property key for the patch indicator. I.e. the keyword to use in the filename to indicate that the script is a patch script.
      */
     public static final String PROPERTY_SCRIPT_PATCH_QUALIFIERS = "dbMaintainer.script.patch.qualifiers";
 
@@ -259,6 +316,10 @@ public class DbMaintainProperties {
     public static final String PROPERTY_INCLUDED_QUALIFIERS = "dbMaintainer.includedQualifiers";
 
     public static final String PROPERTY_SQL_PLUS_COMMAND = "dbMaintainer.sqlPlusScriptRunner.sqlPlusCommand";
+        
+    public static final String PROPERTY_SQL_LOADER_COMMAND = "dbMaintainer.sqlLoaderRunner.sqlLoaderCommand";
+        
+    public static final String PROPERTY_CHMOD_COMMAND = "dbMaintainer.shellScriptRunner.chmodCommand";
 
     public static final String PROPERTY_DB2_COMMAND = "dbMaintainer.db2ScriptRunner.db2Command";
 

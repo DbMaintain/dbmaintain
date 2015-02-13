@@ -46,8 +46,8 @@ public class DBCleanerFactory extends FactoryWithDatabase<DBCleaner> {
 
         itemsToPreserve.addAll(factoryWithDatabaseContext.getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS));
         itemsToPreserve.addAll(factoryWithDatabaseContext.getSchemasToPreserve(PROPERTY_PRESERVE_DATA_SCHEMAS));
-        factoryWithDatabaseContext.addItemsToPreserve(TABLE, PROPERTY_PRESERVE_TABLES, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(TABLE, PROPERTY_PRESERVE_DATA_TABLES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(TABLE, PROPERTY_PRESERVE_TABLES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(TABLE, PROPERTY_PRESERVE_DATA_TABLES, itemsToPreserve);
         return itemsToPreserve;
     }
 }

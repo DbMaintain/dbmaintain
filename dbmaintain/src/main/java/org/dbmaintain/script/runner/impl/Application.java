@@ -76,7 +76,7 @@ public class Application {
             return new ProcessOutput(output, exitValue);
 
         } catch (Exception e) {
-            throw new DbMaintainException("Failed to execute command.", e);
+        	throw new DbMaintainException("Failed to execute command: " + command + " " + e.getMessage(), e);
         }
     }
 

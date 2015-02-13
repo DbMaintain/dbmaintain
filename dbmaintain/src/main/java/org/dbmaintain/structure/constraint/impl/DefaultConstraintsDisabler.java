@@ -58,7 +58,6 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
         disableValueConstraints();
     }
 
-    @Override
     public void disableReferentialConstraints() {
          for (Database database : databases.getDatabases()) {
             for (String schemaName : database.getSchemaNames()) {
@@ -68,7 +67,6 @@ public class DefaultConstraintsDisabler implements ConstraintsDisabler {
         }
     }
 
-    @Override
     public void disableValueConstraints() {
         for (Database database : databases.getDatabases()) {
             for (String schemaName : database.getSchemaNames()) {

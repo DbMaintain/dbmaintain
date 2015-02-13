@@ -146,10 +146,6 @@ public class OracleStoredProcedureMatcherTest {
             return ' ';
     }
 
-    private boolean isStartOfStoredProcedureRegex(StringBuilder stringBuilder) {
-        return matcher.isStartOfPlSqlBlock(stringBuilder);
-    }
-
     private boolean isStartOfStoredProcedureOrig(StringBuilder statement) {
         return matches("CREATE PACKAGE", statement) || matches("CREATE OR REPLACE PACKAGE", statement) ||
                 matches("CREATE LIBRARY", statement) || matches("CREATE OR REPLACE LIBRARY", statement) ||

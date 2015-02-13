@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.structure.clear.impl;
 
+import java.util.HashSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Databases;
@@ -77,7 +78,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     }
 
     private DefaultDBClearer createDbClearer(Set<DbItemIdentifier> itemsToPreserve) {
-        return new DefaultDBClearer(databases, itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        return new DefaultDBClearer(databases, itemsToPreserve, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
     }
 
     /**
@@ -105,12 +106,21 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     /**
      * Test for materialized views to preserve that do not exist.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void materializedViewsToPreserveDoNotExist() throws Exception {
-        Set<DbItemIdentifier> itemsToPreserve = asSet(
-                parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases),
-                parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases));
-        createDbClearer(itemsToPreserve).clearDatabase();
+    	if (!databases.getDefaultDatabase().supportsMaterializedViews()) {
+    		logger.warn("Current dialect does not support materialized views. Skipping test.");
+    		return;
+    	}
+    	try {
+    		Set<DbItemIdentifier> itemsToPreserve = asSet(
+    				parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases),
+    				parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView2", databases));
+    		createDbClearer(itemsToPreserve).clearDatabase();
+    		fail("DbMaintainException expected.");
+		} catch (DbMaintainException e) {
+			// expected
+		}
     }
 
     /**

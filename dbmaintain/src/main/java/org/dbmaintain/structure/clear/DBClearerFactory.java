@@ -37,12 +37,13 @@ public class DBClearerFactory extends FactoryWithDatabase<DBClearer> {
 
     public DBClearer createInstance() {
         Set<DbItemIdentifier> itemsToPreserve = getItemsToPreserve();
+        Set<DbItemIdentifier> itemsToPurge    = getItemsToPurge();
 
         MainFactory mainFactory = factoryWithDatabaseContext.getMainFactory();
         ConstraintsDisabler constraintsDisabler = mainFactory.createConstraintsDisabler();
         ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
 
-        return new DefaultDBClearer(getDatabases(), itemsToPreserve, constraintsDisabler, executedScriptInfoSource);
+        return new DefaultDBClearer(getDatabases(), itemsToPreserve, itemsToPurge, constraintsDisabler, executedScriptInfoSource);
     }
 
 
@@ -53,13 +54,34 @@ public class DBClearerFactory extends FactoryWithDatabase<DBClearer> {
         Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
         itemsToPreserve.add(executedScriptsTable);
         itemsToPreserve.addAll(schemasToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(TABLE, PROPERTY_PRESERVE_TABLES, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(VIEW, PROPERTY_PRESERVE_VIEWS, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(MATERIALIZED_VIEW, PROPERTY_PRESERVE_MATERIALIZED_VIEWS, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(SYNONYM, PROPERTY_PRESERVE_SYNONYMS, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(SEQUENCE, PROPERTY_PRESERVE_SEQUENCES, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(TRIGGER, PROPERTY_PRESERVE_TRIGGERS, itemsToPreserve);
-        factoryWithDatabaseContext.addItemsToPreserve(TYPE, PROPERTY_PRESERVE_TYPES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(TABLE, PROPERTY_PRESERVE_TABLES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(DATABASE_LINK, PROPERTY_PRESERVE_DATABASE_LINKS, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(VIEW, PROPERTY_PRESERVE_VIEWS, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(MATERIALIZED_VIEW, PROPERTY_PRESERVE_MATERIALIZED_VIEWS, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(SYNONYM, PROPERTY_PRESERVE_SYNONYMS, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(SEQUENCE, PROPERTY_PRESERVE_SEQUENCES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(TRIGGER, PROPERTY_PRESERVE_TRIGGERS, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(TYPE, PROPERTY_PRESERVE_TYPES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(STORED_PROC, PROPERTY_PRESERVE_TYPES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(FUNCTION, PROPERTY_PRESERVE_TYPES, itemsToPreserve);
+        factoryWithDatabaseContext.addSpecialHandlingItems(PACKAGE, PROPERTY_PRESERVE_TYPES, itemsToPreserve);
         return itemsToPreserve;
     }
+    
+    protected Set<DbItemIdentifier> getItemsToPurge() {
+    	Set<DbItemIdentifier> itemsToPurge = new HashSet<DbItemIdentifier>();
+    	factoryWithDatabaseContext.addSpecialHandlingItems(TABLE, PROPERTY_PURGE_TABLES, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(DATABASE_LINK, PROPERTY_PURGE_DATABASE_LINKS, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(VIEW, PROPERTY_PURGE_VIEWS, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(MATERIALIZED_VIEW, PROPERTY_PURGE_MATERIALIZED_VIEWS, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(SYNONYM, PROPERTY_PURGE_SYNONYMS, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(SEQUENCE, PROPERTY_PURGE_SEQUENCES, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(TRIGGER, PROPERTY_PURGE_TRIGGERS, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(TYPE, PROPERTY_PURGE_TYPES, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(STORED_PROC, PROPERTY_PRESERVE_TYPES, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(FUNCTION, PROPERTY_PRESERVE_TYPES, itemsToPurge);
+    	factoryWithDatabaseContext.addSpecialHandlingItems(PACKAGE, PROPERTY_PRESERVE_TYPES, itemsToPurge);
+    	return itemsToPurge;   
+    	}
+   
 }

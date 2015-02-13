@@ -50,7 +50,8 @@ public class IdentifierProcessor {
      * @return Quoted version of the given databaseObjectName, if supported by the underlying DBMS
      */
     public String quoted(String databaseObjectName) {
-        if (identifierQuoteString == null) {
+        if (identifierQuoteString == null ||
+        		isQuoted(databaseObjectName)) {
             return databaseObjectName;
         }
         return identifierQuoteString + databaseObjectName + identifierQuoteString;

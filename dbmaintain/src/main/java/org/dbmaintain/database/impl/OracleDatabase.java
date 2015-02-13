@@ -21,7 +21,8 @@ import org.dbmaintain.database.DatabaseException;
 import org.dbmaintain.database.IdentifierProcessor;
 
 import java.sql.*;
-import java.util.Set;
+import java.util.*;
+import org.dbmaintain.util.DbMaintainException;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
@@ -35,6 +36,9 @@ public class OracleDatabase extends Database {
 
     /* The major version number of the Oracle database */
     private Integer oracleMajorVersionNumber;
+    
+    /* Public schema */
+    private static final String publicSchema = "PUBLIC";
 
 
     public OracleDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
@@ -61,6 +65,50 @@ public class OracleDatabase extends Database {
         // all_tables also contains the materialized views: don't return these
         // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
         return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from ALL_TABLES where OWNER = '" + schemaName + "' and TABLE_NAME not like 'BIN$%' minus select MVIEW_NAME from ALL_MVIEWS where OWNER = '" + schemaName + "'", getDataSource());
+    }
+    
+    @Override
+    public List<String> getTableNamesSortedAccordingToConstraints(String schemaName) {
+    	try {
+	    	List<String> tableNames =  new ArrayList<String>(getTableNames(schemaName));
+	    	Map<String, Set<String>> childParentRelations = getTableChildParentRelations(schemaName);
+	    	return sortAccordingToConstraints(tableNames, childParentRelations);
+    	} 
+    	catch (SQLException e) {
+    		throw new DatabaseException("Failed to resolve referential constraints", e);
+    	}
+    }
+       
+    private Map<String, Set<String>> getTableChildParentRelations(String schemaName) throws SQLException {
+    	Map<String, Set<String>> childParentRelations = new HashMap<String, Set<String>>();
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+	        connection = getDataSource().getConnection();
+	        queryStatement = connection.createStatement();
+	        alterStatement = connection.createStatement();
+	
+	        // cascade or "set null" constraints can be ignored since they are handled correctly by the DBMS independent of the delete order
+	        resultSet = queryStatement.executeQuery("select p.table_name AS parent, c.table_name AS child from ALL_CONSTRAINTS p join ALL_CONSTRAINTS c on p.r_constraint_name = c.constraint_name and p.r_owner = c.owner where p.CONSTRAINT_TYPE = 'R' and c.OWNER = '" + schemaName + "' and p.DELETE_RULE = 'NO ACTION' and p.CONSTRAINT_NAME not like 'BIN$%' and p.STATUS <> 'DISABLED'");
+	        while (resultSet.next()) {
+	        	String child = resultSet.getString("CHILD");
+	            String parent = resultSet.getString("PARENT");
+	            if (childParentRelations.containsKey(child)) {
+	            	Set<String> parents = childParentRelations.get(child);
+	            	parents.add(parent);
+	            } else {
+	            	Set<String> parents = new HashSet<String>();
+	            	parents.add(parent);
+	            	childParentRelations.put(child, parents);
+	            }
+	        }
+	        return childParentRelations;
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
+        }
     }
 
     /**
@@ -103,7 +151,17 @@ public class OracleDatabase extends Database {
     public Set<String> getSynonymNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select SYNONYM_NAME from ALL_SYNONYMS where OWNER = '" + schemaName + "'", getDataSource());
     }
-
+    
+    /**
+    * Retrieves the names of all database links in the database schema.
+    *
+    * @return The names of all database links in the database
+    */
+    @Override
+    public Set<String> getDatabaseLinkNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select DB_LINK from ALL_DB_LINKS where OWNER = '" + schemaName + "'", getDataSource());
+    }
+    
     /**
      * Retrieves the names of all sequences in the database schema.
      *
@@ -134,7 +192,38 @@ public class OracleDatabase extends Database {
     public Set<String> getTypeNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select TYPE_NAME from ALL_TYPES where OWNER = '" + schemaName + "'", getDataSource());
     }
-
+    /**
+    * Retrieves the names of all functions in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all function in the database, not null
+    */
+    @Override
+    public Set<String> getFunctionNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select distinct OBJECT_NAME from ALL_PROCEDURES where OWNER = '" + schemaName + "' and OBJECT_TYPE = 'FUNCTION'", getDataSource());
+    }
+        
+    /**
+    * Retrieves the names of all packages in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all packages in the database, not null
+    */
+    @Override
+    public Set<String> getPackageNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select distinct OBJECT_NAME from ALL_PROCEDURES where OWNER = '" + schemaName + "' and OBJECT_TYPE = 'PACKAGE'", getDataSource());
+    }
+        
+    /**
+    * Retrieves the names of all stored procedures in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all stored procedures in the database, not null
+    */
+    @Override
+    public Set<String> getStoredProcedureNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select distinct OBJECT_NAME from ALL_PROCEDURES where OWNER = '" + schemaName + "' and OBJECT_TYPE = 'PROCEDURE'", getDataSource());
+	}  
 
     /**
      * Removes the table with the given name from the database.
@@ -168,7 +257,51 @@ public class OracleDatabase extends Database {
     public void dropMaterializedView(String schemaName, String materializedViewName) {
         getSQLHandler().execute("drop materialized view " + qualified(schemaName, materializedViewName), getDataSource());
     }
-
+    
+    /**
+    * Removes the database link with the given name from the given schema
+    * Note: the database link name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName  The schema, not null
+    * @param databaseLinkName The database link to drop (case-sensitive), not null
+    */
+    @Override
+    public void dropDatabaseLink(String schemaName, String databaseLinkName) {
+    	if (schemaName.equals(getDefaultSchemaName())) {
+    		getSQLHandler().execute("drop database link " + quoted(databaseLinkName), getDataSource());
+    	} 
+    	else if (publicSchema.equals(schemaName)) {
+    			dropPublicDatabaseLink(databaseLinkName);
+    	}
+    	else {
+    			throw new DbMaintainException("Oracle doesn't allow to drop a database link in another user's schema.");
+    	}
+    }
+    
+    protected void dropPublicDatabaseLink(String databaseLinkName) {
+    	getSQLHandler().execute("drop public database link " + quoted(databaseLinkName), getDataSource());
+    }
+    
+    /**
+    * Removes the synonym with the given name from the given schema
+    * Note: the synonym name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName  The schema, not null
+    * @param synonymName The synonym to drop (case-sensitive), not null
+    */
+    @Override    
+    public void dropSynonym(String schemaName, String synonymName) {
+    	if (publicSchema.equals(schemaName)) {
+    		dropPublicSynonym(synonymName);
+    	} else {
+    		super.dropSynonym(schemaName, synonymName);
+    	}
+    }
+    
+    protected void dropPublicSynonym(String synonymName) {
+    	getSQLHandler().execute("drop public synonym " + quoted(synonymName), getDataSource());
+    }
+    
     /**
      * Drops the type with the given name from the database
      * Note: the type name is surrounded with quotes, making it case-sensitive.
@@ -213,7 +346,7 @@ public class OracleDatabase extends Database {
             closeQuietly(connection, alterStatement, resultSet);
         }
     }
-
+    
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
      *
@@ -345,6 +478,16 @@ public class OracleDatabase extends Database {
     public boolean supportsSequences() {
         return true;
     }
+        
+    /**
+    * Database links are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsDatabaseLinks() {
+    	return true;
+    }    
 
     /**
      * Triggers are supported.
@@ -385,6 +528,36 @@ public class OracleDatabase extends Database {
     public boolean supportsCascade() {
         return true;
     }
+    
+    /**
+    * Functions are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsFunctions() {
+    	return true;
+    }
+        
+    /**
+    * Procedures are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsStoredProcedures() {
+    	return true;
+    }
+        
+    /**
+    * Packages are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsPackages() {
+    	return true;
+    }    
 
     /**
      * Setting the default schema is supported.

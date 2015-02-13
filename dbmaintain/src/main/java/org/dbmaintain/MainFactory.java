@@ -143,7 +143,7 @@ public class MainFactory {
     }
 
 
-    public Databases getDatabases() {
+    protected Databases getDatabases() {
         if (databases == null) {
             DatabaseConnectionManager databaseConnectionManager = getDatabaseConnectionManager();
             DatabasesFactory databasesFactory = new DatabasesFactory(configuration, databaseConnectionManager);
