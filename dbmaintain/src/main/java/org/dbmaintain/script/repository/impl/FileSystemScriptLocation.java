@@ -108,7 +108,7 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * @return all available scripts, loaded from the file system
      */
     protected SortedSet<Script> loadScripts(File scriptLocation) {
-        SortedSet<Script> scripts = new TreeSet<Script>();
+        SortedSet<Script> scripts = new TreeSet<>();
         getScriptsAt(scripts, scriptLocation.getAbsolutePath(), "");
         return scripts;
     }

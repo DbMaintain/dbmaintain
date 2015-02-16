@@ -55,10 +55,10 @@ public class DefaultDBClearer implements DBClearer {
     protected ExecutedScriptInfoSource executedScriptInfoSource;
 
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should not be dropped. */
-    protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
+    protected Set<DbItemIdentifier> itemsToPreserve = new HashSet<>();
     
     /* Schemas, tables, views, materialized views, sequences, triggers and types that should be dropped in addition. */
-    protected Set<DbItemIdentifier> itemsToPurge = new HashSet<DbItemIdentifier>();
+    protected Set<DbItemIdentifier> itemsToPurge = new HashSet<>();
 
     /* The db support instances, not null */
     protected Databases databases;
@@ -134,23 +134,21 @@ public class DefaultDBClearer implements DBClearer {
     }
     
     protected void dropPurgeItems(Database database) {
-    	Iterator<DbItemIdentifier> items = itemsToPurge.iterator();
-    	while (items.hasNext()) {
-    		DbItemIdentifier item = items.next();
-    		if (!database.supports(item.getType()))
-    			continue;
-    		if (!database
-    				.getDbItemsOfType(item.getType(), item.getSchemaName())
-    				.contains(
-    					database.removeIdentifierQuotes(
-    						item.getItemName()))) {
-    			logger.info(item + " could not be found and will therefore not be dropped");
-    			continue;
-    		}
-    		dropDbItemOfType(
-    			item.getType(), database,
-    				item.getSchemaName(), item.getItemName());
-    	}
+        for (DbItemIdentifier item : itemsToPurge) {
+            if (!database.supports(item.getType()))
+                continue;
+            if (!database
+                    .getDbItemsOfType(item.getType(), item.getSchemaName())
+                    .contains(
+                            database.removeIdentifierQuotes(
+                                    item.getItemName()))) {
+                logger.info(item + " could not be found and will therefore not be dropped");
+                continue;
+            }
+            dropDbItemOfType(
+                    item.getType(), database,
+                    item.getSchemaName(), item.getItemName());
+        }
     }
     
     protected void dropDbItemsOfType(DbItemType type,

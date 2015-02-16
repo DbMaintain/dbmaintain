@@ -208,7 +208,7 @@ abstract public class ScriptLocation {
             this.targetDatabaseRegexp = PropertyUtils.getString(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, customProperties);
         }
         if (customProperties.containsKey(PROPERTY_SCRIPT_FILE_EXTENSIONS)) {
-            this.scriptFileExtensions = new HashSet<String>(PropertyUtils.getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, customProperties));
+            this.scriptFileExtensions = new HashSet<>(PropertyUtils.getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, customProperties));
         }
         if (customProperties.containsKey(PROPERTY_BASELINE_REVISION)) {
             String baseLineRevisionString = PropertyUtils.getString(PROPERTY_BASELINE_REVISION, customProperties);
@@ -250,7 +250,7 @@ abstract public class ScriptLocation {
     }
 
     protected Set<Qualifier> createQualifiers(List<String> qualifierNames) {
-        Set<Qualifier> qualifiers = new HashSet<Qualifier>();
+        Set<Qualifier> qualifiers = new HashSet<>();
         for (String qualifierName : qualifierNames) {
             qualifiers.add(new Qualifier(qualifierName));
         }

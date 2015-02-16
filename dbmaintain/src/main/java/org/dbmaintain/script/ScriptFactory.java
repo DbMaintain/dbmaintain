@@ -133,7 +133,7 @@ public class ScriptFactory {
     }
 
     protected Set<Qualifier> getQualifiers(String[] pathParts) {
-        Set<Qualifier> qualifiers = new HashSet<Qualifier>();
+        Set<Qualifier> qualifiers = new HashSet<>();
 
         List<String> qualifierNames = getTokens(pathParts, qualifierPattern, false);
 
@@ -154,7 +154,7 @@ public class ScriptFactory {
      * @return The version of the script file, not null
      */
     protected ScriptIndexes getScriptIndexes(String[] pathParts) {
-        List<Long> versionIndexes = new ArrayList<Long>();
+        List<Long> versionIndexes = new ArrayList<>();
 
         List<String> versionIndexStrings = getTokens(pathParts, scriptIndexPattern, true);
         for (String versionIndexString : versionIndexStrings) {
@@ -172,7 +172,7 @@ public class ScriptFactory {
     }
 
     protected List<String> getTokens(String[] pathParts, Pattern pattern, boolean addNullIfNoMatch) {
-        List<String> tokens = new ArrayList<String>();
+        List<String> tokens = new ArrayList<>();
 
         for (String pathPart : pathParts) {
             Matcher matcher = pattern.matcher(pathPart);

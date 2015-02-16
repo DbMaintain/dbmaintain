@@ -29,7 +29,7 @@ public class Databases {
     private List<String> disabledDatabaseNames;
 
     private List<Database> databases;
-    private Map<String, Database> nameDatabaseMap = new HashMap<String, Database>();
+    private Map<String, Database> nameDatabaseMap = new HashMap<>();
 
 
     public Databases(Database defaultDatabase, List<Database> databases, List<String> disabledDatabaseNames) {

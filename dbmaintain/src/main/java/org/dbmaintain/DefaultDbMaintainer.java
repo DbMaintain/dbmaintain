@@ -307,7 +307,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @return The already executed scripts, as a map from Script => ExecutedScript
      */
     protected Map<Script, ExecutedScript> getAlreadyExecutedScripts() {
-        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<Script, ExecutedScript>();
+        Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<>();
         for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
             alreadyExecutedScripts.put(executedScript.getScript(), executedScript);
         }
@@ -472,7 +472,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @return the incremental scripts that failed during the last database update
      */
     protected SortedSet<ExecutedScript> getIncrementalScriptsThatFailedDuringLastUpdate() {
-        SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
+        SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
             if (!script.isSuccessful() && script.getScript().isIncremental()) {
                 failedExecutedScripts.add(script);
@@ -486,7 +486,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @return the repeatable scripts that failed during the last database update
      */
     protected SortedSet<ExecutedScript> getRepeatableScriptsThatFailedDuringLastUpdate() {
-        SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<ExecutedScript>();
+        SortedSet<ExecutedScript> failedExecutedScripts = new TreeSet<>();
         for (ExecutedScript script : executedScriptInfoSource.getExecutedScripts()) {
             if (!script.isSuccessful() && script.getScript().isRepeatable()) {
                 failedExecutedScripts.add(script);

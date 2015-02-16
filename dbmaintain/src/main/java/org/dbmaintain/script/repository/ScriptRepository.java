@@ -28,9 +28,9 @@ import java.util.*;
  */
 public class ScriptRepository {
 
-    protected SortedSet<Script> indexedScripts = new TreeSet<Script>();
-    protected SortedSet<Script> repeatableScripts = new TreeSet<Script>();
-    protected SortedSet<Script> postProcessingScripts = new TreeSet<Script>();
+    protected SortedSet<Script> indexedScripts = new TreeSet<>();
+    protected SortedSet<Script> repeatableScripts = new TreeSet<>();
+    protected SortedSet<Script> postProcessingScripts = new TreeSet<>();
 
     protected QualifierEvaluator qualifierEvaluator;
 
@@ -53,7 +53,7 @@ public class ScriptRepository {
     }
 
     public SortedSet<Script> getAllUpdateScripts() {
-        SortedSet<Script> allUpdateScripts = new TreeSet<Script>();
+        SortedSet<Script> allUpdateScripts = new TreeSet<>();
         allUpdateScripts.addAll(indexedScripts);
         allUpdateScripts.addAll(repeatableScripts);
         return allUpdateScripts;
@@ -64,7 +64,7 @@ public class ScriptRepository {
     }
 
     public SortedSet<Script> getAllScripts() {
-        SortedSet<Script> allScripts = new TreeSet<Script>();
+        SortedSet<Script> allScripts = new TreeSet<>();
         allScripts.addAll(indexedScripts);
         allScripts.addAll(repeatableScripts);
         allScripts.addAll(postProcessingScripts);
@@ -115,8 +115,8 @@ public class ScriptRepository {
 
 
     protected void assertNoDuplicateScripts(Set<ScriptLocation> scriptLocations) {
-        Set<DuplicateScript> duplicateScripts = new HashSet<DuplicateScript>();
-        List<ScriptLocation> scriptLocationList = new ArrayList<ScriptLocation>(scriptLocations);
+        Set<DuplicateScript> duplicateScripts = new HashSet<>();
+        List<ScriptLocation> scriptLocationList = new ArrayList<>(scriptLocations);
         for (int i = 0; i < scriptLocationList.size() - 1; i++) {
             for (Script script : scriptLocationList.get(i).getScripts()) {
                 for (int j = i + 1; j < scriptLocationList.size(); j++) {

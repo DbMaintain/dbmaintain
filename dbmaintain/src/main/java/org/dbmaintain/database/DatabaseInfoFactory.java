@@ -38,7 +38,7 @@ public class DatabaseInfoFactory {
 
 
     public List<DatabaseInfo> createDatabaseInfos() {
-        List<DatabaseInfo> databaseInfos = new ArrayList<DatabaseInfo>();
+        List<DatabaseInfo> databaseInfos = new ArrayList<>();
 
         List<String> databaseNames = getStringList(PROPERTY_DATABASE_NAMES, configuration);
         if (databaseNames.isEmpty()) {

@@ -51,7 +51,7 @@ public class DBClearerFactory extends FactoryWithDatabase<DBClearer> {
         DbItemIdentifier executedScriptsTable = factoryWithDatabaseContext.getExecutedScriptsTable();
         Set<DbItemIdentifier> schemasToPreserve = factoryWithDatabaseContext.getSchemasToPreserve(PROPERTY_PRESERVE_SCHEMAS);
 
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
+        Set<DbItemIdentifier> itemsToPreserve = new HashSet<>();
         itemsToPreserve.add(executedScriptsTable);
         itemsToPreserve.addAll(schemasToPreserve);
         factoryWithDatabaseContext.addSpecialHandlingItems(TABLE, PROPERTY_PRESERVE_TABLES, itemsToPreserve);
@@ -69,7 +69,7 @@ public class DBClearerFactory extends FactoryWithDatabase<DBClearer> {
     }
     
     protected Set<DbItemIdentifier> getItemsToPurge() {
-    	Set<DbItemIdentifier> itemsToPurge = new HashSet<DbItemIdentifier>();
+    	Set<DbItemIdentifier> itemsToPurge = new HashSet<>();
     	factoryWithDatabaseContext.addSpecialHandlingItems(TABLE, PROPERTY_PURGE_TABLES, itemsToPurge);
     	factoryWithDatabaseContext.addSpecialHandlingItems(DATABASE_LINK, PROPERTY_PURGE_DATABASE_LINKS, itemsToPurge);
     	factoryWithDatabaseContext.addSpecialHandlingItems(VIEW, PROPERTY_PURGE_VIEWS, itemsToPurge);

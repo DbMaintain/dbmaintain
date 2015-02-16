@@ -53,7 +53,7 @@ public class FactoryContext {
 
 
     public Set<Qualifier> createQualifiers(List<String> qualifierNames) {
-        Set<Qualifier> qualifiers = new HashSet<Qualifier>(qualifierNames.size());
+        Set<Qualifier> qualifiers = new HashSet<>(qualifierNames.size());
         for (String qualifierName : qualifierNames) {
             qualifiers.add(new Qualifier(qualifierName));
         }
@@ -69,11 +69,11 @@ public class FactoryContext {
     }
 
     public ScriptRepository createScriptRepository() {
-        Set<String> scriptLocationIndicators = new HashSet<String>(getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
+        Set<String> scriptLocationIndicators = new HashSet<>(getStringList(PROPERTY_SCRIPT_LOCATIONS, configuration));
         if (scriptLocationIndicators.isEmpty()) {
             throw new DbMaintainException("Unable to find scripts. No script locations specified.");
         }
-        Set<ScriptLocation> scriptLocations = new HashSet<ScriptLocation>();
+        Set<ScriptLocation> scriptLocations = new HashSet<>();
         for (String scriptLocationIndicator : scriptLocationIndicators) {
             scriptLocations.add(createScriptLocation(scriptLocationIndicator));
         }
@@ -90,7 +90,7 @@ public class FactoryContext {
         String scriptIndexRegexp = getString(PROPERTY_SCRIPT_INDEX_REGEXP, configuration);
         String qualifierRegexp = getString(PROPERTY_SCRIPT_QUALIFIER_REGEXP, configuration);
         String targetDatabaseRegexp = getString(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, configuration);
-        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
+        Set<String> scriptFileExtensions = new HashSet<>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, configuration));
         boolean ignoreCarriageReturnsWhenCalculatingCheckSum = getBoolean(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, configuration);
         ScriptIndexes baseLineRevision = getBaselineRevision();
 
