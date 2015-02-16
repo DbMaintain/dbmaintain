@@ -119,7 +119,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
     }
 
     protected SortedSet<Script> loadScriptsFromJar(final JarFile jarFile, String subPath) {
-        SortedSet<Script> scripts = new TreeSet<Script>();
+        SortedSet<Script> scripts = new TreeSet<>();
         for (Enumeration<JarEntry> jarEntries = jarFile.entries(); jarEntries.hasMoreElements();) {
             final JarEntry jarEntry = jarEntries.nextElement();
             String fileName = jarEntry.getName();

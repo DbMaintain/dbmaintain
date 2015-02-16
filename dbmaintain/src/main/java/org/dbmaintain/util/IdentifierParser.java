@@ -26,7 +26,7 @@ import java.util.ArrayList;
 public class IdentifierParser {
     
     private ParsingState currentState;
-    private List<String> parts = new ArrayList<String>();
+    private List<String> parts = new ArrayList<>();
     private char separatorChar;
     private String part = "";
     public IdentifierParser(char separatorChar) {
