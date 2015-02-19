@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/red6/dbmaintain.svg?branch=master)](https://travis-ci.org/red6/dbmaintain)
+[![Build Status](https://travis-ci.org/DbMaintain/dbmaintain.svg?branch=develop)](https://travis-ci.org/DbMaintain/dbmaintain)
 
 dbmaintain
 ==========
