@@ -42,9 +42,9 @@
         <url>http://jira.unitils.org/browse/DBM</url>
     </issueManagement>
     <scm>
-        <connection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</connection>
-        <developerConnection>scm:svn:https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</developerConnection>
-        <url>https://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk</url>
+        <connection>scm:git:git@github.com:DbMaintain/dbmaintain.git</connection>
+        <developerConnection>scm:git:git@github.com:DbMaintain/dbmaintain.git</developerConnection>
+        <url>https://github.com/DbMaintain/dbmaintain.git</url>
     </scm>
     <mailingLists>
         <mailingList>
