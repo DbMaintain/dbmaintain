@@ -1,5 +1,5 @@
 language: java
-script: mvn -q install --settings .travis-settings.xml
+script: mvn -q install --settings .travis-settings.xml -Dgpg.skip=true
 jdk:
   - oraclejdk7
 branches:
