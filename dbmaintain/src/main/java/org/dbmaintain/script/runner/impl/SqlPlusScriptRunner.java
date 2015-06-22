@@ -89,7 +89,9 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
             content.append(lineSeparator);
             content.append("alter session set current_schema=");
             content.append(databaseInfo.getDefaultSchemaName());
-            content.append(";");
+            content.append(";");            
+            content.append(lineSeparator);
+            content.append("alter session set ddl_lock_timeout=30;");               
             content.append(lineSeparator);
 
             // read content from custom script file
@@ -117,6 +119,8 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
             content.append("alter session set current_schema=");
             content.append(databaseInfo.getDefaultSchemaName());
             content.append(";");
+            content.append(lineSeparator);
+            content.append("alter session set ddl_lock_timeout=30;");               
             content.append(lineSeparator);
             content.append("set echo on");
             content.append(lineSeparator);
