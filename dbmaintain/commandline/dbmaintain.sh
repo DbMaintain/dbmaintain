@@ -144,7 +144,6 @@ if [ -z "$JAVA_HOME" ] ; then
   echo "Warning: JAVA_HOME environment variable is not set."
 fi
 
-DBMAINTAIN_LAUNCHER="org.dbmaintain.launch.commandline.CommandLine"
 DBMAINTAIN_JAR="${DBMAINTAIN_HOME}/dbmaintain-${project.version}.jar"
 
 # Check if $DBMAINTAIN_JDBC_DRIVER is set. If not, call setJdbcDriver.sh.
@@ -178,8 +177,10 @@ else
   CLASSPATH_SEPARATOR=":"
 fi
 
-DBMAINTAIN_CLASSPATH="${DBMAINTAIN_JAR}${CLASSPATH_SEPARATOR}${CLASSPATH_SEPARATOR}${JDBC_DRIVER}"
+DBMAINTAIN_CLASSPATH="${JDBC_DRIVER}"
 
 exec "$JAVACMD" \
+  -classpath "${DBMAINTAIN_CLASSPATH}" \
+  -jar ${DBMAINTAIN_JAR} \
   $DBMAINTAIN_OPTS \
-  -classpath "${DBMAINTAIN_CLASSPATH}" ${DBMAINTAIN_LAUNCHER} $QUOTED_ARGS
+  ${DBMAINTAIN_LAUNCHER} $QUOTED_ARGS
