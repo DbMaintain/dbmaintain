@@ -115,18 +115,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                    <finalName>dbmaintain-${project.version}</finalName>
-                    <descriptors>
-                        <descriptor>src/main/assembly/dbmaintain.xml</descriptor>
-                        <descriptor>src/main/assembly/dbmaintain-src.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>
                     <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>

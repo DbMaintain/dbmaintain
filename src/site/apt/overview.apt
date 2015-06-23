@@ -31,6 +31,10 @@ Overview
 
 * News
 ~~~~
+** <<2015-06-22 - Release of DbMaintain 2.6.0>>
+
+    DbMaintain has moved to Github and changes from several forks have been integrated.
+
 ** <<2011-07-20 - Release of DbMaintain 2.4>>
 
     This release contains some important fixes for the parsing of oracle PL-SQL. By default dbmaintain also no longer outputs the
@@ -86,4 +90,3 @@ Overview
 
     We're proud to announce the release 1.0 of DbMaintain, and the publication of the website. Thanks to everybody who's contributed
     or provided feedback.
-	
