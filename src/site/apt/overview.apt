@@ -5,85 +5,54 @@
 
 Overview
 ~~~~~~~
-    DbMaintain enables automatic roll-out of updates to a relational database. It brings database scripts into version control just like regular source code and can be used to transparently deploy databases from development to production. DbMaintain automates the part of the deployment which is most difficult to automate, opening the door for fully automated deployments in all stages of development.
+    DbMaintain enables automatic roll-out of updates to a relational database. It brings database scripts into version control just like regular source code
+    to transparently deploy databases from development to production.
 	
-	You no longer have to keep track of which database updates have been deployed on which database - DbMaintain does this for you. The database itself keeps track of the scripts that have been applied. A checksum is stored for each script that to ensure nothing has changed to the scripts that were already applied.
-	
-	Updates are performed incrementally: Only what has been changed since the last deployment is applied. Features such as repeatable scripts, postprocessing scripts, multi-database / database user support and support for patches turn DbMaintain into a complete solution for the enterprise.
-	
-	DbMaintain integrates seamlessly with {{{http://www.unitils.org}Unitils}}, an open source library for writing automated tests. With unitils you can easily test your application's database integration layer while you develop it, relying on DbMaintain for managing the test database.
-	
+	DbMaintain keeps track of which database updates have been deployed on which database.
 
-* Where to start
+	Updates are performed incrementally: Only what has been changed since the last deployment is applied. Features such as repeatable scripts, postprocessing scripts, multi-database and database user support and support for patches turn DbMaintain into a complete solution for the enterprise.
+
+
+* Getting Started
 ~~~~~~~~~~~~~~
-    * An overview of the features and how to configure and use them is available as a {{{tutorial.html} tutorial}}.
+    * Get started with the {{{tutorial.html} tutorial}}.
+
+    * The {{{command-line.html} command line}} page gives an overview on how to launch DbMaintain from the command line.
 
     * If you are using ant, an overview of the available ant tasks can be found on the {{{ant-tasks.html} ant tasks}} page.
 
     * If you are using maven, an overview of the available maven goals can be found on the {{{maven-goals.html} maven goals}} page.
 
-    * The {{{command-line.html} command line}} page gives an overview on how to launch DbMaintain from the command line.
-
     * Finally, the {{{configuration.html} configuration }} page gives an overview of all possible configuration settings.
-
-    []    
 
 
 * News
 ~~~~
+** <<2015-06-22 - Release of DbMaintain 2.6.0>>
+
+    DbMaintain has moved to Github and changes from several forks have been integrated.
+
+    * Set ddl_lock_timeout in SqlPlusScriptRunner.
+
+    * Added support for triggers, stored procedures functions and database links.
+
+    * Clean database uses constraints to delete in correct order.
+
+    * Added support for SQL Loader.
+
+    * Allow for custom pre and post scripts in SQL Plus.
+
+    * Log SQL Plus exit code.
+
+    * H2 support.
+
+    * Distribution as *.tar.gz with executable shell scripts.
+
+    * If different users shared tmp, dbmaintain failed if executed by the puser since the 1st user left a folder in tmp which was not writeable by the 2nd user
+
 ** <<2011-07-20 - Release of DbMaintain 2.4>>
 
     This release contains some important fixes for the parsing of oracle PL-SQL. By default dbmaintain also no longer outputs the
     full script content when a failure occurs. This can be re-enabled by setting the dbMaintainer.maxNrOfCharsWhenLoggingScriptContent property.
 
     Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10080}release notes}} for more details.
-    
-** <<2011-05-12 - Release of DbMaintain 2.3>>
-
-    This release contains some important fixes when working with multiple databases. We've resolved some problems that occurred when
-    configuring a named database and fixed the behavior of the disabled property.
-
-    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10070}release notes}} for more details.
-
-** <<2011-05-04 - Release of DbMaintain 2.2>>
-
-    In this release, we've added spring support, fixed some small issues and performed internal refactorings for better integration with unitils.
-
-    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10060}release notes}} for more details.
-    
-** <<2010-10-07 - Release of DbMaintain 2.1>>
-
-    This release contains a fix for the from-scratch behavior and some small improvements:
-
-    * the database dialect will now be autodetected from the jdbc url and is no longer a required property
-
-    * the file name patterns are now configurable using regular expressions
-
-    * failed post-processing scripts will always be run again at the next update
-
-    []
-     
-    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10050}release notes}} for more details.
-
-** <<2010-08-16 - Release of DbMaintain 2.0>>
-
-    Two new operations have been introduced: markErrorScriptPerformed and markErrorScriptReverted that can be used when a script execution fails.
-    See the tutorial for more info on these operations.
-
-    Extra database support was added: PL-SQL parsing for DB2 and MySQL and the possibility to use the native script runners for Oracle (SQL*Plus) and DB2 (db2 CLP).
-
-    A baseline revision concept has been added, giving the possibility to ignore all scripts before this baseline. This could be handy if
-    the database starts from an pre-existing image. You then only have to deal with the deltas starting from this version.
-
-    Check the {{{http://jira.unitils.org/secure/ReleaseNote.jspa?projectId=10010&version=10040}release notes}} for more details.
-
-** <<2010-04-25: Release of DbMaintain 1.1>>
-
-    DbMaintain 1.1 has been released. It's most important feature is the support for script qualifiers, which enables including or excluding certain scripts from execution depending on the target environment. Another feature is the possibility to execute scripts native tools such as sqlplus for oracle and clp for db2. The release also includes a number of bug fixes and patches. A complete list of changes can be found in the {{{http://jira.dbmaintain.org/secure/ReleaseNote.jspa?projectId=10010&styleName=Html&version=10021}release notes}}.
-
-	
-** <<2009-02-21: Release of DbMaintain 1.0>>
-
-    We're proud to announce the release 1.0 of DbMaintain, and the publication of the website. Thanks to everybody who's contributed
-    or provided feedback.
-	

@@ -76,12 +76,12 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.3.2</version>
+                    <version>3.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>2.0.1</version>
+                    <version>3.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -90,13 +90,8 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.2-beta-4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.6.1</version>
+                    <version>2.10.3</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -110,19 +105,7 @@
                 <artifactId>maven-scm-plugin</artifactId>
                 <version>1.9.4</version>
                 <configuration>
-                    <tag>${project.artifactId}-${project.version}</tag>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                    <finalName>dbmaintain-${project.version}</finalName>
-                    <descriptors>
-                        <descriptor>src/main/assembly/dbmaintain.xml</descriptor>
-                        <descriptor>src/main/assembly/dbmaintain-src.xml</descriptor>
-                    </descriptors>
+                    <tag>v${project.version}</tag>
                 </configuration>
             </plugin>
             <plugin>
@@ -205,17 +188,17 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.3.2</version>
+                <version>3.4</version>
             </dependency>
             <dependency>
                 <groupId>commons-dbutils</groupId>
                 <artifactId>commons-dbutils</artifactId>
-                <version>1.1</version>
+                <version>1.6</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>1.4</version>
+                <version>2.2</version>
             </dependency>
             <dependency>
                 <groupId>ant</groupId>
@@ -248,24 +231,24 @@
             <dependency>
                 <groupId>org.unitils</groupId>
                 <artifactId>unitils-mock</artifactId>
-                <version>3.1</version>
+                <version>3.4.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.unitils</groupId>
                 <artifactId>unitils-inject</artifactId>
-                <version>3.1</version>
+                <version>3.4.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.4</version>
+                <version>4.11</version>
             </dependency>
             <dependency>
-                <groupId>hsqldb</groupId>
+                <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
-                <version>1.8.0.7</version>
+                <version>2.3.2</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>
