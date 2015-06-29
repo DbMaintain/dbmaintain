@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -63,12 +65,24 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         final String[] arguments = {"/nolog", "@" + wrapperScriptFile.getPath()};
         final Application.ProcessOutput processOutput = application.execute(arguments);
         final int exitValue = processOutput.getExitValue();
-        logger.info("SQL*Plus exited with code:" + exitValue);
-        if (exitValue != 0) {
+        boolean error = matchSQLPlusError(processOutput.getOutput());
+        // always write sqlplus output to standard out
+        logger.info("SQL*Plus exited with code:" + exitValue + " has error: " + error + " Output: " + processOutput.getOutput());
+        if (error ||exitValue != 0) {
+            logger.info("Failed to execute command. SQL*Plus returned an error.\n");
             throw new DbMaintainException("Failed to execute command. SQL*Plus returned an error.\n" + processOutput.getOutput());
         }
     }
 
+    public boolean matchSQLPlusError(String log) {
+		Pattern pattern = Pattern.compile(
+				"([0-9]+/[0-9]+\\s+PLS-[0-9]+:)|(^SP2-[0-9]+:)",
+				Pattern.MULTILINE);
+
+		Matcher match = pattern.matcher(log);
+		return match.find();
+	}
+    
     protected File generateWrapperScriptFile(final DatabaseInfo databaseInfo, final File targetScriptFile) throws IOException {
         final File temporaryScriptsDir = createTemporaryScriptsDir();
         final File temporaryScriptWrapperFile = new File(temporaryScriptsDir, "wrapper-" + currentTimeMillis() + targetScriptFile.getName());
