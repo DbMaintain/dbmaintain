@@ -75,8 +75,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.3.2</version>
+                    <version>3.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -86,12 +87,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5</version>
+                    <version>3.0-r1585899</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.2-beta-4</version>
+                    <version>2.5.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -104,7 +105,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.1</version>
+                <version>2.2</version>
             </plugin>
             <plugin>
                 <artifactId>maven-scm-plugin</artifactId>
@@ -116,6 +117,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>3.4</version>
                 <configuration>
                     <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
                 </configuration>
@@ -123,6 +125,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -201,27 +204,27 @@
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
-                <version>1.1.1</version>
+                <version>1.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.3.2</version>
+                <version>3.4</version>
             </dependency>
             <dependency>
                 <groupId>commons-dbutils</groupId>
                 <artifactId>commons-dbutils</artifactId>
-                <version>1.1</version>
+                <version>1.6</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>1.4</version>
+                <version>2.4</version>
             </dependency>
             <dependency>
                 <groupId>ant</groupId>
                 <artifactId>ant</artifactId>
-                <version>1.6.5</version>
+                <version>1.7.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
@@ -241,7 +244,7 @@
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-utils</artifactId>
-                <version>1.5.15</version>
+                <version>3.0.22</version>
             </dependency>
 
 
@@ -249,29 +252,29 @@
             <dependency>
                 <groupId>org.unitils</groupId>
                 <artifactId>unitils-mock</artifactId>
-                <version>3.1</version>
+                <version>3.4.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.unitils</groupId>
                 <artifactId>unitils-inject</artifactId>
-                <version>3.1</version>
+                <version>3.4.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.4</version>
+                <version>4.12</version>
             </dependency>
             <dependency>
-                <groupId>hsqldb</groupId>
+                <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
-                <version>1.8.0.7</version>
+                <version>2.3.3</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
-                <version>1.2.14</version>
+                <version>1.2.17</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
