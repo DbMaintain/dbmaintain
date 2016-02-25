@@ -7,6 +7,8 @@ jdk:
   
 after_script:
   - docker build -t dbmaintain/dbmaintain .
+  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push dbmaintain/dbmaintain
 #branches:
 #  only:
 #  - master
