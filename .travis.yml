@@ -1,8 +1,18 @@
+sudo: required
+
 language: java
 script: mvn -q install --settings .travis-settings.xml
 jdk:
   - oraclejdk7
-branches:
-  only:
-  - master
-  - develop
+  
+after_script:
+  - docker build -t dbmaintain/dbmaintain .
+  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push dbmaintain/dbmaintain
+#branches:
+#  only:
+#  - master
+#  - develop
+
+services:
+  - docker
