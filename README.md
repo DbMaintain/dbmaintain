@@ -4,7 +4,7 @@
 DbMaintain
 ==========
 
-Fork of [DB Maintain](http://www.dbmaintain.org/overview.html) with new Features.
+Fork of [DbMaintain](http://www.dbmaintain.org/overview.html) with new Features.
 
 Docker
 ======
