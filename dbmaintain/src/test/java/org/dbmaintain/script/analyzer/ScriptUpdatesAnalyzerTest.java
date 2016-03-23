@@ -47,6 +47,11 @@ public class ScriptUpdatesAnalyzerTest {
     private static final Script REPEATABLE_2 = createScript("repeatable2.sql", false);
     private static final Script REPEATABLE_2_UPDATED = createScript("repeatable2.sql", true);
     private static final Script PATCH_1 = createScript("1_#PATCH_patch1.sql", false);
+    private static final Script PREPROCESSING_1 = createScript("preprocessing/1_preprocessing1.sql", false);
+    private static final Script PREPROCESSING_2 = createScript("preprocessing/2_preprocessing2.sql", false);
+    private static final Script PREPROCESSING_3 = createScript("preprocessing/3_preprocessing3.sql", false);
+    private static final Script PREPROCESSING_3_RENAMED_WITH_INDEX_1 = createRenamedScript(PREPROCESSING_3, "preprocessing/1_preprocessing3.sql");
+    private static final Script PREPROCESSING_1_UPDATED = createScript("preprocessing/1_preprocessing1.sql", true);
     private static final Script POSTPROCESSING_1 = createScript("postprocessing/1_postprocessing1.sql", false);
     private static final Script POSTPROCESSING_2 = createScript("postprocessing/2_postprocessing2.sql", false);
     private static final Script POSTPROCESSING_3 = createScript("postprocessing/3_postprocessing3.sql", false);
@@ -152,6 +157,30 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
+    public void newPreprocessingScript() {
+    	executedScripts(PREPROCESSING_2);
+    	scripts(PREPROCESSING_1, PREPROCESSING_2);
+    	calculateScriptUpdates();
+    	assertPreProcessingScriptUpdate(PREPROCESSING_SCRIPT_ADDED, PREPROCESSING_1);
+    }
+
+    @Test
+    public void preprocessingScriptUpdated() {
+    	executedScripts(PREPROCESSING_1, PREPROCESSING_2);
+    	scripts(PREPROCESSING_1_UPDATED, PREPROCESSING_2);
+    	calculateScriptUpdates();
+    	assertPreProcessingScriptUpdate(PREPROCESSING_SCRIPT_UPDATED, PREPROCESSING_1);
+    }
+
+    @Test
+    public void preprocessingScriptDeleted() {
+    	executedScripts(PREPROCESSING_1, PREPROCESSING_2);
+    	scripts(PREPROCESSING_2);
+    	calculateScriptUpdates();
+    	assertPreProcessingScriptUpdate(PREPROCESSING_SCRIPT_DELETED, PREPROCESSING_1);
+    }
+
+    @Test
     public void newPostprocessingScript() {
         executedScripts(POSTPROCESSING_2);
         scripts(POSTPROCESSING_1, POSTPROCESSING_2);
@@ -219,6 +248,14 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
+    public void preprocessingScriptRenamed() {
+    	executedScripts(PREPROCESSING_2, PREPROCESSING_3);
+    	scripts(PREPROCESSING_3_RENAMED_WITH_INDEX_1, PREPROCESSING_2);
+    	calculateScriptUpdates();
+    	assertPreProcessingScriptUpdate(PREPROCESSING_SCRIPT_RENAMED, PREPROCESSING_3, PREPROCESSING_3_RENAMED_WITH_INDEX_1);
+    }
+
+    @Test
     public void postprocessingScriptRenamed() {
         executedScripts(POSTPROCESSING_2, POSTPROCESSING_3);
         scripts(POSTPROCESSING_3_RENAMED_WITH_INDEX_1, POSTPROCESSING_2);
@@ -254,6 +291,14 @@ public class ScriptUpdatesAnalyzerTest {
 
     private void assertRegularPatchScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
         assertTrue(scriptUpdates.getRegularlyAddedPatchScripts().contains(new ScriptUpdate(scriptUpdateType, script)));
+    }
+
+    private void assertPreProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+    	assertTrue(scriptUpdates.getRegularPreprocessingScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, script)));
+    }
+
+    private void assertPreProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedScript) {
+    	assertTrue(scriptUpdates.getRegularPreprocessingScriptUpdates().contains(new ScriptUpdate(scriptUpdateType, originalScript, renamedScript)));
     }
 
     private void assertPostProcessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {

@@ -112,6 +112,13 @@ public class CreateScriptArchiveMojo extends BaseMojo {
      */
     protected String scriptEncoding;
     /**
+     * Comma separated list of directories and files in which the pre processing database scripts are
+     * located. Directories in this list are recursively search for files. Defaults to prerocessing
+     *
+     * @parameter
+     */
+    protected String preProcessingScriptDirectoryName;
+    /**
      * Comma separated list of directories and files in which the post processing database scripts are
      * located. Directories in this list are recursively search for files. Defaults to postprocessing
      *
@@ -145,7 +152,7 @@ public class CreateScriptArchiveMojo extends BaseMojo {
     protected DbMaintainTask createDbMaintainTask() {
         File archiveFile = getArchiveFile();
         archiveFile.getParentFile().mkdirs();
-        return new CreateScriptArchiveTask(archiveFile.getPath(), scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, qualifiers, patchQualifiers, scriptFileExtensions);
+        return new CreateScriptArchiveTask(archiveFile.getPath(), scriptLocations, scriptEncoding, preProcessingScriptDirectoryName, postProcessingScriptDirectoryName, qualifiers, patchQualifiers, scriptFileExtensions);
     }
 
     @Override

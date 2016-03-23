@@ -236,6 +236,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 }
             } else {
                 logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
+
                 if (!dryRun) {
                     // If the disable constraints option is enabled, disable all FK and not null constraints
                     if (disableConstraints) {
@@ -245,6 +246,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
                     if (cleanDb) {
                         dbCleaner.cleanDatabase();
                     }
+
+                    logger.info("Executing preprocessing scripts.");
+                    executePreprocessingScripts();
                     // If there are incremental patch scripts with a lower index and the option allowOutOfSequenceExecutionOfPatches
                     // is enabled, execute them first
                     executeScriptUpdates(scriptUpdates.getRegularlyAddedPatchScripts());
@@ -306,6 +310,13 @@ public class DefaultDbMaintainer implements DbMaintainer {
         return executedScriptInfoSource.getExecutedScripts().size() == 0 && scriptRepository.areScriptsAvailable();
     }
 
+    /**
+     * Executes all preprocessing scripts
+     */
+    protected void executePreprocessingScripts() {
+        executedScriptInfoSource.deleteAllExecutedPreprocessingScripts();
+        executeScripts(scriptRepository.getPreProcessingScripts());
+	}
 
     /**
      * Executes all postprocessing scripts
@@ -471,7 +482,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
     }
 
     protected String getErrorScriptOptionsMessage(Script script) {
-        if (script.isRepeatable() || script.isPostProcessingScript()) {
+        if (script.isRepeatable() || script.isPostProcessingScript() || script.isPreProcessingScript()) {
             return "Please verify the state of the database and fix the script.\n" +
                     "You can then continue the update by re-running the updateDatabase task. The error script will then be executed again.";
         }

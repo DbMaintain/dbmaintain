@@ -110,6 +110,7 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     private void registerScripts(boolean successful) throws ParseException {
         executedScriptInfoSource.registerExecutedScript(createFailedScript("1_folder/1_script.sql", successful));
         executedScriptInfoSource.registerExecutedScript(createFailedScript("repeatable/script.sql", successful));
+        executedScriptInfoSource.registerExecutedScript(createFailedScript("preprocessing/script.sql", successful));
         executedScriptInfoSource.registerExecutedScript(createFailedScript("postprocessing/script.sql", successful));
     }
 

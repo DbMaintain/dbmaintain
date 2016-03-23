@@ -29,6 +29,7 @@ public class CheckScriptUpdatesAntTask extends BaseDatabaseAntTask {
 
     private String scriptLocations;
     private String scriptEncoding;
+    private String preProcessingScriptDirectoryName;
     private String postProcessingScriptDirectoryName;
     private Boolean fromScratchEnabled;
     private Boolean autoCreateDbMaintainScriptsTable;
@@ -43,7 +44,7 @@ public class CheckScriptUpdatesAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new CheckScriptUpdatesTask(getDbMaintainDatabases(), scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
+        return new CheckScriptUpdatesTask(getDbMaintainDatabases(), scriptLocations, scriptEncoding, preProcessingScriptDirectoryName, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
     }
 
 
@@ -64,6 +65,17 @@ public class CheckScriptUpdatesAntTask extends BaseDatabaseAntTask {
      */
     public void setScriptEncoding(String scriptEncoding) {
         this.scriptEncoding = scriptEncoding;
+    }
+
+    /**
+     * Comma separated list of directories and files in which the pre processing database scripts are
+     * located. Directories in this list are recursively search for files. Defaults to preprocessing
+     *
+     * @param preProcessingScriptDirectoryName
+     *         The directory names
+     */
+    public void setPreProcessingScriptDirectoryName(String preProcessingScriptDirectoryName) {
+    	this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
     }
 
     /**

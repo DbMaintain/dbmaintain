@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ScriptRepositoryTest {
 
-    Script indexed1, repeatable1, postProcessing1, indexed2, repeatable2, postProcessing2, duplicateIndex;
+    Script indexed1, repeatable1, postProcessing1, indexed2, repeatable2, postProcessing2, duplicateIndex, preProcessing1, preProcessing2;
     ScriptLocation scriptLocation1;
     ScriptLocation scriptLocation2;
 
@@ -45,9 +45,12 @@ public class ScriptRepositoryTest {
         repeatable2 = createScript("repeatable2.sql");
         postProcessing1 = createScript("postprocessing/01_post1.sql");
         postProcessing2 = createScript("postprocessing/02_post2.sql");
+        preProcessing1 = createScript("preprocessing/01_pre1.sql");
+        preProcessing2 = createScript("preprocessing/02_pre2.sql");
 
-        scriptLocation1 = createArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1), null);
-        scriptLocation2 = createArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2), null);
+
+        scriptLocation1 = createArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1, preProcessing1), null);
+        scriptLocation2 = createArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2, preProcessing2), null);
     }
 
     @Test

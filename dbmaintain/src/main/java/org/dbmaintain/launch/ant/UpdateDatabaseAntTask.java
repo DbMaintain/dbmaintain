@@ -28,6 +28,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
 
     private String scriptLocations;
     private String scriptEncoding;
+    private String preProcessingScriptDirectoryName;
     private String postProcessingScriptDirectoryName;
     private Boolean fromScratchEnabled;
     private Boolean autoCreateDbMaintainScriptsTable;
@@ -46,7 +47,7 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new UpdateDatabaseTask(getDbMaintainDatabases(), scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
+        return new UpdateDatabaseTask(getDbMaintainDatabases(), scriptLocations, scriptEncoding, preProcessingScriptDirectoryName, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, cleanDb, disableConstraints, updateSequences, useLastModificationDates, scriptFileExtensions, scriptParameterFile);
     }
 
     /**
@@ -66,6 +67,17 @@ public class UpdateDatabaseAntTask extends BaseDatabaseAntTask {
      */
     public void setScriptEncoding(String scriptEncoding) {
         this.scriptEncoding = scriptEncoding;
+    }
+
+    /**
+     * Comma separated list of directories and files in which the pre processing database scripts are
+     * located. Directories in this list are recursively search for files. Defaults to preprocessing
+     *
+     * @param preProcessingScriptDirectoryName
+     *         The directory names
+     */
+    public void setPreProcessingScriptDirectoryName(String preProcessingScriptDirectoryName) {
+    	this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
     }
 
     /**

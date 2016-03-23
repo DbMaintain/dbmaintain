@@ -46,6 +46,7 @@ public class ScriptUpdatesAnalyzer {
     private final SortedSet<ScriptUpdate> irregularlyUpdatedScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> regularlyAddedPatchScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyUpdatedPreprocessingScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> regularlyUpdatedPostprocessingScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> regularlyRenamedScripts = new TreeSet<ScriptUpdate>();
     private final SortedSet<ScriptUpdate> ignoredScripts = new TreeSet<ScriptUpdate>();
@@ -103,6 +104,8 @@ public class ScriptUpdatesAnalyzer {
                     registerScriptUpdate(scriptWithSameName);
                 } else if (!executedScript.isSuccessful() && executedScript.getScript().isPostProcessingScript()) {
                     registerPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_FAILURE_RERUN, scriptWithSameName);
+                } else if (!executedScript.isSuccessful() && executedScript.getScript().isPreProcessingScript()) {
+                	registerPreprocessingScriptUpdate(PREPROCESSING_SCRIPT_FAILURE_RERUN, scriptWithSameName);
                 }
             }
         }
@@ -146,7 +149,7 @@ public class ScriptUpdatesAnalyzer {
             }
         }
 
-        return new ScriptUpdates(regularlyAddedOrModifiedScripts, irregularlyUpdatedScripts, regularlyDeletedRepeatableScripts, regularlyAddedPatchScripts,
+        return new ScriptUpdates(regularlyAddedOrModifiedScripts, irregularlyUpdatedScripts, regularlyDeletedRepeatableScripts, regularlyAddedPatchScripts, regularlyUpdatedPreprocessingScripts,
                 regularlyUpdatedPostprocessingScripts, regularlyRenamedScripts, ignoredScripts);
     }
 
@@ -178,6 +181,8 @@ public class ScriptUpdatesAnalyzer {
             }
         } else if (script.isRepeatable()) {
             registerRegularScriptUpdate(REPEATABLE_SCRIPT_ADDED, script);
+        } else if (script.isPreProcessingScript()) {
+        	registerPreprocessingScriptUpdate(PREPROCESSING_SCRIPT_ADDED, script);
         } else if (script.isPostProcessingScript()) {
             registerPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_ADDED, script);
         }
@@ -194,6 +199,8 @@ public class ScriptUpdatesAnalyzer {
             registerIrregularScriptUpdate(INDEXED_SCRIPT_UPDATED, script);
         } else if (script.isRepeatable()) {
             registerRegularScriptUpdate(REPEATABLE_SCRIPT_UPDATED, script);
+        } else if (script.isPreProcessingScript()) {
+        	registerPreprocessingScriptUpdate(PREPROCESSING_SCRIPT_UPDATED, script);
         } else if (script.isPostProcessingScript()) {
             registerPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_UPDATED, script);
         }
@@ -210,6 +217,8 @@ public class ScriptUpdatesAnalyzer {
             registerIrregularScriptUpdate(INDEXED_SCRIPT_DELETED, deletedScript);
         } else if (deletedScript.isRepeatable()) {
             registerRepeatableScriptDeletion(deletedScript);
+        } else if (deletedScript.isPreProcessingScript()) {
+        	registerPreprocessingScriptUpdate(PREPROCESSING_SCRIPT_DELETED, deletedScript);
         } else if (deletedScript.isPostProcessingScript()) {
             registerPostprocessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, deletedScript);
         }
@@ -229,6 +238,9 @@ public class ScriptUpdatesAnalyzer {
         } else if (executedScript.getScript().isRepeatable() && renamedTo.isRepeatable()) {
             scriptExecutedScriptMap.put(renamedTo, executedScript);
             registerRegularScriptRename(REPEATABLE_SCRIPT_RENAMED, executedScript.getScript(), renamedTo);
+        } else if (executedScript.getScript().isPreProcessingScript() && renamedTo.isPreProcessingScript()) {
+        	scriptExecutedScriptMap.put(renamedTo, executedScript);
+            registerPreprocessingScriptRename(PREPROCESSING_SCRIPT_RENAMED, executedScript.getScript(), renamedTo);
         } else if (executedScript.getScript().isPostProcessingScript() && renamedTo.isPostProcessingScript()) {
             scriptExecutedScriptMap.put(renamedTo, executedScript);
             registerPostprocessingScriptRename(POSTPROCESSING_SCRIPT_RENAMED, executedScript.getScript(), renamedTo);
@@ -392,10 +404,18 @@ public class ScriptUpdatesAnalyzer {
     }
 
 
+    protected void registerPreprocessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
+    	regularlyUpdatedPreprocessingScripts.add(new ScriptUpdate(scriptUpdateType, script));
+    }
+
     protected void registerPostprocessingScriptUpdate(ScriptUpdateType scriptUpdateType, Script script) {
         regularlyUpdatedPostprocessingScripts.add(new ScriptUpdate(scriptUpdateType, script));
     }
 
+
+    protected void registerPreprocessingScriptRename(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedToScript) {
+    	regularlyUpdatedPreprocessingScripts.add(new ScriptUpdate(scriptUpdateType, originalScript, renamedToScript));
+    }
 
     protected void registerPostprocessingScriptRename(ScriptUpdateType scriptUpdateType, Script originalScript, Script renamedToScript) {
         regularlyUpdatedPostprocessingScripts.add(new ScriptUpdate(scriptUpdateType, originalScript, renamedToScript));

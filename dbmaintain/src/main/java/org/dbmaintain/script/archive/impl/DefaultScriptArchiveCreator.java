@@ -45,6 +45,7 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
 
     protected ScriptRepository scriptRepository;
     protected String scriptEncoding;
+    protected String preProcessingScriptDirName;
     protected String postProcessingScriptDirName;
     protected Set<Qualifier> registeredQualifiers;
     protected Set<Qualifier> patchQualifiers;
@@ -56,9 +57,10 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
     protected boolean ignoreCarriageReturnsWhenCalculatingCheckSum;
 
 
-    public DefaultScriptArchiveCreator(ScriptRepository scriptRepository, String scriptEncoding, String postProcessingScriptDirName, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp, String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
+    public DefaultScriptArchiveCreator(ScriptRepository scriptRepository, String scriptEncoding, String preProcessingScriptDirName, String postProcessingScriptDirName, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp, String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.scriptRepository = scriptRepository;
         this.scriptEncoding = scriptEncoding;
+        this.preProcessingScriptDirName = preProcessingScriptDirName;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
         this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
@@ -82,7 +84,7 @@ public class DefaultScriptArchiveCreator implements ScriptArchiveCreator {
         try {
             logger.info("Creating script archive: " + archiveFileName);
             SortedSet<Script> allScripts = scriptRepository.getAllScripts();
-            ArchiveScriptLocation archiveScriptLocation = new ArchiveScriptLocation(allScripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+            ArchiveScriptLocation archiveScriptLocation = new ArchiveScriptLocation(allScripts, scriptEncoding, preProcessingScriptDirName, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
             archiveScriptLocation.writeToJarFile(new File(archiveFileName));
 
         } catch (Exception e) {

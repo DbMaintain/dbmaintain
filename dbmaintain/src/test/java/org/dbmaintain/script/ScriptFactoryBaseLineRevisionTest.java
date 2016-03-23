@@ -107,6 +107,6 @@ public class ScriptFactoryBaseLineRevisionTest {
         if (baseLineRevision != null) {
             baseLineScriptIndexes = new ScriptIndexes(baseLineRevision);
         }
-        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, null, null, null, baseLineScriptIndexes);
+        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, null, null, null, null, baseLineScriptIndexes);
     }
 }

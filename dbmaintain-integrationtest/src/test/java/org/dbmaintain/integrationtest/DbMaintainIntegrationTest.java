@@ -73,6 +73,11 @@ public class DbMaintainIntegrationTest {
         REPEATABLE("repeatable/repeatable.sql"),
         REPEATABLE_RENAMED("repeatable/repeatable_renamed.sql"),
 
+        PRE_PROCESSING_INDEXED_1("preprocessing/preProcessing_indexed_1.sql"),
+        PRE_PROCESSING_INDEXED_2("preprocessing/preProcessing_indexed_2.sql"),
+        PRE_PROCESSING_INDEXED_2_RENAMED("preprocessing/preProcessing_indexed_2_renamed.sql"),
+        PRE_PROCESSING_NOTINDEXED("preprocessing/preProcessing_notindexed.sql"),
+
         POST_PROCESSING_INDEXED_1("postprocessing/postProcessing_indexed_1.sql"),
         POST_PROCESSING_INDEXED_2("postprocessing/postProcessing_indexed_2.sql"),
         POST_PROCESSING_INDEXED_2_RENAMED("postprocessing/postProcessing_indexed_2_renamed.sql"),
@@ -460,6 +465,90 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
+    public void executePreProcessingScriptsIfSomeScriptIsModified() {
+    	disableFromScratch();
+    	createScripts(INCREMENTAL_1, REPEATABLE);
+    	createPreprocessingScripts(PRE_PROCESSING_INDEXED_1);
+
+    	// Do an initial database setup and verify that the postprocessing scripts are executed
+    	updateDatabase();
+    	assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1);
+
+    	// Verify that the postprocessing scripts are executed when a new incremental script is added
+    	dropTestTables(defaultDatabase, getTableNameForScript(PRE_PROCESSING_INDEXED_1));
+    	createScript(INCREMENTAL_2);
+    	updateDatabase();
+    	assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1);
+
+    	// Verify that the preprocessing scripts are executed when a repeatable script is updated
+    	dropTestTables(defaultDatabase, getTableNameForScript(PRE_PROCESSING_INDEXED_1));
+    	updateScript(REPEATABLE);
+    	updateDatabase();
+    	assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1);
+    }
+
+    @Test
+    public void reExecutePreProcessingScriptIfItFailedDuringAPreviousRunAndNoOtherChanges() {
+    	createScript("preprocessing/failing_script.sql", "xxxxx");
+    	try {
+    		updateDatabase();
+    	} catch (DbMaintainException e) {
+    		// expected
+    	}
+    	try {
+    		updateDatabase();
+    	} catch (DbMaintainException e) {
+    		assertMessageContains(e.getMessage(), "preprocessing/failing_script.sql");
+    	}
+    }
+
+    @Test
+    public void reExecuteAllPreProcessingScriptsIfOneOfThemIsModified() {
+    	disableFromScratch();
+    	createScripts(INCREMENTAL_1);
+        createScripts(REPEATABLE);
+    	createPreprocessingScripts(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
+    	updateDatabase();
+    	assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
+
+    	// Verify that all preprocessing scripts are not re-executed if a new one is added
+    	dropTestTables(defaultDatabase, getTableNameForScript(PRE_PROCESSING_INDEXED_1),
+                getTableNameForScript(PRE_PROCESSING_NOTINDEXED), getTableNameForScript(REPEATABLE));
+
+    	createScripts(PRE_PROCESSING_INDEXED_2);
+    	updateDatabase();
+    	assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
+
+    	// Verify that all preprocessing scripts are not re-executed if a not indexed preprocessing script is updated
+    	updateRepeatableScript(PRE_PROCESSING_NOTINDEXED);
+    	updateDatabase();
+        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
+
+    	// Verify that all preprocessing scripts are not re-executed if an indexed preprocessing script is updated
+    	updateRepeatableScript(PRE_PROCESSING_INDEXED_1);
+    	updateDatabase();
+        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
+
+    	// Verify that all preprocessing scripts are not re-executed if one of them is renamed
+    	renameScript(PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_INDEXED_2_RENAMED);
+    	updateDatabase();
+        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2,
+                PRE_PROCESSING_NOTINDEXED, PRE_PROCESSING_INDEXED_2_RENAMED);
+
+    	// Verify that all preprocessing scripts are not re-executed if one of them is deleted
+    	removeScript(PRE_PROCESSING_INDEXED_2_RENAMED);
+    	updateDatabase();
+        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2,
+                PRE_PROCESSING_NOTINDEXED, PRE_PROCESSING_INDEXED_2_RENAMED);
+
+        // Verify that all preprocessing scripts are not re-executed if one of repeatable scripts is deleted
+        removeScript(REPEATABLE);
+        updateDatabase();
+        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2,
+                PRE_PROCESSING_NOTINDEXED, PRE_PROCESSING_INDEXED_2_RENAMED);
+    }
+
+    @Test
     public void executePostProcessingScriptsIfSomeScriptIsModified() {
         disableFromScratch();
         createScripts(INCREMENTAL_1, REPEATABLE);
@@ -791,6 +880,16 @@ public class DbMaintainIntegrationTest {
 
     private void updateIncrementalScript(TestScript script) {
         createScript(script, getCreateTableStatement(getUpdatedTableNameForScript(script)));
+    }
+
+    private void createPreprocessingScripts(TestScript... scripts) {
+    	for (TestScript script : scripts) {
+    		createPreprocessingScript(script);
+    	}
+    }
+
+    private void createPreprocessingScript(TestScript script) {
+    	createRepeatableScript(script);
     }
 
     private void createPostprocessingScripts(TestScript... scripts) {
