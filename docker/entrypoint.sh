@@ -35,9 +35,9 @@ fi
 
 if [ -n "$MAX_RETRY" ]; then
    n=0
-   dbmaintainreturn=0
    until [ $n -ge $MAX_RETRY ]
    do
+      dbmaintainreturn=0
       java -DdbMaintainer.sqlPlusScriptRunner.preScriptFilePath=/prescriptsqlpus.sql $DBMAINTAIN_SYSTEM_PROPERTIES -DdbMaintainer.sqlPlusScriptRunner.postScriptFilePath=/postscriptsqlpus.sql -Dlog4j.configuration=file:/log4j.properties -cp "/lib/*" org.dbmaintain.launch.commandline.CommandLine $1 -config /dbmaintain.properties && break  
       dbmaintainreturn=$?	  
 	  n=$((n+1)) 
