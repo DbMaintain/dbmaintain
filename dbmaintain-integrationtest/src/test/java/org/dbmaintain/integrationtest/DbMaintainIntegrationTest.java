@@ -504,48 +504,48 @@ public class DbMaintainIntegrationTest {
 
     @Test
     public void reExecuteAllPreProcessingScriptsIfOneOfThemIsModified() {
-    	disableFromScratch();
-    	createScripts(INCREMENTAL_1);
-        createScripts(REPEATABLE);
-    	createPreprocessingScripts(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
-    	updateDatabase();
-    	assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
-
-    	// Verify that all preprocessing scripts are not re-executed if a new one is added
-    	dropTestTables(defaultDatabase, getTableNameForScript(PRE_PROCESSING_INDEXED_1),
-                getTableNameForScript(PRE_PROCESSING_NOTINDEXED), getTableNameForScript(REPEATABLE));
-
-    	createScripts(PRE_PROCESSING_INDEXED_2);
-    	updateDatabase();
-    	assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
-
-    	// Verify that all preprocessing scripts are not re-executed if a not indexed preprocessing script is updated
-    	updateRepeatableScript(PRE_PROCESSING_NOTINDEXED);
-    	updateDatabase();
-        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
-
-    	// Verify that all preprocessing scripts are not re-executed if an indexed preprocessing script is updated
-    	updateRepeatableScript(PRE_PROCESSING_INDEXED_1);
-    	updateDatabase();
-        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
-
-    	// Verify that all preprocessing scripts are not re-executed if one of them is renamed
-    	renameScript(PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_INDEXED_2_RENAMED);
-    	updateDatabase();
-        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2,
-                PRE_PROCESSING_NOTINDEXED, PRE_PROCESSING_INDEXED_2_RENAMED);
-
-    	// Verify that all preprocessing scripts are not re-executed if one of them is deleted
-    	removeScript(PRE_PROCESSING_INDEXED_2_RENAMED);
-    	updateDatabase();
-        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2,
-                PRE_PROCESSING_NOTINDEXED, PRE_PROCESSING_INDEXED_2_RENAMED);
-
-        // Verify that all preprocessing scripts are not re-executed if one of repeatable scripts is deleted
-        removeScript(REPEATABLE);
+        disableFromScratch();
+        createScripts(INCREMENTAL_1);
+        createPreprocessingScripts(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
         updateDatabase();
-        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2,
-                PRE_PROCESSING_NOTINDEXED, PRE_PROCESSING_INDEXED_2_RENAMED);
+        assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
+
+        // Verify that all preprocessing scripts are re-executed if a new one is added
+        dropTestTables(defaultDatabase, getTableNameForScript(PRE_PROCESSING_INDEXED_1));
+        createScripts(PRE_PROCESSING_INDEXED_2);
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_NOTINDEXED);
+
+        // Verify that all preprocessing scripts are re-executed if a not indexed preprocessing script is updated
+        dropTestTables(defaultDatabase, getTableNameForScript(PRE_PROCESSING_INDEXED_1));
+        updateRepeatableScript(PRE_PROCESSING_NOTINDEXED);
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_INDEXED_2);
+        assertUpdatedScriptsExecuted(PRE_PROCESSING_NOTINDEXED);
+
+        // Verify that all preprocessing scripts are re-executed if an indexed preprocessing script is updated
+        dropTestTables(defaultDatabase, getUpdatedTableNameForScript(PRE_PROCESSING_NOTINDEXED));
+        updateRepeatableScript(PRE_PROCESSING_INDEXED_1);
+        updateDatabase();
+        assertUpdatedScriptsExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
+
+        // Verify that all preprocessing scripts are re-executed if one of them is renamed
+        dropTestTables(defaultDatabase, getUpdatedTableNameForScript(PRE_PROCESSING_INDEXED_1),
+                getTableNameForScript(PRE_PROCESSING_INDEXED_2), getUpdatedTableNameForScript(PRE_PROCESSING_NOTINDEXED));
+        renameScript(PRE_PROCESSING_INDEXED_2, PRE_PROCESSING_INDEXED_2_RENAMED);
+        updateDatabase();
+        assertScriptsCorrectlyExecuted(PRE_PROCESSING_INDEXED_2);
+        assertUpdatedScriptsExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
+        assertNotInExecutedScripts(PRE_PROCESSING_INDEXED_2);
+
+        // Verify that all preprocessing scripts are re-executed if one of them is deleted
+        dropTestTables(defaultDatabase, getUpdatedTableNameForScript(PRE_PROCESSING_INDEXED_1),
+                getTableNameForScript(PRE_PROCESSING_INDEXED_2), getUpdatedTableNameForScript(PRE_PROCESSING_NOTINDEXED));
+        removeScript(PRE_PROCESSING_INDEXED_2_RENAMED);
+        updateDatabase();
+        assertScriptsNotExecuted(PRE_PROCESSING_INDEXED_2);
+        assertUpdatedScriptsExecuted(PRE_PROCESSING_INDEXED_1, PRE_PROCESSING_NOTINDEXED);
+        assertNotInExecutedScripts(PRE_PROCESSING_INDEXED_2);
     }
 
     @Test
