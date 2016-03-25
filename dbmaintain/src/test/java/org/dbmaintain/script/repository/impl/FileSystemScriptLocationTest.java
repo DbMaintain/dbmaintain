@@ -35,12 +35,13 @@ public class FileSystemScriptLocationTest {
 
     private FileSystemScriptLocation fileSystemScriptLocation;
     private File scriptRootLocation;
-    private Script indexed1, repeatable1, postProcessing1;
+    private Script indexed1, repeatable1, preProcessing1, postProcessing1;
 
     @Before
     public void init() throws Exception {
         indexed1 = createScript("01_indexed1.sql");
         repeatable1 = createScript("repeatable1.sql");
+        preProcessing1 = createScript("preprocessing/01_pre1.sql");
         postProcessing1 = createScript("postprocessing/01_post1.sql");
 
         scriptRootLocation = new File(getClass().getResource("testscripts").toURI());
@@ -49,6 +50,6 @@ public class FileSystemScriptLocationTest {
 
     @Test
     public void testGetAllFiles() {
-        assertEquals(asSet(indexed1, repeatable1, postProcessing1), fileSystemScriptLocation.getScripts());
+        assertEquals(asSet(indexed1, repeatable1, preProcessing1, postProcessing1), fileSystemScriptLocation.getScripts());
     }
 }

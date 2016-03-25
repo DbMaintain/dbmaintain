@@ -332,6 +332,9 @@ public class DbMaintainProperties {
     public static final String PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH = "dbMaintainer.sqlPlusScriptRunner.preScriptFilePath";
     public static final String PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH = "dbMaintainer.sqlPlusScriptRunner.postScriptFilePath";
 
+    /* Preprocessing scripts */
+    public static final String PROPERTY_PREPROCESSINGSCRIPT_DIRNAME = "dbMaintainer.preProcessingScript.directoryName";
+
     /**
      * Private constructor to prevent instantiation
      */

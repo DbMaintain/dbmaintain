@@ -34,6 +34,7 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
 
     protected String scriptLocations;
     protected String scriptEncoding;
+    protected String preProcessingScriptDirectoryName;
     protected String postProcessingScriptDirectoryName;
     protected Boolean fromScratchEnabled;
     protected Boolean autoCreateDbMaintainScriptsTable;
@@ -49,10 +50,11 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
     public CheckScriptUpdatesTask() {
     }
 
-    public CheckScriptUpdatesTask(List<DbMaintainDatabase> taskDatabases, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions, Boolean useLastModificationDates) {
+    public CheckScriptUpdatesTask(List<DbMaintainDatabase> taskDatabases, String scriptLocations, String scriptEncoding, String preProcessingScriptDirectoryName, String postProcessingScriptDirectoryName, Boolean fromScratchEnabled, Boolean autoCreateDbMaintainScriptsTable, Boolean allowOutOfSequenceExecutionOfPatches, String qualifiers, String patchQualifiers, String includedQualifiers, String excludedQualifiers, String scriptFileExtensions, Boolean useLastModificationDates) {
         super(taskDatabases);
         this.scriptLocations = scriptLocations;
         this.scriptEncoding = scriptEncoding;
+        this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
         this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
         this.fromScratchEnabled = fromScratchEnabled;
         this.autoCreateDbMaintainScriptsTable = autoCreateDbMaintainScriptsTable;
@@ -71,6 +73,7 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
         taskConfiguration.addDatabaseConfigurations(databases);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME, preProcessingScriptDirectoryName);
         taskConfiguration.addConfigurationIfSet(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
         taskConfiguration.addConfigurationIfSet(PROPERTY_FROM_SCRATCH_ENABLED, fromScratchEnabled);
         taskConfiguration.addConfigurationIfSet(PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE, autoCreateDbMaintainScriptsTable);
@@ -97,6 +100,10 @@ public class CheckScriptUpdatesTask extends DbMaintainDatabaseTask {
 
     public void setScriptEncoding(String scriptEncoding) {
         this.scriptEncoding = scriptEncoding;
+    }
+
+    public void setPreProcessingScriptDirectoryName(String preProcessingScriptDirectoryName) {
+    	this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
     }
 
     public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {

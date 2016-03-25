@@ -55,12 +55,20 @@ public class ScriptUpdatesFormatter {
                 return "updated repeatable script: " + scriptUpdate.getScript().getFileName();
             case REPEATABLE_SCRIPT_DELETED:
                 return "deleted repeatable script: " + scriptUpdate.getScript().getFileName();
+            case PREPROCESSING_SCRIPT_ADDED:
+            	return "newly added preprocessing script: " + scriptUpdate.getScript().getFileName();
             case POSTPROCESSING_SCRIPT_ADDED:
                 return "newly added postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case PREPROCESSING_SCRIPT_UPDATED:
+            	return "updated preprocessing script: " + scriptUpdate.getScript().getFileName();
             case POSTPROCESSING_SCRIPT_UPDATED:
                 return "updated postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case PREPROCESSING_SCRIPT_DELETED:
+            	return "deleted preprocessing scripts: " + scriptUpdate.getScript().getFileName();
             case POSTPROCESSING_SCRIPT_DELETED:
                 return "deleted postprocessing script: " + scriptUpdate.getScript().getFileName();
+            case PREPROCESSING_SCRIPT_FAILURE_RERUN:
+            	return "re-run of failed preprocessing script: " + scriptUpdate.getScript().getFileName();
             case POSTPROCESSING_SCRIPT_FAILURE_RERUN:
                 return "re-run of failed postprocessing script: " + scriptUpdate.getScript().getFileName();
             case INDEXED_SCRIPT_UPDATED:
@@ -81,6 +89,8 @@ public class ScriptUpdatesFormatter {
                         + ", which changes the sequence of the scripts";
             case REPEATABLE_SCRIPT_RENAMED:
                 return "renamed repeatable script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript();
+            case PREPROCESSING_SCRIPT_RENAMED:
+            	return "renamed preprocessing script " + scriptUpdate.getScript() + " info " + scriptUpdate.getRenamedToScript();
             case POSTPROCESSING_SCRIPT_RENAMED:
                 return "renamed postprocessing script " + scriptUpdate.getScript() + " into " + scriptUpdate.getRenamedToScript();
         }

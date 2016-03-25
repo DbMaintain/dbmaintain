@@ -51,6 +51,8 @@ public class FileSystemScriptLocation extends ScriptLocation {
      *
      * @param scriptLocation              The file system directory that is the root of this script location
      * @param defaultScriptEncoding       The default script encoding. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
+     * @param defaultPreProcessingScriptDirName
+     *                   The default preprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultPostProcessingScriptDirName
      *                                    The default postprocessing script dir name. Only used if not overridden in {@link #LOCATION_PROPERTIES_FILENAME}.
      * @param defaultRegisteredQualifiers The default registered qualifiers
@@ -63,9 +65,9 @@ public class FileSystemScriptLocation extends ScriptLocation {
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
-    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
+    public FileSystemScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPreProcessingScriptDirName, String defaultPostProcessingScriptDirName, Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
                                     String defaultTargetDatabaseRegexp, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision, boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        super(scriptLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultScriptIndexRegexp, defaultQualifierRegexp, defaultTargetDatabaseRegexp, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+        super(scriptLocation, defaultScriptEncoding, defaultPreProcessingScriptDirName, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultScriptIndexRegexp, defaultQualifierRegexp, defaultTargetDatabaseRegexp, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 

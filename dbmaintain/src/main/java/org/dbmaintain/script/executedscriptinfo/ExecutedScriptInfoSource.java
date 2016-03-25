@@ -71,6 +71,11 @@ public interface ExecutedScriptInfoSource {
     void renameExecutedScript(ExecutedScript executedScript, Script renamedToScript);
 
     /**
+     * Removes all previously registered executed preprocessing scripts
+     */
+    void deleteAllExecutedPreprocessingScripts();
+
+    /**
      * Removes all previously registered executed postprocessing scripts
      */
     void deleteAllExecutedPostprocessingScripts();

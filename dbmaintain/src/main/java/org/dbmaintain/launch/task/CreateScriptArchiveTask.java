@@ -36,6 +36,7 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
     protected String archiveFileName;
     protected String scriptLocations;
     protected String scriptEncoding;
+    protected String preProcessingScriptDirectoryName;
     protected String postProcessingScriptDirectoryName;
     protected String qualifiers;
     protected String patchQualifiers;
@@ -45,10 +46,11 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
     public CreateScriptArchiveTask() {
     }
 
-    public CreateScriptArchiveTask(String archiveFileName, String scriptLocations, String scriptEncoding, String postProcessingScriptDirectoryName, String qualifiers, String patchQualifiers, String scriptFileExtensions) {
+    public CreateScriptArchiveTask(String archiveFileName, String scriptLocations, String scriptEncoding, String preProcessingScriptDirectoryName, String postProcessingScriptDirectoryName, String qualifiers, String patchQualifiers, String scriptFileExtensions) {
         this.archiveFileName = archiveFileName;
         this.scriptLocations = scriptLocations;
         this.scriptEncoding = scriptEncoding;
+        this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
         this.postProcessingScriptDirectoryName = postProcessingScriptDirectoryName;
         this.qualifiers = qualifiers;
         this.patchQualifiers = patchQualifiers;
@@ -67,6 +69,7 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
     protected void addTaskConfiguration(TaskConfiguration taskConfiguration) {
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_LOCATIONS, scriptLocations);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
+        taskConfiguration.addConfigurationIfSet(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME, preProcessingScriptDirectoryName);
         taskConfiguration.addConfigurationIfSet(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirectoryName);
         taskConfiguration.addConfigurationIfSet(PROPERTY_QUALIFIERS, qualifiers);
         taskConfiguration.addConfigurationIfSet(PROPERTY_SCRIPT_PATCH_QUALIFIERS, patchQualifiers);
@@ -84,6 +87,10 @@ public class CreateScriptArchiveTask extends DbMaintainTask {
 
     public void setScriptEncoding(String scriptEncoding) {
         this.scriptEncoding = scriptEncoding;
+    }
+
+    public void setPreProcessingScriptDirectoryName(String preProcessingScriptDirectoryName) {
+    	this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
     }
 
     public void setPostProcessingScriptDirectoryName(String postProcessingScriptDirectoryName) {

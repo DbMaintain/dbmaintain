@@ -50,6 +50,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
      *
      * @param scripts                     The scripts contained in the container, not null
      * @param scriptEncoding              Encoding used to read the contents of the script, not null
+     * @param preProcessingScriptDirName  The directory name that contains pre processing scripts, may be null
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param registeredQualifiers        the registered qualifiers, not null
      * @param patchQualifiers             The qualifiers that indicate that this script is a patch script, not null
@@ -61,11 +62,11 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
-    public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
+    public ArchiveScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String preProcessingScriptDirName, String postProcessingScriptDirName,
                                  Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp,
                                  String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
                                  boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        super(scripts, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+        super(scripts, scriptEncoding, preProcessingScriptDirName, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -74,6 +75,8 @@ public class ArchiveScriptLocation extends ScriptLocation {
      *
      * @param jarLocation                 the jar file
      * @param defaultScriptEncoding       the default script encoding
+     * @param defaultPreProcessingScriptDirName
+     *                                    the default preprocessing dir name
      * @param defaultPostProcessingScriptDirName
      *                                    the default postprocessing dir name
      * @param defaultRegisteredQualifiers the default registered (allowed) qualifiers
@@ -86,11 +89,11 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
-    public ArchiveScriptLocation(File jarLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
+    public ArchiveScriptLocation(File jarLocation, String defaultScriptEncoding, String defaultPreProcessingScriptDirName, String defaultPostProcessingScriptDirName,
                                  Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
                                  String defaultTargetDatabaseRegexp, Set<String> defaultScriptFileExtensions, ScriptIndexes baseLineRevision,
                                  boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
-        super(jarLocation, defaultScriptEncoding, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultScriptIndexRegexp, defaultQualifierRegexp, defaultTargetDatabaseRegexp, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+        super(jarLocation, defaultScriptEncoding, defaultPreProcessingScriptDirName, defaultPostProcessingScriptDirName, defaultRegisteredQualifiers, defaultPatchQualifiers, defaultScriptIndexRegexp, defaultQualifierRegexp, defaultTargetDatabaseRegexp, defaultScriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
     }
 
 
@@ -236,6 +239,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
     protected Properties getJarProperties() {
         Properties configuration = new Properties();
         configuration.put(PROPERTY_SCRIPT_ENCODING, scriptEncoding);
+        configuration.put(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME, preProcessingScriptDirName);
         configuration.put(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, postProcessingScriptDirName);
         configuration.put(PROPERTY_QUALIFIERS, toQualifiersPropertyValue(registeredQualifiers));
         configuration.put(PROPERTY_SCRIPT_PATCH_QUALIFIERS, toQualifiersPropertyValue(patchQualifiers));

@@ -44,6 +44,7 @@ abstract public class ScriptLocation {
     protected SortedSet<Script> scripts;
 
     protected String scriptEncoding;
+    protected String preProcessingScriptDirName;
     protected String postProcessingScriptDirName;
     protected Set<Qualifier> registeredQualifiers;
     protected Set<Qualifier> patchQualifiers;
@@ -62,6 +63,7 @@ abstract public class ScriptLocation {
     /**
      * @param scripts                     The scripts contained in the container, not null
      * @param scriptEncoding              Encoding used to read the contents of the script, not null
+     * @param preProcessingScriptDirName  The directory name that contains re processing scripts, may be null
      * @param postProcessingScriptDirName The directory name that contains post processing scripts, may be null
      * @param registeredQualifiers        the registered qualifiers, not null
      * @param scriptIndexRegexp           The regexp that identifies the version index in the filename, not null
@@ -73,12 +75,13 @@ abstract public class ScriptLocation {
      * @param ignoreCarriageReturnsWhenCalculatingCheckSum
      *                                    If true, carriage return chars will be ignored when calculating check sums
      */
-    protected ScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String postProcessingScriptDirName,
+    protected ScriptLocation(SortedSet<Script> scripts, String scriptEncoding, String preProcessingScriptDirName, String postProcessingScriptDirName,
                              Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String scriptIndexRegexp, String qualifierRegexp,
                              String targetDatabaseRegexp, Set<String> scriptFileExtensions, ScriptIndexes baseLineRevision,
                              boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         this.scripts = scripts;
         this.scriptEncoding = scriptEncoding;
+        this.preProcessingScriptDirName = preProcessingScriptDirName;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
         this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
@@ -92,13 +95,14 @@ abstract public class ScriptLocation {
         this.scriptFactory = createScriptFactory();
     }
 
-    protected ScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPostProcessingScriptDirName,
+    protected ScriptLocation(File scriptLocation, String defaultScriptEncoding, String defaultPreProcessingScriptDirName, String defaultPostProcessingScriptDirName,
                              Set<Qualifier> defaultRegisteredQualifiers, Set<Qualifier> defaultPatchQualifiers, String defaultScriptIndexRegexp, String defaultQualifierRegexp,
                              String defaultTargetDatabaseRegexp, Set<String> defaultScriptFileExtensions, ScriptIndexes defaultBaseLineRevision,
                              boolean ignoreCarriageReturnsWhenCalculatingCheckSum) {
         assertValidScriptLocation(scriptLocation);
 
         this.scriptEncoding = defaultScriptEncoding;
+        this.preProcessingScriptDirName = defaultPreProcessingScriptDirName;
         this.postProcessingScriptDirName = defaultPostProcessingScriptDirName;
         this.registeredQualifiers = defaultRegisteredQualifiers;
         this.patchQualifiers = defaultPatchQualifiers;
@@ -142,6 +146,10 @@ abstract public class ScriptLocation {
 
     public String getScriptEncoding() {
         return scriptEncoding;
+    }
+
+    public String getPreProcessingScriptDirName() {
+    	return preProcessingScriptDirName;
     }
 
     public String getPostProcessingScriptDirName() {
@@ -188,6 +196,9 @@ abstract public class ScriptLocation {
         }
         if (customProperties.containsKey(PROPERTY_SCRIPT_ENCODING)) {
             this.scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, customProperties);
+        }
+        if (customProperties.containsKey(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME)) {
+        	this.postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME, customProperties);
         }
         if (customProperties.containsKey(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME)) {
             this.postProcessingScriptDirName = PropertyUtils.getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, customProperties);
@@ -258,7 +269,7 @@ abstract public class ScriptLocation {
     }
 
     protected ScriptFactory createScriptFactory() {
-        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, registeredQualifiers, patchQualifiers, postProcessingScriptDirName, baseLineRevision);
+        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, registeredQualifiers, patchQualifiers, preProcessingScriptDirName, postProcessingScriptDirName, baseLineRevision);
     }
 
     protected Script createScript(String fileName, Long fileLastModifiedAt, ScriptContentHandle scriptContentHandle) {

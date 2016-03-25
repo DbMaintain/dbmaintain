@@ -34,6 +34,7 @@ public class CreateScriptArchiveAntTask extends BaseAntTask {
     private String archiveFileName;
     private String scriptLocations;
     private String scriptEncoding;
+    private String preProcessingScriptDirectoryName;
     private String postProcessingScriptDirectoryName;
     private String qualifiers;
     private String patchQualifiers;
@@ -42,7 +43,7 @@ public class CreateScriptArchiveAntTask extends BaseAntTask {
 
     @Override
     protected DbMaintainTask createDbMaintainTask() {
-        return new CreateScriptArchiveTask(archiveFileName, scriptLocations, scriptEncoding, postProcessingScriptDirectoryName, qualifiers, patchQualifiers, scriptFileExtensions);
+        return new CreateScriptArchiveTask(archiveFileName, scriptLocations, scriptEncoding, preProcessingScriptDirectoryName, postProcessingScriptDirectoryName, qualifiers, patchQualifiers, scriptFileExtensions);
     }
 
     /**
@@ -71,6 +72,17 @@ public class CreateScriptArchiveAntTask extends BaseAntTask {
      */
     public void setScriptEncoding(String scriptEncoding) {
         this.scriptEncoding = scriptEncoding;
+    }
+
+    /**
+     * Comma separated list of directories and files in which the pre processing database scripts are
+     * located. Directories in this list are recursively search for files. Defaults to preprocessing
+     *
+     * @param preProcessingScriptDirectoryName
+     *         The directory names
+     */
+    public void setPreProcessingScriptDirectoryName(String preProcessingScriptDirectoryName) {
+    	this.preProcessingScriptDirectoryName = preProcessingScriptDirectoryName;
     }
 
     /**

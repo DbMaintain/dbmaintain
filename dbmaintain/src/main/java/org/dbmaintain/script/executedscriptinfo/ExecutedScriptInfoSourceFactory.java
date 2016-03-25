@@ -56,10 +56,11 @@ public class ExecutedScriptInfoSourceFactory extends FactoryWithDatabase<Execute
         String qualifierRegexp = getString(PROPERTY_SCRIPT_QUALIFIER_REGEXP, getConfiguration());
         Set<Qualifier> registeredQualifiers = factoryWithDatabaseContext.createQualifiers(getStringList(PROPERTY_QUALIFIERS, getConfiguration()));
         Set<Qualifier> patchQualifiers = factoryWithDatabaseContext.createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, getConfiguration()));
+        String preProcessingScriptsDirName = getString(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME, getConfiguration());
         String postProcessingScriptsDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, getConfiguration());
         ScriptIndexes baselineRevision = factoryWithDatabaseContext.getBaselineRevision();
 
-        ScriptFactory scriptFactory = new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, registeredQualifiers, patchQualifiers, postProcessingScriptsDirName, baselineRevision);
+        ScriptFactory scriptFactory = new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, registeredQualifiers, patchQualifiers, preProcessingScriptsDirName, postProcessingScriptsDirName, baselineRevision);
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable, executedScriptsTableName, fileNameColumnName, fileNameColumnSize,
                 fileLastModifiedAtColumnName, checksumColumnName, checksumColumnSize,
                 executedAtColumnName, executedAtColumnSize, succeededColumnName, timestampFormat, defaultDatabase,
