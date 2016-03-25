@@ -67,7 +67,7 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     public void failedScripts() throws Exception {
         registerFailedScripts();
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("successful", asList(false, false, false), before);
+        assertPropertyLenientEquals("successful", asList(false, false, false, false), before);
 
         executedScriptInfoSource.removeErrorScripts();
 
@@ -79,12 +79,12 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     public void successfulScripts() throws Exception {
         registerSuccessfulScripts();
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("successful", asList(true, true, true), before);
+        assertPropertyLenientEquals("successful", asList(true, true, true, true), before);
 
         executedScriptInfoSource.removeErrorScripts();
 
         SortedSet<ExecutedScript> after = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("successful", asList(true, true, true), after);
+        assertPropertyLenientEquals("successful", asList(true, true, true, true), after);
     }
 
     @Test
@@ -110,6 +110,7 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     private void registerScripts(boolean successful) throws ParseException {
         executedScriptInfoSource.registerExecutedScript(createFailedScript("1_folder/1_script.sql", successful));
         executedScriptInfoSource.registerExecutedScript(createFailedScript("repeatable/script.sql", successful));
+        executedScriptInfoSource.registerExecutedScript(createFailedScript("preprocessing/script.sql", successful));
         executedScriptInfoSource.registerExecutedScript(createFailedScript("postprocessing/script.sql", successful));
     }
 

@@ -52,6 +52,8 @@ public class ScriptTest {
 
     @Test
     public void testOrder() {
+    	Script preprocessing1 = createScript("preprocessing/01_pre.sql");
+        Script preprocessing2 = createScript("preprocessing/noindex.sql");
         Script incremental1 = createScript("01_x/01_x.sql");
         Script incremental2 = createScript("01_x/02_x.sql");
         Script incremental3 = createScript("02_x/01_x.sql");
@@ -61,7 +63,8 @@ public class ScriptTest {
         Script postprocessing2 = createScript("postprocessing/02_x.sql");
         Script postprocessing3 = createScript("postprocessing/noindex.sql");
 
-        assertSequence(incremental1, incremental2, incremental3, incremental4, incremental5,
+
+        assertSequence(preprocessing1, preprocessing2, incremental1, incremental2, incremental3, incremental4, incremental5,
                 postprocessing1, postprocessing2, postprocessing3);
     }
 

@@ -73,6 +73,14 @@ public class ScriptRepositoryBaselineRevisionTest {
     }
 
     @Test
+    public void preProcessingScriptsNotFiltered() throws Exception {
+    	scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
+
+    	SortedSet<Script> result = scriptRepository.getPreProcessingScripts();
+    	assertPropertyLenientEquals("fileName", asList("preprocessing/script.sql"), result);
+    }
+
+    @Test
     public void postProcessingScriptsNotFiltered() throws Exception {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
@@ -87,8 +95,9 @@ public class ScriptRepositoryBaselineRevisionTest {
         Script script12 = scriptFactory.createScriptWithoutContent("1_folder/2_script.sql", 0L, "checksum");
         Script script21 = scriptFactory.createScriptWithoutContent("2_folder/1_script.sql", 0L, "checksum");
         Script repeatableScript = scriptFactory.createScriptWithoutContent("repeatable/script.sql", 0L, "checksum");
+        Script preProcessingScript = scriptFactory.createScriptWithoutContent("preprocessing/script.sql", 0L, "checksum");
         Script postProcessingScript = scriptFactory.createScriptWithoutContent("postprocessing/script.sql", 0L, "checksum");
-        SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, postProcessingScript);
+        SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, preProcessingScript, postProcessingScript);
 
         ScriptLocation scriptLocation = createArchiveScriptLocation(scripts, baseLineRevision);
         return new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator());

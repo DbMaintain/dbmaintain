@@ -59,6 +59,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource.registerExecutedScript(createScript("1_folder/2_script.sql"));
         executedScriptInfoSource.registerExecutedScript(createScript("2_folder/1_script.sql"));
         executedScriptInfoSource.registerExecutedScript(createScript("repeatable/script.sql"));
+        executedScriptInfoSource.registerExecutedScript(createScript("preprocessing/script.sql"));
         executedScriptInfoSource.registerExecutedScript(createScript("postprocessing/script.sql"));
     }
 
@@ -73,7 +74,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.2"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("script.fileName", asList("1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "postprocessing/script.sql"), result);
+        assertPropertyLenientEquals("script.fileName", asList("1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "preprocessing/script.sql", "postprocessing/script.sql"), result);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("999"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("script.fileName", asList("repeatable/script.sql", "postprocessing/script.sql"), result);
+        assertPropertyLenientEquals("script.fileName", asList("repeatable/script.sql", "preprocessing/script.sql", "postprocessing/script.sql"), result);
     }
 
     @Test
@@ -89,7 +90,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.0"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("script.fileName", asList("1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "postprocessing/script.sql"), result);
+        assertPropertyLenientEquals("script.fileName", asList("1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "preprocessing/script.sql", "postprocessing/script.sql"), result);
     }
 
 

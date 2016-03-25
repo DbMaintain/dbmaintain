@@ -94,6 +94,6 @@ public class ScriptFactoryIsPostProcessingScriptTest {
 
 
     private ScriptFactory createScriptFactory(String postProcessingScriptDirName) {
-        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, null, null, postProcessingScriptDirName, null);
+        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, null, null, null, postProcessingScriptDirName, null);
     }
 }

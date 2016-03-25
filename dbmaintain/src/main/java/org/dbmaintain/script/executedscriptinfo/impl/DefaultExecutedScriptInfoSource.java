@@ -247,6 +247,19 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
         executedScript.renameTo(renamedToScript);
     }
 
+    public void deleteAllExecutedPreprocessingScripts() {
+    	checkExecutedScriptsTable();
+
+        for (Iterator<ExecutedScript> executedScriptsIterator = getExecutedScripts().iterator(); executedScriptsIterator.hasNext();) {
+            ExecutedScript executedScript = executedScriptsIterator.next();
+            if (executedScript.getScript().isPreProcessingScript()) {
+                executedScriptsIterator.remove();
+                String deleteSql = "delete from " + getQualifiedExecutedScriptsTableName() +
+                        " where " + fileNameColumnName + " = '" + executedScript.getScript().getFileName() + "'";
+                sqlHandler.executeUpdateAndCommit(deleteSql, defaultDatabase.getDataSource());
+            }
+        }
+    }
 
     public void deleteAllExecutedPostprocessingScripts() {
         checkExecutedScriptsTable();
