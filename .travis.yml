@@ -5,8 +5,9 @@ script: mvn -q install --settings .travis-settings.xml
 jdk:
   - oraclejdk8
   
-after_script:
-  - docker build -t dbmaintain/dbmaintain .
+after_success:
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - docker build -t dbmaintain/dbmaintain:$TAG .
   - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker push dbmaintain/dbmaintain
 #branches:
