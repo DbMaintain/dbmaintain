@@ -91,7 +91,7 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
 
         Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
         try {
-            createFile(temporaryScriptFile, scriptContentReader);
+            createFile(temporaryScriptFile, scriptContentReader, script.getScriptContentHandle().getEncoding());
         } finally {
             scriptContentReader.close();
         }

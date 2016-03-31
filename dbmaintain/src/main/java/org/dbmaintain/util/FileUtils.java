@@ -19,6 +19,8 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
+
 
 /**
  * @author Tim Ducheyne
@@ -51,10 +53,10 @@ public class FileUtils {
      * @param file          The new file to create, not null
      * @param contentReader The stream with the content for the file, not null
      */
-    public static void createFile(File file, Reader contentReader) throws IOException {
+    public static void createFile(File file, Reader contentReader, String fileCharset) throws IOException {
         Writer writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(file, false));
+            writer = new BufferedWriter(new FileWriterWithEncoding(file, fileCharset, false));
 
             char[] buffer = new char[8192];
             int nrOfChars;
@@ -74,10 +76,10 @@ public class FileUtils {
      * @param file    The new file to create, not null
      * @param content The content for the file, not null
      */
-    public static void createFile(File file, String content) throws IOException {
+    public static void createFile(File file, String content, String fileCharset) throws IOException {
         Writer writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(file, false));
+            writer = new BufferedWriter(new FileWriterWithEncoding(file, fileCharset, false));
             writer.write(content);
         } finally {
             if (writer != null) {
