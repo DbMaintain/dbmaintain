@@ -15,6 +15,7 @@
  */
 package org.dbmaintain.script.repository.impl;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptContentHandle;
@@ -22,7 +23,6 @@ import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.script.repository.ScriptLocation;
 import org.dbmaintain.util.DbMaintainException;
-import org.dbmaintain.util.ReaderInputStream;
 import org.dbmaintain.util.WriterOutputStream;
 
 import java.io.*;
@@ -264,14 +264,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
         JarEntry jarEntry = new JarEntry(name);
         jarEntry.setTime(timestamp);
         jarOutputStream.putNextEntry(jarEntry);
-
-        InputStream scriptInputStream = new ReaderInputStream(entryContentReader);
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = scriptInputStream.read(buffer, 0, buffer.length)) > -1) {
-            jarOutputStream.write(buffer, 0, len);
-        }
-        scriptInputStream.close();
+        IOUtils.copy(entryContentReader, jarOutputStream, scriptEncoding );
         jarOutputStream.closeEntry();
     }
 
