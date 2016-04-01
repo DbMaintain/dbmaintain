@@ -212,4 +212,8 @@ public abstract class ScriptContentHandle {
         }
     }
 
+	public String getEncoding() {
+		return this.encoding;
+	}
+
 }
