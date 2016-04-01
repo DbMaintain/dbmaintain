@@ -92,7 +92,7 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         final String lineSeparator = System.getProperty("line.separator");
         final StringBuilder content = new StringBuilder();
         // if property set use custom wrapper script
-        if (PropertyUtils.getString(PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH, null, getConfiguration()) != null) {
+        if (PropertyUtils.containsProperty(PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH, getConfiguration())) {
             // connect to DB
             content.append(lineSeparator);
             content.append("connect ");
@@ -142,7 +142,7 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         content.append("@@");
         content.append(targetScriptFile.getName());
         content.append(lineSeparator);
-        if (PropertyUtils.getString(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, null, getConfiguration()) != null) {
+        if (PropertyUtils.containsProperty(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, getConfiguration())) {
             // read content from custom script file
             final String postScriptFilePath = PropertyUtils.getString(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, getConfiguration());
             @SuppressWarnings("unchecked")
