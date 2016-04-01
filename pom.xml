@@ -38,26 +38,23 @@
 
     <!-- Environment Settings -->
     <issueManagement>
-        <system>jira</system>
-        <url>http://jira.unitils.org/browse/DBM</url>
+        <system>Github</system>
+        <url>https://github.com/DbMaintain/dbmaintain/issues</url>
     </issueManagement>
     <scm>
         <connection>scm:git:git@github.com:DbMaintain/dbmaintain.git</connection>
         <developerConnection>scm:git:git@github.com:DbMaintain/dbmaintain.git</developerConnection>
         <url>https://github.com/DbMaintain/dbmaintain.git</url>
     </scm>
-    <mailingLists>
-        <mailingList>
-            <name>User forum</name>
-            <archive>https://sourceforge.net/projects/dbmaintain/forums/forum/917034</archive>
-        </mailingList>
-    </mailingLists>
     <developers>
         <developer>
             <name>Tim Ducheyne</name>
         </developer>
         <developer>
             <name>Filip Neven</name>
+        </developer>
+        <developer>
+            <name>Jan Stamer</name>
         </developer>
     </developers>
 
