@@ -108,7 +108,10 @@ public class SqlLoaderScriptRunner extends BaseNativeScriptRunner {
     }
     
     protected String getDatabaseConfigFromJdbcUrl(String url) {
-        String[] parts = url.split(":");
-        return parts[parts.length - 1];
+        final int index = url.indexOf('@');
+        if (index == -1) {
+            return url;
+        }
+        return url.substring(index + 1);
     }
 }
