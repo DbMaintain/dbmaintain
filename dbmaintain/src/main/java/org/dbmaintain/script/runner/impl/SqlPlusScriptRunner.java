@@ -88,10 +88,11 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         final File temporaryScriptWrapperFile = new File(temporaryScriptsDir, "wrapper-" + currentTimeMillis() + targetScriptFile.getName());
         temporaryScriptWrapperFile.deleteOnExit();
 
+        final String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, getConfiguration());
         final String lineSeparator = System.getProperty("line.separator");
         final StringBuilder content = new StringBuilder();
         // if property set use custom wrapper script
-        if (PropertyUtils.getString(PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH, getConfiguration()) != null) {
+        if (PropertyUtils.getString(PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH, null, getConfiguration()) != null) {
             // connect to DB
             content.append(lineSeparator);
             content.append("connect ");
@@ -110,7 +111,6 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
 
             // read content from custom script file
             final String preScriptFilePath = PropertyUtils.getString(PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH, getConfiguration());
-            final String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, getConfiguration());
             @SuppressWarnings("unchecked")
             final List<String> lines = FileUtils.readLines(new File(preScriptFilePath), scriptEncoding);
             for (final String line : lines) {
@@ -142,10 +142,9 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         content.append("@@");
         content.append(targetScriptFile.getName());
         content.append(lineSeparator);
-        if (PropertyUtils.getString(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, getConfiguration()) != null) {
+        if (PropertyUtils.getString(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, null, getConfiguration()) != null) {
             // read content from custom script file
             final String postScriptFilePath = PropertyUtils.getString(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, getConfiguration());
-            final String scriptEncoding = PropertyUtils.getString(PROPERTY_SCRIPT_ENCODING, getConfiguration());
             @SuppressWarnings("unchecked")
             final List<String> lines = FileUtils.readLines(new File(postScriptFilePath), scriptEncoding);
             for (final String line : lines) {
@@ -156,7 +155,7 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
             content.append("exit sql.sqlcode");
             content.append(lineSeparator);
         }
-        createFile(temporaryScriptWrapperFile, content.toString());
+        createFile(temporaryScriptWrapperFile, content.toString(), scriptEncoding);
         return temporaryScriptWrapperFile;
     }
 
