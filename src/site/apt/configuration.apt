@@ -5,4 +5,4 @@
 
 Configuration
 ~~~~~~~~
-    The full list of properties can be found in the {{{http://dbmaintain.svn.sourceforge.net/svnroot/dbmaintain/trunk/dbmaintain/src/main/resources/dbmaintain-default.properties}dbmaintain-default.properties}} file.
+    The full list of properties can be found in the {{{https://github.com/DbMaintain/dbmaintain/blob/master/dbmaintain/src/main/resources/dbmaintain-default.properties}dbmaintain-default.properties}} file.

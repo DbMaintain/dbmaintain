@@ -84,6 +84,7 @@ public class FactoryContext {
 
     public ScriptLocation createScriptLocation(String scriptLocation) {
         String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, configuration);
+        String preProcessingScriptDirName = getString(PROPERTY_PREPROCESSINGSCRIPT_DIRNAME, configuration);
         String postProcessingScriptDirName = getString(PROPERTY_POSTPROCESSINGSCRIPT_DIRNAME, configuration);
         Set<Qualifier> registeredQualifiers = createQualifiers(getStringList(PROPERTY_QUALIFIERS, configuration));
         Set<Qualifier> patchQualifiers = createQualifiers(getStringList(PROPERTY_SCRIPT_PATCH_QUALIFIERS, configuration));
@@ -96,9 +97,9 @@ public class FactoryContext {
 
         File scriptLocationFile = new File(scriptLocation);
         if (scriptLocationFile.isDirectory()) {
-            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+            return new FileSystemScriptLocation(scriptLocationFile, scriptEncoding, preProcessingScriptDirName, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
         } else {
-            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
+            return new ArchiveScriptLocation(scriptLocationFile, scriptEncoding, preProcessingScriptDirName, postProcessingScriptDirName, registeredQualifiers, patchQualifiers, scriptIndexRegexp, qualifierRegexp, targetDatabaseRegexp, scriptFileExtensions, baseLineRevision, ignoreCarriageReturnsWhenCalculatingCheckSum);
         }
     }
 

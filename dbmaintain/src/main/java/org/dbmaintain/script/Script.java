@@ -40,6 +40,8 @@ public class Script implements Comparable<Script> {
     private String checkSum;
     /* The handle to the content of the script */
     private ScriptContentHandle scriptContentHandle;
+    /* True if this script is a preprocessing script */
+    private boolean preProcessingScript;
     /* True if this script is a postprocessing script */
     private boolean postProcessingScript;
     /* True if this script is a patch script */
@@ -64,18 +66,20 @@ public class Script implements Comparable<Script> {
      * @param fileLastModifiedAt   The time when the file was last modified (in ms), not null
      * @param checkSum             Checksum calculated for the contents of the file, leave null if a script content handle is provided
      * @param scriptContentHandle  Handle providing access to the contents of the script, null if the content is unknown (a checksum is then required)
+     * @param preProcessingScript  True if this script is a pre processing script
      * @param postProcessingScript True if this script is a post processing script
      * @param patchScript          True if this script is a patch script (has a patch qualifier)
      * @param ignored              True if this script should be ignored (because the revision is lower than the baseline revision)
      * @param qualifiers           The qualifiers of this script, not null
      */
-    public Script(String fileName, ScriptIndexes scriptIndexes, String targetDatabaseName, Long fileLastModifiedAt, String checkSum, ScriptContentHandle scriptContentHandle, boolean postProcessingScript, boolean patchScript, boolean ignored, Set<Qualifier> qualifiers) {
+    public Script(String fileName, ScriptIndexes scriptIndexes, String targetDatabaseName, Long fileLastModifiedAt, String checkSum, ScriptContentHandle scriptContentHandle, boolean preProcessingScript, boolean postProcessingScript, boolean patchScript, boolean ignored, Set<Qualifier> qualifiers) {
         this.fileName = fileName;
         this.scriptIndexes = scriptIndexes;
         this.targetDatabaseName = targetDatabaseName;
         this.fileLastModifiedAt = fileLastModifiedAt;
         this.checkSum = checkSum;
         this.scriptContentHandle = scriptContentHandle;
+        this.preProcessingScript = preProcessingScript;
         this.postProcessingScript = postProcessingScript;
         this.patchScript = patchScript;
         this.ignored = ignored;
@@ -178,12 +182,19 @@ public class Script implements Comparable<Script> {
      *         or an error must be reported.
      */
     public boolean isIncremental() {
-        return !isPostProcessingScript() && scriptIndexes.isIncrementalScript();
+        return !isPreProcessingScript() && !isPostProcessingScript() && scriptIndexes.isIncrementalScript();
     }
 
 
     public boolean isRepeatable() {
-        return !isPostProcessingScript() && scriptIndexes.isRepeatableScript();
+        return !isPreProcessingScript() && !isPostProcessingScript() && scriptIndexes.isRepeatableScript();
+    }
+
+    /**
+     * @return True if this script is a preprocessing script
+     */
+    public boolean isPreProcessingScript() {
+    	return preProcessingScript;
     }
 
     /**
@@ -223,6 +234,14 @@ public class Script implements Comparable<Script> {
      * @return -1 when this script has a smaller version, 0 if equal, 1 when larger
      */
     public int compareTo(Script script) {
+
+    	if (!isPreProcessingScript() && script.isPreProcessingScript()) {
+            return 1;
+        }
+        if (isPreProcessingScript() && !script.isPreProcessingScript()) {
+            return -1;
+        }
+
         if (!isPostProcessingScript() && script.isPostProcessingScript()) {
             return -1;
         }

@@ -56,6 +56,13 @@ public class CheckScriptUpdatesMojo extends BaseDatabaseMojo {
      */
     protected String scriptEncoding;
     /**
+     * Comma separated list of directories and files in which the pre processing database scripts are
+     * located. Directories in this list are recursively search for files. Defaults to preprocessing
+     *
+     * @parameter
+     */
+    protected String preProcessingScriptDirectoryName;
+    /**
      * Comma separated list of directories and files in which the post processing database scripts are
      * located. Directories in this list are recursively search for files. Defaults to postprocessing
      *
@@ -140,6 +147,6 @@ public class CheckScriptUpdatesMojo extends BaseDatabaseMojo {
     @Override
     protected DbMaintainTask createDbMaintainTask(List<DbMaintainDatabase> dbMaintainDatabases) {
         String allScriptLocations = getAllScriptLocations(scriptLocations, scriptArchiveDependencies);
-        return new CheckScriptUpdatesTask(dbMaintainDatabases, allScriptLocations, scriptEncoding, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
+        return new CheckScriptUpdatesTask(dbMaintainDatabases, allScriptLocations, scriptEncoding, preProcessingScriptDirectoryName, postProcessingScriptDirectoryName, fromScratchEnabled, autoCreateDbMaintainScriptsTable, allowOutOfSequenceExecutionOfPatches, qualifiers, patchQualifiers, includedQualifiers, excludedQualifiers, scriptFileExtensions, useLastModificationDates);
     }
 }

@@ -53,6 +53,7 @@ public class DefaultExecutedScriptInfoSourceTest {
 
     private ExecutedScript executedScript1;
     private ExecutedScript executedScript2;
+    private ExecutedScript executedPreprocessingScript;
     private ExecutedScript executedPostprocessingScript;
 
 
@@ -76,6 +77,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     public void initTestData() throws ParseException {
         executedScript1 = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedScript2 = new ExecutedScript(createScript("script2.sql"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedPreprocessingScript = new ExecutedScript(createScript("preprocessing/preprocessingscript1.sql"), parseDate("20/05/2008 10:15:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedPostprocessingScript = new ExecutedScript(createScript("postprocessing/postprocessingscript1.sql"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
@@ -162,6 +164,19 @@ public class DefaultExecutedScriptInfoSourceTest {
         assertEquals(0, executedScriptInfoSource.getExecutedScripts().size());
     }
 
+
+    @Test
+    public void deleteAllExecutedPreprocessingScripts() {
+    	executedScriptInfoSource.registerExecutedScript(executedScript1);
+    	executedScriptInfoSource.registerExecutedScript(executedPreprocessingScript);
+    	assertEquals(2, executedScriptInfoSource.getExecutedScripts().size());
+    	executedScriptInfoSource.deleteAllExecutedPreprocessingScripts();
+    	assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+    	assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
+    	initExecutedScriptInfoSource();
+    	assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
+    	assertEquals(executedScript1, executedScriptInfoSource.getExecutedScripts().first());
+    }
 
     @Test
     public void deleteAllExecutedPostprocessingScripts() {

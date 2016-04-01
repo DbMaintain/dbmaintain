@@ -46,14 +46,16 @@ public class ScriptFactory {
     private Pattern qualifierPattern;
     private Set<Qualifier> registeredQualifiers;
     private Set<Qualifier> patchQualifiers;
+    private String preProcessingScriptDirName;
     private String postProcessingScriptDirName;
     /* The baseline revision. If set, all scripts with a lower revision will be ignored */
     protected ScriptIndexes baseLineRevision;
 
 
-    public ScriptFactory(String scriptIndexRegexp, String targetDatabaseRegexp, String qualifierRegexp, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
+    public ScriptFactory(String scriptIndexRegexp, String targetDatabaseRegexp, String qualifierRegexp, Set<Qualifier> registeredQualifiers, Set<Qualifier> patchQualifiers, String preProcessingScriptDirName, String postProcessingScriptDirName, ScriptIndexes baseLineRevision) {
         this.registeredQualifiers = registeredQualifiers;
         this.patchQualifiers = patchQualifiers;
+        this.preProcessingScriptDirName = preProcessingScriptDirName;
         this.postProcessingScriptDirName = postProcessingScriptDirName;
         this.baseLineRevision = baseLineRevision;
 
@@ -83,16 +85,33 @@ public class ScriptFactory {
             String targetDatabaseName = getTargetDatabaseName(pathParts);
             Set<Qualifier> qualifiers = getQualifiers(pathParts);
             boolean patchScript = isPatchScript(qualifiers);
+            boolean preProcessingScript = isPreProcessingScript(fileName);
             boolean postProcessingScript = isPostProcessingScript(fileName);
             boolean ignored = isIgnored(scriptIndexes);
 
-            return new Script(fileName, scriptIndexes, targetDatabaseName, fileLastModifiedAt, checkSum, scriptContentHandle, postProcessingScript, patchScript, ignored, qualifiers);
+            return new Script(fileName, scriptIndexes, targetDatabaseName, fileLastModifiedAt, checkSum, scriptContentHandle, preProcessingScript, postProcessingScript, patchScript, ignored, qualifiers);
 
         } catch (DbMaintainException e) {
             throw new DbMaintainException("Error in script " + fileName + ": " + e.getMessage(), e);
         }
     }
 
+
+
+    /**
+     * @param fileName The script file name, not null
+     * @return True if the given script name is a pre processing script
+     */
+    protected boolean isPreProcessingScript(String fileName) {
+    	if (isEmpty(preProcessingScriptDirName)) {
+    		return false;
+    	}
+    	String dirName = preProcessingScriptDirName;
+    	if (preProcessingScriptDirName.endsWith("/") || preProcessingScriptDirName.endsWith("\\")) {
+    		dirName = preProcessingScriptDirName.substring(0, preProcessingScriptDirName.length() - 1);
+    	}
+    	return fileName.startsWith(dirName + '/') || fileName.startsWith(dirName + '\\');
+    }
 
     /**
      * @param fileName The script file name, not null

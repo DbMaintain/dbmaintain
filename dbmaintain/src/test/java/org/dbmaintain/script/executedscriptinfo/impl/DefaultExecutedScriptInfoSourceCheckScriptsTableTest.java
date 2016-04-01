@@ -105,6 +105,12 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
     }
 
     @Test
+    public void deleteAllExecutedPreprocessingScripts() {
+    	executedScriptInfoSourceAutoCreate.deleteAllExecutedPreprocessingScripts();
+    	assertExecutedScriptsTableWasCreated();
+    }
+
+    @Test
     public void deleteAllExecutedPostprocessingScripts() {
         executedScriptInfoSourceAutoCreate.deleteAllExecutedPostprocessingScripts();
         assertExecutedScriptsTableWasCreated();

@@ -44,7 +44,7 @@ public class ScriptFactoryVersionIndexTest {
         String targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
         String qualifierRegexp = configuration.getProperty(PROPERTY_SCRIPT_QUALIFIER_REGEXP);
 
-        scriptFactory = new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, new HashSet<Qualifier>(), new HashSet<Qualifier>(), null, null);
+        scriptFactory = new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, new HashSet<Qualifier>(), new HashSet<Qualifier>(), null, null, null);
     }
 
 

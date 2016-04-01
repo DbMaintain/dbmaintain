@@ -30,6 +30,7 @@ public class ScriptRepository {
 
     protected SortedSet<Script> indexedScripts = new TreeSet<>();
     protected SortedSet<Script> repeatableScripts = new TreeSet<>();
+    protected SortedSet<Script> preProcessingScripts = new TreeSet<>();
     protected SortedSet<Script> postProcessingScripts = new TreeSet<>();
 
     protected QualifierEvaluator qualifierEvaluator;
@@ -41,7 +42,7 @@ public class ScriptRepository {
     }
 
     public boolean areScriptsAvailable() {
-        return indexedScripts.size() > 0 || repeatableScripts.size() > 0 || postProcessingScripts.size() > 0;
+        return indexedScripts.size() > 0 || repeatableScripts.size() > 0 || preProcessingScripts.size() > 0 || postProcessingScripts.size() > 0;
     }
 
     public SortedSet<Script> getIndexedScripts() {
@@ -59,12 +60,17 @@ public class ScriptRepository {
         return allUpdateScripts;
     }
 
+    public SortedSet<Script> getPreProcessingScripts() {
+    	return preProcessingScripts;
+    }
+
     public SortedSet<Script> getPostProcessingScripts() {
         return postProcessingScripts;
     }
 
     public SortedSet<Script> getAllScripts() {
         SortedSet<Script> allScripts = new TreeSet<>();
+        allScripts.addAll(preProcessingScripts);
         allScripts.addAll(indexedScripts);
         allScripts.addAll(repeatableScripts);
         allScripts.addAll(postProcessingScripts);
@@ -85,7 +91,9 @@ public class ScriptRepository {
     }
 
     private void initScript(Script script) {
-        if (script.isPostProcessingScript()) {
+    	if (script.isPreProcessingScript()) {
+    		preProcessingScripts.add(script);
+    	} else if (script.isPostProcessingScript()) {
             postProcessingScripts.add(script);
         } else if (script.isIncremental()) {
             if (!script.isIgnored()) {
