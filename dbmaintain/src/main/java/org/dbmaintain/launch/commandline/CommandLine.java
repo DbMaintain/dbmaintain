@@ -229,7 +229,7 @@ public class CommandLine {
     protected static URL getPropertiesAsURL(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
-            System.err.println("Could not find config file" + DBMAINTAIN_PROPERTIES);
+            System.err.println("Could not find config file: " + DBMAINTAIN_PROPERTIES);
             System.exit(1);
         }
         return FileUtils.getUrl(file);
