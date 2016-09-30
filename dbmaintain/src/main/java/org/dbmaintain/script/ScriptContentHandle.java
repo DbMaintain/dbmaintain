@@ -18,11 +18,16 @@ package org.dbmaintain.script;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.ReaderInputStream;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.MessageDigest;
-
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * A handle for getting the script content as a stream.
@@ -81,9 +86,7 @@ public abstract class ScriptContentHandle {
             return scriptDigest;
         }
 
-        InputStream scriptInputStream = null;
-        try {
-            scriptInputStream = getScriptInputStream();
+        try (InputStream scriptInputStream = getScriptInputStream()) {
             scriptDigest = MessageDigest.getInstance("MD5");
 
             int b;
@@ -96,8 +99,6 @@ public abstract class ScriptContentHandle {
             return scriptDigest;
         } catch (Exception e) {
             throw new DbMaintainException("Unable to calculate digest for script.", e);
-        } finally {
-            closeQuietly(scriptInputStream);
         }
     }
 
