@@ -242,7 +242,7 @@
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-utils</artifactId>
-                <version>3.0.22</version>
+                <version>3.0.24</version>
             </dependency>
 
 
@@ -250,13 +250,13 @@
             <dependency>
                 <groupId>org.unitils</groupId>
                 <artifactId>unitils-mock</artifactId>
-                <version>3.4.2</version>
+                <version>3.4.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.unitils</groupId>
                 <artifactId>unitils-inject</artifactId>
-                <version>3.4.2</version>
+                <version>3.4.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
