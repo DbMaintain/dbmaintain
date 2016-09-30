@@ -24,8 +24,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
 
 /**
  * Utility that loads the configuration of DbMaintain.
@@ -110,9 +108,7 @@ public class DbMaintainConfigurationLoader {
 
 
     protected Properties loadPropertiesFromClasspath(String propertiesFileName) {
-        InputStream inputStream = null;
-        try {
-            inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName);
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName)){
             if (inputStream == null) {
                 return null;
             }
@@ -120,8 +116,6 @@ public class DbMaintainConfigurationLoader {
 
         } catch (IOException e) {
             throw new DbMaintainException("Unable to load configuration file: " + propertiesFileName, e);
-        } finally {
-            closeQuietly(inputStream);
         }
     }
 
@@ -129,14 +123,10 @@ public class DbMaintainConfigurationLoader {
         if (propertiesFileUrl == null) {
             return null;
         }
-        InputStream urlStream = null;
-        try {
-            urlStream = propertiesFileUrl.openStream();
+        try (InputStream urlStream = propertiesFileUrl.openStream()) {
             return loadPropertiesFromStream(urlStream);
         } catch (IOException e) {
             throw new DbMaintainException("Unable to load configuration file " + propertiesFileUrl, e);
-        } finally {
-            closeQuietly(urlStream);
         }
     }
 
@@ -144,17 +134,12 @@ public class DbMaintainConfigurationLoader {
         if (propertiesFile == null) {
             return null;
         }
-        InputStream inputStream = null;
-        try {
-            inputStream = new FileInputStream(propertiesFile);
+        try (InputStream inputStream  = new FileInputStream(propertiesFile)) {
             return loadPropertiesFromStream(inputStream);
         } catch (IOException e) {
             throw new DbMaintainException("Unable to load configuration file " + propertiesFile, e);
-        } finally {
-            closeQuietly(inputStream);
         }
     }
-
 
     protected Properties loadPropertiesFromStream(InputStream inputStream) throws IOException {
         Properties properties = new Properties();

@@ -81,15 +81,10 @@ public class DefaultSQLHandler implements SQLHandler {
             // skip update
             return;
         }
-        Statement statement = null;
-        try {
-            statement = getConnection(dataSource).createStatement();
+        try (Statement statement = getConnection(dataSource).createStatement()) {
             statement.execute(sql);
-
         } catch (Exception e) {
             throw new DatabaseException("Could not perform database statement: " + sql, e);
-        } finally {
-            closeQuietly(statement);
         }
     }
 
