@@ -223,7 +223,7 @@ public class DefaultDBClearerTest {
     //
 
     /**
-     * Creates all test database structures (view, tables...) <p/> NO FOREIGN KEY USED: drop cascade does not work in
+     * Creates all test database structures (view, tables...) <p> NO FOREIGN KEY USED: drop cascade does not work in
      * MySQL
      */
     private void createTestDatabaseMySql() throws Exception {

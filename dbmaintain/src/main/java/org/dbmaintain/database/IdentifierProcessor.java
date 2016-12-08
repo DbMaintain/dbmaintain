@@ -113,14 +113,14 @@ public class IdentifierProcessor {
      * Converts the given identifier to uppercase/lowercase depending on the DBMS. If a value is surrounded with double
      * quotes (") and the DBMS supports quoted database object names, the case is left untouched and the double quotes
      * are stripped. These values are treated as case sensitive names.
-     * <p/>
+     * <p>
      * Identifiers can be prefixed with schema names. These schema names will be converted in the same way as described
      * above. Quoting the schema name will make it case sensitive.
      * Examples:
-     * <p/>
-     * mySchema.myTable -> MYSCHEMA.MYTABLE
-     * "mySchema".myTable -> mySchema.MYTABLE
-     * "mySchema"."myTable" -> mySchema.myTable
+     * <p>
+     * mySchema.myTable -&gt; MYSCHEMA.MYTABLE
+     * "mySchema".myTable -&gt; mySchema.MYTABLE
+     * "mySchema"."myTable" -&gt; mySchema.myTable
      *
      * @param identifier The identifier, not null
      * @return The name converted to correct case if needed, not null

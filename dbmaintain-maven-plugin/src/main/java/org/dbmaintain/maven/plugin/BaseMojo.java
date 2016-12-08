@@ -102,7 +102,6 @@ public abstract class BaseMojo extends AbstractMojo {
     protected void performAfterTaskActions() {
     }
 
-
     protected Properties getMavenProperties() {
         return project.getProperties();
     }

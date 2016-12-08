@@ -131,13 +131,13 @@ public class ScriptFactory {
 
     /**
      * Resolves the target database name from the given list of tokens
-     * <p/>
+     * <p>
      * E.g. 01_@databaseA_myscript.sql
-     * <p/>
+     * <p>
      * If the file name consists out of multiple path-parts, the last found target database is used
-     * <p/>
+     * <p>
      * E.g. 01_@database1/01_@database2_myscript.sql
-     * <p/>
+     * <p>
      * will return database2
      *
      * @param pathParts The file path split up in tokens, not null

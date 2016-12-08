@@ -20,7 +20,8 @@ package org.dbmaintain.structure.clear.impl;
  * objects. It helps to solve the problem whereby it is impossible to drop one
  * database object because a dependent object exists (for example when dropping
  * Oracle 11 reference partitioned objects it is necessary to drop all child
- * tables first). </p> This class is used in a <code>do-while</code> loop with
+ * tables first).<p>
+ * This class is used in a <code>do-while</code> loop with
  * the method {@link #continueExecutionAfterPass()} being the loop continuation
  * condition.
  * <pre>

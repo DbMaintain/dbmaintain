@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test class for the {@link org.dbmaintain.structure.clear.DBClearer} using multiple database schemas. <p/> This test is currenlty only implemented
+ * Test class for the {@link org.dbmaintain.structure.clear.DBClearer} using multiple database schemas. <p> This test is currenlty only implemented
  * for HsqlDb
  *
  * @author Filip Neven

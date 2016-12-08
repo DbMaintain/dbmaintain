@@ -305,7 +305,7 @@ public class OracleDatabase extends Database {
     /**
      * Drops the type with the given name from the database
      * Note: the type name is surrounded with quotes, making it case-sensitive.
-     * <p/>
+     * <p>
      * Overriden to add the force option. This will make sure that super-types can also be dropped.
      *
      * @param typeName The type to drop (case-sensitive), not null
@@ -383,7 +383,7 @@ public class OracleDatabase extends Database {
 
     /**
      * Returns the value of the sequence with the given name.
-     * <p/>
+     * <p>
      * Note: this can have the side-effect of increasing the sequence value.
      *
      * @param sequenceName The sequence, not null

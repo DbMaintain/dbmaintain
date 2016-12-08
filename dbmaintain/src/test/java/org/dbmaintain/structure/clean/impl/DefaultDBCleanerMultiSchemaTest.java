@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the DBCleaner with multiple schemas.
- * <p/>
+ * <p>
  * Currently this is only implemented for HsqlDb.
  *
  * @author Tim Ducheyne

@@ -20,7 +20,7 @@ import org.dbmaintain.script.Script;
 
 /**
  * Runs a given database script.
- * <p/>
+ * <p>
  * Make sure to call initialize() before and close() after usage.
  *
  * @author Filip Neven

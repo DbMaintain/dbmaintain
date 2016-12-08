@@ -47,7 +47,7 @@ public class Db2Database extends Database {
     }
 
     /**
-     * Returns the names of all tables in the database. <p/> TODO check table types A = Alias G = Global temporary table
+     * Returns the names of all tables in the database. <p> TODO check table types A = Alias G = Global temporary table
      * H = Hierarchy table L = Detached table N = Nickname S = Materialized query table T = Table (untyped) U = Typed
      * table V = View (untyped) W = Typed view
      *
@@ -70,7 +70,7 @@ public class Db2Database extends Database {
     }
 
     /**
-     * Retrieves the names of all the views in the database schema. <p/>
+     * Retrieves the names of all the views in the database schema. <p>
      * TODO check view types V = View (untyped) W = Typed view
      *
      * @return The names of all views in the database
@@ -175,7 +175,7 @@ public class Db2Database extends Database {
 
 
     /**
-     * Returns the value of the sequence with the given name. <p/> Note: this can have the side-effect of increasing the
+     * Returns the value of the sequence with the given name. <p> Note: this can have the side-effect of increasing the
      * sequence value.
      *
      * @param sequenceName The sequence, not null
@@ -199,7 +199,7 @@ public class Db2Database extends Database {
 
     /**
      * Gets the names of all identity columns of the given table.
-     * <p/>
+     * <p>
      * todo check, at this moment the PK columns are returned
      *
      * @param tableName The table, not null

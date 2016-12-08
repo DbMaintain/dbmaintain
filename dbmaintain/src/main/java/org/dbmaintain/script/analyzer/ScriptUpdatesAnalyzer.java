@@ -323,7 +323,7 @@ public class ScriptUpdatesAnalyzer {
     }
 
     /**
-     * @return The already executed scripts, as a map from scriptName => ExecutedScript
+     * @return The already executed scripts, as a map from scriptName =&gt; ExecutedScript
      */
     protected Map<String, ExecutedScript> getScriptNameExecutedScriptMap() {
         Map<String, ExecutedScript> scriptNameAlreadyExecutedScriptMap = new HashMap<String, ExecutedScript>();
@@ -334,7 +334,7 @@ public class ScriptUpdatesAnalyzer {
     }
 
     /**
-     * @return All scripts, as a map from scriptName => Script
+     * @return All scripts, as a map from scriptName =&gt; Script
      */
     protected Map<String, Script> getScriptNameScriptMap() {
         if (scriptNameScriptMap == null) {
@@ -347,7 +347,7 @@ public class ScriptUpdatesAnalyzer {
     }
 
     /**
-     * @return All scripts, as a map from checksum => Script
+     * @return All scripts, as a map from checksum =&gt; Script
      */
     protected Map<String, Set<Script>> getCheckSumScriptMap() {
         if (checkSumScriptMap == null) {

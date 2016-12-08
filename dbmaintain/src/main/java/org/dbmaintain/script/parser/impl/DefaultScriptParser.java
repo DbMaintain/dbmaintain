@@ -26,10 +26,10 @@ import java.util.Properties;
 
 /**
  * A class for parsing statements out of sql scripts.
- * <p/>
+ * <p>
  * All statements should be separated with a semicolon (;). The last statement will be
  * added even if it does not end with a semicolon. The semicolons will not be included in the returned statements.
- * <p/>
+ * <p>
  * This parser also takes quoted literals, double quoted text and in-line (--comment) and block (/ * comment * /)
  * into account when parsing the statements.
  *

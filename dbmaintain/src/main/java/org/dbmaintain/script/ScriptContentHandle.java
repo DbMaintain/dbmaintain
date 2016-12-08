@@ -57,7 +57,7 @@ public abstract class ScriptContentHandle {
 
     /**
      * Opens a stream to the content of the script.
-     * <p/>
+     * <p>
      * NOTE: do not forget to close the stream after usage.
      *
      * @return The content stream, not null

@@ -43,11 +43,11 @@ import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_
 
 /**
  * Class that offers operations for automatically maintaining a database.
- * <p/>
+ * <p>
  * The {@link #updateDatabase} operation can be used to bring the database to the latest version. The
  * {@link #markDatabaseAsUpToDate} operation updates the state of the database to indicate that all scripts have been
  * executed, without actually executing them.
- * <p/>
+ * <p>
  *
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -157,7 +157,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * This operation can be used to bring the database to the latest version. First it checks which scripts were already
      * applied to the database and executes the new scripts or the updated repeatable scripts. If an existing incremental
      * script was changed,  removed, or if a new incremental script has been added with a lower index than one that was
-     * already executed, an error is given; unless the <fromScratch> option is enabled: in that case all database objects
+     * already executed, an error is given; unless the <em>fromScratch</em> option is enabled: in that case all database objects
      * at the end.
      *
      * @param dryRun if true, no updates have to be performed on the database - we do a simulation of the database update
@@ -328,7 +328,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
 
     /**
-     * @return The already executed scripts, as a map from Script => ExecutedScript
+     * @return The already executed scripts, as a map from Script =&gt; ExecutedScript
      */
     protected Map<Script, ExecutedScript> getAlreadyExecutedScripts() {
         Map<Script, ExecutedScript> alreadyExecutedScripts = new HashMap<>();

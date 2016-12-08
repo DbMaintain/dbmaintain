@@ -29,7 +29,7 @@ import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Implementation of {@link org.dbmaintain.database.Database} for a Derby database.
- * <p/>
+ * <p>
  * Special thanks to Scott Prater who donated the initial version of the Derby support code.
  *
  * @author Scott Prater
@@ -106,7 +106,7 @@ public class DerbyDatabase extends Database {
 
     /**
      * Gets the names of all identity columns of the given table.
-     * <p/>
+     * <p>
      * todo check, at this moment the PK columns are returned
      *
      * @param tableName The table, not null
@@ -259,7 +259,7 @@ public class DerbyDatabase extends Database {
 
     /**
      * Gets the names of all primary columns of the given table.
-     * <p/>
+     * <p>
      * This info is not available in the Derby sys tables. The database meta data is used instead to retrieve it.
      *
      * @param schemaName The schema, not null
@@ -288,7 +288,7 @@ public class DerbyDatabase extends Database {
 
     /**
      * Returns the names of all columns that have a 'not-null' constraint on them.
-     * <p/>
+     * <p>
      * This info is not available in the Derby sys tables. The database meta data is used instead to retrieve it.
      *
      * @param schemaName The schema, not null

@@ -35,7 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test class for the DBCleaner with multiple schemas with configuration to preserve all tables. <p/> Currently this is
+ * Test class for the DBCleaner with multiple schemas with configuration to preserve all tables. <p> Currently this is
  * only implemented for HsqlDb.
  *
  * @author Tim Ducheyne

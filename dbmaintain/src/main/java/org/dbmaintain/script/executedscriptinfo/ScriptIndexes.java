@@ -26,15 +26,15 @@ import static org.apache.commons.lang3.StringUtils.split;
 
 /**
  * Class representing the indexes of a script.
- * <p/>
+ * <p>
  * Some examples:
- * <p/>
- * 01_folder/01_subfolder/1_script  ==> 1,1,1<br>
- * 01_folder/02_subfolder/1_script  ==> 1,2,1<br>
- * 01_folder/02_subfolder/script    ==> 1,2,null<br>
- * folder/subfolder/2_script        ==> null,null,2<br>
- * script                           ==> null<br>
- * <p/>
+ * <p>
+ * 01_folder/01_subfolder/1_script  ==&gt; 1,1,1<br>
+ * 01_folder/02_subfolder/1_script  ==&gt; 1,2,1<br>
+ * 01_folder/02_subfolder/script    ==&gt; 1,2,null<br>
+ * folder/subfolder/2_script        ==&gt; null,null,2<br>
+ * script                           ==&gt; null<br>
+ * <p>
  * The last index defines whether the script is incremental or repeatable: if the last index is null, the
  * script is repeatable; if not, it is incremental.
  *
@@ -102,7 +102,7 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
 
     /**
      * Gets a string representation of the indexes as followes:
-     * 1, null, 2, null => 1.x.2.x
+     * 1, null, 2, null =&gt; 1.x.2.x
      *
      * @return The string, not null
      */
@@ -128,7 +128,7 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
 
     /**
      * Extracts the indexes out of the given string as followes:
-     * 1.x.2.x => 1, null, 2, null
+     * 1.x.2.x =&gt; 1, null, 2, null
      *
      * @param indexString The string
      * @return The list of longs or nulls in case of 'x'
@@ -162,7 +162,7 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
 
     /**
      * Compares the given version to this version using the index values.
-     * <p/>
+     * <p>
      * If both scripts have an index, the index is used.
      * If one of the scripts has an index, it is considerer lower than the script that does not have an index.
      *

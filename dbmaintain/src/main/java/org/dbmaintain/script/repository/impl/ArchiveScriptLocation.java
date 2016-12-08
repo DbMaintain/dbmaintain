@@ -283,7 +283,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
 
     /**
      * Gets the optional sub path in the jar file.
-     * E.g. dir/my_archive.jar!subpath/bla => returns subpath/bla/
+     * E.g. dir/my_archive.jar!subpath/bla =&gt; returns subpath/bla/
      *
      * @param jarFile The jar file, not null
      * @return the sub-path ending with /, null if there is no sub-path
@@ -303,7 +303,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
 
     /**
      * Gets jar file with the sub-path stripped off
-     * E.g. dir/my_archive.jar!subpath/bla => returns dir/my_archive.jar
+     * E.g. dir/my_archive.jar!subpath/bla =&gt; returns dir/my_archive.jar
      *
      * @param jarFile The jar file, not null
      * @return the jar file without sub-path, not null

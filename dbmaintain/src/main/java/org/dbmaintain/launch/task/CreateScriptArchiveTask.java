@@ -24,7 +24,7 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
  * Task that enables creating a jar file that packages all database update scripts. to apply changes on a target
  * database. This way, database updates can be distributed in the form of a deliverable, just like a
  * war or ear file.
- * <p/>
+ * <p>
  * The jar file that's created contains all configuration that concerns the organization of the scripts in this
  * jar in a properties file.
  *

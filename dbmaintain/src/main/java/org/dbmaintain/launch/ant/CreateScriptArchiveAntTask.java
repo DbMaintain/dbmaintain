@@ -22,12 +22,12 @@ import org.dbmaintain.launch.task.DbMaintainTask;
  * Task that enables creating a jar file that packages all database update scripts. This jar can then be used as
  * input for the updateDatabase task to apply changes on a target database.
  * This way, database updates can be distributed as a deliverable, just like a war or ear file.
- * <p/>
+ * <p>
  * The created jar file will contain all configuration concerning the scripts in the META-INF folder.
  *
  * @author Filip Neven
  * @author Tim Ducheyne
- * @author Alexander Snaps <alex.snaps@gmail.com>
+ * @author <a href="mailto:alex.snaps@gmail.com">Alexander Snaps</a>
  */
 public class CreateScriptArchiveAntTask extends BaseAntTask {
 

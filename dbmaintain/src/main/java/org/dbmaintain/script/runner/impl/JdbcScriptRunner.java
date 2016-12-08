@@ -57,7 +57,7 @@ public class JdbcScriptRunner implements ScriptRunner {
 
     /**
      * Executes the given script.
-     * <p/>
+     * <p>
      * All statements should be separated with a semicolon (;). The last statement will be
      * added even if it does not end with a semicolon.
      *

@@ -94,10 +94,10 @@ public class PostgreSqlDatabase extends Database {
 
     /**
      * Retrieves the names of all the triggers in the database schema.
-     * <p/>
+     * <p>
      * The drop trigger statement is not compatible with standard SQL in Postgresql.
      * You have to do drop trigger 'trigger-name' ON 'table name' instead of drop trigger 'trigger-name'.
-     * <p/>
+     * <p>
      * To circumvent this, this method will return the trigger names as follows:
      * 'trigger-name' ON 'table name'
      *
@@ -121,7 +121,7 @@ public class PostgreSqlDatabase extends Database {
     /**
      * Drops the sequence with the given name from the database
      * Note: the sequence name is surrounded with quotes, making it case-sensitive.
-     * <p/>
+     * <p>
      * The method is overriden to handle columns of type serial. For these columns, the sequence should be
      * dropped using cascade. Thanks to Peter Oxenham for reporting this issue (UNI-28).
      *
@@ -133,10 +133,10 @@ public class PostgreSqlDatabase extends Database {
 
     /**
      * Drops the trigger with the given name from the database.
-     * <p/>
+     * <p>
      * The drop trigger statement is not compatible with standard SQL in Postgresql.
      * You have to do drop trigger 'trigger-name' ON 'table name' instead of drop trigger 'trigger-name'.
-     * <p/>
+     * <p>
      * To circumvent this, this method expects trigger names as follows:
      * 'trigger-name' ON 'table name'
      *
@@ -222,7 +222,7 @@ public class PostgreSqlDatabase extends Database {
 
 
     /**
-     * Returns the value of the sequence with the given name. <p/> Note: this can have the
+     * Returns the value of the sequence with the given name. <p> Note: this can have the
      * side-effect of increasing the sequence value.
      *
      * @param sequenceName The sequence, not null

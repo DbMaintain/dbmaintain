@@ -17,7 +17,7 @@ package org.dbmaintain;
 
 /**
  * Defines the contract for classes that perform automatic maintenance of a database.<br>
- * <p/>
+ * <br>
  * The {@link #updateDatabase} operation can be used to bring the database to the latest version. The
  * {@link #markDatabaseAsUpToDate} operation updates the state of the database to indicate that all scripts have been
  * executed, without actually executing them.
@@ -32,7 +32,7 @@ public interface DbMaintainer {
      * This operation can be used to bring the database to the latest version. First it checks which scripts were already
      * applied to the database and executes the new scripts or the updated repeatable scripts. If an existing incremental
      * script was changed,  removed, or if a new incremental script has been added with a lower index than one that was
-     * already executed, an error is given; unless the <fromScratch> option is enabled: in that case all database objects
+     * already executed, an error is given; unless the <em>fromScratch</em> option is enabled: in that case all database objects
      * are removed and the database is rebuilt from scratch. If there are post-processing scripts, these are always executed
      * at the end.
      *

@@ -55,7 +55,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
 
     /**
      * Configures the tested object.
-     * <p/>
+     * <p>
      * todo Test_trigger_Preserve Test_CASE_Trigger_Preserve
      */
     @Before

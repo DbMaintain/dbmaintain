@@ -35,7 +35,7 @@ import static org.dbmaintain.structure.model.DbItemType.*;
 /**
  * Implementation of {@link org.dbmaintain.structure.clear.DBClearer}. This implementation individually drops every table, view, materialized view, synonym,
  * trigger and sequence in the database. A list of tables, views, ... that should be preserved can be specified at construction.
- * <p/>
+ * <p>
  * NOTE: FK constraints give problems in MySQL and Derby
  * The cascade in 'drop table A cascade;' does not work in MySQL-5.0
  * The foreign key constraints will be disabled before this method is called.

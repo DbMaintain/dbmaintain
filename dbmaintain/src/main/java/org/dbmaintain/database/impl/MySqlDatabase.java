@@ -21,12 +21,12 @@ import java.util.Set;
 
 /**
  * Implementation of {@link org.dbmaintain.database.Database} for a MySql database.
- * <p/>
+ * <p>
  * Note: by default MySql uses '`' (back-quote) for quoting identifiers. '"' (double quotes) is only supported in MySql
  * if ANSI_QUOTES sql mode is enabled. Quoting identifiers does not make them case-sensitive. Case-sensitivity is
  * platform dependent. E.g. on UNIX systems identifiers will typically be case-sensitive, on Windows platforms they
  * will be converted to lower-case.
- * <p/>
+ * <p>
  * Trigger names are an exception to this: they are always case-sensitive.
  *
  * @author Frederick Beernaert
@@ -176,9 +176,9 @@ public class MySqlDatabase extends Database {
 
     /**
      * Converts the given identifier to uppercase/lowercase
-     * <p/>
+     * <p>
      * MySql does not treat quoted identifiers as case sensitive. These will also be converted to the correct case.
-     * <p/>
+     * <p>
      * KNOWN ISSUE: MySql trigger names are case-sensitive (even if not quoted). This will incorrectly be converted to
      * the stored identifier case
      *

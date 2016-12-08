@@ -35,7 +35,7 @@ import static org.junit.Assert.fail;
 /**
  * Test class for the SequenceUpdater. Contains tests that can be implemented generally for all different database dialects.
  * Extended with implementations for each supported database dialect.
- * <p/>
+ * <p>
  * Tests are only executed for the currently activated database dialect. By default, a hsqldb in-memory database is used,
  * to avoid the need for setting up a database instance. If you want to run unit tests for other dbms's, change the
  * configuration in test/resources/unitils.properties

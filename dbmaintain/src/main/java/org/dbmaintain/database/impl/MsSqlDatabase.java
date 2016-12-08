@@ -30,7 +30,7 @@ import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
 /**
  * Implementation of {@link org.dbmaintain.database.Database} for a MsSQL database.
- * <p/>
+ * <p>
  * Special thanks to Niki Driessen who donated the initial version of the MsSql support code.
  *
  * @author Tim Ducheyne
@@ -267,7 +267,7 @@ public class MsSqlDatabase extends Database {
 
     /**
      * Drops not-null constraints on the given table.
-     * <p/>
+     * <p>
      * For primary keys, row-guid, identity and computed columns not-null constrains cannot be disabled in MS-Sql.
      *
      * @param schemaName the schema name, not null

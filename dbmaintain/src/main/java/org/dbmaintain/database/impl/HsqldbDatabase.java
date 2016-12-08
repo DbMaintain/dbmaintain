@@ -241,7 +241,7 @@ public class HsqldbDatabase extends Database {
 
     /**
      * Returns the value of the sequence with the given name.
-     * <p/>
+     * <p>
      * Note: this can have the side-effect of increasing the sequence value.
      *
      * @param sequenceName The sequence, not null
@@ -268,7 +268,7 @@ public class HsqldbDatabase extends Database {
 
     /**
      * Gets the names of all identity columns of the given table.
-     * <p/>
+     * <p>
      * todo check, at this moment the PK columns are returned
      *
      * @param tableName The table, not null
