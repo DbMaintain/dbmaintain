@@ -137,7 +137,9 @@ public class DefaultScriptParser implements ScriptParser {
     }
 
     protected Character readNextCharacter() throws IOException {
-        int charAsInt = scriptReader.read();
+        int charAsInt;
+        // swallow up all zero-width spaces, as well byte order mark
+        while ((charAsInt = scriptReader.read()) == 0xFEFF);
         return charAsInt == -1 ? null : (char) charAsInt;
     }
 
