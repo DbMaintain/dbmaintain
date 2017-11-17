@@ -98,6 +98,8 @@ public class DbMaintainIntegrationTest {
 
     private static final String BEFORE_INITIAL_TABLE = "before_initial";
 
+    private static final int FILE_NAME_COLUMN_SIZE = 150;
+
     private File scriptsLocation;
     private Database defaultDatabase;
     private Properties configuration;
@@ -415,6 +417,26 @@ public class DbMaintainIntegrationTest {
         assertUpdatedScriptsExecuted(INCREMENTAL_1);
         assertScriptsCorrectlyExecuted(REPEATABLE);
     }
+
+    @Test
+    public void detectScriptFilenamesLongerThanFilenameColumnInCheckScriptUpdates() {
+        enableFromScratch();
+
+        final String longFilename1 = "01" + StringUtils.repeat("a", FILE_NAME_COLUMN_SIZE) + ".sql";
+        createScript(longFilename1, "");
+
+        final String longFilename2 = "02" + StringUtils.repeat("b", FILE_NAME_COLUMN_SIZE) + ".sql";
+        createScript(longFilename2, "");
+
+        // Verify that an error is raised when we check for script updates
+        try {
+            checkScriptUpdates();
+            fail();
+        } catch (DbMaintainException e) {
+            assertMessageContains(e.getMessage(), "are longer than the configured maximum", longFilename1, longFilename2);
+        }
+    }
+
 
 
     @Test
@@ -1022,6 +1044,7 @@ public class DbMaintainIntegrationTest {
         configuration.put(PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES, "false");
         configuration.put(PROPERTY_FROM_SCRATCH_ENABLED, "false");
         configuration.put(PROPERTY_QUALIFIERS, "special,q1,q2");
+        configuration.put(PROPERTY_FILE_NAME_COLUMN_SIZE, String.valueOf(FILE_NAME_COLUMN_SIZE));
 
         SQLHandler sqlHandler = new DefaultSQLHandler();
         DataSourceFactory dataSourceFactory = new SimpleDataSourceFactory();
