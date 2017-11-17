@@ -47,6 +47,7 @@ public class DbMaintainerFactory extends FactoryWithDatabase<DbMaintainer> {
         boolean updateSequencesEnabled = PropertyUtils.getBoolean(PROPERTY_UPDATE_SEQUENCES, getConfiguration());
         boolean ignoreDeletions = PropertyUtils.getBoolean(PROPERTY_IGNORE_DELETIONS, false, getConfiguration());
         long maxNrOfCharsWhenLoggingScriptContent = PropertyUtils.getLong(PROPERTY_MAX_NR_CHARS_WHEN_LOGGING_SCRIPT_CONTENT, getConfiguration());
+        long filenameColumnSize = PropertyUtils.getLong(PROPERTY_FILE_NAME_COLUMN_SIZE, getConfiguration());
         ScriptIndexes baseLineRevision = factoryWithDatabaseContext.getBaselineRevision();
 
         MainFactory mainFactory = factoryWithDatabaseContext.getMainFactory();
@@ -58,10 +59,10 @@ public class DbMaintainerFactory extends FactoryWithDatabase<DbMaintainer> {
         ScriptUpdatesFormatter scriptUpdatesFormatter = createScriptUpdatesFormatter();
         ExecutedScriptInfoSource executedScriptInfoSource = mainFactory.createExecutedScriptInfoSource();
 
-
-        return new DefaultDbMaintainer(scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled, useScriptFileLastModificationDates,
-                allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled, updateSequencesEnabled, dbClearer, dbCleaner,
-                constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, getSqlHandler(), maxNrOfCharsWhenLoggingScriptContent, baseLineRevision, ignoreDeletions);
+        return new DefaultDbMaintainer(scriptRunner, scriptRepository, executedScriptInfoSource, fromScratchEnabled,
+                useScriptFileLastModificationDates, allowOutOfSequenceExecutionOfPatchScripts, cleanDbEnabled, disableConstraintsEnabled,
+                updateSequencesEnabled, dbClearer, dbCleaner, constraintsDisabler, sequenceUpdater, scriptUpdatesFormatter, getSqlHandler(),
+                maxNrOfCharsWhenLoggingScriptContent, baseLineRevision, ignoreDeletions, filenameColumnSize);
     }
 
 

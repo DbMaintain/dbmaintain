@@ -17,6 +17,8 @@ package org.dbmaintain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbmaintain.config.DbMaintainProperties;
+import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.database.SQLHandler;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
@@ -36,8 +38,10 @@ import org.dbmaintain.util.DbMaintainException;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FILE_NAME_COLUMN_SIZE;
 import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
 import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 
@@ -101,6 +105,9 @@ public class DefaultDbMaintainer implements DbMaintainer {
 
     private boolean ignoreDeletions;
 
+    /* The maxmimum length of filenames that can be stored in the database */
+    private long filenameColumnSize;
+
     /**
      * Creates a new instance
      *
@@ -126,11 +133,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
      * @param maxNrOfCharsWhenLoggingScriptContent
      *                                 The maximum length of a script that is logged in an exception, 0 to not log any script content
      * @param baseLineRevision         The baseline revision. If set, all scripts with a lower revision will be ignored
+     * @param filenameColumnSize       The maxmimum length of filenames that can be stored in the database
      */
-    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository, ExecutedScriptInfoSource executedScriptInfoSource,
-                               boolean fromScratchEnabled, boolean useScriptFileLastModificationDates, boolean allowOutOfSequenceExecutionOfPatchScripts,
-                               boolean cleanDb, boolean disableConstraints, boolean updateSequences, DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler,
-                               SequenceUpdater sequenceUpdater, ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler, long maxNrOfCharsWhenLoggingScriptContent, ScriptIndexes baseLineRevision, boolean ignoreDeletions) {
+    public DefaultDbMaintainer(ScriptRunner scriptRunner, ScriptRepository scriptRepository,
+            ExecutedScriptInfoSource executedScriptInfoSource, boolean fromScratchEnabled, boolean useScriptFileLastModificationDates,
+            boolean allowOutOfSequenceExecutionOfPatchScripts, boolean cleanDb, boolean disableConstraints, boolean updateSequences,
+            DBClearer dbClearer, DBCleaner dbCleaner, ConstraintsDisabler constraintsDisabler, SequenceUpdater sequenceUpdater,
+            ScriptUpdatesFormatter scriptUpdatesFormatter, SQLHandler sqlHandler, long maxNrOfCharsWhenLoggingScriptContent,
+            ScriptIndexes baseLineRevision, boolean ignoreDeletions, long filenameColumnSize) {
 
         this.scriptRunner = scriptRunner;
         this.scriptRepository = scriptRepository;
@@ -150,6 +160,7 @@ public class DefaultDbMaintainer implements DbMaintainer {
         this.maxNrOfCharsWhenLoggingScriptContent = maxNrOfCharsWhenLoggingScriptContent;
         this.baseLineRevision = baseLineRevision;
         this.ignoreDeletions = ignoreDeletions;
+        this.filenameColumnSize = filenameColumnSize;
     }
 
 
@@ -167,6 +178,14 @@ public class DefaultDbMaintainer implements DbMaintainer {
     public boolean updateDatabase(boolean dryRun) {
         try {
             ScriptUpdates scriptUpdates = getScriptUpdates();
+
+            final List<String> tooLongFilenames = scriptUpdates.getRegularlyAddedOrModifiedScripts().stream().map(ScriptUpdate::getScript)
+                    .map(Script::getFileName).filter(filename -> filename.length() > filenameColumnSize).collect(Collectors.toList());
+            if (!tooLongFilenames.isEmpty()) {
+                throw new DbMaintainException(
+                        String.format("The filenames %s are longer than the configured maximum of %s.", tooLongFilenames,
+                                filenameColumnSize));
+            }
 
             if (scriptUpdates.hasIgnoredScriptsAndScriptChanges()) {
                 throw new DbMaintainException(
