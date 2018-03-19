@@ -1,4 +1,3 @@
-[![Dependency Status](https://www.versioneye.com/user/projects/55cda1279a2f09002000001c/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55cda1279a2f09002000001c)
 [![Build Status](https://travis-ci.org/DbMaintain/dbmaintain.svg?branch=master)](https://travis-ci.org/DbMaintain/dbmaintain)
 
 DbMaintain
