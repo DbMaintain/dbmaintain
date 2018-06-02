@@ -172,22 +172,19 @@ public class ArchiveScriptLocation extends ScriptLocation {
      */
     @Override
     protected Properties getCustomProperties(File scriptLocation) {
-        InputStream configurationInputStream = null;
-        try {
-            JarFile jarFile = createJarFile(scriptLocation);
-            ZipEntry configurationEntry = jarFile.getEntry(LOCATION_PROPERTIES_FILENAME);
-            if (configurationEntry == null) {
-                // no custom config found in meta-inf folder, skipping
-                return null;
-            }
-            Properties configuration = new Properties();
-            configurationInputStream = jarFile.getInputStream(configurationEntry);
+        JarFile jarFile = createJarFile(scriptLocation);
+        ZipEntry configurationEntry = jarFile.getEntry(LOCATION_PROPERTIES_FILENAME);
+        if (configurationEntry == null) {
+            // no custom config found in meta-inf folder, skipping
+            return null;
+        }
+        Properties configuration = new Properties();
+
+        try (InputStream configurationInputStream = jarFile.getInputStream(configurationEntry);) {
             configuration.load(configurationInputStream);
             return configuration;
         } catch (IOException e) {
             throw new DbMaintainException("Error while reading configuration file " + LOCATION_PROPERTIES_FILENAME + " from jar file " + scriptLocation, e);
-        } finally {
-            closeQuietly(configurationInputStream);
         }
     }
 
@@ -210,26 +207,18 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param jarFile Path where the jar file is stored
      */
     public void writeToJarFile(File jarFile) {
-        JarOutputStream jarOutputStream = null;
+        try(JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile))) {
 
-        try {
-            jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile));
             Reader propertiesAsFile = getPropertiesAsFile(getJarProperties());
             writeJarEntry(jarOutputStream, LOCATION_PROPERTIES_FILENAME, System.currentTimeMillis(), propertiesAsFile);
             propertiesAsFile.close();
             for (Script script : getScripts()) {
-                Reader scriptContentReader = null;
-                try {
-                    scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
+                try(Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader()) {
                     writeJarEntry(jarOutputStream, script.getFileName(), script.getFileLastModifiedAt(), scriptContentReader);
-                } finally {
-                    closeQuietly(scriptContentReader);
                 }
             }
         } catch (IOException e) {
             throw new DbMaintainException("Error while writing archive file " + jarFile, e);
-        } finally {
-            closeQuietly(jarOutputStream);
         }
     }
 

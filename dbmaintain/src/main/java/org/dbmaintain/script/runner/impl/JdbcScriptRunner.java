@@ -27,6 +27,7 @@ import org.dbmaintain.script.runner.ScriptRunner;
 import org.dbmaintain.util.DbMaintainException;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Map;
 
@@ -64,24 +65,22 @@ public class JdbcScriptRunner implements ScriptRunner {
      * @param script The script, not null
      */
     public void execute(Script script) {
-        Reader scriptContentReader = null;
-        try {
-            // Define the target database on which to execute the script
-            Database targetDatabase = getTargetDatabaseDatabase(script);
-            if (targetDatabase == null) {
-                logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() + ". This database is disabled, so the script is not executed.");
-                return;
-            }
+        // Define the target database on which to execute the script
+        Database targetDatabase = getTargetDatabaseDatabase(script);
+        if (targetDatabase == null) {
+            logger.info("Script " + script.getFileName() + " has target database " + script.getTargetDatabaseName() + ". This database is disabled, so the script is not executed.");
+            return;
+        }
 
-            // get content stream
-            scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
-            // create a script parser for the target database in question 
+        // get content stream
+        try(Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader()) {
+            // create a script parser for the target database in question
             ScriptParser scriptParser = databaseDialectScriptParserFactoryMap.get(targetDatabase.getSupportedDatabaseDialect()).createScriptParser(scriptContentReader);
             // parse and execute the statements
             parseAndExecuteScript(targetDatabase, scriptParser);
 
-        } finally {
-            closeQuietly(scriptContentReader);
+        } catch (IOException e) {
+            throw new DbMaintainException(e);
         }
     }
 

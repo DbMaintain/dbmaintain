@@ -92,16 +92,14 @@ public class FileSystemScriptLocation extends ScriptLocation {
         if (!customPropertiesFileLocation.exists()) {
             return null;
         }
-        InputStream propertiesInputStream = null;
-        try {
+
+        try(InputStream propertiesInputStream = new FileInputStream(customPropertiesFileLocation)) {
             Properties properties = new Properties();
-            propertiesInputStream = new FileInputStream(customPropertiesFileLocation);
+
             properties.load(propertiesInputStream);
             return properties;
         } catch (IOException e) {
             throw new DbMaintainException("Error while reading configuration file " + customPropertiesFileLocation, e);
-        } finally {
-            closeQuietly(propertiesInputStream);
         }
     }
 
