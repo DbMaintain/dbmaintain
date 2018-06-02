@@ -51,7 +51,7 @@ public abstract class BaseDatabaseMojo extends BaseMojo {
     }
 
     protected List<DbMaintainDatabase> getDbMaintainDatabases() {
-        List<DbMaintainDatabase> dbMaintainDatabases = new ArrayList<DbMaintainDatabase>();
+        List<DbMaintainDatabase> dbMaintainDatabases = new ArrayList<>();
         if (databases == null) {
             return dbMaintainDatabases;
         }

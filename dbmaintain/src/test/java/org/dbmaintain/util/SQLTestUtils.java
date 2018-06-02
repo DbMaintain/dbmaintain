@@ -275,7 +275,7 @@ public class SQLTestUtils {
             connection = dataSource.getConnection();
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sql);
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             while (resultSet.next()) {
                 result.add(resultSet.getString(1));
             }

@@ -15,7 +15,7 @@ import static org.dbmaintain.config.DbMaintainProperties.*;
  */
 public class TaskConfiguration {
 
-    private Map<String, DataSource> dataSourcesPerDatabaseName = new HashMap<String, DataSource>();
+    private Map<String, DataSource> dataSourcesPerDatabaseName = new HashMap<>();
     private Properties configuration;
 
 
@@ -49,7 +49,7 @@ public class TaskConfiguration {
     }
 
     public void addDatabaseConfigurations(List<? extends DbMaintainDatabase> dbMaintainDatabases) {
-        List<String> databaseNames = new ArrayList<String>();
+        List<String> databaseNames = new ArrayList<>();
 
         for (DbMaintainDatabase dbMaintainDatabase : dbMaintainDatabases) {
             String name = dbMaintainDatabase.getName();

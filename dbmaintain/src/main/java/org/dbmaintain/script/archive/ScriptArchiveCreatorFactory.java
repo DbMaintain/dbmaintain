@@ -44,7 +44,8 @@ public class ScriptArchiveCreatorFactory extends FactoryWithoutDatabase<ScriptAr
         String scriptIndexRegexp = getString(PROPERTY_SCRIPT_INDEX_REGEXP, getConfiguration());
         String qualifierRegexp = getString(PROPERTY_SCRIPT_QUALIFIER_REGEXP, getConfiguration());
         String targetDatabaseRegexp = getString(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP, getConfiguration());
-        Set<String> scriptFileExtensions = new HashSet<String>(getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, getConfiguration()));
+        Set<String> scriptFileExtensions = new HashSet<>(
+                getStringList(PROPERTY_SCRIPT_FILE_EXTENSIONS, getConfiguration()));
         ScriptIndexes baselineRevision = factoryContext.getBaselineRevision();
         boolean ignoreCarriageReturnsWhenCalculatingCheckSum = getBoolean(PROPERTY_IGNORE_CARRIAGE_RETURN_WHEN_CALCULATING_CHECK_SUM, getConfiguration());
 

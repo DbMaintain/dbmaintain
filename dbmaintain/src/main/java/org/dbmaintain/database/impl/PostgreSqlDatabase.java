@@ -105,7 +105,7 @@ public class PostgreSqlDatabase extends Database {
      */
     @Override
     public Set<String> getTriggerNames(String schemaName) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         Set<String> triggerAndTableNames = getSQLHandler().getItemsAsStringSet("select trigger_name || ',' || event_object_table from information_schema.triggers where trigger_schema = '" + schemaName + "'", getDataSource());
         for (String triggerAndTableName : triggerAndTableNames) {

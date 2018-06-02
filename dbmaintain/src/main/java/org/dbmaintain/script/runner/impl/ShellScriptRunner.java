@@ -76,7 +76,7 @@ public class ShellScriptRunner extends BaseNativeScriptRunner {
         if (chmodCommand.equals(""))
             return;
         String[] chmodCmdWithArgs = StringUtils.split(chmodCommand);
-        List<String> chmodArgs = new ArrayList<String>();
+        List<String> chmodArgs = new ArrayList<>();
         for (int i = 1; i < chmodCmdWithArgs.length; i++) {
             chmodArgs.add(chmodCmdWithArgs[i]);
         }

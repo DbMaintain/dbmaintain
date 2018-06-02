@@ -53,7 +53,7 @@ public class DefaultSQLHandler implements SQLHandler {
     private boolean doExecuteUpdates;
 
 
-    private Map<DataSource, Connection> cachedConnections = new HashMap<DataSource, Connection>();
+    private Map<DataSource, Connection> cachedConnections = new HashMap<>();
 
     /**
      * Constructs a new instance that connects to the given DataSource
@@ -164,7 +164,7 @@ public class DefaultSQLHandler implements SQLHandler {
         try {
             statement = getConnection(dataSource).createStatement();
             resultSet = statement.executeQuery(sql);
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             while (resultSet.next()) {
                 result.add(resultSet.getString(1));
             }

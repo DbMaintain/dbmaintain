@@ -44,7 +44,7 @@ import static org.apache.commons.lang3.StringUtils.split;
 public class ScriptIndexes implements Comparable<ScriptIndexes> {
 
     /* The version indexes, empty if not defined */
-    private List<Long> indexes = new ArrayList<Long>();
+    private List<Long> indexes = new ArrayList<>();
 
 
     /**
@@ -134,7 +134,7 @@ public class ScriptIndexes implements Comparable<ScriptIndexes> {
      * @return The list of longs or nulls in case of 'x'
      */
     protected List<Long> extractIndexes(String indexString) {
-        List<Long> result = new ArrayList<Long>();
+        List<Long> result = new ArrayList<>();
         if (isEmpty(indexString)) {
             return result;
         }

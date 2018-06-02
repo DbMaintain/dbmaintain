@@ -53,7 +53,7 @@ public class DatabaseInfo {
         if (!schemaNames.isEmpty()) {
             this.defaultSchemaName = schemaNames.get(0);
         }
-        this.schemaNames = new HashSet<String>(schemaNames);
+        this.schemaNames = new HashSet<>(schemaNames);
         this.disabled = disabled;
         this.defaultDatabase = defaultDatabase;
     }

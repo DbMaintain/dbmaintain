@@ -34,11 +34,11 @@ public class DefaultDatabaseConnectionManager implements DatabaseConnectionManag
     protected DataSourceFactory dataSourceFactory;
     protected Map<String, DataSource> dataSourcesPerDatabaseName;
 
-    protected Map<String, DatabaseConnection> databaseConnectionsPerDatabaseName = new HashMap<String, DatabaseConnection>();
+    protected Map<String, DatabaseConnection> databaseConnectionsPerDatabaseName = new HashMap<>();
 
 
     public DefaultDatabaseConnectionManager(Properties configuration, SQLHandler sqlHandler, DataSourceFactory dataSourceFactory) {
-        this(configuration, sqlHandler, dataSourceFactory, new HashMap<String, DataSource>());
+        this(configuration, sqlHandler, dataSourceFactory, new HashMap<>());
     }
 
     public DefaultDatabaseConnectionManager(Properties configuration, SQLHandler sqlHandler, DataSourceFactory dataSourceFactory, Map<String, DataSource> dataSourcesPerDatabaseName) {
@@ -71,7 +71,7 @@ public class DefaultDatabaseConnectionManager implements DatabaseConnectionManag
     }
 
     public List<DatabaseConnection> getDatabaseConnections() {
-        List<DatabaseConnection> result = new ArrayList<DatabaseConnection>();
+        List<DatabaseConnection> result = new ArrayList<>();
         for (DatabaseInfo databaseInfo : getDatabaseInfos()) {
             DatabaseConnection databaseConnection = getDatabaseConnection(databaseInfo.getName());
             result.add(databaseConnection);

@@ -71,7 +71,7 @@ public class DefaultDBClearerPreserveTest {
         createTestDatabase();
 
         // configure items to preserve
-        Set<DbItemIdentifier> itemsToPreserve = new HashSet<DbItemIdentifier>();
+        Set<DbItemIdentifier> itemsToPreserve = new HashSet<>();
         itemsToPreserve.add(parseItemIdentifier(TABLE, "Test_Table", databases));
         itemsToPreserve.add(parseItemIdentifier(TABLE, defaultDatabase.quoted("Test_CASE_Table"), databases));
         itemsToPreserve.add(parseItemIdentifier(VIEW, "Test_View", databases));
@@ -93,7 +93,7 @@ public class DefaultDBClearerPreserveTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
     }
 
     @After

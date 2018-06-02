@@ -67,7 +67,7 @@ public abstract class TestUtils {
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
         IdentifierProcessor identifierProcessor = new IdentifierProcessor(UPPER_CASE, "\"", databaseInfo.getDefaultSchemaName());
         Database database = new HsqldbDatabase(databaseConnection, identifierProcessor);
-        return new Databases(database, asList(database), new ArrayList<String>());
+        return new Databases(database, asList(database), new ArrayList<>());
     }
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable) {
@@ -105,7 +105,8 @@ public abstract class TestUtils {
     }
 
     public static ScriptFactory createScriptFactory(ScriptIndexes baseLineRevision) {
-        return new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", new HashSet<Qualifier>(), qualifiers("patch"), "preprocessing", "postprocessing", baseLineRevision);
+        return new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_",
+                new HashSet<>(), qualifiers("patch"), "preprocessing", "postprocessing", baseLineRevision);
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
@@ -133,7 +134,7 @@ public abstract class TestUtils {
     }
 
     public static Set<Qualifier> qualifiers(String... qualifierNames) {
-        Set<Qualifier> result = new HashSet<Qualifier>();
+        Set<Qualifier> result = new HashSet<>();
         for (String qualifierStr : qualifierNames) {
             result.add(new Qualifier(qualifierStr));
         }

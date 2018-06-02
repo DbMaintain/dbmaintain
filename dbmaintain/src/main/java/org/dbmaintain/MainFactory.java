@@ -57,7 +57,7 @@ public class MainFactory {
 
 
     public MainFactory(Properties configuration) {
-        this(configuration, new HashMap<String, DataSource>());
+        this(configuration, new HashMap<>());
     }
 
     public MainFactory(Properties configuration, DatabaseConnectionManager databaseConnectionManager) {

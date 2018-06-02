@@ -61,7 +61,7 @@ public class DefaultDBClearerMultiSchemaTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<DbItemIdentifier>(), new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<>(), new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
 
         dropTestDatabase();
         createTestDatabase();

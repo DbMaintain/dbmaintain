@@ -38,7 +38,7 @@ public class CollectionUtils {
      * @return The elements as a set, empty if elements was null
      */
     public static <T> Set<T> asSet(T... elements) {
-        Set<T> result = new HashSet<T>();
+        Set<T> result = new HashSet<>();
         if (elements == null) {
             return result;
         }
@@ -54,7 +54,7 @@ public class CollectionUtils {
      * @return The elements as a set, empty if elements was null
      */
     public static <T> SortedSet<T> asSortedSet(T... elements) {
-        SortedSet<T> result = new TreeSet<T>();
+        SortedSet<T> result = new TreeSet<>();
         if (elements == null) {
             return result;
         }
@@ -64,7 +64,7 @@ public class CollectionUtils {
 
 
     public static <T> SortedSet<T> unionSortedSet(Set<T>... sets) {
-        SortedSet<T> unionSet = new TreeSet<T>();
+        SortedSet<T> unionSet = new TreeSet<>();
         for (Set<T> set : sets) {
             unionSet.addAll(set);
         }

@@ -64,7 +64,7 @@ public class FactoryWithDatabaseContext extends FactoryContext {
      * @return The configured set of schemas to preserve, not null
      */
     public Set<DbItemIdentifier> getSchemasToPreserve(String propertyPreserveSchemas) {
-        Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
+        Set<DbItemIdentifier> result = new HashSet<>();
         List<String> schemasToPreserve = getStringList(propertyPreserveSchemas, getConfiguration());
         for (String schemaToPreserve : schemasToPreserve) {
             DbItemIdentifier itemIdentifier = parseSchemaIdentifier(schemaToPreserve, databases);
@@ -93,7 +93,7 @@ public class FactoryWithDatabaseContext extends FactoryContext {
     }
 
     public Map<String, ScriptParserFactory> getDatabaseDialectScriptParserFactoryMap() {
-        Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<String, ScriptParserFactory>();
+        Map<String, ScriptParserFactory> databaseDialectScriptParserClassMap = new HashMap<>();
         boolean backSlashEscapingEnabled = PropertyUtils.getBoolean(PROPERTY_BACKSLASH_ESCAPING_ENABLED, getConfiguration());
         Properties scriptParameters = getScriptParameters();
         for (String databaseDialect : getDatabaseDialectsInUse()) {
@@ -120,7 +120,7 @@ public class FactoryWithDatabaseContext extends FactoryContext {
     }
 
     public Set<String> getDatabaseDialectsInUse() {
-        Set<String> dialects = new HashSet<String>();
+        Set<String> dialects = new HashSet<>();
         for (Database database : databases.getDatabases()) {
             if (database != null) {
                 dialects.add(database.getSupportedDatabaseDialect());

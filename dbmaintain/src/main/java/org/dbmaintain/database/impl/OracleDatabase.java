@@ -70,7 +70,7 @@ public class OracleDatabase extends Database {
     @Override
     public List<String> getTableNamesSortedAccordingToConstraints(String schemaName) {
     	try {
-	    	List<String> tableNames =  new ArrayList<String>(getTableNames(schemaName));
+	    	List<String> tableNames = new ArrayList<>(getTableNames(schemaName));
 	    	Map<String, Set<String>> childParentRelations = getTableChildParentRelations(schemaName);
 	    	return sortAccordingToConstraints(tableNames, childParentRelations);
     	} 
@@ -80,7 +80,7 @@ public class OracleDatabase extends Database {
     }
        
     private Map<String, Set<String>> getTableChildParentRelations(String schemaName) throws SQLException {
-    	Map<String, Set<String>> childParentRelations = new HashMap<String, Set<String>>();
+    	Map<String, Set<String>> childParentRelations = new HashMap<>();
         Connection connection = null;
         Statement queryStatement = null;
         Statement alterStatement = null;
@@ -99,7 +99,7 @@ public class OracleDatabase extends Database {
 	            	Set<String> parents = childParentRelations.get(child);
 	            	parents.add(parent);
 	            } else {
-	            	Set<String> parents = new HashSet<String>();
+	            	Set<String> parents = new HashSet<>();
 	            	parents.add(parent);
 	            	childParentRelations.put(child, parents);
 	            }

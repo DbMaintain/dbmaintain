@@ -137,11 +137,12 @@ public class ScriptFactoryQualifierTest {
     }
 
     private ScriptFactory createScriptFactoryWithRegisteredQualifiers(String... qualifierNames) {
-        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, qualifiers(qualifierNames), new HashSet<Qualifier>(), null, null, null);
+        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, qualifiers(qualifierNames),
+                new HashSet<>(), null, null, null);
     }
 
     private ScriptFactory createScriptFactoryWithPatchQualifiers(String... qualifierNames) {
-        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, new HashSet<Qualifier>(), qualifiers(qualifierNames), null, null, null);
+        return new ScriptFactory(scriptIndexRegexp, targetDatabaseRegexp, qualifierRegexp, new HashSet<>(), qualifiers(qualifierNames), null, null, null);
     }
 
 }

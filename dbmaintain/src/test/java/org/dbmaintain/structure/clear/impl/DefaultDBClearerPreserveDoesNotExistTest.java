@@ -78,7 +78,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     }
 
     private DefaultDBClearer createDbClearer(Set<DbItemIdentifier> itemsToPreserve) {
-        return new DefaultDBClearer(databases, itemsToPreserve, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        return new DefaultDBClearer(databases, itemsToPreserve, new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
     }
 
     /**

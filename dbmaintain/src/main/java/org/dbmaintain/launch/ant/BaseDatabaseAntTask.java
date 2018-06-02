@@ -30,7 +30,7 @@ import java.util.List;
  */
 public abstract class BaseDatabaseAntTask extends BaseAntTask {
 
-    protected List<Database> databases = new ArrayList<Database>();
+    protected List<Database> databases = new ArrayList<>();
 
     /**
      * Registers a target database on which a task (e.g. update) can be executed.
@@ -42,7 +42,7 @@ public abstract class BaseDatabaseAntTask extends BaseAntTask {
     }
 
     public List<DbMaintainDatabase> getDbMaintainDatabases() {
-        List<DbMaintainDatabase> result = new ArrayList<DbMaintainDatabase>();
+        List<DbMaintainDatabase> result = new ArrayList<>();
         for (Database database : databases) {
             DbMaintainDatabase dbMaintainDatabase = new DbMaintainDatabase();
             dbMaintainDatabase.setName(database.getName());

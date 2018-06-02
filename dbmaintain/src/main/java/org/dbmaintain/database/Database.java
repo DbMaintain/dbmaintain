@@ -47,7 +47,7 @@ abstract public class Database {
         this.databaseConnection = databaseConnection;
         this.identifierProcessor = identifierProcessor;
 
-        this.schemaNames = new HashSet<String>();
+        this.schemaNames = new HashSet<>();
         for (String schemaName : getDatabaseInfo().getSchemaNames()) {
             this.schemaNames.add(toCorrectCaseIdentifier(schemaName));
         }
@@ -133,7 +133,7 @@ abstract public class Database {
      * @return The names of all tables in the database - sorted
      */
     public List<String> getTableNamesSortedAccordingToConstraints(String schemaName) {
-    	return new ArrayList<String>(getTableNames(schemaName));
+    	return new ArrayList<>(getTableNames(schemaName));
     }
 
     

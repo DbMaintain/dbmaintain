@@ -89,9 +89,9 @@ public class OracleStoredProcedureMatcherTest {
     }
 
     private List<String> mix(List<String> left, List<String> right) {
-        List<String> leftCopy = new ArrayList<String>(left);
-        List<String> rightCopy = new ArrayList<String>(right);
-        List<String> results = new ArrayList<String>();
+        List<String> leftCopy = new ArrayList<>(left);
+        List<String> rightCopy = new ArrayList<>(right);
+        List<String> results = new ArrayList<>();
         while (!(leftCopy.isEmpty() && rightCopy.isEmpty())) {
             if (leftCopy.isEmpty()) {
                 results.add(rightCopy.get(rightCopy.size() - 1));
@@ -114,14 +114,14 @@ public class OracleStoredProcedureMatcherTest {
     }
 
     private List<String> createStartOfStoredProcedureTestStrings(int count) {
-        List<String> result = new ArrayList<String>(count);
+        List<String> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++)
             result.add(getRandomStartOfStoredProcedure().toUpperCase() + " " + createRandomTestString(50));
         return result;
     }
 
     private List<String> createRandomTestStrings(int count) {
-        List<String> result = new ArrayList<String>(count);
+        List<String> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++)
             result.add(createRandomTestString(100));
         return result;

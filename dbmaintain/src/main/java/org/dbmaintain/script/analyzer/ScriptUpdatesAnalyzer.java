@@ -42,18 +42,18 @@ public class ScriptUpdatesAnalyzer {
     private final boolean allowOutOfSequenceExecutionOfPatchScripts;
 
     /* Sets that contain the result of the analysis: each set contains a specific type of script updates */
-    private final SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> irregularlyUpdatedScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> regularlyAddedPatchScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> regularlyUpdatedPreprocessingScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> regularlyUpdatedPostprocessingScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> regularlyRenamedScripts = new TreeSet<ScriptUpdate>();
-    private final SortedSet<ScriptUpdate> ignoredScripts = new TreeSet<ScriptUpdate>();
+    private final SortedSet<ScriptUpdate> regularlyAddedOrModifiedScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> irregularlyUpdatedScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> regularlyDeletedRepeatableScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> regularlyAddedPatchScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> regularlyUpdatedPreprocessingScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> regularlyUpdatedPostprocessingScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> regularlyRenamedScripts = new TreeSet<>();
+    private final SortedSet<ScriptUpdate> ignoredScripts = new TreeSet<>();
 
     /* Sets that contain working data that is assembled during the analysis */
-    private final Map<ExecutedScript, Script> renamedIndexedScripts = new HashMap<ExecutedScript, Script>();
-    private final Map<Script, ExecutedScript> scriptExecutedScriptMap = new HashMap<Script, ExecutedScript>();
+    private final Map<ExecutedScript, Script> renamedIndexedScripts = new HashMap<>();
+    private final Map<Script, ExecutedScript> scriptExecutedScriptMap = new HashMap<>();
 
     /* Lazily initialized data, that is cached during analysis to avoid repeated calculation of the contents */
     private Map<String, Script> scriptNameScriptMap;
@@ -299,7 +299,7 @@ public class ScriptUpdatesAnalyzer {
      * @return A script that is not yet mapped to an executed script, but that has the same content as the given one
      */
     protected Script findNewScriptWithSameContent(ExecutedScript executedScript) {
-        SortedSet<Script> newScriptsWithSameContent = new TreeSet<Script>();
+        SortedSet<Script> newScriptsWithSameContent = new TreeSet<>();
         Set<Script> scriptsWithSameContent = getCheckSumScriptMap().get(executedScript.getScript().getCheckSum());
         if (scriptsWithSameContent != null) {
             for (Script scriptWithSameContent : scriptsWithSameContent) {
@@ -326,7 +326,7 @@ public class ScriptUpdatesAnalyzer {
      * @return The already executed scripts, as a map from scriptName =&gt; ExecutedScript
      */
     protected Map<String, ExecutedScript> getScriptNameExecutedScriptMap() {
-        Map<String, ExecutedScript> scriptNameAlreadyExecutedScriptMap = new HashMap<String, ExecutedScript>();
+        Map<String, ExecutedScript> scriptNameAlreadyExecutedScriptMap = new HashMap<>();
         for (ExecutedScript executedScript : executedScriptInfoSource.getExecutedScripts()) {
             scriptNameAlreadyExecutedScriptMap.put(executedScript.getScript().getFileName(), executedScript);
         }
@@ -338,7 +338,7 @@ public class ScriptUpdatesAnalyzer {
      */
     protected Map<String, Script> getScriptNameScriptMap() {
         if (scriptNameScriptMap == null) {
-            scriptNameScriptMap = new HashMap<String, Script>();
+            scriptNameScriptMap = new HashMap<>();
             for (Script script : scriptRepository.getAllScripts()) {
                 scriptNameScriptMap.put(script.getFileName(), script);
             }
@@ -351,11 +351,11 @@ public class ScriptUpdatesAnalyzer {
      */
     protected Map<String, Set<Script>> getCheckSumScriptMap() {
         if (checkSumScriptMap == null) {
-            checkSumScriptMap = new HashMap<String, Set<Script>>();
+            checkSumScriptMap = new HashMap<>();
             for (Script script : scriptRepository.getAllScripts()) {
                 Set<Script> scriptsWithCheckSum = checkSumScriptMap.get(script.getCheckSum());
                 if (scriptsWithCheckSum == null) {
-                    scriptsWithCheckSum = new HashSet<Script>();
+                    scriptsWithCheckSum = new HashSet<>();
                     checkSumScriptMap.put(script.getCheckSum(), scriptsWithCheckSum);
                 }
                 scriptsWithCheckSum.add(script);

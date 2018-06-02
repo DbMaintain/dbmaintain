@@ -98,10 +98,10 @@ public class PropertyUtils {
             if (required) {
                 throw new DbMaintainException("No value found for property " + propertyName);
             }
-            return new ArrayList<String>(0);
+            return new ArrayList<>(0);
         }
         String[] splitValues = StringUtils.split(values, ",");
-        List<String> result = new ArrayList<String>(splitValues.length);
+        List<String> result = new ArrayList<>(splitValues.length);
         for (String value : splitValues) {
             result.add(value.trim());
         }

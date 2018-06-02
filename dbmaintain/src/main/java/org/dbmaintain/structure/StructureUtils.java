@@ -44,7 +44,7 @@ public class StructureUtils {
 		if (database == null) {
 		    return unknownItems;
 		}
-		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
+		Set<DbItemIdentifier> filtered = new HashSet<>();
 		filtered.addAll(unknownItems);
 		for (String schemaName : database.getSchemaNames()) {
 			for (DbItemType type : extractTypes(filtered)) {
@@ -58,7 +58,7 @@ public class StructureUtils {
 	}
 
 	private static Set<DbItemType> extractTypes(Set<DbItemIdentifier> items) {
-		Set<DbItemType> types = new HashSet<DbItemType>();
+		Set<DbItemType> types = new HashSet<>();
 		for (DbItemIdentifier item : items) {
 			types.add(item.getType());
 		}
@@ -67,7 +67,7 @@ public class StructureUtils {
 
 	private static Set<DbItemIdentifier> filterDbMaintainIdentifiers(
 			Set<DbItemIdentifier> items) {
-		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
+		Set<DbItemIdentifier> filtered = new HashSet<>();
         for (DbItemIdentifier item : items) {
         	if (!item.isDbMaintainIdentifier())
         		filtered.add(item);
@@ -77,7 +77,7 @@ public class StructureUtils {
 
 	private static Set<DbItemIdentifier> filterSchema(Set<DbItemIdentifier> items,
 			Database database, String schemaName) {
-		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
+		Set<DbItemIdentifier> filtered = new HashSet<>();
 		filtered.addAll(items);
 		DbItemIdentifier schema = getItemIdentifier(SCHEMA, schemaName, null, database);
 		filtered.remove(schema);
@@ -86,7 +86,7 @@ public class StructureUtils {
 
 	private static Set<DbItemIdentifier> removeDbItemOfGivenTypeInSchema(DbItemType type, Set<DbItemIdentifier> items,
 			Database database, String schemaName) {
-		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
+		Set<DbItemIdentifier> filtered = new HashSet<>();
 		filtered.addAll(items);
 		if (!database.supports(type)) {
 			return filtered;
@@ -98,7 +98,7 @@ public class StructureUtils {
 
 	private static Set<DbItemIdentifier> extractSchemas(
 			Set<DbItemIdentifier> items) {
-		Set<DbItemIdentifier> schemas = new HashSet<DbItemIdentifier>();
+		Set<DbItemIdentifier> schemas = new HashSet<>();
 		for (DbItemIdentifier item : items) {
 			if(item.getType() == SCHEMA)
 				schemas.add(item);
@@ -108,7 +108,7 @@ public class StructureUtils {
 
 	private static Set<String> mapSchemaItemsToSchemaNames(
 			Set<DbItemIdentifier> schemas) {
-		Set<String> schemaNames = new HashSet<String>();
+		Set<String> schemaNames = new HashSet<>();
 		for (DbItemIdentifier schema : schemas) {
 			schemaNames.add(schema.getSchemaName());
 		}
@@ -127,7 +127,7 @@ public class StructureUtils {
 	}
 
     private static Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType type, Database database, String schemaName, Set<String> itemNames) {
-        Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
+        Set<DbItemIdentifier> result = new HashSet<>();
         for (String itemName : itemNames) {
             result.add(getItemIdentifier(type, schemaName, itemName, database));
         }

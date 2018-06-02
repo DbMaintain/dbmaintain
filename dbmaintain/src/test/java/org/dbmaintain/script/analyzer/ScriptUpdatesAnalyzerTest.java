@@ -60,8 +60,8 @@ public class ScriptUpdatesAnalyzerTest {
 
     private ScriptUpdates scriptUpdates;
 
-    private SortedSet<Script> scripts = new TreeSet<Script>();
-    private SortedSet<ExecutedScript> executedScripts = new TreeSet<ExecutedScript>();
+    private SortedSet<Script> scripts = new TreeSet<>();
+    private SortedSet<ExecutedScript> executedScripts = new TreeSet<>();
     private static int sequence = 0;
 
     @Test

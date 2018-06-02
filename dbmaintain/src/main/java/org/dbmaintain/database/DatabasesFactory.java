@@ -45,8 +45,8 @@ public class DatabasesFactory {
 
 
     public Databases createDatabases() {
-        List<Database> databases = new ArrayList<Database>();
-        List<String> disabledDatabaseNames = new ArrayList<String>();
+        List<Database> databases = new ArrayList<>();
+        List<String> disabledDatabaseNames = new ArrayList<>();
 
         Database defaultDatabase = null;
         for (DatabaseConnection databaseConnection : databaseConnectionManager.getDatabaseConnections()) {

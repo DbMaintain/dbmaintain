@@ -128,7 +128,7 @@ public class Db2ScriptRunner extends BaseNativeScriptRunner {
     }
 
     protected Application createApplication(String db2Command) {
-        Map<String, String> environmentVariables = new HashMap<String, String>();
+        Map<String, String> environmentVariables = new HashMap<>();
         // workaround to be able to use db2 clp without db2cmd on windows
         environmentVariables.put("DB2CLP", "**$$**");
         return new Application("DB2 CLP", db2Command, environmentVariables);
@@ -136,7 +136,7 @@ public class Db2ScriptRunner extends BaseNativeScriptRunner {
 
 
     protected Map<Database, Db2ConnectionInfo> getDb2ConnectionInfos(Databases databases) {
-        Map<Database, Db2ConnectionInfo> result = new HashMap<Database, Db2ConnectionInfo>();
+        Map<Database, Db2ConnectionInfo> result = new HashMap<>();
 
         int aliasCount = 1;
         for (Database database : databases.getDatabases()) {

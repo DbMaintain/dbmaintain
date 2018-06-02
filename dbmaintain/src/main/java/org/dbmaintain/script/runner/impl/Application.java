@@ -45,7 +45,7 @@ public class Application {
 
 
     public Application(String name, String command) {
-        this(name, command, new HashMap<String, String>());
+        this(name, command, new HashMap<>());
     }
 
     public Application(String name, String command, Map<String, String> environmentVariables) {
@@ -101,7 +101,7 @@ public class Application {
     }
 
     protected List<String> getProcessArguments(String[] arguments) {
-        List<String> commandWithArguments = new ArrayList<String>();
+        List<String> commandWithArguments = new ArrayList<>();
         commandWithArguments.add(command);
         commandWithArguments.addAll(asList(arguments));
         return commandWithArguments;

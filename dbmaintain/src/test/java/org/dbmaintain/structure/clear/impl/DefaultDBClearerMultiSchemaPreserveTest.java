@@ -82,7 +82,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, new HashSet<DbItemIdentifier>(), constraintsDisabler, executedScriptInfoSource);
+        defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
     }
 
 

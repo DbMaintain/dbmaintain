@@ -345,7 +345,7 @@ public class MsSqlDatabase extends Database {
             connection = getDataSource().getConnection();
             statement = connection.createStatement();
 
-            Map<String, Set<String>> tablePrimaryKeyColumnsMap = new HashMap<String, Set<String>>();
+            Map<String, Set<String>> tablePrimaryKeyColumnsMap = new HashMap<>();
             resultSet = statement.executeQuery("select t.name table_name, c.name column_name from sys.key_constraints k, sys.index_columns i, sys.columns c, sys.tables t, sys.schemas s " +
                     "where k.type = 'PK' and i.index_id = k.unique_index_id and i.column_id = c.column_id " +
                     "  and c.object_id = t.object_id and k.parent_object_id = t.object_id and i.object_id = t.object_id " +
@@ -355,7 +355,7 @@ public class MsSqlDatabase extends Database {
                 String columnName = resultSet.getString("column_name");
                 Set<String> tablePrimaryKeyColumns = tablePrimaryKeyColumnsMap.get(tableName);
                 if (tablePrimaryKeyColumns == null) {
-                    tablePrimaryKeyColumns = new HashSet<String>();
+                    tablePrimaryKeyColumns = new HashSet<>();
                     tablePrimaryKeyColumnsMap.put(tableName, tablePrimaryKeyColumns);
                 }
                 tablePrimaryKeyColumns.add(columnName);

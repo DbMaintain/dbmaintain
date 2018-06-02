@@ -54,7 +54,7 @@ public class DefaultDBCleanerMultiSchemaTest {
         // configure 3 schemas
         Databases databases = TestUtils.getDatabases("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         dataSource = databases.getDefaultDatabase().getDataSource();
-        defaultDBCleaner = new DefaultDBCleaner(databases, new HashSet<DbItemIdentifier>(), new DefaultSQLHandler());
+        defaultDBCleaner = new DefaultDBCleaner(databases, new HashSet<>(), new DefaultSQLHandler());
 
         dropTestTables();
         createTestTables();

@@ -117,7 +117,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
      * @return All scripts that were registered as executed on the database
      */
     protected synchronized SortedSet<ExecutedScript> doGetExecutedScripts() {
-        TreeSet<ExecutedScript> executedScripts = new TreeSet<ExecutedScript>();
+        TreeSet<ExecutedScript> executedScripts = new TreeSet<>();
 
         Connection connection = null;
         Statement statement = null;

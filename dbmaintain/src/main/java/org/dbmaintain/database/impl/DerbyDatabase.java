@@ -273,7 +273,7 @@ public class DerbyDatabase extends Database {
             connection = getDataSource().getConnection();
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             resultSet = databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             while (resultSet.next()) {
                 result.add(resultSet.getString(4)); // COLUMN_NAME
             }
@@ -302,7 +302,7 @@ public class DerbyDatabase extends Database {
             connection = getDataSource().getConnection();
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             resultSet = databaseMetaData.getColumns(null, schemaName, tableName, "%");
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             while (resultSet.next()) {
                 if (resultSet.getInt(11) == DatabaseMetaData.columnNoNulls) { // NULLABLE
                     result.add(resultSet.getString(4)); //COLUMN_NAME

@@ -11,12 +11,12 @@ public class DatabaseTest {
 	@Test
 	public void sortAccordingToConstraintsTest() {
 		List<String> tables = Arrays.asList("A", "B", "C");
-		Map<String, Set<String>> childParentRelations = new HashMap<String, Set<String>>();
-		Set<String> parents = new HashSet<String>();
+		Map<String, Set<String>> childParentRelations = new HashMap<>();
+		Set<String> parents = new HashSet<>();
 		// B is parent of A
 		parents.add("B");
 		childParentRelations.put("A", parents);
-		parents = new HashSet<String>();
+		parents = new HashSet<>();
 		
 		// A is parent of C
 		parents.add("A");
