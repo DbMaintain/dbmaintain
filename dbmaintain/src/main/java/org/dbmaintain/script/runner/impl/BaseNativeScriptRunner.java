@@ -89,11 +89,8 @@ public abstract class BaseNativeScriptRunner implements ScriptRunner {
         File temporaryScriptFile = new File(temporaryScriptsDir, getTemporaryScriptName(script));
         temporaryScriptFile.deleteOnExit();
 
-        Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader();
-        try {
+        try (Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader()) {
             createFile(temporaryScriptFile, scriptContentReader, script.getScriptContentHandle().getEncoding());
-        } finally {
-            scriptContentReader.close();
         }
         return temporaryScriptFile;
     }

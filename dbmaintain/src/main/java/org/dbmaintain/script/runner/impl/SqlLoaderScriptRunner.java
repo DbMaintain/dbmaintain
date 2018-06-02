@@ -89,17 +89,14 @@ public class SqlLoaderScriptRunner extends BaseNativeScriptRunner {
         if (!file.canRead()) {
             return file.getAbsolutePath() + " can't be read";
         }
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             StringBuilder builder = new StringBuilder();
             String line = "";
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 builder.append(line);
                 builder.append("\n");
             }
             return builder.toString();
-        } finally {
-          reader.close();
         }
     }
 

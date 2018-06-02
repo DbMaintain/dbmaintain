@@ -105,8 +105,7 @@ public abstract class ScriptContentHandle {
 
     public String getScriptContentsAsString(long maxNrChars) {
         try {
-            InputStream inputStream = this.getScriptInputStream();
-            try {
+            try (InputStream inputStream = this.getScriptInputStream()) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));
                 StringWriter stringWriter = new StringWriter();
                 long count = 0;
@@ -119,8 +118,6 @@ public abstract class ScriptContentHandle {
                     }
                 }
                 return stringWriter.toString();
-            } finally {
-                inputStream.close();
             }
         } catch (IOException e) {
             return "<script content could not be retrieved>";

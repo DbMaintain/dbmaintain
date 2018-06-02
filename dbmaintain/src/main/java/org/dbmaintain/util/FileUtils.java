@@ -54,18 +54,12 @@ public class FileUtils {
      * @param contentReader The stream with the content for the file, not null
      */
     public static void createFile(File file, Reader contentReader, String fileCharset) throws IOException {
-        Writer writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriterWithEncoding(file, fileCharset, false));
+        try (Writer writer = new BufferedWriter(new FileWriterWithEncoding(file, fileCharset, false))) {
 
             char[] buffer = new char[8192];
             int nrOfChars;
             while ((nrOfChars = contentReader.read(buffer)) != -1) {
                 writer.write(buffer, 0, nrOfChars);
-            }
-        } finally {
-            if (writer != null) {
-                writer.close();
             }
         }
     }
