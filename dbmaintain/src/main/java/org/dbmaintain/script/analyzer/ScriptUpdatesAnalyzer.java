@@ -353,11 +353,8 @@ public class ScriptUpdatesAnalyzer {
         if (checkSumScriptMap == null) {
             checkSumScriptMap = new HashMap<>();
             for (Script script : scriptRepository.getAllScripts()) {
-                Set<Script> scriptsWithCheckSum = checkSumScriptMap.get(script.getCheckSum());
-                if (scriptsWithCheckSum == null) {
-                    scriptsWithCheckSum = new HashSet<>();
-                    checkSumScriptMap.put(script.getCheckSum(), scriptsWithCheckSum);
-                }
+                Set<Script> scriptsWithCheckSum = checkSumScriptMap.computeIfAbsent(script.getCheckSum(),
+                        k -> new HashSet<>());
                 scriptsWithCheckSum.add(script);
             }
         }

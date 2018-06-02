@@ -353,11 +353,8 @@ public class MsSqlDatabase extends Database {
             while (resultSet.next()) {
                 String tableName = resultSet.getString("table_name");
                 String columnName = resultSet.getString("column_name");
-                Set<String> tablePrimaryKeyColumns = tablePrimaryKeyColumnsMap.get(tableName);
-                if (tablePrimaryKeyColumns == null) {
-                    tablePrimaryKeyColumns = new HashSet<>();
-                    tablePrimaryKeyColumnsMap.put(tableName, tablePrimaryKeyColumns);
-                }
+                Set<String> tablePrimaryKeyColumns = tablePrimaryKeyColumnsMap.computeIfAbsent(tableName,
+                        k -> new HashSet<>());
                 tablePrimaryKeyColumns.add(columnName);
             }
             return tablePrimaryKeyColumnsMap;
