@@ -25,6 +25,8 @@ import org.dbmaintain.database.Database;
 import org.dbmaintain.database.DatabaseInfo;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.util.DbMaintainException;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -76,10 +78,7 @@ public class ShellScriptRunner extends BaseNativeScriptRunner {
         if (chmodCommand.equals(""))
             return;
         String[] chmodCmdWithArgs = StringUtils.split(chmodCommand);
-        List<String> chmodArgs = new ArrayList<>();
-        for (int i = 1; i < chmodCmdWithArgs.length; i++) {
-            chmodArgs.add(chmodCmdWithArgs[i]);
-        }
+        List<String> chmodArgs = new ArrayList<>(Arrays.asList(chmodCmdWithArgs).subList(1, chmodCmdWithArgs.length));
         chmodArgs.add(scriptFile.getAbsolutePath());
         Application chmod = new Application("chmod command", chmodCmdWithArgs[0]);
         chmod.execute(chmodArgs.toArray(new String[0]));
