@@ -18,8 +18,7 @@ package org.dbmaintain.script;
 import org.junit.Test;
 
 import static org.dbmaintain.util.TestUtils.createScriptFactory;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Tim Ducheyne
@@ -59,7 +58,8 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
         Script windowsFile = createScriptWithContent("fileName", "script\r\ncontent", false);
         String windowsCheckSum = windowsFile.getScriptContentHandle().getCheckSum();
 
-        assertFalse("Scripts should not be converted to UNIX if useUnixCheckSum is false", windowsCheckSum.equals(unixCheckSum));
+        assertNotEquals("Scripts should not be converted to UNIX if useUnixCheckSum is false", windowsCheckSum,
+                unixCheckSum);
     }
 
     @Test
@@ -70,7 +70,8 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
         String unixCheckSum = unixScriptContentHandle.getCheckSum();
         String windowsCheckSum = windowsScriptContentHandle.getCheckSum();
 
-        assertFalse("Scripts should not be converted to UNIX if useUnixCheckSum is false", windowsCheckSum.equals(unixCheckSum));
+        assertNotEquals("Scripts should not be converted to UNIX if useUnixCheckSum is false", windowsCheckSum,
+                unixCheckSum);
     }
 
 

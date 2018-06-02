@@ -24,8 +24,7 @@ import java.sql.SQLException;
 
 import static org.dbmaintain.datasource.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.TestUtils.getHsqlDatabaseInfo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Filip Neven
@@ -54,7 +53,7 @@ public class DbMaintainDataSourceTest {
     @Test
     public void testDataSourceEqualsHashcode() {
         DataSource otherDataSource = createDataSource(databaseInfo);
-        assertFalse(dataSource.equals(otherDataSource));
+        assertNotEquals(dataSource, otherDataSource);
 
         // Check that the hashcode of two different instances differs. We check this with two other datasource instances,
         // since in very rare cases the hashcodes could be equal by coincidence.
