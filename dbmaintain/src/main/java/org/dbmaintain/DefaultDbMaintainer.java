@@ -17,8 +17,6 @@ package org.dbmaintain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.config.PropertyUtils;
 import org.dbmaintain.database.SQLHandler;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
@@ -41,7 +39,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
-import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FILE_NAME_COLUMN_SIZE;
 import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
 import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
 
