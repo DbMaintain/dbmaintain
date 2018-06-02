@@ -128,7 +128,7 @@ public abstract class ScriptContentHandle {
     }
 
     protected String getHexPresentation(byte[] byteArray) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (byte b : byteArray) {
             result.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
         }
