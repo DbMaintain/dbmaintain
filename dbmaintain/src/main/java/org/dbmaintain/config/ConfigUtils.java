@@ -71,12 +71,12 @@ public class ConfigUtils {
 
         // first try specific instance using the given discriminators
         if (implementationDiscriminatorValues != null) {
-            String implementationSpecificPropKey = propKey;
+            StringBuilder implementationSpecificPropKey = new StringBuilder(propKey);
             for (String implementationDiscriminatorValue : implementationDiscriminatorValues) {
-                implementationSpecificPropKey += '.' + implementationDiscriminatorValue;
+                implementationSpecificPropKey.append('.').append(implementationDiscriminatorValue);
             }
-            if (configuration.containsKey(implementationSpecificPropKey)) {
-                return PropertyUtils.getString(implementationSpecificPropKey, configuration);
+            if (configuration.containsKey(implementationSpecificPropKey.toString())) {
+                return PropertyUtils.getString(implementationSpecificPropKey.toString(), configuration);
             }
         }
 
