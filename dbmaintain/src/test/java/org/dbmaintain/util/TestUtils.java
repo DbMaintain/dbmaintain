@@ -126,11 +126,7 @@ public abstract class TestUtils {
 
 
     public static QualifierEvaluator getTrivialQualifierEvaluator() {
-        return new QualifierEvaluator() {
-            public boolean evaluate(Set<Qualifier> qualifiers) {
-                return true;
-            }
-        };
+        return qualifiers -> true;
     }
 
     public static Set<Qualifier> qualifiers(String... qualifierNames) {
