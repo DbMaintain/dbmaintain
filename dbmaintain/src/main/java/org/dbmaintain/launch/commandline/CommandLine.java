@@ -58,7 +58,7 @@ public class CommandLine {
 
         private String operationName;
 
-        private DbMaintainOperation(String operationName) {
+        DbMaintainOperation(String operationName) {
             this.operationName = operationName;
         }
 

@@ -58,7 +58,7 @@ import static org.junit.Assert.fail;
  */
 public class DbMaintainIntegrationTest {
 
-    static enum TestScript {
+    enum TestScript {
         INCREMENTAL_1("01_incremental/01_incremental_1.sql"),
         INCREMENTAL_1_RENAMED("01_incremental/01_incremental_1_renamed.sql"),
         INCREMENTAL_2("01_incremental/02_incremental_2.sql"),

@@ -34,7 +34,7 @@ public class IdentifierParser {
     }
 
     private interface ParsingState {
-        public void process(char c);
+        void process(char c);
     }
     private class NormalState implements ParsingState {
         public void process(char c) {
