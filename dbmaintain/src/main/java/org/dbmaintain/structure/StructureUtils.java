@@ -44,8 +44,7 @@ public class StructureUtils {
 		if (database == null) {
 		    return unknownItems;
 		}
-		Set<DbItemIdentifier> filtered = new HashSet<>();
-		filtered.addAll(unknownItems);
+		Set<DbItemIdentifier> filtered = new HashSet<>(unknownItems);
 		for (String schemaName : database.getSchemaNames()) {
 			for (DbItemType type : extractTypes(filtered)) {
 				if (type == SCHEMA)
@@ -77,8 +76,7 @@ public class StructureUtils {
 
 	private static Set<DbItemIdentifier> filterSchema(Set<DbItemIdentifier> items,
 			Database database, String schemaName) {
-		Set<DbItemIdentifier> filtered = new HashSet<>();
-		filtered.addAll(items);
+		Set<DbItemIdentifier> filtered = new HashSet<>(items);
 		DbItemIdentifier schema = getItemIdentifier(SCHEMA, schemaName, null, database);
 		filtered.remove(schema);
 		return filtered;
@@ -86,8 +84,7 @@ public class StructureUtils {
 
 	private static Set<DbItemIdentifier> removeDbItemOfGivenTypeInSchema(DbItemType type, Set<DbItemIdentifier> items,
 			Database database, String schemaName) {
-		Set<DbItemIdentifier> filtered = new HashSet<>();
-		filtered.addAll(items);
+		Set<DbItemIdentifier> filtered = new HashSet<>(items);
 		if (!database.supports(type)) {
 			return filtered;
 		}
