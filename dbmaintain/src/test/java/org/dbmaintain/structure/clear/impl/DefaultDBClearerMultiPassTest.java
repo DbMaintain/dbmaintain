@@ -55,7 +55,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      * Configures the tested object.
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Databases databases = new Databases(database.getMock(), asList(database.getMock()), new ArrayList<>());
 
         defaultDBClearer = new DefaultDBClearer(databases, new HashSet<>(), new HashSet<>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
@@ -67,7 +67,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      * When we throw an exception on the first pass then it is ignored and we try another pass (which succeeds).
      */
     @Test
-    public void testClearDatabase_IgnoreFirstErrorOnDropTable() throws Exception {
+    public void testClearDatabase_IgnoreFirstErrorOnDropTable() {
         database.onceRaises(RuntimeException.class).dropTable(SCHEMA, "TABLE2");
         defaultDBClearer.clearDatabase();
     }
@@ -76,7 +76,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      * When exceptions do not decrease then we throw an exception.
      */
     @Test(expected = IllegalStateException.class)
-    public void testClearDatabase_ThrowExceptionWhenExceptionsDoNotDecrease() throws Exception {
+    public void testClearDatabase_ThrowExceptionWhenExceptionsDoNotDecrease() {
         database.raises(IllegalStateException.class).dropTable(SCHEMA, "TABLE2");
         defaultDBClearer.clearDatabase();
     }

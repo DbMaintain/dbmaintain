@@ -59,7 +59,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * todo Test_trigger_Preserve Test_CASE_Trigger_Preserve
      */
     @Before
-    public void initialize() throws Exception {
+    public void initialize() {
         databases = TestUtils.getDatabases();
         constraintsDisabler = new DefaultConstraintsDisabler(databases);
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(databases.getDefaultDatabase(), true);
@@ -70,7 +70,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * Test for schemas to preserve that do not exist.
      */
     @Test(expected = DbMaintainException.class)
-    public void schemasToPreserveDoNotExist() throws Exception {
+    public void schemasToPreserveDoNotExist() {
         Set<DbItemIdentifier> itemsToPreserve = asSet(
                 parseSchemaIdentifier("unexisting_schema1", databases),
                 parseSchemaIdentifier("unexisting_schema2", databases));
@@ -85,7 +85,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * Test for tables to preserve that do not exist.
      */
     @Test(expected = DbMaintainException.class)
-    public void tablesToPreserveDoNotExist() throws Exception {
+    public void tablesToPreserveDoNotExist() {
         Set<DbItemIdentifier> itemsToPreserve = asSet(
                 parseItemIdentifier(TABLE, "unexisting_table1", databases),
                 parseItemIdentifier(TABLE, "unexisting_table2", databases));
@@ -96,7 +96,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * Test for views to preserve that do not exist.
      */
     @Test(expected = DbMaintainException.class)
-    public void viewsToPreserveDoNotExist() throws Exception {
+    public void viewsToPreserveDoNotExist() {
         Set<DbItemIdentifier> itemsToPreserve = asSet(
                 parseItemIdentifier(VIEW, "unexisting_view1", databases),
                 parseItemIdentifier(VIEW, "unexisting_view2", databases));
@@ -107,7 +107,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * Test for materialized views to preserve that do not exist.
      */
     @Test
-    public void materializedViewsToPreserveDoNotExist() throws Exception {
+    public void materializedViewsToPreserveDoNotExist() {
     	if (!databases.getDefaultDatabase().supportsMaterializedViews()) {
     		logger.warn("Current dialect does not support materialized views. Skipping test.");
     		return;
@@ -127,7 +127,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * Test for sequences to preserve that do not exist.
      */
     @Test
-    public void sequencesToPreserveDoNotExist() throws Exception {
+    public void sequencesToPreserveDoNotExist() {
         if (!databases.getDefaultDatabase().supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -148,7 +148,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * Test for synonyms to preserve that do not exist.
      */
     @Test
-    public void synonymsToPreserveDoNotExist() throws Exception {
+    public void synonymsToPreserveDoNotExist() {
         if (!databases.getDefaultDatabase().supportsSynonyms()) {
             logger.warn("Current dialect does not support synonyms. Skipping test.");
             return;

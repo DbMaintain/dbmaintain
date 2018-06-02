@@ -48,7 +48,7 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
 
 
     @Before
-    public void initialize() throws Exception {
+    public void initialize() {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
 
@@ -88,7 +88,7 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     }
 
     @Test
-    public void noScripts() throws Exception {
+    public void noScripts() {
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
         assertTrue(before.isEmpty());
 

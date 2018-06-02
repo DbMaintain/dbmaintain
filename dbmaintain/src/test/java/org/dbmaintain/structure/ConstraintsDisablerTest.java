@@ -50,7 +50,7 @@ public class ConstraintsDisablerTest {
      * dialect
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         databases = TestUtils.getDatabases();
         dataSource = databases.getDefaultDatabase().getDataSource();
         constraintsDisabler = new DefaultConstraintsDisabler(databases);
@@ -64,7 +64,7 @@ public class ConstraintsDisablerTest {
      * Drops the test tables, to avoid influencing other tests
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         cleanupTestDatabase();
     }
 
@@ -73,7 +73,7 @@ public class ConstraintsDisablerTest {
      * Tests whether foreign key constraints are correctly disabled
      */
     @Test
-    public void testDisableConstraints_foreignKey() throws Exception {
+    public void testDisableConstraints_foreignKey() {
         try {
             SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
             fail("DbMaintainException should have been thrown");
@@ -91,7 +91,7 @@ public class ConstraintsDisablerTest {
      * the alternate key will result in an error (issue UNI-36).
      */
     @Test
-    public void testDisableConstraints_foreignKeyToAlternateKey() throws Exception {
+    public void testDisableConstraints_foreignKeyToAlternateKey() {
         try {
             SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
             fail("DbMaintainException should have been thrown");
@@ -108,7 +108,7 @@ public class ConstraintsDisablerTest {
      * Tests whether not-null constraints are correctly disabled
      */
     @Test
-    public void testDisableConstraints_notNull() throws Exception {
+    public void testDisableConstraints_notNull() {
         try {
             SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
             fail("DbMaintainException should have been thrown");

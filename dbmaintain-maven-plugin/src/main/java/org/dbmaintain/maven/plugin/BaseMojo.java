@@ -82,7 +82,7 @@ public abstract class BaseMojo extends AbstractMojo {
     protected File configFile;
 
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() {
         Properties environmentProperties = getMavenProperties();
 
         DbMaintainTask dbMaintainTask = createDbMaintainTask();

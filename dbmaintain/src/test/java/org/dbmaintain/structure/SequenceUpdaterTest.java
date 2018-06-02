@@ -88,7 +88,7 @@ public class SequenceUpdaterTest {
      * Tests the update sequences behavior
      */
     @Test
-    public void testUpdateSequences() throws Exception {
+    public void testUpdateSequences() {
         if (!defaultDatabase.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -103,7 +103,7 @@ public class SequenceUpdaterTest {
      * Verifies that if a sequence has a value already high enough, the value is not being set to a lower value
      */
     @Test
-    public void testUpdateSequences_valueAlreadyHighEnough() throws Exception {
+    public void testUpdateSequences_valueAlreadyHighEnough() {
         if (!defaultDatabase.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -120,7 +120,7 @@ public class SequenceUpdaterTest {
      * Tests the update identity columns behavior
      */
     @Test
-    public void testUpdateSequences_identityColumns() throws Exception {
+    public void testUpdateSequences_identityColumns() {
         if (!defaultDatabase.supportsIdentityColumns()) {
             logger.warn("Current dialect does not support identity columns. Skipping test.");
             return;
@@ -135,7 +135,7 @@ public class SequenceUpdaterTest {
      * Verifies that if a identity columns has a value already high enough, the value is not being set to a lower value
      */
     @Test
-    public void testUpdateSequences_identityColumnsValueAlreadyHighEnough() throws Exception {
+    public void testUpdateSequences_identityColumnsValueAlreadyHighEnough() {
         if (!defaultDatabase.supportsIdentityColumns()) {
             logger.warn("Current dialect does not support identity columns. Skipping test.");
             return;
@@ -229,7 +229,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures
      */
-    private void createTestDatabaseHsqlDb() throws Exception {
+    private void createTestDatabaseHsqlDb() {
         // create table containing identity
         SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null identity, col2 varchar(12) not null)", dataSource);
         // create table without identity
@@ -242,7 +242,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures
      */
-    private void cleanupTestDatabaseHsqlDb() throws Exception {
+    private void cleanupTestDatabaseHsqlDb() {
         SQLTestUtils.dropTestTables(defaultDatabase, "test_table1", "test_table2");
         SQLTestUtils.dropTestSequences(defaultDatabase, "test_sequence");
     }
@@ -254,7 +254,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures
      */
-    private void createTestDatabaseMySql() throws Exception {
+    private void createTestDatabaseMySql() {
         // create tables with auto increment column
         SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key AUTO_INCREMENT, col2 varchar(12) not null)", dataSource);
         // create table without increment column
@@ -265,7 +265,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures
      */
-    private void cleanupTestDatabaseMySql() throws Exception {
+    private void cleanupTestDatabaseMySql() {
         SQLTestUtils.dropTestTables(defaultDatabase, "test_table1", "test_table2");
     }
 
@@ -276,7 +276,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseOracle() throws Exception {
+    private void createTestDatabaseOracle() {
         // create sequence
         SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
     }
@@ -285,7 +285,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabaseOracle() throws Exception {
+    private void cleanupTestDatabaseOracle() {
         SQLTestUtils.dropTestSequences(defaultDatabase, "test_sequence");
     }
 
@@ -296,7 +296,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures
      */
-    private void createTestDatabasePostgreSql() throws Exception {
+    private void createTestDatabasePostgreSql() {
         // create sequence
         SQLTestUtils.executeUpdate("create sequence test_sequence", dataSource);
     }
@@ -305,7 +305,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures
      */
-    private void cleanupTestDatabasePostgreSql() throws Exception {
+    private void cleanupTestDatabasePostgreSql() {
         SQLTestUtils.dropTestSequences(defaultDatabase, "test_sequence");
     }
 
@@ -316,7 +316,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseDb2() throws Exception {
+    private void createTestDatabaseDb2() {
         // create tables with auto increment column
         SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
         // create table without increment column
@@ -329,7 +329,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabaseDb2() throws Exception {
+    private void cleanupTestDatabaseDb2() {
         SQLTestUtils.dropTestTables(defaultDatabase, "test_table1", "test_table2");
         SQLTestUtils.dropTestSequences(defaultDatabase, "test_sequence");
     }
@@ -341,7 +341,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures
      */
-    private void createTestDatabaseDerby() throws Exception {
+    private void createTestDatabaseDerby() {
         // create table containing identity
         SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key generated always as identity, col2 varchar(12) not null)", dataSource);
         // create table without identity
@@ -352,7 +352,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures
      */
-    private void cleanupTestDatabaseDerby() throws Exception {
+    private void cleanupTestDatabaseDerby() {
         SQLTestUtils.dropTestTables(defaultDatabase, "test_table1", "test_table2");
     }
 
@@ -363,7 +363,7 @@ public class SequenceUpdaterTest {
     /**
      * Creates all test database structures
      */
-    private void createTestDatabaseMsSql() throws Exception {
+    private void createTestDatabaseMsSql() {
         // create table containing identity
         SQLTestUtils.executeUpdate("create table test_table1 (col1 int not null primary key identity, col2 varchar(12) not null)", dataSource);
         // create table without identity
@@ -374,7 +374,7 @@ public class SequenceUpdaterTest {
     /**
      * Drops all created test database structures
      */
-    private void cleanupTestDatabaseMsSql() throws Exception {
+    private void cleanupTestDatabaseMsSql() {
         SQLTestUtils.dropTestTables(defaultDatabase, "test_table1", "test_table2");
     }
 }

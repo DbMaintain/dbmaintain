@@ -42,7 +42,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
 
     @Test
-    public void errorMessageShouldContainFullScriptContents() throws Exception {
+    public void errorMessageShouldContainFullScriptContents() {
         try {
             DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(10000);
             scriptRunner.raises(new DbMaintainException("error message")).execute(script);
@@ -60,7 +60,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
 
     @Test
-    public void loggingOfScriptContentsDisabledWhenMaxLengthIsSetTo0() throws Exception {
+    public void loggingOfScriptContentsDisabledWhenMaxLengthIsSetTo0() {
         try {
             DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(0);
             scriptRunner.raises(new DbMaintainException("error message")).execute(script);
@@ -75,7 +75,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
 
 
     @Test
-    public void largeScriptContentIsTruncated() throws Exception {
+    public void largeScriptContentIsTruncated() {
         try {
             DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(5);
             scriptRunner.raises(new DbMaintainException("error message")).execute(script);

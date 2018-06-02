@@ -80,7 +80,7 @@ public class DefaultDBCleanerTest {
      * Removes the test database tables from the test database, to avoid inference with other tests
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         cleanupTestDatabase();
     }
 
@@ -89,7 +89,7 @@ public class DefaultDBCleanerTest {
      * Tests if the tables that are not configured as tables to preserve are correctly cleaned
      */
     @Test
-    public void testCleanDatabase() throws Exception {
+    public void testCleanDatabase() {
         assertFalse(isEmpty("TEST_TABLE", dataSource));
         assertFalse(isEmpty(defaultDatabase.quoted("Test_CASE_Table"), dataSource));
         defaultDBCleaner.cleanDatabase();
@@ -102,7 +102,7 @@ public class DefaultDBCleanerTest {
      * Tests if the tables to preserve are left untouched
      */
     @Test
-    public void testCleanDatabase_preserveTablesToPreserve() throws Exception {
+    public void testCleanDatabase_preserveTablesToPreserve() {
         assertFalse(isEmpty("TEST_TABLE_PRESERVE", dataSource));
         assertFalse(isEmpty(defaultDatabase.quoted("Test_CASE_Table_Preserve"), dataSource));
         defaultDBCleaner.cleanDatabase();
@@ -114,7 +114,7 @@ public class DefaultDBCleanerTest {
     /**
      * Creates the test tables
      */
-    private void createTestDatabase() throws Exception {
+    private void createTestDatabase() {
         executeUpdate("create table TEST_TABLE(testcolumn varchar(10))", dataSource);
         executeUpdate("create table TEST_TABLE_PRESERVE(testcolumn varchar(10))", dataSource);
         executeUpdate("create table " + defaultDatabase.quoted("Test_CASE_Table") + " (col1 varchar(10))", dataSource);
@@ -136,7 +136,7 @@ public class DefaultDBCleanerTest {
     /**
      * Inserts a test record in each test table
      */
-    private void insertTestData() throws Exception {
+    private void insertTestData() {
         executeUpdate("insert into TEST_TABLE values('test')", dataSource);
         executeUpdate("insert into TEST_TABLE_PRESERVE values('test')", dataSource);
         executeUpdate("insert into " + defaultDatabase.quoted("Test_CASE_Table") + " values('test')", dataSource);

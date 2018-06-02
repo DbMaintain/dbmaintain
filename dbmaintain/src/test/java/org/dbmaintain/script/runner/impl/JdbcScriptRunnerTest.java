@@ -69,7 +69,7 @@ public class JdbcScriptRunnerTest {
 
 
     @Before
-    public void initialize() throws Exception {
+    public void initialize() {
         Databases databases = TestUtils.getDatabases();
         dataSource = databases.getDefaultDatabase().getDataSource();
 
@@ -90,13 +90,13 @@ public class JdbcScriptRunnerTest {
     }
 
     @After
-    public void cleanUp() throws Exception {
+    public void cleanUp() {
         cleanupTestDatabase();
     }
 
 
     @Test
-    public void execute() throws Exception {
+    public void execute() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(script2);
 
@@ -107,7 +107,7 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void rollbackScriptWhenErrorOccurs() throws Exception {
+    public void rollbackScriptWhenErrorOccurs() {
         defaultScriptRunner.execute(script1);
         try {
             defaultScriptRunner.execute(insertsWithError);
@@ -118,7 +118,7 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void commitScriptIfNoErrorOccurs() throws Exception {
+    public void commitScriptIfNoErrorOccurs() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(insertsWithoutError);
 
@@ -126,7 +126,7 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void scriptThatContainsCommit() throws Exception {
+    public void scriptThatContainsCommit() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(insertsWithCommit);
 
@@ -134,7 +134,7 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void scriptThatContainsRollback() throws Exception {
+    public void scriptThatContainsRollback() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(insertsWithRollback);
 
@@ -142,12 +142,12 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void scriptThatContainsQuery() throws Exception {
+    public void scriptThatContainsQuery() {
         defaultScriptRunner.execute(scriptWithQuery);
     }
 
     @Test
-    public void emptyScript() throws Exception {
+    public void emptyScript() {
         defaultScriptRunner.execute(emptyScript);
     }
 

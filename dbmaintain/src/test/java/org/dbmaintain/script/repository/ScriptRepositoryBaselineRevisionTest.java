@@ -40,7 +40,7 @@ public class ScriptRepositoryBaselineRevisionTest {
 
 
     @Test
-    public void someScriptsFiltered() throws Exception {
+    public void someScriptsFiltered() {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.2"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
@@ -49,7 +49,7 @@ public class ScriptRepositoryBaselineRevisionTest {
 
 
     @Test
-    public void allScriptsFiltered() throws Exception {
+    public void allScriptsFiltered() {
         scriptRepository = createScriptRepository(new ScriptIndexes("999"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
@@ -57,7 +57,7 @@ public class ScriptRepositoryBaselineRevisionTest {
     }
 
     @Test
-    public void noScriptsFiltered() throws Exception {
+    public void noScriptsFiltered() {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
@@ -65,7 +65,7 @@ public class ScriptRepositoryBaselineRevisionTest {
     }
 
     @Test
-    public void repeatableScriptsNotFiltered() throws Exception {
+    public void repeatableScriptsNotFiltered() {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getRepeatableScripts();
@@ -73,7 +73,7 @@ public class ScriptRepositoryBaselineRevisionTest {
     }
 
     @Test
-    public void preProcessingScriptsNotFiltered() throws Exception {
+    public void preProcessingScriptsNotFiltered() {
     	scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
     	SortedSet<Script> result = scriptRepository.getPreProcessingScripts();
@@ -81,7 +81,7 @@ public class ScriptRepositoryBaselineRevisionTest {
     }
 
     @Test
-    public void postProcessingScriptsNotFiltered() throws Exception {
+    public void postProcessingScriptsNotFiltered() {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getPostProcessingScripts();

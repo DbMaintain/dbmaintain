@@ -47,8 +47,7 @@ public class ShellScriptRunner extends BaseNativeScriptRunner {
     }
     
     @Override
-    protected void executeScript(File scriptFile, Database targetDatabase)
-            throws Exception {
+    protected void executeScript(File scriptFile, Database targetDatabase) {
         chmodScript(scriptFile);
         
         DatabaseInfo databaseInfo = targetDatabase.getDatabaseInfo();

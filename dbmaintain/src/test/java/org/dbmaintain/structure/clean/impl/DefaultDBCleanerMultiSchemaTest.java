@@ -50,7 +50,7 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Initializes the test fixture.
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // configure 3 schemas
         Databases databases = TestUtils.getDatabases("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         dataSource = databases.getDefaultDatabase().getDataSource();
@@ -65,7 +65,7 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Removes the test database tables from the test database, to avoid inference with other tests
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         dropTestTables();
     }
 
@@ -74,7 +74,7 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Tests if the tables in all schemas are correctly cleaned.
      */
     @Test
-    public void testCleanDatabase() throws Exception {
+    public void testCleanDatabase() {
         assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));

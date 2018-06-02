@@ -105,7 +105,7 @@ public class Db2ScriptRunner extends BaseNativeScriptRunner {
     }
 
     @Override
-    protected void executeScript(File scriptFile, Database targetDatabase) throws Exception {
+    protected void executeScript(File scriptFile, Database targetDatabase) {
         Db2ConnectionInfo db2ConnectionInfo = db2ConnectionInfos.get(targetDatabase);
 
         executeCommand(false, "connect to " + db2ConnectionInfo.getDatabaseAlias() + " user " + db2ConnectionInfo.getUserName() + " using " + db2ConnectionInfo.getPassword());

@@ -74,7 +74,7 @@ public class DefaultDBClearerMultiSchemaTest {
 
 
     @Test
-    public void clearTables() throws Exception {
+    public void clearTables() {
         assertEquals(1, defaultDatabase.getTableNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_B").size());
@@ -85,7 +85,7 @@ public class DefaultDBClearerMultiSchemaTest {
     }
 
     @Test
-    public void clearViews() throws Exception {
+    public void clearViews() {
         assertEquals(1, defaultDatabase.getViewNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_B").size());
@@ -96,7 +96,7 @@ public class DefaultDBClearerMultiSchemaTest {
     }
 
     @Test
-    public void clearSequences() throws Exception {
+    public void clearSequences() {
         assertEquals(1, defaultDatabase.getSequenceNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_B").size());
@@ -110,7 +110,7 @@ public class DefaultDBClearerMultiSchemaTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabase() throws Exception {
+    private void createTestDatabase() {
         // create schemas
         executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
         executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
@@ -132,7 +132,7 @@ public class DefaultDBClearerMultiSchemaTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void dropTestDatabase() throws Exception {
+    private void dropTestDatabase() {
         // drop sequences
         executeUpdateQuietly("drop sequence TEST_SEQUENCE", dataSource);
         executeUpdateQuietly("drop sequence SCHEMA_A.TEST_SEQUENCE", dataSource);

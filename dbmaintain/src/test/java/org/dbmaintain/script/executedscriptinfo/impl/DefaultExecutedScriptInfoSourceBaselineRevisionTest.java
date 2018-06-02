@@ -70,7 +70,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
 
 
     @Test
-    public void someScriptsFiltered() throws Exception {
+    public void someScriptsFiltered() {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.2"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
@@ -78,7 +78,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     }
 
     @Test
-    public void allScriptsFiltered() throws Exception {
+    public void allScriptsFiltered() {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("999"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
@@ -86,7 +86,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     }
 
     @Test
-    public void noScriptsFiltered() throws Exception {
+    public void noScriptsFiltered() {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.0"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();

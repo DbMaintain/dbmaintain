@@ -723,7 +723,7 @@ public class DbMaintainIntegrationTest {
 
 
     @Test
-    public void noFromScratchUpdateIfBaseLineRevisionIsSet() throws Exception {
+    public void noFromScratchUpdateIfBaseLineRevisionIsSet() {
         try {
             configuration.setProperty(PROPERTY_BASELINE_REVISION, "1.2");
 

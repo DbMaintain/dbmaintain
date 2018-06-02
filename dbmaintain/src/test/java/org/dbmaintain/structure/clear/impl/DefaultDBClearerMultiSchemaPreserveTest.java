@@ -96,7 +96,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
 
 
     @Test
-    public void preserveTables() throws Exception {
+    public void preserveTables() {
         assertEquals(1, defaultDatabase.getTableNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_B").size());
@@ -108,7 +108,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     }
 
     @Test
-    public void preserveViews() throws Exception {
+    public void preserveViews() {
         assertEquals(1, defaultDatabase.getViewNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_B").size());
@@ -120,7 +120,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     }
 
     @Test
-    public void preserveSequences() throws Exception {
+    public void preserveSequences() {
         assertEquals(1, defaultDatabase.getSequenceNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_B").size());
@@ -135,7 +135,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabase() throws Exception {
+    private void createTestDatabase() {
         // create schemas
         executeUpdate("create schema SCHEMA_A AUTHORIZATION DBA", dataSource);
         executeUpdate("create schema SCHEMA_B AUTHORIZATION DBA", dataSource);
@@ -161,7 +161,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabase() throws Exception {
+    private void cleanupTestDatabase() {
         // drop sequences
         executeUpdateQuietly("drop sequence TEST_SEQUENCE", dataSource);
         executeUpdateQuietly("drop sequence SCHEMA_A.TEST_SEQUENCE", dataSource);

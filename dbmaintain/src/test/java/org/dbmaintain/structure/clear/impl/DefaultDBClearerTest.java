@@ -78,21 +78,21 @@ public class DefaultDBClearerTest {
 
 
     @Test
-    public void clearTables() throws Exception {
+    public void clearTables() {
         assertEquals(2, defaultDatabase.getTableNames().size());
         defaultDBClearer.clearDatabase();
         assertTrue(defaultDatabase.getTableNames("PUBLIC").isEmpty());
     }
 
     @Test
-    public void clearViews() throws Exception {
+    public void clearViews() {
         assertEquals(2, defaultDatabase.getViewNames().size());
         defaultDBClearer.clearDatabase();
         assertTrue(defaultDatabase.getViewNames().isEmpty());
     }
 
     @Test
-    public void clearMaterializedViews() throws Exception {
+    public void clearMaterializedViews() {
         if (!defaultDatabase.supportsMaterializedViews()) {
             logger.warn("Current dialect does not support materialized views. Skipping test.");
             return;
@@ -103,7 +103,7 @@ public class DefaultDBClearerTest {
     }
 
     @Test
-    public void clearSynonyms() throws Exception {
+    public void clearSynonyms() {
         if (!defaultDatabase.supportsSynonyms()) {
             logger.warn("Current dialect does not support synonyms. Skipping test.");
             return;
@@ -114,7 +114,7 @@ public class DefaultDBClearerTest {
     }
 
     @Test
-    public void clearSequences() throws Exception {
+    public void clearSequences() {
         if (!defaultDatabase.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -179,7 +179,7 @@ public class DefaultDBClearerTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseHsqlDb() throws Exception {
+    private void createTestDatabaseHsqlDb() {
         // create tables
         executeUpdate("create table test_table (col1 int not null identity, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
@@ -198,7 +198,7 @@ public class DefaultDBClearerTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabaseHsqlDb() throws Exception {
+    private void cleanupTestDatabaseHsqlDb() {
         SQLTestUtils.dropTestTables(defaultDatabase, "test_table", "\"Test_CASE_Table\"");
         dropTestViews(defaultDatabase, "test_view", "\"Test_CASE_View\"");
         dropTestSequences(defaultDatabase, "test_sequence", "\"Test_CASE_Sequence\"");
@@ -226,7 +226,7 @@ public class DefaultDBClearerTest {
      * Creates all test database structures (view, tables...) <p> NO FOREIGN KEY USED: drop cascade does not work in
      * MySQL
      */
-    private void createTestDatabaseMySql() throws Exception {
+    private void createTestDatabaseMySql() {
         // create tables
         executeUpdate("create table test_table (col1 int not null primary key AUTO_INCREMENT, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table `Test_CASE_Table` (col1 int)", dataSource);
@@ -242,7 +242,7 @@ public class DefaultDBClearerTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabaseMySql() throws Exception {
+    private void cleanupTestDatabaseMySql() {
         dropTestViews(defaultDatabase, "test_view", "`Test_CASE_View`");
         dropTestTriggers(defaultDatabase, "test_trigger", "`Test_CASE_Trigger`");
     }
@@ -254,7 +254,7 @@ public class DefaultDBClearerTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseOracle() throws Exception {
+    private void createTestDatabaseOracle() {
         // create tables
         executeUpdate("create table test_table (col1 varchar(10) not null primary key, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table \"Test_CASE_Table\" (col1 varchar(10), foreign key (col1) references test_table(col1))", dataSource);
@@ -282,7 +282,7 @@ public class DefaultDBClearerTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabaseOracle() throws Exception {
+    private void cleanupTestDatabaseOracle() {
         dropTestViews(defaultDatabase, "test_view", "\"Test_CASE_View\"");
         dropTestMaterializedViews(defaultDatabase, "test_mview", "\"Test_CASE_MView\"");
         dropTestSynonyms(defaultDatabase, "test_synonym", "\"Test_CASE_Synonym\"");
@@ -298,7 +298,7 @@ public class DefaultDBClearerTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabasePostgreSql() throws Exception {
+    private void createTestDatabasePostgreSql() {
         // create tables
         executeUpdate("create table test_table (col1 varchar(10) not null primary key, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table \"Test_CASE_Table\" (col1 varchar(10), foreign key (col1) references test_table(col1))", dataSource);
@@ -326,7 +326,7 @@ public class DefaultDBClearerTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabasePostgreSql() throws Exception {
+    private void cleanupTestDatabasePostgreSql() {
         dropTestViews(defaultDatabase, "test_view", "\"Test_CASE_View\"");
         dropTestSequences(defaultDatabase, "test_sequence", "\"Test_CASE_Sequence\"");
         dropTestTriggers(defaultDatabase, "test_trigger", "\"Test_CASE_Trigger\"");
@@ -340,7 +340,7 @@ public class DefaultDBClearerTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseDb2() throws Exception {
+    private void createTestDatabaseDb2() {
         // create tables
         executeUpdate("create table test_table (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
@@ -362,7 +362,7 @@ public class DefaultDBClearerTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabaseDb2() throws Exception {
+    private void cleanupTestDatabaseDb2() {
         dropTestViews(defaultDatabase, "test_view", "\"Test_CASE_View\"");
         dropTestSynonyms(defaultDatabase, "test_synonym", "\"Test_CASE_Synonym\"");
         dropTestSequences(defaultDatabase, "test_sequence", "\"Test_CASE_Sequence\"");
@@ -377,7 +377,7 @@ public class DefaultDBClearerTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseDerby() throws Exception {
+    private void createTestDatabaseDerby() {
         // create tables
         executeUpdate("create table \"TEST_TABLE\" (col1 int not null primary key generated by default as identity, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
@@ -398,7 +398,7 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...) First drop the views, since Derby doesn't support
      * "drop table ... cascade" (yet, as of Derby 10.3)
      */
-    private void cleanupTestDatabaseDerby() throws Exception {
+    private void cleanupTestDatabaseDerby() {
         dropTestSynonyms(defaultDatabase, "test_synonym", "\"Test_CASE_Synonym\"");
         dropTestViews(defaultDatabase, "test_view", "\"Test_CASE_View\"");
         dropTestTriggers(defaultDatabase, "test_trigger", "\"Test_CASE_Trigger\"");
@@ -411,7 +411,7 @@ public class DefaultDBClearerTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabaseMsSql() throws Exception {
+    private void createTestDatabaseMsSql() {
         // create tables
         executeUpdate("create table test_table (col1 int not null primary key identity, col2 varchar(12) not null)", dataSource);
         executeUpdate("create table \"Test_CASE_Table\" (col1 int, foreign key (col1) references test_table(col1))", dataSource);
@@ -434,7 +434,7 @@ public class DefaultDBClearerTest {
      * Drops all created test database structures (views, tables...) First drop the views, since Derby doesn't support
      * "drop table ... cascade" (yet, as of Derby 10.3)
      */
-    private void cleanupTestDatabaseMsSql() throws Exception {
+    private void cleanupTestDatabaseMsSql() {
         dropTestSynonyms(defaultDatabase, "test_synonym", "\"Test_CASE_Synonym\"");
         dropTestViews(defaultDatabase, "test_view", "\"Test_CASE_View\"");
         dropTestTriggers(defaultDatabase, "test_trigger", "\"Test_CASE_Trigger\"");

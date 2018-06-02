@@ -38,28 +38,28 @@ public class DbItemIdentifierTest {
     }
 
     @Test
-    public void parseItemIdentifier_itemOnly() throws Exception {
+    public void parseItemIdentifier_itemOnly() {
         DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "test", databases);
         DbItemIdentifier identifier = getItemIdentifier(TABLE, "public", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
-    public void parseItemIdentifier_schemaAndItem() throws Exception {
+    public void parseItemIdentifier_schemaAndItem() {
         DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "myschema.test", databases);
         DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
-    public void parseItemIdentifier_databaseSchemaAndItem() throws Exception {
+    public void parseItemIdentifier_databaseSchemaAndItem() {
         DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "mydatabase.myschema.test", databases);
         DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
-    public void parseSchemaOnly() throws Exception {
+    public void parseSchemaOnly() {
         DbItemIdentifier parsedIdentifier = parseSchemaIdentifier("public", databases);
         DbItemIdentifier identifier = getSchemaIdentifier("public", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);

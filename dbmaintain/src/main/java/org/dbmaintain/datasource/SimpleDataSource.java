@@ -89,7 +89,7 @@ public class SimpleDataSource {
          * @return The return object
          * @throws Throwable
          */
-        public Object invoke(Object dataSourceProxy, Method method, Object[] args) throws Throwable {
+        public Object invoke(Object dataSourceProxy, Method method, Object[] args) {
             if (isEqualsMethod(method)) {
                 return dataSourceProxy == args[0];
             } else if (isHashCodeMethod(method)) {

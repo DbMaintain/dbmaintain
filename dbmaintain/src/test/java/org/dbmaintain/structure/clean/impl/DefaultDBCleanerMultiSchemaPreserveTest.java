@@ -53,7 +53,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // configure 3 schemas
         databases = TestUtils.getDatabases("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
         dataSource = databases.getDefaultDatabase().getDataSource();
@@ -71,7 +71,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         dropTestTables();
     }
 
@@ -80,7 +80,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
      * Tests if the tables in all schemas are correctly cleaned.
      */
     @Test
-    public void testCleanDatabase() throws Exception {
+    public void testCleanDatabase() {
         assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));
