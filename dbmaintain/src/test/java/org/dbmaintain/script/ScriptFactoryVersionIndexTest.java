@@ -17,16 +17,15 @@ package org.dbmaintain.script;
 
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.dbmaintain.script.qualifier.Qualifier;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.reflectionassert.ReflectionAssert;
 
 import java.util.HashSet;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
 import static org.dbmaintain.config.DbMaintainProperties.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -52,31 +51,31 @@ public class ScriptFactoryVersionIndexTest {
     @Test
     public void singleIndex() {
         Script script = scriptFactory.createScriptWithoutContent("01_my_script.sql", null, null);
-        assertScriptIndexes(script, 1);
+        assertScriptIndexes(script, 1L);
     }
 
     @Test
     public void multipleIndexes() {
         Script script = scriptFactory.createScriptWithoutContent("01_scripts/2_release/003_my_script.sql", null, null);
-        assertScriptIndexes(script, 1, 2, 3);
+        assertScriptIndexes(script, 1L, 2L, 3L);
     }
 
     @Test
     public void pathWithoutIndex() {
         Script script = scriptFactory.createScriptWithoutContent("scripts/release/003_my_script.sql", null, null);
-        assertScriptIndexes(script, null, null, 3);
+        assertScriptIndexes(script, null, null, 3L);
     }
 
     @Test
     public void leadingIndex() {
         Script script = scriptFactory.createScriptWithoutContent("1_my_script.sql", null, null);
-        assertScriptIndexes(script, 1);
+        assertScriptIndexes(script, 1L);
     }
 
     @Test
     public void onlyIndex() {
         Script script = scriptFactory.createScriptWithoutContent("1.sql", null, null);
-        assertScriptIndexes(script, 1);
+        assertScriptIndexes(script, 1L);
     }
 
     @Test
@@ -98,8 +97,8 @@ public class ScriptFactoryVersionIndexTest {
     }
 
 
-    private void assertScriptIndexes(Script script, Integer... indexes) {
+    private void assertScriptIndexes(Script script, Long... indexes) {
         ScriptIndexes scriptIndexes = script.getScriptIndexes();
-        ReflectionAssert.assertLenientEquals(asList(indexes), scriptIndexes.getIndexes());
+        assertEquals(asList(indexes), scriptIndexes.getIndexes());
     }
 }

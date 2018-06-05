@@ -17,6 +17,7 @@ package org.dbmaintain.script.executedscriptinfo.impl;
 
 import org.dbmaintain.database.Database;
 import org.dbmaintain.script.ExecutedScript;
+import org.dbmaintain.script.Script;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
@@ -26,12 +27,14 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
+import java.util.List;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test class for {@link DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -74,7 +77,9 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.2"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("script.fileName", asList("1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "preprocessing/script.sql", "postprocessing/script.sql"), result);
+        List<String> filenames = result.stream().map(ExecutedScript::getScript).map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("preprocessing/script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "postprocessing/script.sql"), filenames);
     }
 
     @Test
@@ -82,7 +87,9 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("999"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("script.fileName", asList("repeatable/script.sql", "preprocessing/script.sql", "postprocessing/script.sql"), result);
+        List<String> filenames = result.stream().map(ExecutedScript::getScript).map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("preprocessing/script.sql", "repeatable/script.sql", "postprocessing/script.sql"), filenames);
     }
 
     @Test
@@ -90,7 +97,9 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.0"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("script.fileName", asList("1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "preprocessing/script.sql", "postprocessing/script.sql"), result);
+        List<String> filenames = result.stream().map(ExecutedScript::getScript).map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList( "preprocessing/script.sql", "1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql", "repeatable/script.sql", "postprocessing/script.sql"), filenames);
     }
 
 

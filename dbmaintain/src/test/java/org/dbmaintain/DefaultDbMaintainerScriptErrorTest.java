@@ -22,15 +22,21 @@ import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.UnitilsJUnit4;
-import org.unitils.mock.Mock;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doThrow;
 
-public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
+@RunWith(MockitoJUnitRunner.class)
+public class DefaultDbMaintainerScriptErrorTest {
 
-    protected Mock<ExecutedScriptInfoSource> executedScriptInfoSource;
-    protected Mock<ScriptRunner> scriptRunner;
+    @Mock
+    protected ExecutedScriptInfoSource executedScriptInfoSource;
+
+    @Mock
+    private ScriptRunner scriptRunner;
 
     protected Script script;
 
@@ -45,7 +51,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
     public void errorMessageShouldContainFullScriptContents() {
         try {
             DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(10000);
-            scriptRunner.raises(new DbMaintainException("error message")).execute(script);
+            doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
             defaultDbMaintainer.executeScript(script);
             fail("Expected DbMaintainException");
@@ -63,7 +69,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
     public void loggingOfScriptContentsDisabledWhenMaxLengthIsSetTo0() {
         try {
             DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(0);
-            scriptRunner.raises(new DbMaintainException("error message")).execute(script);
+            doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
             defaultDbMaintainer.executeScript(script);
             fail("Expected DbMaintainException");
@@ -78,7 +84,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
     public void largeScriptContentIsTruncated() {
         try {
             DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(5);
-            scriptRunner.raises(new DbMaintainException("error message")).execute(script);
+            doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
             defaultDbMaintainer.executeScript(script);
             fail("Expected DbMaintainException");
@@ -92,7 +98,7 @@ public class DefaultDbMaintainerScriptErrorTest extends UnitilsJUnit4 {
     }
 
     private DefaultDbMaintainer createDefaultDbMaintainer(long maxNrOfCharsWhenLoggingScriptContent) {
-        return new DefaultDbMaintainer(scriptRunner.getMock(), null, executedScriptInfoSource.getMock(), false, false, false, false, false,
+        return new DefaultDbMaintainer(scriptRunner, null, executedScriptInfoSource, false, false, false, false, false,
                 false, null, null, null, null, null, null, maxNrOfCharsWhenLoggingScriptContent, null, false, 150);
     }
 

@@ -22,13 +22,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.List;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
 
 /**
  * @author Filip Neven
@@ -49,7 +51,9 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
         SortedSet<Script> scripts = archiveScriptLocation.getScripts();
-        assertPropertyLenientEquals("fileName", asList("scripts/01_script.sql", "scripts/02_script.sql", "otherScripts/03_script.sql"), scripts);
+        List<String> filenames = scripts.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("scripts/01_script.sql", "scripts/02_script.sql", "otherScripts/03_script.sql"), filenames);
     }
 
     @Test
@@ -58,7 +62,9 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
         SortedSet<Script> scripts = archiveScriptLocation.getScripts();
-        assertPropertyLenientEquals("fileName", asList("01_script.sql", "02_script.sql"), scripts);
+        List<String> filenames = scripts.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("01_script.sql", "02_script.sql"), filenames);
     }
 
     @Test
@@ -67,7 +73,8 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
         SortedSet<Script> scripts = archiveScriptLocation.getScripts();
-        assertPropertyLenientEquals("fileName", asList("01_script.sql", "02_script.sql"), scripts);
+        List<String> filenames = scripts.stream().map(Script::getFileName).collect(Collectors.toList());
+        assertEquals(asList("01_script.sql", "02_script.sql"), filenames);
     }
 
     @Test

@@ -20,14 +20,16 @@ import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import static org.dbmaintain.util.TestUtils.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
 
 /**
  * @author Tim Ducheyne
@@ -44,7 +46,9 @@ public class ScriptRepositoryBaselineRevisionTest {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.2"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
-        assertPropertyLenientEquals("fileName", asList("1_folder/2_script.sql", "2_folder/1_script.sql"), result);
+        List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("1_folder/2_script.sql", "2_folder/1_script.sql"), filenames);
     }
 
 
@@ -61,7 +65,9 @@ public class ScriptRepositoryBaselineRevisionTest {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getIndexedScripts();
-        assertPropertyLenientEquals("fileName", asList("1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql"), result);
+        List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("1_folder/1_script.sql", "1_folder/2_script.sql", "2_folder/1_script.sql"), filenames);
     }
 
     @Test
@@ -69,7 +75,9 @@ public class ScriptRepositoryBaselineRevisionTest {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getRepeatableScripts();
-        assertPropertyLenientEquals("fileName", asList("repeatable/script.sql"), result);
+        List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("repeatable/script.sql"), filenames);
     }
 
     @Test
@@ -77,7 +85,9 @@ public class ScriptRepositoryBaselineRevisionTest {
     	scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
     	SortedSet<Script> result = scriptRepository.getPreProcessingScripts();
-    	assertPropertyLenientEquals("fileName", asList("preprocessing/script.sql"), result);
+        List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("preprocessing/script.sql"), filenames);
     }
 
     @Test
@@ -85,7 +95,9 @@ public class ScriptRepositoryBaselineRevisionTest {
         scriptRepository = createScriptRepository(new ScriptIndexes("1.0"));
 
         SortedSet<Script> result = scriptRepository.getPostProcessingScripts();
-        assertPropertyLenientEquals("fileName", asList("postprocessing/script.sql"), result);
+        List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
+
+        assertEquals(asList("postprocessing/script.sql"), filenames);
     }
 
 

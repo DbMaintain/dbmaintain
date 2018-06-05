@@ -19,18 +19,22 @@ import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
-import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.UnitilsJUnit4;
-import org.unitils.mock.Mock;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for the {@link DefaultDBClearer} to verify that we will keep trying to
@@ -39,14 +43,20 @@ import static org.dbmaintain.util.CollectionUtils.asSet;
  * @author Mark Jeffrey
  * @see MultiPassErrorHandler
  */
-public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
+@RunWith(MockitoJUnitRunner.class)
+public class DefaultDBClearerMultiPassTest {
 
-    /* Tested object */
+    @InjectMocks
     private DefaultDBClearer defaultDBClearer;
 
-    protected Mock<Database> database;
-    protected Mock<ConstraintsDisabler> constraintsDisabler;
-    protected Mock<ExecutedScriptInfoSource> executedScriptInfoSource;
+    @Mock
+    protected Database database;
+
+    @Mock
+    private ConstraintsDisabler constraintsDisabler;
+
+    @Mock
+    protected ExecutedScriptInfoSource executedScriptInfoSource;
 
     private static final String SCHEMA = "MYSCHEMA";
     private final Set<String> tableNames = asSet("TABLE1", "TABLE2", "TABLE3");
@@ -56,11 +66,11 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Before
     public void setUp() {
-        Databases databases = new Databases(database.getMock(), asList(database.getMock()), new ArrayList<>());
+        when(database.getTableNames(anyString())).thenReturn(tableNames);
+        when(database.getSchemaNames()).thenReturn(asSet(SCHEMA));
 
-        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<>(), new HashSet<>(), constraintsDisabler.getMock(), executedScriptInfoSource.getMock());
-        database.returns(tableNames).getTableNames(SCHEMA);
-        database.returns(asSet(SCHEMA)).getSchemaNames();
+        Databases databases = new Databases(database, Arrays.asList(database), new ArrayList<>());
+        defaultDBClearer = new DefaultDBClearer(databases, new HashSet<>(), new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
     }
 
     /**
@@ -68,7 +78,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Test
     public void testClearDatabase_IgnoreFirstErrorOnDropTable() {
-        database.onceRaises(RuntimeException.class).dropTable(SCHEMA, "TABLE2");
+        doThrow(new IllegalStateException()).doNothing().when(database).dropTable(SCHEMA, "TABLE2");
         defaultDBClearer.clearDatabase();
     }
 
@@ -77,7 +87,7 @@ public class DefaultDBClearerMultiPassTest extends UnitilsJUnit4 {
      */
     @Test(expected = IllegalStateException.class)
     public void testClearDatabase_ThrowExceptionWhenExceptionsDoNotDecrease() {
-        database.raises(IllegalStateException.class).dropTable(SCHEMA, "TABLE2");
+        doThrow(new IllegalStateException()).when(database).dropTable(SCHEMA, "TABLE2");
         defaultDBClearer.clearDatabase();
     }
 

@@ -20,15 +20,17 @@ import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.junit.Before;
 import org.junit.Test;
-import org.unitils.reflectionassert.ReflectionAssert;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 import static org.dbmaintain.util.TestUtils.qualifiers;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -132,8 +134,11 @@ public class ScriptFactoryQualifierTest {
 
 
     private void assertQualifierNames(Script script, String... qualifierNames) {
-        Set<Qualifier> qualifiers = script.getQualifiers();
-        ReflectionAssert.assertPropertyLenientEquals("qualifierName", asList(qualifierNames), qualifiers);
+        final Set<Qualifier> qualifiers = script.getQualifiers();
+        final Collection<String> actualQualifierNames = qualifiers.stream().map(Qualifier::getQualifierName).collect(
+                Collectors.toList());
+
+        assertEquals("qualifierName", asList(qualifierNames), actualQualifierNames);
     }
 
     private ScriptFactory createScriptFactoryWithRegisteredQualifiers(String... qualifierNames) {

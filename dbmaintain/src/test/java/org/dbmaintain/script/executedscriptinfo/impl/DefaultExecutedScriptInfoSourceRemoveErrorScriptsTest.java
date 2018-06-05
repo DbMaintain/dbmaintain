@@ -24,15 +24,17 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
+import java.util.List;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.createScript;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.unitils.reflectionassert.ReflectionAssert.assertPropertyLenientEquals;
 
 /**
  * @author Tim Ducheyne
@@ -67,7 +69,10 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     public void failedScripts() throws Exception {
         registerFailedScripts();
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("successful", asList(false, false, false, false), before);
+        List<Boolean> resultsBefore = before.stream().map(ExecutedScript::isSuccessful).collect(Collectors.toList());
+
+        assertEquals(asList(false, false, false, false), resultsBefore);
+
 
         executedScriptInfoSource.removeErrorScripts();
 
@@ -79,12 +84,16 @@ public class DefaultExecutedScriptInfoSourceRemoveErrorScriptsTest {
     public void successfulScripts() throws Exception {
         registerSuccessfulScripts();
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("successful", asList(true, true, true, true), before);
+        List<Boolean> resultsBefore = before.stream().map(ExecutedScript::isSuccessful).collect(Collectors.toList());
+
+        assertEquals(asList(true, true, true, true), resultsBefore);
 
         executedScriptInfoSource.removeErrorScripts();
 
         SortedSet<ExecutedScript> after = executedScriptInfoSource.getExecutedScripts();
-        assertPropertyLenientEquals("successful", asList(true, true, true, true), after);
+        List<Boolean> resultsAfter = after.stream().map(ExecutedScript::isSuccessful).collect(Collectors.toList());
+
+        assertEquals(asList(true, true, true, true), resultsAfter);
     }
 
     @Test
