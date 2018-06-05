@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/DbMaintain/dbmaintain.svg?branch=master)](https://travis-ci.org/DbMaintain/dbmaintain)
+[![Maven Central Version](https://img.shields.io/maven-central/v/org.dbmaintain/dbmaintain.svg)](http://search.maven.org/#search|gav|1|g:"org.dbmaintain"%20AND%20a:"dbmaintain")
 
 DbMaintain
 ==========
