@@ -25,6 +25,8 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>2.21.0</version>
                 <configuration>
                     <includes>
                         <include>**/*Test.java</include>
