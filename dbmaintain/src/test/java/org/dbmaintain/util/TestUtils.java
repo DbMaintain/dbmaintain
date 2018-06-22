@@ -75,7 +75,7 @@ public abstract class TestUtils {
     }
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable, ScriptIndexes baselineRevision) {
-        ScriptFactory scriptFactory = new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", Collections.<Qualifier>emptySet(),
+        ScriptFactory scriptFactory = new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", Collections.emptySet(),
                 asSet(new Qualifier("patch")), "preprocessing", "postprocessing", baselineRevision);
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
                 "dbmaintain_scripts", "file_name", 150, "file_last_modified_at", "checksum", 50, "executed_at", 50, "succeeded",
@@ -110,7 +110,7 @@ public abstract class TestUtils {
     }
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
-        return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "preprocessing", "postprocessing", Collections.<Qualifier>emptySet(),
+        return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "preprocessing", "postprocessing", Collections.emptySet(),
                 asSet(new Qualifier("patch")), "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql"), null, false);
     }
 
