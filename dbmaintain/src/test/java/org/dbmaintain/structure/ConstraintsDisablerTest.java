@@ -27,6 +27,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -74,13 +76,11 @@ public class ConstraintsDisablerTest {
      */
     @Test
     public void testDisableConstraints_foreignKey() {
-        try {
-            SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
-            fail("DbMaintainException should have been thrown");
-        } catch (DbMaintainException e) {
-            // Expected foreign key violation
-        }
+        // Expected foreign key violation
+        assertThrows(DbMaintainException.class, () -> SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource));
+
         constraintsDisabler.disableConstraints();
+
         // Should not throw exception anymore
         SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource);
     }
@@ -92,13 +92,11 @@ public class ConstraintsDisablerTest {
      */
     @Test
     public void testDisableConstraints_foreignKeyToAlternateKey() {
-        try {
-            SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
-            fail("DbMaintainException should have been thrown");
-        } catch (DbMaintainException e) {
-            // Expected foreign key violation
-        }
+        // Expected foreign key violation
+        assertThrows(DbMaintainException.class, () -> SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource));
+
         constraintsDisabler.disableConstraints();
+
         // Should not throw exception anymore
         SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource);
     }
@@ -109,13 +107,12 @@ public class ConstraintsDisablerTest {
      */
     @Test
     public void testDisableConstraints_notNull() {
-        try {
-            SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
-            fail("DbMaintainException should have been thrown");
-        } catch (DbMaintainException e) {
-            // Expected not null violation
-        }
+        // Expected not null violation
+        assertThrows(DbMaintainException.class,
+                () -> SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource));
+
         constraintsDisabler.disableConstraints();
+
         // Should not throw exception anymore
         SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource);
     }

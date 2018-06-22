@@ -37,6 +37,7 @@ import static org.dbmaintain.util.SQLTestUtils.getItemAsLong;
 import static org.dbmaintain.util.SQLTestUtils.isEmpty;
 import static org.dbmaintain.util.TestUtils.createScriptFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -111,11 +112,7 @@ public class JdbcScriptRunnerTest {
     @Test
     public void rollbackScriptWhenErrorOccurs() {
         defaultScriptRunner.execute(script1);
-        try {
-            defaultScriptRunner.execute(insertsWithError);
-        } catch (DbMaintainException e) {
-            //expected
-        }
+        assertThrows(DbMaintainException.class, () -> defaultScriptRunner.execute(insertsWithError));
         assertTrue(isEmpty("table1", dataSource), "All inserts should have been rolled back");
     }
 

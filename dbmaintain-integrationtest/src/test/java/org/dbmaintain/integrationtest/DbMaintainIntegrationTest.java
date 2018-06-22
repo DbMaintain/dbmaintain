@@ -194,11 +194,8 @@ public class DbMaintainIntegrationTest {
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
         updateScript(INCREMENTAL_1);
-        try {
-            updateDatabase();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INCREMENTAL_1));
-        }
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INCREMENTAL_1));
     }
 
     @Test
@@ -206,11 +203,8 @@ public class DbMaintainIntegrationTest {
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
         updateScript(INCREMENTAL_1);
-        try {
-            checkScriptUpdates();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INCREMENTAL_1));
-        }
+        Throwable e = assertThrows(DbMaintainException.class, this::checkScriptUpdates);
+        assertMessageContains(e.getMessage(), "updated", "indexed", getTableNameForScript(INCREMENTAL_1));
     }
 
     @Test
@@ -228,12 +222,9 @@ public class DbMaintainIntegrationTest {
         createScripts(INCREMENTAL_2);
         updateDatabase();
         createScripts(INCREMENTAL_1);
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "added", "incremental", "lower index", INCREMENTAL_1.scriptName);
-        }
+
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "added", "incremental", "lower index", INCREMENTAL_1.scriptName);
     }
 
     @Test
@@ -252,12 +243,9 @@ public class DbMaintainIntegrationTest {
         createScripts(INCREMENTAL_1, INCREMENTAL_2);
         updateDatabase();
         removeScript(INCREMENTAL_2);
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "deleted", "indexed", INCREMENTAL_2.scriptName);
-        }
+
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "deleted", "indexed", INCREMENTAL_2.scriptName);
     }
 
 
@@ -373,30 +361,18 @@ public class DbMaintainIntegrationTest {
         createScripts(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
         errorInScript(INCREMENTAL_1);
 
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "Could not perform database statement");
-        }
+        Throwable e1 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e1.getMessage(), "Could not perform database statement");
         assertScriptsNotExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
 
         // Verify that an error is raised when we check for database updates
-        try {
-            checkScriptUpdates();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", INCREMENTAL_1.scriptName);
-        }
+        Throwable e2 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e2.getMessage(), "During the latest update", INCREMENTAL_1.scriptName);
 
         // Try again without changing anything
         // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", INCREMENTAL_1.scriptName);
-        }
+        Throwable e3 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e3.getMessage(), "During the latest update", INCREMENTAL_1.scriptName);
         assertScriptsNotExecuted(INCREMENTAL_1, INCREMENTAL_2, REPEATABLE);
 
         // change the script and try again
@@ -412,39 +388,25 @@ public class DbMaintainIntegrationTest {
 
         createScripts(INCREMENTAL_1, REPEATABLE);
         errorInScript(REPEATABLE);
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "error", REPEATABLE.scriptName);
-        }
+        Throwable e1 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e1.getMessage(), "error", REPEATABLE.scriptName);
 
         // Verify that an error is raised when we check for database updates
-        try {
-            checkScriptUpdates();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", REPEATABLE.scriptName);
-        }
+        Throwable e2 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e2.getMessage(), "During the latest update", REPEATABLE.scriptName);
 
         // Try again without changing anything
         // No script is executed but an exception is raised indicating that the script that caused the error was not changed.
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "During the latest update", REPEATABLE.scriptName);
-        }
+        Throwable e3 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e3.getMessage(), "During the latest update", REPEATABLE.scriptName);
+
         // Update an incremental script, without fixing the error
         // A from-scratch recreation is performed, but the error occurs again
         updateScript(INCREMENTAL_1);
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "error", REPEATABLE.scriptName);
-        }
+        Throwable e4 = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e4.getMessage(), "error", REPEATABLE.scriptName);
         assertUpdatedScriptsExecuted(INCREMENTAL_1);
+
         // Fix the error and witness that the repeatable script is re-executed, and the update finishes successfully
         fixErrorInRepeatableScript(REPEATABLE);
         updateDatabase();
@@ -463,12 +425,8 @@ public class DbMaintainIntegrationTest {
         createScript(longFilename2, "");
 
         // Verify that an error is raised when we check for script updates
-        try {
-            checkScriptUpdates();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "are longer than the configured maximum", longFilename1, longFilename2);
-        }
+        Throwable e = assertThrows(DbMaintainException.class, this::checkScriptUpdates);
+        assertMessageContains(e.getMessage(), "are longer than the configured maximum", longFilename1, longFilename2);
     }
 
 
@@ -477,12 +435,9 @@ public class DbMaintainIntegrationTest {
     public void errorInRepeatableScript_fixByRemovingScript() {
         createScripts(INCREMENTAL_1, REPEATABLE);
         errorInScript(REPEATABLE);
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "error", REPEATABLE.scriptName);
-        }
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "error", REPEATABLE.scriptName);
+
         // Remove the script. Now the update should finish successfully. The record pointing to the previously failed
         // repeatable script must be removed from the dbmaintain_scripts table.
         removeScript(REPEATABLE);
@@ -546,16 +501,10 @@ public class DbMaintainIntegrationTest {
     @Test
     public void reExecutePreProcessingScriptIfItFailedDuringAPreviousRunAndNoOtherChanges() {
     	createScript("preprocessing/failing_script.sql", "xxxxx");
-    	try {
-    		updateDatabase();
-    	} catch (DbMaintainException e) {
-    		// expected
-    	}
-    	try {
-    		updateDatabase();
-    	} catch (DbMaintainException e) {
-    		assertMessageContains(e.getMessage(), "preprocessing/failing_script.sql");
-    	}
+        assertThrows(DbMaintainException.class, this::updateDatabase);
+
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "preprocessing/failing_script.sql");
     }
 
     @Test
@@ -630,16 +579,11 @@ public class DbMaintainIntegrationTest {
     @Test
     public void reExecutePostProcessingScriptIfItFailedDuringAPreviousRunAndNoOtherChanges() {
         createScript("postprocessing/failing_script.sql", "xxxxx");
-        try {
-            updateDatabase();
-        } catch (DbMaintainException e) {
-            // expected
-        }
-        try {
-            updateDatabase();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "postprocessing/failing_script.sql");
-        }
+        assertThrows(DbMaintainException.class, this::updateDatabase);
+
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "postprocessing/failing_script.sql");
+
     }
 
     @Test
@@ -720,12 +664,9 @@ public class DbMaintainIntegrationTest {
         updateDatabase();
         // Rename an indexed script
         renameScript(INCREMENTAL_3, INCREMENTAL_1);
-        try {
-            updateDatabase();
-            fail();
-        } catch (DbMaintainException e) {
-            assertMessageContains(e.getMessage(), "indexed", "renamed", "changes the sequence", INCREMENTAL_3.scriptName, INCREMENTAL_1.scriptName);
-        }
+        Throwable e = assertThrows(DbMaintainException.class, this::updateDatabase);
+        assertMessageContains(e.getMessage(), "indexed", "renamed", "changes the sequence", INCREMENTAL_3.scriptName,
+                INCREMENTAL_1.scriptName);
     }
 
     @Test
@@ -758,18 +699,13 @@ public class DbMaintainIntegrationTest {
 
     @Test
     public void noFromScratchUpdateIfBaseLineRevisionIsSet() {
-        try {
-            configuration.setProperty(PROPERTY_BASELINE_REVISION, "1.2");
-
-            updateIncremental_fromScratchEnabled();
-            fail("Expected DbMaintainException");
-
-        } catch (DbMaintainException e) {
-            assertEquals("Unable to recreate the database from scratch: a baseline revision is set.\n" +
-                    "After clearing the database only scripts starting from the baseline revision would have been executed. The other scripts would have been ignored resulting in an inconsistent database state.\n" +
-                    "Please clear the baseline revision if you want to perform a from scratch update.\n" +
-                    "Another option is to explicitly clear the database using the clear task and then performing the update.", e.getMessage());
-        }
+        configuration.setProperty(PROPERTY_BASELINE_REVISION, "1.2");
+        Throwable e = assertThrows(DbMaintainException.class, this::updateIncremental_fromScratchEnabled);
+        assertEquals("Unable to recreate the database from scratch: a baseline revision is set.\n"
+                        + "After clearing the database only scripts starting from the baseline revision would have been executed. The other scripts would have been ignored resulting in an inconsistent database state.\n"
+                        + "Please clear the baseline revision if you want to perform a from scratch update.\n"
+                        + "Another option is to explicitly clear the database using the clear task and then performing the update.",
+                e.getMessage());
     }
 
     @Test

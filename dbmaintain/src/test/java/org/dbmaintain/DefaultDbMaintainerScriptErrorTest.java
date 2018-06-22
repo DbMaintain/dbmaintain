@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doThrow;
@@ -48,54 +49,37 @@ public class DefaultDbMaintainerScriptErrorTest {
         script = TestUtils.createScriptWithContent("01_filename.sql", "content of script");
     }
 
-
     @Test
     public void errorMessageShouldContainFullScriptContents() {
-        try {
-            DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(10000);
-            doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
+        DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(10000);
+        doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
-            defaultDbMaintainer.executeScript(script);
-            fail("Expected DbMaintainException");
+        Throwable e = assertThrows(DbMaintainException.class, () -> defaultDbMaintainer.executeScript(script));
 
-        } catch (DbMaintainException e) {
-            assertTrue(e.getMessage().contains("Full contents of failed script 01_filename.sql:\n" +
-                    "----------------------------------------------------\n" +
-                    "content of script\n" +
-                    "----------------------------------------------------\n"));
-        }
+        assertTrue(e.getMessage().contains(
+                "Full contents of failed script 01_filename.sql:\n" + "----------------------------------------------------\n"
+                        + "content of script\n" + "----------------------------------------------------\n"));
     }
-
 
     @Test
     public void loggingOfScriptContentsDisabledWhenMaxLengthIsSetTo0() {
-        try {
-            DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(0);
-            doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
+        DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(0);
+        doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
-            defaultDbMaintainer.executeScript(script);
-            fail("Expected DbMaintainException");
-
-        } catch (DbMaintainException e) {
-            assertFalse(e.getMessage().contains("Full contents of failed script"));
-        }
+        Throwable e = assertThrows(DbMaintainException.class, () -> defaultDbMaintainer.executeScript(script));
+        assertFalse(e.getMessage().contains("Full contents of failed script"));
     }
 
     @Test
     public void largeScriptContentIsTruncated() {
-        try {
-            DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(5);
-            doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
+        DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(5);
+        doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
-            defaultDbMaintainer.executeScript(script);
-            fail("Expected DbMaintainException");
+        Throwable e = assertThrows(DbMaintainException.class, () -> defaultDbMaintainer.executeScript(script));
+        assertTrue(e.getMessage().contains(
+                "Full contents of failed script 01_filename.sql:\n" + "----------------------------------------------------\n"
+                        + "conte... <remainder of script is omitted>\n" + "----------------------------------------------------\n"));
 
-        } catch (DbMaintainException e) {
-            assertTrue(e.getMessage().contains("Full contents of failed script 01_filename.sql:\n" +
-                    "----------------------------------------------------\n" +
-                    "conte... <remainder of script is omitted>\n" +
-                    "----------------------------------------------------\n"));
-        }
     }
 
     private DefaultDbMaintainer createDefaultDbMaintainer(long maxNrOfCharsWhenLoggingScriptContent) {
