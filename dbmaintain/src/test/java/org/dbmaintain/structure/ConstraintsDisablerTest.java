@@ -27,9 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for the ConstraintsDisabler. This test is independent of the dbms that is used. The database dialect that

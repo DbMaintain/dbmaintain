@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
 /**
  * Default implementation of a script runner that uses JDBC to execute the script.
  *

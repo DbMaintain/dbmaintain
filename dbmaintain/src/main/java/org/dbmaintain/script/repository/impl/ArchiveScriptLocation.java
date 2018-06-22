@@ -32,7 +32,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.dbmaintain.config.DbMaintainProperties.*;
 
 /**

@@ -32,9 +32,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
-
 /**
  * Script container that looks for scripts in a file system directory and its subdirectories. The
  * scripts directory can optionally contain config file {@link #LOCATION_PROPERTIES_FILENAME}, that
