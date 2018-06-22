@@ -63,6 +63,7 @@
         <parent-basedir>${basedir}</parent-basedir>
         <mvn.version>2.2.1</mvn.version>
         <junit.version>5.2.0</junit.version>
+        <mockito.version>2.19.0</mockito.version>
     </properties>
 
     <distributionManagement>
@@ -225,12 +226,12 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>2.18.3</version>
+                <version>${mockito.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
-                <version>2.18.3</version>
+                <version>${mockito.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.vintage</groupId>
