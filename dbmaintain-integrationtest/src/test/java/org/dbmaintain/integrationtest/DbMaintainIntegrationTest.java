@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Properties;
 import java.util.Set;
 
@@ -960,7 +961,7 @@ public class DbMaintainIntegrationTest {
 
     private void writeContentToFile(File scriptFile, String scriptContent) {
         try {
-            writeStringToFile(scriptFile, scriptContent);
+            writeStringToFile(scriptFile, scriptContent, Charset.defaultCharset());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
