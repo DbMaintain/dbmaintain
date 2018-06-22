@@ -32,18 +32,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public abstract class ScriptParserTestBase {
+abstract class ScriptParserTestBase {
 
-    protected void assertNoStatement(String script) {
+    void assertNoStatement(String script) {
         ScriptParser parser = createScriptParser(new StringReader(script));
         assertNull(parser.getNextStatement());
     }
 
-    protected void assertOneStatement(String script) {
+    void assertOneStatement(String script) {
         assertOneStatementEqualTo(null, script);
     }
 
-    protected void assertOneStatementEqualTo(String expectedStatement, String script) {
+    void assertOneStatementEqualTo(String expectedStatement, String script) {
         ScriptParser parser = createScriptParser(new StringReader(script));
         String statement = parser.getNextStatement();
         assertNotNull(statement);
@@ -54,11 +54,11 @@ public abstract class ScriptParserTestBase {
         assertNull(nextStatement, "expected no more statements but found: " + nextStatement);
     }
 
-    protected void assertTwoStatements(String script) {
+    void assertTwoStatements(String script) {
         assertTwoStatementsEqualTo(null, null, script);
     }
 
-    protected void assertTwoStatementsEqualTo(String expectedStatement1, String expectedStatement2, String script) {
+    void assertTwoStatementsEqualTo(String expectedStatement1, String expectedStatement2, String script) {
         ScriptParser parser = createScriptParser(new StringReader(script));
         String statement1 = parser.getNextStatement();
         assertNotNull(statement1);
@@ -69,11 +69,11 @@ public abstract class ScriptParserTestBase {
         assertNull(parser.getNextStatement());
     }
 
-    protected ScriptParser createScriptParser(Reader scriptReader) {
+    ScriptParser createScriptParser(Reader scriptReader) {
         return createScriptParser(scriptReader, null);
     }
 
-    protected ScriptParser createScriptParser(Reader scriptReader, Properties scriptParameters) {
+    ScriptParser createScriptParser(Reader scriptReader, Properties scriptParameters) {
         ScriptParserFactory factory = new DefaultScriptParserFactory(true, scriptParameters);
         return factory.createScriptParser(scriptReader);
     }

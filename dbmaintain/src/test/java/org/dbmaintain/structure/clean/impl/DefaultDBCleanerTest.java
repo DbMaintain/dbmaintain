@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultDBCleanerTest {
+class DefaultDBCleanerTest {
 
     /* DataSource for the test database */
     private DataSource dataSource;
@@ -60,7 +60,7 @@ public class DefaultDBCleanerTest {
      * data. One of these tables is configured as 'tabletopreserve'.
      */
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -83,7 +83,7 @@ public class DefaultDBCleanerTest {
      * Removes the test database tables from the test database, to avoid inference with other tests
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         cleanupTestDatabase();
     }
 
@@ -92,7 +92,7 @@ public class DefaultDBCleanerTest {
      * Tests if the tables that are not configured as tables to preserve are correctly cleaned
      */
     @Test
-    public void testCleanDatabase() {
+    void testCleanDatabase() {
         assertFalse(isEmpty("TEST_TABLE", dataSource));
         assertFalse(isEmpty(defaultDatabase.quoted("Test_CASE_Table"), dataSource));
         defaultDBCleaner.cleanDatabase();
@@ -105,7 +105,7 @@ public class DefaultDBCleanerTest {
      * Tests if the tables to preserve are left untouched
      */
     @Test
-    public void testCleanDatabase_preserveTablesToPreserve() {
+    void testCleanDatabase_preserveTablesToPreserve() {
         assertFalse(isEmpty("TEST_TABLE_PRESERVE", dataSource));
         assertFalse(isEmpty(defaultDatabase.quoted("Test_CASE_Table_Preserve"), dataSource));
         defaultDBCleaner.cleanDatabase();

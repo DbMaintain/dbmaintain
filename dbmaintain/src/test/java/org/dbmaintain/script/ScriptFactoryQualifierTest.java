@@ -40,14 +40,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptFactoryQualifierTest {
+class ScriptFactoryQualifierTest {
 
     private String scriptIndexRegexp;
     private String targetDatabaseRegexp;
     private String qualifierRegexp;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
         targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
@@ -56,7 +56,7 @@ public class ScriptFactoryQualifierTest {
 
 
     @Test
-    public void singleQualifierName() {
+    void singleQualifierName() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("qualifier");
 
         Script script = scriptFactory.createScriptWithoutContent("scripts/01_#qualifier_my_script.sql", null, null);
@@ -64,7 +64,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void multipleQualifierNames() {
+    void multipleQualifierNames() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("qualifier", "another");
 
         Script script = scriptFactory.createScriptWithoutContent("scripts/01_#qualifier_somethingelse_#another_my_script.sql", null, null);
@@ -72,7 +72,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void leadingQualifierName() {
+    void leadingQualifierName() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("qualifier");
 
         Script script = scriptFactory.createScriptWithoutContent("#qualifier_my_script.sql", null, null);
@@ -80,7 +80,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void onlyQualifierName() {
+    void onlyQualifierName() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("qualifier");
 
         Script script = scriptFactory.createScriptWithoutContent("#qualifier.sql", null, null);
@@ -88,7 +88,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void qualifierNamesInPath() {
+    void qualifierNamesInPath() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("1", "2", "3", "4");
 
         Script script = scriptFactory.createScriptWithoutContent("#1_#2_folder/scripts/#3_release/01_#4_my_script.sql", null, null);
@@ -96,7 +96,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void noQualifierNames() {
+    void noQualifierNames() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("qualifier");
 
         Script script = scriptFactory.createScriptWithoutContent("scripts/01_@something_text#noqualifer_my_script.sql", null, null);
@@ -104,13 +104,13 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void qualifierNotRegistered() {
+    void qualifierNotRegistered() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers();
         assertThrows(DbMaintainException.class, () -> scriptFactory.createScriptWithoutContent("01_#qualifer_my_script.sql", null, null));
     }
 
     @Test
-    public void registeredAsPatchQualifier() {
+    void registeredAsPatchQualifier() {
         ScriptFactory scriptFactory = createScriptFactoryWithPatchQualifiers("patch");
 
         Script script = scriptFactory.createScriptWithoutContent("01_#patch_my_script.sql", null, null);
@@ -119,7 +119,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void qualifierCaseInsensitive() {
+    void qualifierCaseInsensitive() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers("qualifier1", "qualifier2");
 
         Script script = scriptFactory.createScriptWithoutContent("#QuAlIfIeR1_#QUALIFIER2_script.sql", null, null);
@@ -127,7 +127,7 @@ public class ScriptFactoryQualifierTest {
     }
 
     @Test
-    public void patchCaseInsensitive() {
+    void patchCaseInsensitive() {
         ScriptFactory scriptFactory = createScriptFactoryWithPatchQualifiers("patch");
 
         Script script = scriptFactory.createScriptWithoutContent("incremental/02_sprint2/03_#PaTcH_addUser.sql", null, null);

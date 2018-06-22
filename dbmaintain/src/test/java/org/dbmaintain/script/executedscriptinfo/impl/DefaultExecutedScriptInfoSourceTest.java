@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultExecutedScriptInfoSourceTest {
+class DefaultExecutedScriptInfoSourceTest {
 
     /* The tested instance */
     private DefaultExecutedScriptInfoSource executedScriptInfoSource;
@@ -61,7 +61,7 @@ public class DefaultExecutedScriptInfoSourceTest {
 
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
 
@@ -77,7 +77,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @BeforeEach
-    public void initTestData() throws ParseException {
+    void initTestData() throws ParseException {
         executedScript1 = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", "dd/MM/yyyy hh:mm:ss"), false);
         executedScript2 = new ExecutedScript(createScript("script2.sql"), parseDate("20/05/2008 10:25:00", "dd/MM/yyyy hh:mm:ss"), false);
         executedPreprocessingScript = new ExecutedScript(createScript("preprocessing/preprocessingscript1.sql"), parseDate("20/05/2008 10:15:00",
@@ -87,13 +87,13 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         dropExecutedScriptsTable();
     }
 
 
     @Test
-    public void registerAndRetrieveExecutedScript() {
+    void registerAndRetrieveExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
         assertTrue(executedScriptInfoSource.getExecutedScripts().contains(executedScript1));
@@ -113,13 +113,13 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void registerExecutedScript_NoExecutedScriptsTable() {
+    void registerExecutedScript_NoExecutedScriptsTable() {
         dropExecutedScriptsTable();
         assertThrows(DbMaintainException.class, () -> executedScriptInfoSource.registerExecutedScript(executedScript1));
     }
 
     @Test
-    public void autoCreateExecutedScriptsTable() {
+    void autoCreateExecutedScriptsTable() {
         dropExecutedScriptsTable();
 
         executedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript1);
@@ -129,7 +129,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void updateExecutedScript() {
+    void updateExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         assertFalse(executedScriptInfoSource.getExecutedScripts().first().isSuccessful());
         executedScript1.setSuccessful(true);
@@ -140,7 +140,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void renameExecutedScript() {
+    void renameExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         Script renamedToScript = createScript("1_script1_renamed.sql");
         executedScriptInfoSource.renameExecutedScript(executedScript1, renamedToScript);
@@ -150,7 +150,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void clearAllRegisteredScripts() {
+    void clearAllRegisteredScripts() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         executedScriptInfoSource.registerExecutedScript(executedScript2);
         executedScriptInfoSource.clearAllExecutedScripts();
@@ -160,7 +160,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void deleteExecutedScript() {
+    void deleteExecutedScript() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         assertEquals(1, executedScriptInfoSource.getExecutedScripts().size());
         executedScriptInfoSource.deleteExecutedScript(executedScript1);
@@ -171,7 +171,7 @@ public class DefaultExecutedScriptInfoSourceTest {
 
 
     @Test
-    public void deleteAllExecutedPreprocessingScripts() {
+    void deleteAllExecutedPreprocessingScripts() {
     	executedScriptInfoSource.registerExecutedScript(executedScript1);
     	executedScriptInfoSource.registerExecutedScript(executedPreprocessingScript);
     	assertEquals(2, executedScriptInfoSource.getExecutedScripts().size());
@@ -184,7 +184,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     }
 
     @Test
-    public void deleteAllExecutedPostprocessingScripts() {
+    void deleteAllExecutedPostprocessingScripts() {
         executedScriptInfoSource.registerExecutedScript(executedScript1);
         executedScriptInfoSource.registerExecutedScript(executedPostprocessingScript);
         assertEquals(2, executedScriptInfoSource.getExecutedScripts().size());

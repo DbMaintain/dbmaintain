@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Tim Ducheyne
  * @since 28-dec-2008
  */
-public class ScriptUpdatesAnalyzerTest {
+class ScriptUpdatesAnalyzerTest {
 
     private static final Script INDEXED_1 = createScript("1_indexed1.sql", false);
     private static final Script INDEXED_1_RENAMED = createRenamedScript(INDEXED_1, "1_indexed1_renamed.sql");
@@ -85,7 +85,7 @@ public class ScriptUpdatesAnalyzerTest {
     private static int sequence = 0;
 
     @Test
-    public void newIndexedScript() {
+    void newIndexedScript() {
         executedScripts(INDEXED_1);
         scripts(INDEXED_1, INDEXED_2);
         calculateScriptUpdates();
@@ -93,7 +93,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void newLowerIndexScript() {
+    void newLowerIndexScript() {
         executedScripts(INDEXED_2);
         scripts(INDEXED_1, INDEXED_2);
         calculateScriptUpdates();
@@ -101,7 +101,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void indexedScriptUpdated() {
+    void indexedScriptUpdated() {
         executedScripts(INDEXED_1, INDEXED_2);
         scripts(INDEXED_1, INDEXED_2_UPDATED);
         calculateScriptUpdates();
@@ -109,7 +109,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void indexedScriptDeleted() {
+    void indexedScriptDeleted() {
         executedScripts(INDEXED_1, INDEXED_2);
         scripts(INDEXED_1);
         calculateScriptUpdates();
@@ -117,7 +117,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void indexedScriptIgnoreDeleted() {
+    void indexedScriptIgnoreDeleted() {
         executedScripts(INDEXED_1, INDEXED_2);
         scripts(INDEXED_1);
         calculateScriptUpdates(true, true);
@@ -128,7 +128,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void newRepeatableScript() {
+    void newRepeatableScript() {
         executedScripts(REPEATABLE_1);
         scripts(REPEATABLE_1, REPEATABLE_2);
         calculateScriptUpdates();
@@ -136,7 +136,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void repeatableScriptUpdated() {
+    void repeatableScriptUpdated() {
         executedScripts(REPEATABLE_1, REPEATABLE_2);
         scripts(REPEATABLE_1, REPEATABLE_2_UPDATED);
         calculateScriptUpdates();
@@ -144,7 +144,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void repeatableScriptDeleted() {
+    void repeatableScriptDeleted() {
         executedScripts(REPEATABLE_1, REPEATABLE_2);
         scripts(REPEATABLE_1);
         calculateScriptUpdates();
@@ -152,7 +152,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void repeatableScriptIgnoreDeleted() {
+    void repeatableScriptIgnoreDeleted() {
         executedScripts(REPEATABLE_1, REPEATABLE_2);
         scripts(REPEATABLE_1);
         calculateScriptUpdates(true, true);
@@ -161,7 +161,7 @@ public class ScriptUpdatesAnalyzerTest {
         assertTrue(scriptUpdates.getIgnoredScripts().contains(new ScriptUpdate(INDEXED_SCRIPT_DELETED, REPEATABLE_2)));
     }
     @Test
-    public void newLowerIndexPatchScript_outOfSequenceExecutionOfPatchesAllowed() {
+    void newLowerIndexPatchScript_outOfSequenceExecutionOfPatchesAllowed() {
         executedScripts(INDEXED_2);
         scripts(PATCH_1, INDEXED_2);
         calculateScriptUpdates(true, false);
@@ -169,7 +169,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void newLowerIndexPatchScript_outOfSequenceExecutionOfPatchesNotAllowed() {
+    void newLowerIndexPatchScript_outOfSequenceExecutionOfPatchesNotAllowed() {
         executedScripts(INDEXED_2);
         scripts(PATCH_1, INDEXED_2);
         calculateScriptUpdates(false, false);
@@ -177,7 +177,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void newPreprocessingScript() {
+    void newPreprocessingScript() {
     	executedScripts(PREPROCESSING_2);
     	scripts(PREPROCESSING_1, PREPROCESSING_2);
     	calculateScriptUpdates();
@@ -185,7 +185,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void preprocessingScriptUpdated() {
+    void preprocessingScriptUpdated() {
     	executedScripts(PREPROCESSING_1, PREPROCESSING_2);
     	scripts(PREPROCESSING_1_UPDATED, PREPROCESSING_2);
     	calculateScriptUpdates();
@@ -193,7 +193,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void preprocessingScriptDeleted() {
+    void preprocessingScriptDeleted() {
     	executedScripts(PREPROCESSING_1, PREPROCESSING_2);
     	scripts(PREPROCESSING_2);
     	calculateScriptUpdates();
@@ -201,7 +201,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void newPostprocessingScript() {
+    void newPostprocessingScript() {
         executedScripts(POSTPROCESSING_2);
         scripts(POSTPROCESSING_1, POSTPROCESSING_2);
         calculateScriptUpdates();
@@ -209,7 +209,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void postprocessingScriptUpdated() {
+    void postprocessingScriptUpdated() {
         executedScripts(POSTPROCESSING_1, POSTPROCESSING_2);
         scripts(POSTPROCESSING_1_UPDATED, POSTPROCESSING_2);
         calculateScriptUpdates();
@@ -217,14 +217,14 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void postprocessingScriptDeleted() {
+    void postprocessingScriptDeleted() {
         executedScripts(POSTPROCESSING_1, POSTPROCESSING_2);
         scripts(POSTPROCESSING_2);
         calculateScriptUpdates();
         assertPostProcessingScriptUpdate(POSTPROCESSING_SCRIPT_DELETED, POSTPROCESSING_1);
     }
     @Test
-    public void postprocessingScriptIgnoreDeleted() {
+    void postprocessingScriptIgnoreDeleted() {
         executedScripts(POSTPROCESSING_1, POSTPROCESSING_2);
         scripts(POSTPROCESSING_2);
         calculateScriptUpdates(true, true);
@@ -233,7 +233,7 @@ public class ScriptUpdatesAnalyzerTest {
         assertTrue(scriptUpdates.getIgnoredScripts().contains(new ScriptUpdate(INDEXED_SCRIPT_DELETED, POSTPROCESSING_1)));
     }
     @Test
-    public void indexedScriptRenamed() {
+    void indexedScriptRenamed() {
         executedScripts(INDEXED_1, INDEXED_2);
         scripts(INDEXED_1_RENAMED, INDEXED_2);
         calculateScriptUpdates();
@@ -242,7 +242,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void indexedScriptRenamed_IndexChanged_SequenceDidntChange() {
+    void indexedScriptRenamed_IndexChanged_SequenceDidntChange() {
         executedScripts(INDEXED_2, INDEXED_3);
         scripts(INDEXED_2_RENAMED_WITH_INDEX_1, INDEXED_3);
         calculateScriptUpdates();
@@ -251,7 +251,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void indexedScriptRenamed_IndexChanged_ScriptSequenceChanged() {
+    void indexedScriptRenamed_IndexChanged_ScriptSequenceChanged() {
         executedScripts(INDEXED_2, INDEXED_3);
         scripts(INDEXED_2, INDEXED_3_RENAMED_WITH_INDEX_1);
         calculateScriptUpdates();
@@ -259,7 +259,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void repeatableScriptRenamed() {
+    void repeatableScriptRenamed() {
         executedScripts(INDEXED_1, REPEATABLE_1);
         scripts(INDEXED_1, REPEATABLE_1_RENAMED);
         calculateScriptUpdates();
@@ -268,7 +268,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void preprocessingScriptRenamed() {
+    void preprocessingScriptRenamed() {
     	executedScripts(PREPROCESSING_2, PREPROCESSING_3);
     	scripts(PREPROCESSING_3_RENAMED_WITH_INDEX_1, PREPROCESSING_2);
     	calculateScriptUpdates();
@@ -276,7 +276,7 @@ public class ScriptUpdatesAnalyzerTest {
     }
 
     @Test
-    public void postprocessingScriptRenamed() {
+    void postprocessingScriptRenamed() {
         executedScripts(POSTPROCESSING_2, POSTPROCESSING_3);
         scripts(POSTPROCESSING_3_RENAMED_WITH_INDEX_1, POSTPROCESSING_2);
         calculateScriptUpdates();

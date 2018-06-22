@@ -28,14 +28,14 @@ import java.io.Reader;
 public class InformixScriptParserTest extends ScriptParserTestBase {
 
     @Test
-    public void curlyBracesBlockComment() {
+    void curlyBracesBlockComment() {
         assertOneStatement("statement {block comment;};");
         assertOneStatement("statement {multiline\nblock\ncomment;\n};");
         assertOneStatementEqualTo("{first a block comment;}then a statement", "{first a block comment;}then a statement;");
     }
 
     @Override
-    protected ScriptParser createScriptParser(Reader scriptReader) {
+    ScriptParser createScriptParser(Reader scriptReader) {
         ScriptParserFactory factory = new InformixScriptParserFactory(true, null);
         return factory.createScriptParser(scriptReader);
     }

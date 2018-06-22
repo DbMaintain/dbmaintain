@@ -36,13 +36,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ConstraintsDisablerTest {
+class ConstraintsDisablerTest {
 
     /* The tested object */
     private ConstraintsDisabler constraintsDisabler;
 
-    protected DataSource dataSource;
-    protected Databases databases;
+    private DataSource dataSource;
+    private Databases databases;
 
 
     /**
@@ -50,7 +50,7 @@ public class ConstraintsDisablerTest {
      * dialect
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         databases = TestUtils.getDatabases();
         dataSource = databases.getDefaultDatabase().getDataSource();
         constraintsDisabler = new DefaultConstraintsDisabler(databases);
@@ -64,7 +64,7 @@ public class ConstraintsDisablerTest {
      * Drops the test tables, to avoid influencing other tests
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         cleanupTestDatabase();
     }
 
@@ -73,7 +73,7 @@ public class ConstraintsDisablerTest {
      * Tests whether foreign key constraints are correctly disabled
      */
     @Test
-    public void testDisableConstraints_foreignKey() {
+    void testDisableConstraints_foreignKey() {
         // Expected foreign key violation
         assertThrows(DbMaintainException.class, () -> SQLTestUtils.executeUpdate("insert into table2 (col1) values ('test')", dataSource));
 
@@ -89,7 +89,7 @@ public class ConstraintsDisablerTest {
      * the alternate key will result in an error (issue UNI-36).
      */
     @Test
-    public void testDisableConstraints_foreignKeyToAlternateKey() {
+    void testDisableConstraints_foreignKeyToAlternateKey() {
         // Expected foreign key violation
         assertThrows(DbMaintainException.class, () -> SQLTestUtils.executeUpdate("insert into table3 (col1) values ('test')", dataSource));
 
@@ -104,7 +104,7 @@ public class ConstraintsDisablerTest {
      * Tests whether not-null constraints are correctly disabled
      */
     @Test
-    public void testDisableConstraints_notNull() {
+    void testDisableConstraints_notNull() {
         // Expected not null violation
         assertThrows(DbMaintainException.class,
                 () -> SQLTestUtils.executeUpdate("insert into table1 (col1, col2) values ('test', null)", dataSource));
@@ -119,7 +119,7 @@ public class ConstraintsDisablerTest {
     /**
      * Creates the test tables
      */
-    protected void createTestTables() {
+    private void createTestTables() {
         SQLTestUtils.executeUpdate("create table table1 (col1 varchar(10) not null primary key, col2 varchar(10) not null, unique (col2))", dataSource);
         SQLTestUtils.executeUpdate("create table table2 (col1 varchar(10), foreign key (col1) references table1(col1))", dataSource);
         SQLTestUtils.executeUpdate("create table table3 (col1 varchar(10), foreign key (col1) references table1(col2))", dataSource);
@@ -129,7 +129,7 @@ public class ConstraintsDisablerTest {
     /**
      * Drops the test tables
      */
-    protected void cleanupTestDatabase() {
+    private void cleanupTestDatabase() {
         SQLTestUtils.executeUpdateQuietly("drop table table3", dataSource);
         SQLTestUtils.executeUpdateQuietly("drop table table2", dataSource);
         SQLTestUtils.executeUpdateQuietly("drop table table1", dataSource);

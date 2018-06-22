@@ -30,18 +30,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Filip Neven
  */
-public class OracleStoredProcedureMatcherTest {
+class OracleStoredProcedureMatcherTest {
 
-    String[] STORED_PROCEDURE_START_STRINGS = {"CREATE PACKAGE", "CREATE OR REPLACE PACKAGE", "CREATE LIBRARY",
+    private String[] STORED_PROCEDURE_START_STRINGS = {"CREATE PACKAGE", "CREATE OR REPLACE PACKAGE", "CREATE LIBRARY",
             "CREATE OR REPLACE LIBRARY", "CREATE FUNCTION", "CREATE OR REPLACE FUNCTION", "CREATE PROCEDURE",
             "CREATE OR REPLACE PROCEDURE", "CREATE TRIGGER", "CREATE OR REPLACE TRIGGER", "CREATE TYPE",
             "CREATE OR REPLACE TYPE", "DECLARE", "BEGIN"};
 
-    OraclePlSqlBlockMatcher matcher = new OraclePlSqlBlockMatcher();
-    Random rnd = new Random();
+    private OraclePlSqlBlockMatcher matcher = new OraclePlSqlBlockMatcher();
+    private Random rnd = new Random();
 
     @Test
-    public void testIsStartOfStoredProcedure() {
+    void testIsStartOfStoredProcedure() {
         assertIsStartOfStoredProcedure("CREATE PACKAGE", "CREATE OR REPLACE PACKAGE", "CREATE LIBRARY",
                 "CREATE OR REPLACE LIBRARY", "CREATE FUNCTION", "CREATE OR REPLACE FUNCTION", "CREATE PROCEDURE",
                 "CREATE OR REPLACE PROCEDURE", "CREATE TRIGGER", "CREATE OR REPLACE TRIGGER", "CREATE TYPE",
@@ -62,7 +62,7 @@ public class OracleStoredProcedureMatcherTest {
     }
 
     @Test
-    public void testPerformance() throws IOException {
+    void testPerformance() throws IOException {
         List<String> randomTestCases = createRandomTestStrings(10000);
         //System.out.println("randomTestCases = " + randomTestCases);
         List<String> startOfStoredProcedureTestCases = createStartOfStoredProcedureTestStrings(10000);
@@ -164,7 +164,7 @@ public class OracleStoredProcedureMatcherTest {
      * @param statement The statement to check
      * @return True if the statement starts with the text
      */
-    protected boolean matches(String text, StringBuilder statement) {
+    private boolean matches(String text, StringBuilder statement) {
         if (text.length() != statement.length()) {
             return false;
         }

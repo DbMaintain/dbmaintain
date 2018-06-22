@@ -33,19 +33,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class OracleScriptParserTest extends ScriptParserTestBase {
 
     @Test
-    public void plsqlScript() {
+    void plsqlScript() {
         assertOneStatementEqualTo("create function function1 statement;\n",
                 "create function function1 statement;\n/\n");
     }
 
     @Test
-    public void twoScripts() {
+    void twoScripts() {
         assertTwoStatements("create or replace function f1\nstatement 1;\n/\n" +
                 "create function f2\nstatement 1;statement 2;\n/\n");
     }
 
     @Test
-    public void scriptWithComments() {
+    void scriptWithComments() {
         assertOneStatement("-- comment before script\n" +
                 "/* block comment before script */\n" +
                 "declare something -- comment in script\n" +
@@ -54,7 +54,7 @@ public class OracleScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void plsqlWithSingleLineBlockComment() {
+    void plsqlWithSingleLineBlockComment() {
         assertOneStatement("" +
                 "begin\n" +
                 "  /* single line block comment inside begin end block */\n" +
@@ -64,29 +64,29 @@ public class OracleScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void scriptWithQuotes() {
+    void scriptWithQuotes() {
         assertOneStatement("begin 'within quotes, slashes are ignored:\n/\n' end;\n" +
                 "/\n");
     }
 
     @Test
-    public void commentsOrWhitespaceInStoredProcedureHeader() {
+    void commentsOrWhitespaceInStoredProcedureHeader() {
         assertTwoStatements("create\nor\nreplace\nprocedure\nstatement 1; statement 2;\n/\n" +
                 "create /* comment */ or--another comment\nreplace function\nstatement 1; statement 2;\n/\n");
     }
 
     @Test
-    public void scriptNotEndingWithSlash() {
+    void scriptNotEndingWithSlash() {
         assertThrows(DbMaintainException.class, () -> assertOneStatement("create procedure something;"));
     }
 
     @Test
-    public void scriptEndingWithSlashWithoutNewline() {
+    void scriptEndingWithSlashWithoutNewline() {
         assertOneStatement("create procedure s;\n/");
     }
 
     @Override
-    protected ScriptParser createScriptParser(Reader scriptReader) {
+    ScriptParser createScriptParser(Reader scriptReader) {
         ScriptParserFactory factory = new OracleScriptParserFactory(true, null);
         return factory.createScriptParser(scriptReader);
     }

@@ -33,27 +33,27 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  * @author Tim Ducheyne
  * @since 3-jan-2009
  */
-public class DbMaintainDataSourceTest {
+class DbMaintainDataSourceTest {
 
     private DatabaseInfo databaseInfo;
     private DataSource dataSource;
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         databaseInfo = getHsqlDatabaseInfo();
         dataSource = createDataSource(databaseInfo);
     }
 
     @Test
-    public void testGetConnection() throws SQLException {
+    void testGetConnection() throws SQLException {
         Connection conn = dataSource.getConnection();
         assertEquals(databaseInfo.getUrl(), conn.getMetaData().getURL());
     }
 
 
     @Test
-    public void testDataSourceEqualsHashcode() {
+    void testDataSourceEqualsHashcode() {
         DataSource otherDataSource = createDataSource(databaseInfo);
         assertNotEquals(dataSource, otherDataSource);
 

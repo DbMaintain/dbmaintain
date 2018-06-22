@@ -37,7 +37,7 @@ import static org.dbmaintain.util.TestUtils.createScript;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
+class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
 
     /* The tested instance with auto-create configured */
     private DefaultExecutedScriptInfoSource executedScriptInfoSourceAutoCreate;
@@ -50,7 +50,7 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
 
 
     @BeforeEach
-    public void initialize() throws Exception {
+    void initialize() throws Exception {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
 
@@ -63,67 +63,67 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         dropExecutedScriptsTable();
     }
 
 
     @Test
-    public void registerExecutedScript() {
+    void registerExecutedScript() {
         executedScriptInfoSourceAutoCreate.registerExecutedScript(executedScript);
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void updateExecutedScript() {
+    void updateExecutedScript() {
         executedScriptInfoSourceAutoCreate.updateExecutedScript(executedScript);
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void clearAllExecutedScripts() {
+    void clearAllExecutedScripts() {
         executedScriptInfoSourceAutoCreate.clearAllExecutedScripts();
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void getExecutedScripts() {
+    void getExecutedScripts() {
         executedScriptInfoSourceAutoCreate.getExecutedScripts();
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void deleteExecutedScript() {
+    void deleteExecutedScript() {
         executedScriptInfoSourceAutoCreate.deleteExecutedScript(executedScript);
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void renameExecutedScript() {
+    void renameExecutedScript() {
         executedScriptInfoSourceAutoCreate.renameExecutedScript(executedScript, script);
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void deleteAllExecutedPreprocessingScripts() {
+    void deleteAllExecutedPreprocessingScripts() {
     	executedScriptInfoSourceAutoCreate.deleteAllExecutedPreprocessingScripts();
     	assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void deleteAllExecutedPostprocessingScripts() {
+    void deleteAllExecutedPostprocessingScripts() {
         executedScriptInfoSourceAutoCreate.deleteAllExecutedPostprocessingScripts();
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void markErrorScriptsAsSuccessful() {
+    void markErrorScriptsAsSuccessful() {
         executedScriptInfoSourceAutoCreate.markErrorScriptsAsSuccessful();
         assertExecutedScriptsTableWasCreated();
     }
 
     @Test
-    public void removeErrorScripts() {
+    void removeErrorScripts() {
         executedScriptInfoSourceAutoCreate.removeErrorScripts();
         assertExecutedScriptsTableWasCreated();
     }

@@ -32,14 +32,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptFactoryBaseLineRevisionTest {
+class ScriptFactoryBaseLineRevisionTest {
 
     private String scriptIndexRegexp;
     private String targetDatabaseRegexp;
     private String qualifierRegexp;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
         targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
@@ -48,7 +48,7 @@ public class ScriptFactoryBaseLineRevisionTest {
 
 
     @Test
-    public void notIgnored_higherRevisionThanBaseLine() {
+    void notIgnored_higherRevisionThanBaseLine() {
         ScriptFactory scriptFactory = createScriptFactory("1.2");
 
         Script script = scriptFactory.createScriptWithoutContent("1_scripts/3_my_script.sql", null, null);
@@ -56,7 +56,7 @@ public class ScriptFactoryBaseLineRevisionTest {
     }
 
     @Test
-    public void ignored_lowerRevisionThanBaseLine() {
+    void ignored_lowerRevisionThanBaseLine() {
         ScriptFactory scriptFactory = createScriptFactory("1.2");
 
         Script script = scriptFactory.createScriptWithoutContent("1_scripts/1_my_script.sql", null, null);
@@ -64,7 +64,7 @@ public class ScriptFactoryBaseLineRevisionTest {
     }
 
     @Test
-    public void notIgnored_revisionEqualToBaseLine() {
+    void notIgnored_revisionEqualToBaseLine() {
         ScriptFactory scriptFactory = createScriptFactory("1.2");
 
         Script script = scriptFactory.createScriptWithoutContent("1_scripts/2_my_script.sql", null, null);
@@ -72,7 +72,7 @@ public class ScriptFactoryBaseLineRevisionTest {
     }
 
     @Test
-    public void notIgnored_noBaseLineRevision() {
+    void notIgnored_noBaseLineRevision() {
         ScriptFactory scriptFactory = createScriptFactory(null);
 
         Script script = scriptFactory.createScriptWithoutContent("1_scripts/2_my_script.sql", null, null);
@@ -80,7 +80,7 @@ public class ScriptFactoryBaseLineRevisionTest {
     }
 
     @Test
-    public void foldersWithoutIndex_ignored_lowerRevision() {
+    void foldersWithoutIndex_ignored_lowerRevision() {
         ScriptFactory scriptFactory = createScriptFactory("x.2");
 
         Script script = scriptFactory.createScriptWithoutContent("scripts/01_my_script.sql", null, null);
@@ -88,7 +88,7 @@ public class ScriptFactoryBaseLineRevisionTest {
     }
 
     @Test
-    public void foldersWithoutIndex_notIgnored_higherRevision() {
+    void foldersWithoutIndex_notIgnored_higherRevision() {
         ScriptFactory scriptFactory = createScriptFactory("x.2");
 
         Script script = scriptFactory.createScriptWithoutContent("scripts/03_my_script.sql", null, null);
@@ -96,7 +96,7 @@ public class ScriptFactoryBaseLineRevisionTest {
     }
 
     @Test
-    public void repeatableScript() {
+    void repeatableScript() {
         ScriptFactory scriptFactory = createScriptFactory("1.0");
 
         Script script = scriptFactory.createScriptWithoutContent("scripts/repeatable_script.sql", null, null);

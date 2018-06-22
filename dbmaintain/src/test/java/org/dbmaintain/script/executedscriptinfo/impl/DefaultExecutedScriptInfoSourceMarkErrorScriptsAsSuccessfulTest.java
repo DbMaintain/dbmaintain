@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
+class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
 
     /* The tested instance */
     private DefaultExecutedScriptInfoSource executedScriptInfoSource;
@@ -50,7 +50,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
 
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
 
@@ -60,13 +60,13 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         dropExecutedScriptsTable();
     }
 
 
     @Test
-    public void failedScripts() throws Exception {
+    void failedScripts() throws Exception {
         registerFailedScripts();
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
         List<Boolean> resultsBefore = before.stream().map(ExecutedScript::isSuccessful).collect(Collectors.toList());
@@ -80,7 +80,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
     }
 
     @Test
-    public void successfulScripts() throws Exception {
+    void successfulScripts() throws Exception {
         registerSuccessfulScripts();
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
         List<Boolean> resultsBefore = before.stream().map(ExecutedScript::isSuccessful).collect(Collectors.toList());
@@ -94,7 +94,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
     }
 
     @Test
-    public void noScripts() {
+    void noScripts() {
         SortedSet<ExecutedScript> before = executedScriptInfoSource.getExecutedScripts();
         assertTrue(before.isEmpty());
 

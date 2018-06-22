@@ -28,38 +28,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DbItemIdentifierTest {
+class DbItemIdentifierTest {
 
     private Databases databases;
 
     @BeforeEach
-    public void init() {
+    void init() {
         databases = TestUtils.getDatabases();
     }
 
     @Test
-    public void parseItemIdentifier_itemOnly() {
+    void parseItemIdentifier_itemOnly() {
         DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "test", databases);
         DbItemIdentifier identifier = getItemIdentifier(TABLE, "public", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
-    public void parseItemIdentifier_schemaAndItem() {
+    void parseItemIdentifier_schemaAndItem() {
         DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "myschema.test", databases);
         DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
-    public void parseItemIdentifier_databaseSchemaAndItem() {
+    void parseItemIdentifier_databaseSchemaAndItem() {
         DbItemIdentifier parsedIdentifier = parseItemIdentifier(TABLE, "mydatabase.myschema.test", databases);
         DbItemIdentifier identifier = getItemIdentifier(TABLE, "myschema", "test", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);
     }
 
     @Test
-    public void parseSchemaOnly() {
+    void parseSchemaOnly() {
         DbItemIdentifier parsedIdentifier = parseSchemaIdentifier("public", databases);
         DbItemIdentifier identifier = getSchemaIdentifier("public", databases.getDefaultDatabase());
         assertEquals(identifier, parsedIdentifier);

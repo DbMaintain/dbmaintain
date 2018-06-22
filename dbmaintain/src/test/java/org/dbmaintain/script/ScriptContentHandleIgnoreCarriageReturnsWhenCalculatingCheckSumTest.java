@@ -26,11 +26,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  * @author Filip Neven
  * @author Jessica Austin
  */
-public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest {
+class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest {
 
 
     @Test
-    public void ignored_stringHandle() {
+    void ignored_stringHandle() {
         Script unixFile = createScriptWithContent("fileName", "script\ncontent", true);
         String unixCheckSum = unixFile.getScriptContentHandle().getCheckSum();
 
@@ -41,7 +41,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
     }
 
     @Test
-    public void ignored_urlHandle() {
+    void ignored_urlHandle() {
         ScriptContentHandle unixScriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(getClass().getResource("unix-script.sql"), "ISO-8859-1", true);
         ScriptContentHandle windowsScriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(getClass().getResource("windows-script.sql"), "ISO-8859-1", true);
 
@@ -52,7 +52,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
     }
 
     @Test
-    public void notIgnored_stringHandle() {
+    void notIgnored_stringHandle() {
         Script unixFile = createScriptWithContent("fileName", "script\ncontent", false);
         String unixCheckSum = unixFile.getScriptContentHandle().getCheckSum();
 
@@ -63,7 +63,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
     }
 
     @Test
-    public void notIgnored_urlHandle() {
+    void notIgnored_urlHandle() {
         ScriptContentHandle unixScriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(getClass().getResource("unix-script.sql"), "ISO-8859-1", false);
         ScriptContentHandle windowsScriptContentHandle = new ScriptContentHandle.UrlScriptContentHandle(getClass().getResource("windows-script.sql"), "ISO-8859-1", false);
 

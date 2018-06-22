@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultDBCleanerMultiSchemaTest {
+class DefaultDBCleanerMultiSchemaTest {
 
     /* Tested object */
     private DefaultDBCleaner defaultDBCleaner;
@@ -49,7 +49,7 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Initializes the test fixture.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // configure 3 schemas
         Databases databases = TestUtils.getDatabases("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         dataSource = databases.getDefaultDatabase().getDataSource();
@@ -64,7 +64,7 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Removes the test database tables from the test database, to avoid inference with other tests
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         dropTestTables();
     }
 
@@ -73,7 +73,7 @@ public class DefaultDBCleanerMultiSchemaTest {
      * Tests if the tables in all schemas are correctly cleaned.
      */
     @Test
-    public void testCleanDatabase() {
+    void testCleanDatabase() {
         assertFalse(SQLTestUtils.isEmpty("TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_A.TEST", dataSource));
         assertFalse(SQLTestUtils.isEmpty("SCHEMA_B.TEST", dataSource));

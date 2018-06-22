@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptIsContentEqualTest {
+class ScriptIsContentEqualTest {
 
     @Test
-    public void testIsScriptContentEqualTo() {
+    void testIsScriptContentEqualTo() {
         Script script = createScriptWithContent("fileName", "script content");
 
         Script sameScriptWithoutContent = createScriptWithCheckSum("fileName", script.getCheckSum());

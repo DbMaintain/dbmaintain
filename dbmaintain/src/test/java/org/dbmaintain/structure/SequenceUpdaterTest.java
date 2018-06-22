@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author Tim Ducheyne
  * @author Scott Prater
  */
-public class SequenceUpdaterTest {
+class SequenceUpdaterTest {
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(SequenceUpdaterTest.class);
@@ -64,7 +64,7 @@ public class SequenceUpdaterTest {
      * Creates a test table and test sequence.
      */
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -79,7 +79,7 @@ public class SequenceUpdaterTest {
      * Clears the database, to avoid interference with other tests
      */
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         cleanupTestDatabase();
     }
 
@@ -88,7 +88,7 @@ public class SequenceUpdaterTest {
      * Tests the update sequences behavior
      */
     @Test
-    public void testUpdateSequences() {
+    void testUpdateSequences() {
         if (!defaultDatabase.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -103,7 +103,7 @@ public class SequenceUpdaterTest {
      * Verifies that if a sequence has a value already high enough, the value is not being set to a lower value
      */
     @Test
-    public void testUpdateSequences_valueAlreadyHighEnough() {
+    void testUpdateSequences_valueAlreadyHighEnough() {
         if (!defaultDatabase.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -120,7 +120,7 @@ public class SequenceUpdaterTest {
      * Tests the update identity columns behavior
      */
     @Test
-    public void testUpdateSequences_identityColumns() {
+    void testUpdateSequences_identityColumns() {
         if (!defaultDatabase.supportsIdentityColumns()) {
             logger.warn("Current dialect does not support identity columns. Skipping test.");
             return;
@@ -135,7 +135,7 @@ public class SequenceUpdaterTest {
      * Verifies that if a identity columns has a value already high enough, the value is not being set to a lower value
      */
     @Test
-    public void testUpdateSequences_identityColumnsValueAlreadyHighEnough() {
+    void testUpdateSequences_identityColumnsValueAlreadyHighEnough() {
         if (!defaultDatabase.supportsIdentityColumns()) {
             logger.warn("Current dialect does not support identity columns. Skipping test.");
             return;

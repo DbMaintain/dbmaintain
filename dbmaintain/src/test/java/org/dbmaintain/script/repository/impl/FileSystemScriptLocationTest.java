@@ -31,14 +31,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Tim Ducheyne
  * @since 28-dec-2008
  */
-public class FileSystemScriptLocationTest {
+class FileSystemScriptLocationTest {
 
     private FileSystemScriptLocation fileSystemScriptLocation;
     private File scriptRootLocation;
     private Script indexed1, repeatable1, preProcessing1, postProcessing1;
 
     @BeforeEach
-    public void init() throws Exception {
+    void init() throws Exception {
         indexed1 = createScript("01_indexed1.sql");
         repeatable1 = createScript("repeatable1.sql");
         preProcessing1 = createScript("preprocessing/01_pre1.sql");
@@ -49,7 +49,7 @@ public class FileSystemScriptLocationTest {
     }
 
     @Test
-    public void testGetAllFiles() {
+    void testGetAllFiles() {
         assertEquals(asSet(indexed1, repeatable1, preProcessing1, postProcessing1), fileSystemScriptLocation.getScripts());
     }
 }

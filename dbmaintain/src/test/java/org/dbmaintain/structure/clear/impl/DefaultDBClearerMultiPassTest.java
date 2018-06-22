@@ -46,19 +46,19 @@ import static org.mockito.Mockito.when;
  * @see MultiPassErrorHandler
  */
 @ExtendWith(MockitoExtension.class)
-public class DefaultDBClearerMultiPassTest {
+class DefaultDBClearerMultiPassTest {
 
     @InjectMocks
     private DefaultDBClearer defaultDBClearer;
 
     @Mock
-    protected Database database;
+    private Database database;
 
     @Mock
     private ConstraintsDisabler constraintsDisabler;
 
     @Mock
-    protected ExecutedScriptInfoSource executedScriptInfoSource;
+    private ExecutedScriptInfoSource executedScriptInfoSource;
 
     private static final String SCHEMA = "MYSCHEMA";
     private final Set<String> tableNames = asSet("TABLE1", "TABLE2", "TABLE3");
@@ -67,7 +67,7 @@ public class DefaultDBClearerMultiPassTest {
      * Configures the tested object.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         when(database.getTableNames(anyString())).thenReturn(tableNames);
         when(database.getSchemaNames()).thenReturn(asSet(SCHEMA));
 
@@ -79,7 +79,7 @@ public class DefaultDBClearerMultiPassTest {
      * When we throw an exception on the first pass then it is ignored and we try another pass (which succeeds).
      */
     @Test
-    public void testClearDatabase_IgnoreFirstErrorOnDropTable() {
+    void testClearDatabase_IgnoreFirstErrorOnDropTable() {
         doThrow(new IllegalStateException()).doNothing().when(database).dropTable(SCHEMA, "TABLE2");
         defaultDBClearer.clearDatabase();
     }
@@ -88,7 +88,7 @@ public class DefaultDBClearerMultiPassTest {
      * When exceptions do not decrease then we throw an exception.
      */
     @Test
-    public void testClearDatabase_ThrowExceptionWhenExceptionsDoNotDecrease() {
+    void testClearDatabase_ThrowExceptionWhenExceptionsDoNotDecrease() {
         doThrow(new IllegalStateException()).when(database).dropTable(SCHEMA, "TABLE2");
         assertThrows(IllegalStateException.class, () -> defaultDBClearer.clearDatabase());
     }

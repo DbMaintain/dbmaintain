@@ -31,13 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptFactoryTargetDatabaseNameTest {
+class ScriptFactoryTargetDatabaseNameTest {
 
     /* Tested object */
     private ScriptFactory scriptFactory;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         String scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
         String targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
@@ -48,37 +48,37 @@ public class ScriptFactoryTargetDatabaseNameTest {
 
 
     @Test
-    public void singleTargetDatabaseName() {
+    void singleTargetDatabaseName() {
         Script script = scriptFactory.createScriptWithoutContent("scripts/01_@database_my_script.sql", null, null);
         assertEquals("database", script.getTargetDatabaseName());
     }
 
     @Test
-    public void useLastWhenMultipleTargetDatabaseNames() {
+    void useLastWhenMultipleTargetDatabaseNames() {
         Script script = scriptFactory.createScriptWithoutContent("@db1_scripts/01_@db2_my_script.sql", null, null);
         assertEquals("db2", script.getTargetDatabaseName());
     }
 
     @Test
-    public void useLastWhenMultipleTargetDatabaseNamesInFileName() {
+    void useLastWhenMultipleTargetDatabaseNamesInFileName() {
         Script script = scriptFactory.createScriptWithoutContent("01_@db1_@db2_my_script.sql", null, null);
         assertEquals("db2", script.getTargetDatabaseName());
     }
 
     @Test
-    public void leadingTargetDatabaseName() {
+    void leadingTargetDatabaseName() {
         Script script = scriptFactory.createScriptWithoutContent("@database_my_script.sql", null, null);
         assertEquals("database", script.getTargetDatabaseName());
     }
 
     @Test
-    public void onlyTargetDatabaseName() {
+    void onlyTargetDatabaseName() {
         Script script = scriptFactory.createScriptWithoutContent("@database.sql", null, null);
         assertEquals("database", script.getTargetDatabaseName());
     }
 
     @Test
-    public void noTargetDatabaseNames() {
+    void noTargetDatabaseNames() {
         Script script = scriptFactory.createScriptWithoutContent("scripts/my_script.sql", null, null);
         assertNull(script.getTargetDatabaseName());
     }

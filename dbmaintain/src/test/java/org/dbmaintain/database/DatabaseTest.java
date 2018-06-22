@@ -11,10 +11,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DatabaseTest {
+class DatabaseTest {
 	
 	@Test
-	public void sortAccordingToConstraintsTest() {
+    void sortAccordingToConstraintsTest() {
 		List<String> tables = Arrays.asList("A", "B", "C");
 		Map<String, Set<String>> childParentRelations = new HashMap<>();
 		Set<String> parents = new HashSet<>();

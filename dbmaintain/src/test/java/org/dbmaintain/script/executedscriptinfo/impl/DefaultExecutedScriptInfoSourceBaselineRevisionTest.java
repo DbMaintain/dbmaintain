@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
+class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
 
     /* The tested instance */
     private DefaultExecutedScriptInfoSource executedScriptInfoSource;
@@ -53,7 +53,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
 
 
     @BeforeEach
-    public void initialize() throws Exception {
+    void initialize() throws Exception {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
 
@@ -67,13 +67,13 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         dropExecutedScriptsTable();
     }
 
 
     @Test
-    public void someScriptsFiltered() {
+    void someScriptsFiltered() {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.2"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
@@ -83,7 +83,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     }
 
     @Test
-    public void allScriptsFiltered() {
+    void allScriptsFiltered() {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("999"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();
@@ -93,7 +93,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     }
 
     @Test
-    public void noScriptsFiltered() {
+    void noScriptsFiltered() {
         executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, false, new ScriptIndexes("1.0"));
 
         SortedSet<ExecutedScript> result = executedScriptInfoSource.getExecutedScripts();

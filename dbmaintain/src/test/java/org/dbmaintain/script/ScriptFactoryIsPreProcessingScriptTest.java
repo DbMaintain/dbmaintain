@@ -31,14 +31,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptFactoryIsPreProcessingScriptTest {
+class ScriptFactoryIsPreProcessingScriptTest {
 
     private String scriptIndexRegexp;
     private String targetDatabaseRegexp;
     private String qualifierRegexp;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
         targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
@@ -47,7 +47,7 @@ public class ScriptFactoryIsPreProcessingScriptTest {
 
 
     @Test
-    public void preProcessingScript() {
+    void preProcessingScript() {
         ScriptFactory scriptFactory = createScriptFactory("preprocessing");
 
         Script script = scriptFactory.createScriptWithoutContent("preprocessing/01_my_script.sql", null, null);
@@ -55,7 +55,7 @@ public class ScriptFactoryIsPreProcessingScriptTest {
     }
 
     @Test
-    public void notAPreProcessingScript() {
+    void notAPreProcessingScript() {
         ScriptFactory scriptFactory = createScriptFactory("preprocessing");
 
         Script script = scriptFactory.createScriptWithoutContent("other/01_my_script.sql", null, null);
@@ -63,7 +63,7 @@ public class ScriptFactoryIsPreProcessingScriptTest {
     }
 
     @Test
-    public void noPreProcessingScriptDirConfigured() {
+    void noPreProcessingScriptDirConfigured() {
         ScriptFactory scriptFactory = createScriptFactory(null);
 
         Script script = scriptFactory.createScriptWithoutContent("preprocessing/01_my_script.sql", null, null);
@@ -71,7 +71,7 @@ public class ScriptFactoryIsPreProcessingScriptTest {
     }
 
     @Test
-    public void preProcessingScriptDirEndingWithSlash() {
+    void preProcessingScriptDirEndingWithSlash() {
         ScriptFactory scriptFactory = createScriptFactory("preprocessing/");
 
         Script script = scriptFactory.createScriptWithoutContent("preprocessing/01_my_script.sql", null, null);
@@ -79,7 +79,7 @@ public class ScriptFactoryIsPreProcessingScriptTest {
     }
 
     @Test
-    public void preProcessingScriptDirEndingWithBackslash() {
+    void preProcessingScriptDirEndingWithBackslash() {
         ScriptFactory scriptFactory = createScriptFactory("preprocessing\\");
 
         Script script = scriptFactory.createScriptWithoutContent("preprocessing/01_my_script.sql", null, null);
@@ -87,7 +87,7 @@ public class ScriptFactoryIsPreProcessingScriptTest {
     }
 
     @Test
-    public void scriptNameWithBackslashes() {
+    void scriptNameWithBackslashes() {
         ScriptFactory scriptFactory = createScriptFactory("preprocessing");
 
         Script script = scriptFactory.createScriptWithoutContent("preprocessing\\01_my_script.sql", null, null);

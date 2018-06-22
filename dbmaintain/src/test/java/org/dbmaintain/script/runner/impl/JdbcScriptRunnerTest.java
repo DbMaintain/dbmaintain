@@ -46,13 +46,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class JdbcScriptRunnerTest {
+class JdbcScriptRunnerTest {
 
     /* The tested object */
     private JdbcScriptRunner defaultScriptRunner;
 
     /* DataSource for the test database */
-    protected DataSource dataSource;
+    private DataSource dataSource;
     /* A test script that will create 2 tables: table1, table2 */
     private Script script1;
     /* A test script that will create 1 table: table3 */
@@ -72,7 +72,7 @@ public class JdbcScriptRunnerTest {
 
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Databases databases = TestUtils.getDatabases();
         dataSource = databases.getDefaultDatabase().getDataSource();
 
@@ -93,13 +93,13 @@ public class JdbcScriptRunnerTest {
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         cleanupTestDatabase();
     }
 
 
     @Test
-    public void execute() {
+    void execute() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(script2);
 
@@ -110,14 +110,14 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void rollbackScriptWhenErrorOccurs() {
+    void rollbackScriptWhenErrorOccurs() {
         defaultScriptRunner.execute(script1);
         assertThrows(DbMaintainException.class, () -> defaultScriptRunner.execute(insertsWithError));
         assertTrue(isEmpty("table1", dataSource), "All inserts should have been rolled back");
     }
 
     @Test
-    public void commitScriptIfNoErrorOccurs() {
+    void commitScriptIfNoErrorOccurs() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(insertsWithoutError);
 
@@ -125,7 +125,7 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void scriptThatContainsCommit() {
+    void scriptThatContainsCommit() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(insertsWithCommit);
 
@@ -133,7 +133,7 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void scriptThatContainsRollback() {
+    void scriptThatContainsRollback() {
         defaultScriptRunner.execute(script1);
         defaultScriptRunner.execute(insertsWithRollback);
 
@@ -141,12 +141,12 @@ public class JdbcScriptRunnerTest {
     }
 
     @Test
-    public void scriptThatContainsQuery() {
+    void scriptThatContainsQuery() {
         defaultScriptRunner.execute(scriptWithQuery);
     }
 
     @Test
-    public void emptyScript() {
+    void emptyScript() {
         defaultScriptRunner.execute(emptyScript);
     }
 

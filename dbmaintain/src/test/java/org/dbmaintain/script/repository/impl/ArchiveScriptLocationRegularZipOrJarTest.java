@@ -37,17 +37,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ArchiveScriptLocationRegularZipOrJarTest {
+class ArchiveScriptLocationRegularZipOrJarTest {
 
     private String zipFileLocation;
 
     @BeforeEach
-    public void init() throws Exception {
+    void init() throws Exception {
         zipFileLocation = new File(getClass().getResource("test-scripts.zip").toURI()).getPath();
     }
 
     @Test
-    public void readFromRegularZip() {
+    void readFromRegularZip() {
         File zipFile = new File(zipFileLocation);
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
@@ -58,7 +58,7 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
     }
 
     @Test
-    public void rootPathSpecified() {
+    void rootPathSpecified() {
         File zipFile = new File(zipFileLocation + "!scripts/");
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
@@ -69,7 +69,7 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
     }
 
     @Test
-    public void rootPathWithoutEndingSlash() {
+    void rootPathWithoutEndingSlash() {
         File zipFile = new File(zipFileLocation + "!scripts");
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
@@ -79,7 +79,7 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
     }
 
     @Test
-    public void rootPathDoesNotExist() {
+    void rootPathDoesNotExist() {
         File zipFile = new File(zipFileLocation + "!xxxx");
         ArchiveScriptLocation archiveScriptLocation = createArchiveScriptLocationFromFile(zipFile);
 
@@ -88,7 +88,7 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
     }
 
     @Test
-    public void zipFileDoesNotExist() {
+    void zipFileDoesNotExist() {
         File zipFile = new File("xxxx");
         assertThrows(DbMaintainException.class, () -> createArchiveScriptLocationFromFile(zipFile));
     }

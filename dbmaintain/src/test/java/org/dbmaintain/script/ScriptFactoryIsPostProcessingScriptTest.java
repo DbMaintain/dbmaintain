@@ -31,14 +31,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptFactoryIsPostProcessingScriptTest {
+class ScriptFactoryIsPostProcessingScriptTest {
 
     private String scriptIndexRegexp;
     private String targetDatabaseRegexp;
     private String qualifierRegexp;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
         targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
@@ -47,7 +47,7 @@ public class ScriptFactoryIsPostProcessingScriptTest {
 
 
     @Test
-    public void postProcessingScript() {
+    void postProcessingScript() {
         ScriptFactory scriptFactory = createScriptFactory("postprocessing");
 
         Script script = scriptFactory.createScriptWithoutContent("postprocessing/01_my_script.sql", null, null);
@@ -55,7 +55,7 @@ public class ScriptFactoryIsPostProcessingScriptTest {
     }
 
     @Test
-    public void notAPostProcessingScript() {
+    void notAPostProcessingScript() {
         ScriptFactory scriptFactory = createScriptFactory("postprocessing");
 
         Script script = scriptFactory.createScriptWithoutContent("other/01_my_script.sql", null, null);
@@ -63,7 +63,7 @@ public class ScriptFactoryIsPostProcessingScriptTest {
     }
 
     @Test
-    public void noPostProcessingScriptDirConfigured() {
+    void noPostProcessingScriptDirConfigured() {
         ScriptFactory scriptFactory = createScriptFactory(null);
 
         Script script = scriptFactory.createScriptWithoutContent("postprocessing/01_my_script.sql", null, null);
@@ -71,7 +71,7 @@ public class ScriptFactoryIsPostProcessingScriptTest {
     }
 
     @Test
-    public void postProcessingScriptDirEndingWithSlash() {
+    void postProcessingScriptDirEndingWithSlash() {
         ScriptFactory scriptFactory = createScriptFactory("postprocessing/");
 
         Script script = scriptFactory.createScriptWithoutContent("postprocessing/01_my_script.sql", null, null);
@@ -79,7 +79,7 @@ public class ScriptFactoryIsPostProcessingScriptTest {
     }
 
     @Test
-    public void postProcessingScriptDirEndingWithBackslash() {
+    void postProcessingScriptDirEndingWithBackslash() {
         ScriptFactory scriptFactory = createScriptFactory("postprocessing\\");
 
         Script script = scriptFactory.createScriptWithoutContent("postprocessing/01_my_script.sql", null, null);
@@ -87,7 +87,7 @@ public class ScriptFactoryIsPostProcessingScriptTest {
     }
 
     @Test
-    public void scriptNameWithBackslashes() {
+    void scriptNameWithBackslashes() {
         ScriptFactory scriptFactory = createScriptFactory("postprocessing");
 
         Script script = scriptFactory.createScriptWithoutContent("postprocessing\\01_my_script.sql", null, null);

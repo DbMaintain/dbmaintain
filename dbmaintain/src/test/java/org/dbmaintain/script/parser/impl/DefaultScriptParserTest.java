@@ -31,40 +31,40 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class DefaultScriptParserTest extends ScriptParserTestBase {
+class DefaultScriptParserTest extends ScriptParserTestBase {
 
     @Test
-    public void simpleStatement() {
+    void simpleStatement() {
         assertOneStatementEqualTo("statement 1", "statement 1;");
     }
 
     @Test
-    public void twoStatementsOnOneLine() {
+    void twoStatementsOnOneLine() {
         assertTwoStatementsEqualTo("statement 1", "statement 2", "statement 1;statement 2;");
     }
 
     @Test
-    public void multilineStatement() {
+    void multilineStatement() {
         assertTwoStatementsEqualTo("statement\non\nmultiple\nlines", "second statement",
                 "statement\non\r\nmultiple\nlines;second statement;");
     }
 
     @Test
-    public void comment() {
+    void comment() {
         assertOneStatement("statement 1; -- this is a comment;");
         assertOneStatement("statement 1 -- with a comment;\nproceeds on the next line;");
         assertOneStatement("--first a comment\nthen a statement;");
     }
 
     @Test
-    public void blockComment() {
+    void blockComment() {
         assertOneStatement("statement /*block comment;*/;");
         assertOneStatement("statement /*multiline\nblock\ncomment\n*/;");
         assertOneStatementEqualTo("/*first a block comment*/then a statement", "/*first a block comment*/then a statement;");
     }
 
     @Test
-    public void singleQuotes() {
+    void singleQuotes() {
         assertOneStatement("'Between quotes';");
         assertOneStatement("'Semicolon ; must be ignored';");
         assertOneStatement("'Double quotes \" ignored if between single quotes';");
@@ -75,7 +75,7 @@ public class DefaultScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void doubleQuotes() {
+    void doubleQuotes() {
         assertOneStatement("\"Between double quotes\";");
         assertOneStatement("\"Semicolon ; must be ignored\";");
         assertOneStatement("\"Single quotes ' ignored if between double quotes\";");
@@ -86,7 +86,7 @@ public class DefaultScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void backslashEscaping() {
+    void backslashEscaping() {
         assertOneStatement("Escaped quotes \\' and double quotes\\\";");
         assertOneStatement("Escaped semicolon \\; ignored;");
         assertOneStatement("-\\-This is not a comment;");
@@ -97,33 +97,33 @@ public class DefaultScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void commentOnly() {
+    void commentOnly() {
         assertNoStatement("-- this is a comment\n/* and this is anther comment*/\n");
     }
 
     @Test
-    public void whitespaceOnly() {
+    void whitespaceOnly() {
         assertNoStatement(";  \n\r;  \r\n;  \t  ;;;");
     }
 
     @Test
-    public void emptyScript() {
+    void emptyScript() {
         assertNoStatement("");
     }
 
     @Test
-    public void incompleteStatement() {
+    void incompleteStatement() {
         assertThrows(DbMaintainException.class, () -> assertNoStatement("statement without semicolon"));
     }
 
     @Test
-    public void replaceCarriageReturnsByNewLines() {
+    void replaceCarriageReturnsByNewLines() {
         assertOneStatementEqualTo("statement\non\nmultiple\nlines",
                 "statement\ron\r\nmultiple\nlines;");
     }
 
     @Test
-    public void replaceParameters() {
+    void replaceParameters() {
         Properties scriptParameters = new Properties();
         scriptParameters.put("param1", "param1Value");
         ScriptParser parser = createScriptParser(new StringReader(

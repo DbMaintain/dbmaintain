@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultDBClearerMultiSchemaPreserveTest {
+class DefaultDBClearerMultiSchemaPreserveTest {
 
     /* Tested object */
     private DefaultDBClearer defaultDBClearer;
@@ -62,7 +62,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
      * Configures the tested object. Creates a test table, index, view and sequence
      */
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         databases = getDatabases("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -92,13 +92,13 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
      * Removes all test tables.
      */
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         cleanupTestDatabase();
     }
 
 
     @Test
-    public void preserveTables() {
+    void preserveTables() {
         assertEquals(1, defaultDatabase.getTableNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_B").size());
@@ -110,7 +110,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     }
 
     @Test
-    public void preserveViews() {
+    void preserveViews() {
         assertEquals(1, defaultDatabase.getViewNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_B").size());
@@ -122,7 +122,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     }
 
     @Test
-    public void preserveSequences() {
+    void preserveSequences() {
         assertEquals(1, defaultDatabase.getSequenceNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_B").size());

@@ -29,16 +29,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptTest {
+class ScriptTest {
 
     @Test
-    public void testIsIncremental_incremental() {
+    void testIsIncremental_incremental() {
         Script script = createScript("incremental/02_sprint1/01_incrementalScript.sql");
         assertTrue(script.isIncremental());
     }
 
     @Test
-    public void testIsIncremental_repeatable() {
+    void testIsIncremental_repeatable() {
         Script script = createScript("repeatable/repeatableScript.sql");
         assertTrue(script.isRepeatable());
     }
@@ -47,12 +47,12 @@ public class ScriptTest {
      * Verifies that an exception is thrown when a repeatable script is located inside an indexed folder.
      */
     @Test
-    public void testIsIncremental_repeatableScriptInsideIndexedFolder() {
+    void testIsIncremental_repeatableScriptInsideIndexedFolder() {
         assertThrows(DbMaintainException.class, () -> createScript("incremental/02_script1/repeatableScript.sql"));
     }
 
     @Test
-    public void testOrder() {
+    void testOrder() {
     	Script preprocessing1 = createScript("preprocessing/01_pre.sql");
         Script preprocessing2 = createScript("preprocessing/noindex.sql");
         Script incremental1 = createScript("01_x/01_x.sql");

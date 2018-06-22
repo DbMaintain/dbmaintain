@@ -39,14 +39,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
+class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
 
     private SortedSet<Script> scripts;
 
     private File jarFile;
 
     @BeforeEach
-    public void init() throws IOException {
+    void init() throws IOException {
         Script script1 = TestUtils.createScriptWithContent("folder1/script1.sql", "Script 1 content");
         Script script2 = TestUtils.createScriptWithContent("folder1/script2.sql", "Script 2 content");
         scripts = asSortedSet(script1, script2);
@@ -54,7 +54,7 @@ public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
     }
 
     @Test
-    public void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
+    void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
         ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(scripts, "ISO-8859-1", "preprocessing", "postprocessing",
                 asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
                 "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);

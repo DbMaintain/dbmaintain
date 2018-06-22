@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class IncludeExcludeQualifierEvaluatorTest {
+class IncludeExcludeQualifierEvaluatorTest {
 
     @Test
-    public void includedQualifiers() {
+    void includedQualifiers() {
         Set<Qualifier> registeredQualifiers = qualifiers("Q1");
         Set<Qualifier> includedQualifiers = qualifiers("Q1");
         Set<Qualifier> excludedQualifiers = qualifiers();
@@ -44,7 +44,7 @@ public class IncludeExcludeQualifierEvaluatorTest {
     }
 
     @Test
-    public void includedQualifiers_unqualified() {
+    void includedQualifiers_unqualified() {
         Set<Qualifier> registeredQualifiers = qualifiers("Q1");
         Set<Qualifier> includedQualifiers = qualifiers("Q1", "<unqualified>");
         Set<Qualifier> excludedQualifiers = qualifiers();
@@ -55,7 +55,7 @@ public class IncludeExcludeQualifierEvaluatorTest {
 
 
     @Test
-    public void excludedQualifiers() {
+    void excludedQualifiers() {
         Set<Qualifier> registeredQualifiers = qualifiers("Q1");
         Set<Qualifier> includedQualifiers = qualifiers();
         Set<Qualifier> excludedQualifiers = qualifiers("Q1");
@@ -68,7 +68,7 @@ public class IncludeExcludeQualifierEvaluatorTest {
     }
 
     @Test
-    public void excludedQualifiers_unqualified() {
+    void excludedQualifiers_unqualified() {
         Set<Qualifier> registeredQualifiers = qualifiers("Q1");
         Set<Qualifier> includedQualifiers = qualifiers();
         Set<Qualifier> excludedQualifiers = qualifiers("Q1", "<unqualified>");
@@ -79,7 +79,7 @@ public class IncludeExcludeQualifierEvaluatorTest {
 
 
     @Test
-    public void includedAndExcludedQualifiers() {
+    void includedAndExcludedQualifiers() {
         Set<Qualifier> registeredQualifiers = qualifiers("Q1", "Q2");
         Set<Qualifier> includedQualifiers = qualifiers("Q1");
         Set<Qualifier> excludedQualifiers = qualifiers("Q2", "<unqualified>");

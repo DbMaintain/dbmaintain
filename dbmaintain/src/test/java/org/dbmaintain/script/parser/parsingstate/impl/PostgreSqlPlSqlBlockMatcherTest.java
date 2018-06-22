@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class PostgreSqlPlSqlBlockMatcherTest {
+class PostgreSqlPlSqlBlockMatcherTest {
 
     private PostgreSqlPlSqlBlockMatcher postgreSqlPlSqlBlockMatcher = new PostgreSqlPlSqlBlockMatcher();
 
     @Test
-    public void startOfStoredProcedure() {
+    void startOfStoredProcedure() {
         assertIsStartOfStoredProcedure("CREATE FUNCTION");
         assertIsStartOfStoredProcedure("CREATE OR REPLACE FUNCTION");
         assertIsStartOfStoredProcedure("CREATE RULE");
@@ -23,14 +23,14 @@ public class PostgreSqlPlSqlBlockMatcherTest {
     }
 
     @Test
-    public void noStartOfStoredProcedure() {
+    void noStartOfStoredProcedure() {
         assertIsNotStartOfStoredProcedure("DECLARE");
         assertIsNotStartOfStoredProcedure("CREATE PROCEDURE");
         assertIsNotStartOfStoredProcedure("CREATE TRIGGER");
     }
 
     @Test
-    public void noStartOfStoredProcedure_spacing() {
+    void noStartOfStoredProcedure_spacing() {
         assertIsNotStartOfStoredProcedure(" CREATE FUNCTION");
         assertIsNotStartOfStoredProcedure("CREATE  FUNCTION");
         assertIsNotStartOfStoredProcedure("CREATE FUNCTION SOMETHING");

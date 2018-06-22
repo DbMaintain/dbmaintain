@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class DefaultDBClearerMultiSchemaTest {
+class DefaultDBClearerMultiSchemaTest {
 
     /* Tested object */
     private DefaultDBClearer defaultDBClearer;
@@ -52,7 +52,7 @@ public class DefaultDBClearerMultiSchemaTest {
 
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         databases = getDatabases("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -67,13 +67,13 @@ public class DefaultDBClearerMultiSchemaTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         dropTestDatabase();
     }
 
 
     @Test
-    public void clearTables() {
+    void clearTables() {
         assertEquals(1, defaultDatabase.getTableNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getTableNames("SCHEMA_B").size());
@@ -84,7 +84,7 @@ public class DefaultDBClearerMultiSchemaTest {
     }
 
     @Test
-    public void clearViews() {
+    void clearViews() {
         assertEquals(1, defaultDatabase.getViewNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getViewNames("SCHEMA_B").size());
@@ -95,7 +95,7 @@ public class DefaultDBClearerMultiSchemaTest {
     }
 
     @Test
-    public void clearSequences() {
+    void clearSequences() {
         assertEquals(1, defaultDatabase.getSequenceNames("PUBLIC").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_A").size());
         assertEquals(1, defaultDatabase.getSequenceNames("SCHEMA_B").size());

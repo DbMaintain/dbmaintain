@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Filip Neven
  */
-public class CommandLineTest {
+class CommandLineTest {
 
     @Test
-    public void testHelp() {
+    void testHelp() {
         CommandLine.printHelpMessage();
     }
 }

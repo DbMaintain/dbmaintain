@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author Filip Neven
  * @author Scott Prater
  */
-public class DefaultDBClearerPreserveTest {
+class DefaultDBClearerPreserveTest {
 
     /* The logger instance for this class */
     private static Log logger = LogFactory.getLog(DefaultDBClearerPreserveTest.class);
@@ -73,7 +73,7 @@ public class DefaultDBClearerPreserveTest {
 
 
     @BeforeEach
-    public void initialize() throws Exception {
+    void initialize() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -109,27 +109,27 @@ public class DefaultDBClearerPreserveTest {
     }
 
     @AfterEach
-    public void cleanUp() throws Exception {
+    void cleanUp() throws Exception {
         cleanupTestDatabase();
     }
 
 
     @Test
-    public void preserveTables() {
+    void preserveTables() {
         assertEquals(2, defaultDatabase.getTableNames().size());
         defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDatabase.getTableNames().size());
     }
 
     @Test
-    public void preserveViews() {
+    void preserveViews() {
         assertEquals(2, defaultDatabase.getViewNames().size());
         defaultDBClearer.clearDatabase();
         assertEquals(2, defaultDatabase.getViewNames().size());
     }
 
     @Test
-    public void preserveMaterializedViews() {
+    void preserveMaterializedViews() {
         if (!defaultDatabase.supportsMaterializedViews()) {
             logger.warn("Current dialect does not support materialized views. Skipping test.");
             return;
@@ -140,7 +140,7 @@ public class DefaultDBClearerPreserveTest {
     }
 
     @Test
-    public void preserveSynonyms() {
+    void preserveSynonyms() {
         if (!defaultDatabase.supportsSynonyms()) {
             logger.warn("Current dialect does not support synonyms. Skipping test.");
             return;
@@ -151,7 +151,7 @@ public class DefaultDBClearerPreserveTest {
     }
 
     @Test
-    public void preserveSequences() {
+    void preserveSequences() {
         if (!defaultDatabase.supportsSequences()) {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
@@ -250,7 +250,7 @@ public class DefaultDBClearerPreserveTest {
      * @author Filip Neven
      * @author Tim Ducheyne
      */
-    public static class TestTrigger implements Trigger {
+    private static class TestTrigger implements Trigger {
 
         public void fire(int i, String string, String string1, Object[] objects, Object[] objects1) {
         }

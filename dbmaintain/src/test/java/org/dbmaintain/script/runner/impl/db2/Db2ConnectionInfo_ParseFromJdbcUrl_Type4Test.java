@@ -23,10 +23,10 @@ import static org.dbmaintain.script.runner.impl.db2.Db2ConnectionInfo.parseFromJ
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class Db2ConnectionInfo_ParseFromJdbcUrl_Type4Test {
+class Db2ConnectionInfo_ParseFromJdbcUrl_Type4Test {
 
     @Test
-    public void validType4Url() {
+    void validType4Url() {
         Db2ConnectionInfo db2ConnectionInfo = parseFromJdbcUrl("jdbc:db2://host:port/database", "alias", "user", "pass");
 
         assertEquals("host", db2ConnectionInfo.getHost());
@@ -38,7 +38,7 @@ public class Db2ConnectionInfo_ParseFromJdbcUrl_Type4Test {
     }
 
     @Test
-    public void portIsOptional() {
+    void portIsOptional() {
         Db2ConnectionInfo db2ConnectionInfo = parseFromJdbcUrl("jdbc:db2://host/database", null, null, null);
 
         assertEquals("host", db2ConnectionInfo.getHost());
@@ -47,22 +47,22 @@ public class Db2ConnectionInfo_ParseFromJdbcUrl_Type4Test {
     }
 
     @Test
-    public void hostIsRequired() {
+    void hostIsRequired() {
         assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2:///database", null, null, null));
     }
 
     @Test
-    public void databaseIsRequired() {
+    void databaseIsRequired() {
         assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2://host/", null, null, null));
     }
 
     @Test
-    public void noDatabaseSlash() {
+    void noDatabaseSlash() {
         assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2://host", null, null, null));
     }
 
     @Test
-    public void empty() {
+    void empty() {
         assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2://", null, null, null));
     }
 }

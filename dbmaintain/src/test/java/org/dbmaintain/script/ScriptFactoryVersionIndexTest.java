@@ -34,12 +34,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Filip Neven
  * @author Tim Ducheyne
  */
-public class ScriptFactoryVersionIndexTest {
+class ScriptFactoryVersionIndexTest {
 
     private ScriptFactory scriptFactory;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         String scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
         String targetDatabaseRegexp = configuration.getProperty(PROPERTY_SCRIPT_TARGETDATABASE_REGEXP);
@@ -51,49 +51,49 @@ public class ScriptFactoryVersionIndexTest {
 
 
     @Test
-    public void singleIndex() {
+    void singleIndex() {
         Script script = scriptFactory.createScriptWithoutContent("01_my_script.sql", null, null);
         assertScriptIndexes(script, 1L);
     }
 
     @Test
-    public void multipleIndexes() {
+    void multipleIndexes() {
         Script script = scriptFactory.createScriptWithoutContent("01_scripts/2_release/003_my_script.sql", null, null);
         assertScriptIndexes(script, 1L, 2L, 3L);
     }
 
     @Test
-    public void pathWithoutIndex() {
+    void pathWithoutIndex() {
         Script script = scriptFactory.createScriptWithoutContent("scripts/release/003_my_script.sql", null, null);
         assertScriptIndexes(script, null, null, 3L);
     }
 
     @Test
-    public void leadingIndex() {
+    void leadingIndex() {
         Script script = scriptFactory.createScriptWithoutContent("1_my_script.sql", null, null);
         assertScriptIndexes(script, 1L);
     }
 
     @Test
-    public void onlyIndex() {
+    void onlyIndex() {
         Script script = scriptFactory.createScriptWithoutContent("1.sql", null, null);
         assertScriptIndexes(script, 1L);
     }
 
     @Test
-    public void noIndexes() {
+    void noIndexes() {
         Script script = scriptFactory.createScriptWithoutContent("scripts/my_script.sql", null, null);
         assertTrue(script.getQualifiers().isEmpty());
     }
 
     @Test
-    public void noIndexesOnlyFileName() {
+    void noIndexesOnlyFileName() {
         Script script = scriptFactory.createScriptWithoutContent("my_script.sql", null, null);
         assertTrue(script.getQualifiers().isEmpty());
     }
 
     @Test
-    public void invalidIndexIsIgnored() {
+    void invalidIndexIsIgnored() {
         Script script = scriptFactory.createScriptWithoutContent("0xxx1_script.sql", null, null);
         assertTrue(script.getQualifiers().isEmpty());
     }

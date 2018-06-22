@@ -23,10 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class Db2ConnectionInfo_ParseFromJdbcUrl_Type2Test {
+class Db2ConnectionInfo_ParseFromJdbcUrl_Type2Test {
 
     @Test
-    public void validType2Url() {
+    void validType2Url() {
         Db2ConnectionInfo db2ConnectionInfo = parseFromJdbcUrl("jdbc:db2:database", "alias", "user", "pass");
 
         assertNull(db2ConnectionInfo.getHost());
@@ -38,12 +38,12 @@ public class Db2ConnectionInfo_ParseFromJdbcUrl_Type2Test {
     }
 
     @Test
-    public void databaseIsRequired() {
+    void databaseIsRequired() {
         assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2:", null, null, null));
     }
 
     @Test
-    public void empty() {
+    void empty() {
         assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2", null, null, null));
     }
 }

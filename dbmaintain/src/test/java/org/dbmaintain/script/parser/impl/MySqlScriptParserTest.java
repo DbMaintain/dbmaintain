@@ -34,21 +34,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class MySqlScriptParserTest extends ScriptParserTestBase {
 
     @Test
-    public void plSqlShouldEndWithASlash() {
+    void plSqlShouldEndWithASlash() {
         assertOneStatementEqualTo("create function function1 statement;\n",
                 "create function function1 statement;\n" +
                         "/\n");
     }
 
     @Test
-    public void withDefinerPart() {
+    void withDefinerPart() {
         assertOneStatementEqualTo("create DEFINER=`root`@`localhost` function function1 statement;\n",
                 "create DEFINER=`root`@`localhost` function function1 statement;\n" +
                         "/\n");
     }
 
     @Test
-    public void compoundStatement() {
+    void compoundStatement() {
         assertOneStatement("-- comment \n" +
                 "BEGIN ATOMIC\n" +
                 "        DECLARE A BIGINT;\n" +
@@ -68,7 +68,7 @@ public class MySqlScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void twoStatements() {
+    void twoStatements() {
         assertTwoStatements("create function f1\nstatement 1;\n" +
                 "/\n" +
                 "create function f2\nstatement 1;statement 2;\n" +
@@ -76,7 +76,7 @@ public class MySqlScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void scriptWithComments() {
+    void scriptWithComments() {
         assertOneStatement("-- comment before script\n" +
                 "/* block comment before script */\n" +
                 "begin dosomething  /* block comment in script */\n" +
@@ -85,13 +85,13 @@ public class MySqlScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void scriptWithQuotes() {
+    void scriptWithQuotes() {
         assertOneStatement("begin 'within quotes, slashes are ignored:\n/\n' end;\n" +
                 "/\n");
     }
 
     @Test
-    public void commentsOrWhitespaceInStoredProcedureHeader() {
+    void commentsOrWhitespaceInStoredProcedureHeader() {
         assertTwoStatements("create\n" +
                 "procedure\n" +
                 "statement 1; statement 2;\n" +
@@ -103,18 +103,18 @@ public class MySqlScriptParserTest extends ScriptParserTestBase {
     }
 
     @Test
-    public void scriptNotEndingWithSlash() {
+    void scriptNotEndingWithSlash() {
         assertThrows(DbMaintainException.class, () -> assertOneStatement("create procedure something;"));
     }
 
     @Test
-    public void scriptEndingWithSlashWithoutNewline() {
+    void scriptEndingWithSlashWithoutNewline() {
         assertOneStatement("create procedure s;\n/");
     }
 
 
     @Override
-    protected ScriptParser createScriptParser(Reader scriptReader) {
+    ScriptParser createScriptParser(Reader scriptReader) {
         ScriptParserFactory factory = new MySqlScriptParserFactory(true, null);
         return factory.createScriptParser(scriptReader);
     }

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Tim Ducheyne
  * @author Filip Neven
  */
-public class TaskConfigurationAddDatabaseConfigurationsTest {
+class TaskConfigurationAddDatabaseConfigurationsTest {
 
     /* Tested object */
     private TaskConfiguration taskConfiguration;
@@ -21,13 +21,13 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     private Properties configuration;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         configuration = new Properties();
         taskConfiguration = new TaskConfiguration(configuration);
     }
 
     @Test
-    public void addUnnamedDatabase() {
+    void addUnnamedDatabase() {
         DbMaintainDatabase unnamedDatabase = new DbMaintainDatabase(null, true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(Collections.singletonList(unnamedDatabase));
 
@@ -36,7 +36,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     }
 
     @Test
-    public void addNamedDatabase() {
+    void addNamedDatabase() {
         DbMaintainDatabase namedDatabase = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(Collections.singletonList(namedDatabase));
 
@@ -45,7 +45,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     }
 
     @Test
-    public void addNamedAndUnnamedDatabase() {
+    void addNamedAndUnnamedDatabase() {
         DbMaintainDatabase unnamedDatabase = new DbMaintainDatabase(null, true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         DbMaintainDatabase namedDatabase = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(asList(unnamedDatabase, namedDatabase));
@@ -56,7 +56,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     }
 
     @Test
-    public void unnamedDatabaseShouldBePutAsFirstDatabase() {
+    void unnamedDatabaseShouldBePutAsFirstDatabase() {
         DbMaintainDatabase namedDatabase = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         DbMaintainDatabase unnamedDatabase = new DbMaintainDatabase(null, true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(asList(namedDatabase, unnamedDatabase));
@@ -67,7 +67,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     }
 
     @Test
-    public void addMultipleNamedDatabases() {
+    void addMultipleNamedDatabases() {
         DbMaintainDatabase namedDatabase1 = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         DbMaintainDatabase namedDatabase2 = new DbMaintainDatabase("db2", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
         taskConfiguration.addDatabaseConfigurations(asList(namedDatabase1, namedDatabase2));

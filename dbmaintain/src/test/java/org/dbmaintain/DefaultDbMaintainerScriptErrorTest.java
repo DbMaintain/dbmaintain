@@ -32,24 +32,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
-public class DefaultDbMaintainerScriptErrorTest {
+class DefaultDbMaintainerScriptErrorTest {
 
     @Mock
-    protected ExecutedScriptInfoSource executedScriptInfoSource;
+    private ExecutedScriptInfoSource executedScriptInfoSource;
 
     @Mock
     private ScriptRunner scriptRunner;
 
-    protected Script script;
+    private Script script;
 
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         script = TestUtils.createScriptWithContent("01_filename.sql", "content of script");
     }
 
     @Test
-    public void errorMessageShouldContainFullScriptContents() {
+    void errorMessageShouldContainFullScriptContents() {
         DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(10000);
         doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
@@ -61,7 +61,7 @@ public class DefaultDbMaintainerScriptErrorTest {
     }
 
     @Test
-    public void loggingOfScriptContentsDisabledWhenMaxLengthIsSetTo0() {
+    void loggingOfScriptContentsDisabledWhenMaxLengthIsSetTo0() {
         DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(0);
         doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
@@ -70,7 +70,7 @@ public class DefaultDbMaintainerScriptErrorTest {
     }
 
     @Test
-    public void largeScriptContentIsTruncated() {
+    void largeScriptContentIsTruncated() {
         DefaultDbMaintainer defaultDbMaintainer = createDefaultDbMaintainer(5);
         doThrow(new DbMaintainException("error message")).when(scriptRunner).execute(script);
 
