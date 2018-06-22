@@ -179,7 +179,7 @@ public class ArchiveScriptLocation extends ScriptLocation {
         }
         Properties configuration = new Properties();
 
-        try (InputStream configurationInputStream = jarFile.getInputStream(configurationEntry);) {
+        try (InputStream configurationInputStream = jarFile.getInputStream(configurationEntry)) {
             configuration.load(configurationInputStream);
             return configuration;
         } catch (IOException e) {
