@@ -71,14 +71,8 @@ public class FileUtils {
      * @param content The content for the file, not null
      */
     public static void createFile(File file, String content, String fileCharset) throws IOException {
-        Writer writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriterWithEncoding(file, fileCharset, false));
+        try (Writer writer = new BufferedWriter(new FileWriterWithEncoding(file, fileCharset, false))) {
             writer.write(content);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
         }
     }
 }
