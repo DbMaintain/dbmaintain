@@ -17,18 +17,17 @@ package org.dbmaintain.structure.clean.impl;
 
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
-import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for the DBCleaner with multiple schemas.
@@ -49,7 +48,7 @@ public class DefaultDBCleanerMultiSchemaTest {
     /**
      * Initializes the test fixture.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         // configure 3 schemas
         Databases databases = TestUtils.getDatabases("PUBLIC", "SCHEMA_A", "SCHEMA_B");
@@ -64,7 +63,7 @@ public class DefaultDBCleanerMultiSchemaTest {
     /**
      * Removes the test database tables from the test database, to avoid inference with other tests
      */
-    @After
+    @AfterEach
     public void tearDown() {
         dropTestTables();
     }

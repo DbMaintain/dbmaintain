@@ -17,16 +17,36 @@ package org.dbmaintain.script.analyzer;
 
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static org.dbmaintain.script.analyzer.ScriptUpdateType.*;
-import static org.dbmaintain.util.TestUtils.*;
-import static org.junit.Assert.assertTrue;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.HIGHER_INDEX_SCRIPT_ADDED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.INDEXED_SCRIPT_DELETED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.INDEXED_SCRIPT_RENAMED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.INDEXED_SCRIPT_RENAMED_SCRIPT_SEQUENCE_CHANGED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.INDEXED_SCRIPT_UPDATED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.LOWER_INDEX_NON_PATCH_SCRIPT_ADDED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.LOWER_INDEX_PATCH_SCRIPT_ADDED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.POSTPROCESSING_SCRIPT_ADDED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.POSTPROCESSING_SCRIPT_DELETED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.POSTPROCESSING_SCRIPT_RENAMED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.POSTPROCESSING_SCRIPT_UPDATED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.PREPROCESSING_SCRIPT_ADDED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.PREPROCESSING_SCRIPT_DELETED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.PREPROCESSING_SCRIPT_RENAMED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.PREPROCESSING_SCRIPT_UPDATED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_ADDED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_DELETED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_RENAMED;
+import static org.dbmaintain.script.analyzer.ScriptUpdateType.REPEATABLE_SCRIPT_UPDATED;
+import static org.dbmaintain.util.TestUtils.createScriptWithModificationDateAndCheckSum;
+import static org.dbmaintain.util.TestUtils.getExecutedScriptInfoSource;
+import static org.dbmaintain.util.TestUtils.getScriptRepository;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Filip Neven

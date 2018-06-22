@@ -21,13 +21,13 @@ import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for the ConstraintsDisabler. This test is independent of the dbms that is used. The database dialect that
@@ -49,7 +49,7 @@ public class ConstraintsDisablerTest {
      * Test fixture. Configures the ConstraintsDisabler with the implementation that matches the configured database
      * dialect
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         databases = TestUtils.getDatabases();
         dataSource = databases.getDefaultDatabase().getDataSource();
@@ -63,7 +63,7 @@ public class ConstraintsDisablerTest {
     /**
      * Drops the test tables, to avoid influencing other tests
      */
-    @After
+    @AfterEach
     public void tearDown() {
         cleanupTestDatabase();
     }

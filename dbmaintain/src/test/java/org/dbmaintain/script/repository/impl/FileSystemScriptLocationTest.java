@@ -17,14 +17,14 @@ package org.dbmaintain.script.repository.impl;
 
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.TestUtils.createScript;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Filip Neven
@@ -37,7 +37,7 @@ public class FileSystemScriptLocationTest {
     private File scriptRootLocation;
     private Script indexed1, repeatable1, preProcessing1, postProcessing1;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         indexed1 = createScript("01_indexed1.sql");
         repeatable1 = createScript("repeatable1.sql");

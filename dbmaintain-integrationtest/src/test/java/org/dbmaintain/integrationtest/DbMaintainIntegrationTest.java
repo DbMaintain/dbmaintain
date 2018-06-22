@@ -21,7 +21,11 @@ import org.dbmaintain.DbMaintainer;
 import org.dbmaintain.MainFactory;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.config.DbMaintainProperties;
-import org.dbmaintain.database.*;
+import org.dbmaintain.database.Database;
+import org.dbmaintain.database.DatabaseConnectionManager;
+import org.dbmaintain.database.Databases;
+import org.dbmaintain.database.DatabasesFactory;
+import org.dbmaintain.database.SQLHandler;
 import org.dbmaintain.database.impl.DefaultDatabaseConnectionManager;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
 import org.dbmaintain.datasource.DataSourceFactory;
@@ -30,8 +34,8 @@ import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.SQLTestUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -39,15 +43,45 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.apache.commons.lang3.StringUtils.*;
-import static org.dbmaintain.config.DbMaintainProperties.*;
-import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.*;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
+import static org.apache.commons.lang3.StringUtils.substringBefore;
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_AUTO_CREATE_DBMAINTAIN_SCRIPTS_TABLE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_BASELINE_REVISION;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FILE_NAME_COLUMN_SIZE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_FROM_SCRATCH_ENABLED;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_QUALIFIERS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_LOCATIONS;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_PARAMETER_FILE;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_USESCRIPTFILELASTMODIFICATIONDATES;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_1;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_1_QUALIFIER1;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_1_RENAMED;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_2;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_2_QUALIFIER2;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_2_UNKNOWN_QUALIFIER;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_3;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_3_QUALIFIER1_QUALIFIER2;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.INCREMENTAL_4;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.POST_PROCESSING_INDEXED_1;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.POST_PROCESSING_INDEXED_2;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.POST_PROCESSING_INDEXED_2_RENAMED;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.POST_PROCESSING_NOTINDEXED;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.PRE_PROCESSING_INDEXED_1;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.PRE_PROCESSING_INDEXED_2;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.PRE_PROCESSING_INDEXED_2_RENAMED;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.PRE_PROCESSING_NOTINDEXED;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.REPEATABLE;
+import static org.dbmaintain.integrationtest.DbMaintainIntegrationTest.TestScript.REPEATABLE_RENAMED;
 import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Integration test for the dbmaintainer: verifies the typical usage scenario's in an integrated way: The dbmaintainer is
@@ -104,7 +138,7 @@ public class DbMaintainIntegrationTest {
     private Database defaultDatabase;
     private Properties configuration;
 
-    @Before
+    @BeforeEach
     public void init() {
         scriptsLocation = new File("target", "dbmaintain-integrationtest/scripts");
         initConfiguration();
@@ -293,13 +327,13 @@ public class DbMaintainIntegrationTest {
      * Test for adding a patch script that has an index smaller than an existing index. Out of sequence is
      * not allowed so the update should have failed.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void addPatchScript_outOfSequenceNotAllowed() {
         createScripts(INCREMENTAL_2);
         updateDatabase();
 
         createPatchScript(INCREMENTAL_1);
-        updateDatabase();
+        assertThrows(DbMaintainException.class, this::updateDatabase);
     }
 
 
@@ -321,14 +355,14 @@ public class DbMaintainIntegrationTest {
      * Test for adding a patch script that has an index smaller than an existing index. Out of sequence is
      * allowed, but the patch has a sequence nr that was already used. This should fail.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void addPatchScript_identicalSequenceNr() {
         allowOutOfSequenceExecutionOfPatches();
         createScripts(INCREMENTAL_1);
         updateDatabase();
 
         createPatchScript(INCREMENTAL_1);
-        updateDatabase();
+        assertThrows(DbMaintainException.class, this::updateDatabase);
     }
 
 
@@ -715,10 +749,10 @@ public class DbMaintainIntegrationTest {
         assertScriptsNotExecuted(INCREMENTAL_2_QUALIFIER2, INCREMENTAL_3_QUALIFIER1_QUALIFIER2, INCREMENTAL_4);
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void testErrorInCaseOfUnknownQualifier() {
         createScripts(INCREMENTAL_2_UNKNOWN_QUALIFIER);
-        updateDatabase();
+        assertThrows(DbMaintainException.class, this::updateDatabase);
     }
 
 
@@ -784,7 +818,7 @@ public class DbMaintainIntegrationTest {
 
     private void assertMessageContains(String message, String... subStrings) {
         for (String subString : subStrings) {
-            assertTrue("Expected message to contain substring " + subString + ", but it doesn't.\nMessage was: " + message, message.toLowerCase().contains(subString.toLowerCase()));
+            assertTrue(message.toLowerCase().contains(subString.toLowerCase()), "Expected message to contain substring " + subString + ", but it doesn't.\nMessage was: " + message);
         }
     }
 
@@ -815,7 +849,7 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
-            assertTrue("Table " + tableName + " does not exist, so the script " + script + " has not been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+            assertTrue(tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)), "Table " + tableName + " does not exist, so the script " + script + " has not been executed");
         }
     }
 
@@ -823,7 +857,7 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
-            assertTrue("Table " + tableName + " does not exist, so the updated script " + script + " has not been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+            assertTrue(tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)), "Table " + tableName + " does not exist, so the updated script " + script + " has not been executed");
         }
     }
 
@@ -831,7 +865,7 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getTableNameForScript(script);
-            assertFalse("Table " + tableName + " exists, so the script " + script + " has been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+            assertFalse(tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)), "Table " + tableName + " exists, so the script " + script + " has been executed");
         }
     }
 
@@ -839,16 +873,16 @@ public class DbMaintainIntegrationTest {
         Set<String> tableNames = getTableNames();
         for (TestScript script : scripts) {
             String tableName = getUpdatedTableNameForScript(script);
-            assertFalse("Table " + tableName + " exists, so the updated script " + script + " has been executed", tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+            assertFalse(tableNames.contains(defaultDatabase.toCorrectCaseIdentifier(tableName)), "Table " + tableName + " exists, so the updated script " + script + " has been executed");
         }
     }
 
     private void assertTableExists(String tableName) {
-        assertTrue("Table " + tableName + " doesn't exist", getTableNames().contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+        assertTrue(getTableNames().contains(defaultDatabase.toCorrectCaseIdentifier(tableName)), "Table " + tableName + " doesn't exist");
     }
 
     private void assertTableDoesntExist(String tableName) {
-        assertFalse("Table " + tableName + " exists, while it shouldn't", getTableNames().contains(defaultDatabase.toCorrectCaseIdentifier(tableName)));
+        assertFalse(getTableNames().contains(defaultDatabase.toCorrectCaseIdentifier(tableName)), "Table " + tableName + " exists, while it shouldn't");
     }
 
     private boolean updateDatabase() {

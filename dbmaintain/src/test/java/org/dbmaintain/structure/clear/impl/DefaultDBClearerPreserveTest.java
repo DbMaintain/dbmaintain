@@ -25,20 +25,32 @@ import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
-import static org.dbmaintain.structure.model.DbItemType.*;
-import static org.dbmaintain.util.SQLTestUtils.*;
+import static org.dbmaintain.structure.model.DbItemType.MATERIALIZED_VIEW;
+import static org.dbmaintain.structure.model.DbItemType.SEQUENCE;
+import static org.dbmaintain.structure.model.DbItemType.SYNONYM;
+import static org.dbmaintain.structure.model.DbItemType.TABLE;
+import static org.dbmaintain.structure.model.DbItemType.VIEW;
+import static org.dbmaintain.util.SQLTestUtils.dropTestMaterializedViews;
+import static org.dbmaintain.util.SQLTestUtils.dropTestSequences;
+import static org.dbmaintain.util.SQLTestUtils.dropTestSynonyms;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTriggers;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTypes;
+import static org.dbmaintain.util.SQLTestUtils.dropTestViews;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for the {@link org.dbmaintain.structure.clear.DBClearer} with configuration to preserve all items.
@@ -60,7 +72,7 @@ public class DefaultDBClearerPreserveTest {
     private Databases databases;
 
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
@@ -96,7 +108,7 @@ public class DefaultDBClearerPreserveTest {
         defaultDBClearer = new DefaultDBClearer(databases, itemsToPreserve, new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
     }
 
-    @After
+    @AfterEach
     public void cleanUp() throws Exception {
         cleanupTestDatabase();
     }

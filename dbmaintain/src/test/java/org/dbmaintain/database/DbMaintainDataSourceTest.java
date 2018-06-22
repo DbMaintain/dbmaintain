@@ -15,8 +15,8 @@
  */
 package org.dbmaintain.database;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -24,7 +24,9 @@ import java.sql.SQLException;
 
 import static org.dbmaintain.datasource.SimpleDataSource.createDataSource;
 import static org.dbmaintain.util.TestUtils.getHsqlDatabaseInfo;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * @author Filip Neven
@@ -37,7 +39,7 @@ public class DbMaintainDataSourceTest {
     private DataSource dataSource;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         databaseInfo = getHsqlDatabaseInfo();
         dataSource = createDataSource(databaseInfo);

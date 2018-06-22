@@ -22,7 +22,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Base class for SQL script parser tests
@@ -49,7 +51,7 @@ public abstract class ScriptParserTestBase {
             assertEquals(expectedStatement, statement);
         }
         String nextStatement = parser.getNextStatement();
-        assertNull("expected no more statements but found: " + nextStatement, nextStatement);
+        assertNull(nextStatement, "expected no more statements but found: " + nextStatement);
     }
 
     protected void assertTwoStatements(String script) {

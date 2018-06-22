@@ -20,9 +20,9 @@ import org.dbmaintain.database.Databases;
 import org.dbmaintain.database.impl.DefaultSQLHandler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.Set;
@@ -30,9 +30,12 @@ import java.util.Set;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.TABLE;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.dbmaintain.util.SQLTestUtils.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
+import static org.dbmaintain.util.SQLTestUtils.dropTestViews;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
+import static org.dbmaintain.util.SQLTestUtils.isEmpty;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for the DBCleaner.
@@ -56,7 +59,7 @@ public class DefaultDBCleanerTest {
      * Test fixture. The DefaultDBCleaner is instantiated and configured. Test tables are created and filled with test
      * data. One of these tables is configured as 'tabletopreserve'.
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
@@ -79,7 +82,7 @@ public class DefaultDBCleanerTest {
     /**
      * Removes the test database tables from the test database, to avoid inference with other tests
      */
-    @After
+    @AfterEach
     public void tearDown() {
         cleanupTestDatabase();
     }

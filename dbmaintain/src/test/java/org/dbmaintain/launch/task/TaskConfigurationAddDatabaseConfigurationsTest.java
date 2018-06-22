@@ -1,12 +1,12 @@
 package org.dbmaintain.launch.task;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Tim Ducheyne
@@ -19,7 +19,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
 
     private Properties configuration;
 
-    @Before
+    @BeforeEach
     public void initialize() {
         configuration = new Properties();
         taskConfiguration = new TaskConfiguration(configuration);

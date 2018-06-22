@@ -17,7 +17,7 @@ package org.dbmaintain.script.parser.impl;
 
 import org.dbmaintain.script.parser.ScriptParser;
 import org.dbmaintain.script.parser.ScriptParserFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.Reader;
 

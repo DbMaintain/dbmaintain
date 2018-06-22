@@ -18,9 +18,11 @@ package org.dbmaintain.script.parser.impl;
 import org.dbmaintain.script.parser.ScriptParser;
 import org.dbmaintain.script.parser.ScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.Reader;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests the DB2 SQL and PL-SQL script parsing
@@ -94,9 +96,9 @@ public class Db2ScriptParserTest extends ScriptParserTestBase {
                 "/\n");
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void scriptNotEndingWithSlash() {
-        assertOneStatement("create procedure something;");
+        assertThrows(DbMaintainException.class, () -> assertOneStatement("create procedure something;"));
     }
 
     @Test

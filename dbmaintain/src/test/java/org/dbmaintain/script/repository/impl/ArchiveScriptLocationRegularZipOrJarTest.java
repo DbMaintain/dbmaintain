@@ -18,8 +18,8 @@ package org.dbmaintain.script.repository.impl;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.List;
@@ -28,9 +28,10 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Filip Neven
@@ -40,7 +41,7 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
 
     private String zipFileLocation;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         zipFileLocation = new File(getClass().getResource("test-scripts.zip").toURI()).getPath();
     }
@@ -86,10 +87,10 @@ public class ArchiveScriptLocationRegularZipOrJarTest {
         assertTrue(scripts.isEmpty());
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void zipFileDoesNotExist() {
         File zipFile = new File("xxxx");
-        createArchiveScriptLocationFromFile(zipFile);
+        assertThrows(DbMaintainException.class, () -> createArchiveScriptLocationFromFile(zipFile));
     }
 
 

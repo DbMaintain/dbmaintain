@@ -16,13 +16,13 @@
 package org.dbmaintain.script.qualifier;
 
 import org.dbmaintain.script.qualifier.impl.IncludeExcludeQualifierEvaluator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static org.dbmaintain.util.TestUtils.qualifiers;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Filip Neven

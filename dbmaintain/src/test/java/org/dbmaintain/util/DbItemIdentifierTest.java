@@ -17,12 +17,12 @@ package org.dbmaintain.util;
 
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.structure.model.DbItemIdentifier;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.assertEquals;
 import static org.dbmaintain.structure.model.DbItemIdentifier.*;
 import static org.dbmaintain.structure.model.DbItemType.TABLE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Filip Neven
@@ -32,7 +32,7 @@ public class DbItemIdentifierTest {
 
     private Databases databases;
 
-    @Before
+    @BeforeEach
     public void init() {
         databases = TestUtils.getDatabases();
     }

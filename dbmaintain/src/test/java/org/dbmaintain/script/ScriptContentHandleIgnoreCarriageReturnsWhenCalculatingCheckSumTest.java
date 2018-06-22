@@ -15,10 +15,11 @@
  */
 package org.dbmaintain.script;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.dbmaintain.util.TestUtils.createScriptFactory;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * @author Tim Ducheyne
@@ -36,7 +37,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
         Script windowsFile = createScriptWithContent("fileName", "script\r\ncontent", true);
         String windowsCheckSum = windowsFile.getScriptContentHandle().getCheckSum();
 
-        assertEquals("CheckSums should be equal for unix and windows", windowsCheckSum, unixCheckSum);
+        assertEquals(windowsCheckSum, unixCheckSum, "CheckSums should be equal for unix and windows");
     }
 
     @Test
@@ -47,7 +48,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
         String unixCheckSum = unixScriptContentHandle.getCheckSum();
         String windowsCheckSum = windowsScriptContentHandle.getCheckSum();
 
-        assertEquals("CheckSums should be equal for unix and windows", windowsCheckSum, unixCheckSum);
+        assertEquals(windowsCheckSum, unixCheckSum, "CheckSums should be equal for unix and windows");
     }
 
     @Test
@@ -58,8 +59,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
         Script windowsFile = createScriptWithContent("fileName", "script\r\ncontent", false);
         String windowsCheckSum = windowsFile.getScriptContentHandle().getCheckSum();
 
-        assertNotEquals("Scripts should not be converted to UNIX if useUnixCheckSum is false", windowsCheckSum,
-                unixCheckSum);
+        assertNotEquals(windowsCheckSum, unixCheckSum, "Scripts should not be converted to UNIX if useUnixCheckSum is false");
     }
 
     @Test
@@ -70,8 +70,7 @@ public class ScriptContentHandleIgnoreCarriageReturnsWhenCalculatingCheckSumTest
         String unixCheckSum = unixScriptContentHandle.getCheckSum();
         String windowsCheckSum = windowsScriptContentHandle.getCheckSum();
 
-        assertNotEquals("Scripts should not be converted to UNIX if useUnixCheckSum is false", windowsCheckSum,
-                unixCheckSum);
+        assertNotEquals(windowsCheckSum, unixCheckSum, "Scripts should not be converted to UNIX if useUnixCheckSum is false");
     }
 
 

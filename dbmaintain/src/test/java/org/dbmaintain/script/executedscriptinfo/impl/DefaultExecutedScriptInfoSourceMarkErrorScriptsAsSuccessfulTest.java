@@ -18,9 +18,9 @@ package org.dbmaintain.script.executedscriptinfo.impl;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
@@ -33,8 +33,8 @@ import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.createScript;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Tim Ducheyne
@@ -49,7 +49,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
     private Database defaultDatabase;
 
 
-    @Before
+    @BeforeEach
     public void initialize() {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -59,7 +59,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
         dropExecutedScriptsTable();
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         dropExecutedScriptsTable();
     }

@@ -20,9 +20,9 @@ import org.dbmaintain.database.impl.DefaultSQLHandler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.Set;
@@ -31,8 +31,8 @@ import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifie
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.TABLE;
 import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for the DBCleaner with multiple schemas with configuration to preserve all tables. <p> Currently this is
@@ -52,7 +52,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
     private Databases databases;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // configure 3 schemas
         databases = TestUtils.getDatabases("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
@@ -70,7 +70,7 @@ public class DefaultDBCleanerMultiSchemaPreserveTest {
         defaultDBCleaner = new DefaultDBCleaner(databases, itemsToPreserve, new DefaultSQLHandler());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         dropTestTables();
     }

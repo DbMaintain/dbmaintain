@@ -19,9 +19,9 @@ import org.dbmaintain.database.Database;
 import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 
@@ -49,7 +49,7 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
     private Script script;
 
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -62,7 +62,7 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
         dropExecutedScriptsTable();
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         dropExecutedScriptsTable();
     }

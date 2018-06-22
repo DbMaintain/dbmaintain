@@ -15,11 +15,13 @@
  */
 package org.dbmaintain.script;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static org.dbmaintain.util.TestUtils.*;
+import static org.dbmaintain.util.TestUtils.createScriptWithCheckSum;
+import static org.dbmaintain.util.TestUtils.createScriptWithContent;
+import static org.dbmaintain.util.TestUtils.createScriptWithModificationDateAndCheckSum;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for checking whether 2 scripts have an equal content => checks for timestamp and check sums

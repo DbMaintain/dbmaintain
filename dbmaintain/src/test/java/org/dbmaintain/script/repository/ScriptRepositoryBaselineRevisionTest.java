@@ -18,7 +18,7 @@ package org.dbmaintain.script.repository;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.SortedSet;
@@ -27,9 +27,11 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.dbmaintain.util.TestUtils.createArchiveScriptLocation;
+import static org.dbmaintain.util.TestUtils.createScriptFactory;
+import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Tim Ducheyne

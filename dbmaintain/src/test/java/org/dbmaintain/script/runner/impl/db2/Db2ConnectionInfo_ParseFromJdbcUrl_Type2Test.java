@@ -16,12 +16,12 @@
 package org.dbmaintain.script.runner.impl.db2;
 
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.dbmaintain.script.runner.impl.db2.Db2ConnectionInfo.parseFromJdbcUrl;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class Db2ConnectionInfo_ParseFromJdbcUrl_Type2Test {
 
@@ -37,13 +37,13 @@ public class Db2ConnectionInfo_ParseFromJdbcUrl_Type2Test {
         assertEquals("pass", db2ConnectionInfo.getPassword());
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void databaseIsRequired() {
-        parseFromJdbcUrl("jdbc:db2:", null, null, null);
+        assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2:", null, null, null));
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void empty() {
-        parseFromJdbcUrl("jdbc:db2", null, null, null);
+        assertThrows(DbMaintainException.class, () -> parseFromJdbcUrl("jdbc:db2", null, null, null));
     }
 }

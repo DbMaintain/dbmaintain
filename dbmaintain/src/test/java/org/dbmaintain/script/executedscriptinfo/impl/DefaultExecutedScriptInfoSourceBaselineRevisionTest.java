@@ -21,9 +21,9 @@ import org.dbmaintain.script.Script;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test class for {@link DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -52,7 +52,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
     private Database defaultDatabase;
 
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -66,7 +66,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
         executedScriptInfoSource.registerExecutedScript(createScript("postprocessing/script.sql"));
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         dropExecutedScriptsTable();
     }

@@ -20,19 +20,22 @@ import org.dbmaintain.script.ExecutedScript;
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
 import java.util.Set;
 
-import static junit.framework.Assert.*;
 import static org.apache.commons.lang3.time.DateUtils.parseDate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.createScript;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for {@link org.dbmaintain.script.executedscriptinfo.impl.DefaultExecutedScriptInfoSource}. The implementation is tested using a
@@ -57,7 +60,7 @@ public class DefaultExecutedScriptInfoSourceTest {
     private ExecutedScript executedPostprocessingScript;
 
 
-    @Before
+    @BeforeEach
     public void initialize() {
         defaultDatabase = TestUtils.getDatabases().getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -73,7 +76,7 @@ public class DefaultExecutedScriptInfoSourceTest {
         executedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(defaultDatabase, true);
     }
 
-    @Before
+    @BeforeEach
     public void initTestData() throws ParseException {
         executedScript1 = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
         executedScript2 = new ExecutedScript(createScript("script2.sql"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
@@ -81,7 +84,7 @@ public class DefaultExecutedScriptInfoSourceTest {
         executedPostprocessingScript = new ExecutedScript(createScript("postprocessing/postprocessingscript1.sql"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         dropExecutedScriptsTable();
     }
@@ -107,10 +110,10 @@ public class DefaultExecutedScriptInfoSourceTest {
         assertTrue(executedScripts2.contains(executedScript2));
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void registerExecutedScript_NoExecutedScriptsTable() {
         dropExecutedScriptsTable();
-        executedScriptInfoSource.registerExecutedScript(executedScript1);
+        assertThrows(DbMaintainException.class, () -> executedScriptInfoSource.registerExecutedScript(executedScript1));
     }
 
     @Test

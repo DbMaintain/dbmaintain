@@ -18,9 +18,11 @@ package org.dbmaintain.script.parser.impl;
 import org.dbmaintain.script.parser.ScriptParser;
 import org.dbmaintain.script.parser.ScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.Reader;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests the PostgreSQL and PL-SQL script parser
@@ -62,9 +64,9 @@ public class PostgreSqlScriptParserTest extends ScriptParserTestBase {
                 "create /* comment */ or--another comment\nreplace function\nstatement 1; statement 2;\n/\n");
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void scriptNotEndingWithSlash() {
-        assertOneStatement("create rule something;");
+        assertThrows(DbMaintainException.class, () -> assertOneStatement("create rule something;"));
     }
 
     @Test

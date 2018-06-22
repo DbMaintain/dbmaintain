@@ -15,10 +15,11 @@
  */
 package org.dbmaintain.structure.clear.impl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MultiPassErrorHandlerTest {
 
@@ -52,11 +53,11 @@ public class MultiPassErrorHandlerTest {
         assertTrue(multiPassErrorHandler.continueExecutionAfterPass());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testAfterFirstPass_WhenErrorsNotLessThanLastPass_ThrowException() {
         multiPassErrorHandler.addError(new RuntimeException("e1"));
         multiPassErrorHandler.continueExecutionAfterPass();
         multiPassErrorHandler.addError(new RuntimeException("e2"));
-        multiPassErrorHandler.continueExecutionAfterPass();
+        assertThrows(RuntimeException.class, () -> multiPassErrorHandler.continueExecutionAfterPass());
     }
 }

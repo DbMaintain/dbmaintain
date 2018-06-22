@@ -17,12 +17,13 @@ package org.dbmaintain.script.parser.impl;
 
 import org.dbmaintain.script.parser.ScriptParser;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.util.Properties;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests the SQL script parser
@@ -110,9 +111,9 @@ public class DefaultScriptParserTest extends ScriptParserTestBase {
         assertNoStatement("");
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void incompleteStatement() {
-        assertNoStatement("statement without semicolon");
+        assertThrows(DbMaintainException.class, () -> assertNoStatement("statement without semicolon"));
     }
 
     @Test

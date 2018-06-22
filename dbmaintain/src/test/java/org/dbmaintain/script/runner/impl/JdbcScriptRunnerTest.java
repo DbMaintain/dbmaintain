@@ -24,18 +24,20 @@ import org.dbmaintain.script.parser.ScriptParserFactory;
 import org.dbmaintain.script.parser.impl.DefaultScriptParserFactory;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.Assert.assertTrue;
-import static org.dbmaintain.util.SQLTestUtils.*;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
+import static org.dbmaintain.util.SQLTestUtils.getItemAsLong;
+import static org.dbmaintain.util.SQLTestUtils.isEmpty;
 import static org.dbmaintain.util.TestUtils.createScriptFactory;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for the DefaultScriptRunner.
@@ -68,7 +70,7 @@ public class JdbcScriptRunnerTest {
     private Script emptyScript;
 
 
-    @Before
+    @BeforeEach
     public void initialize() {
         Databases databases = TestUtils.getDatabases();
         dataSource = databases.getDefaultDatabase().getDataSource();
@@ -89,7 +91,7 @@ public class JdbcScriptRunnerTest {
         cleanupTestDatabase();
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         cleanupTestDatabase();
     }
@@ -114,7 +116,7 @@ public class JdbcScriptRunnerTest {
         } catch (DbMaintainException e) {
             //expected
         }
-        assertTrue("All inserts should have been rolled back", isEmpty("table1", dataSource));
+        assertTrue(isEmpty("table1", dataSource), "All inserts should have been rolled back");
     }
 
     @Test

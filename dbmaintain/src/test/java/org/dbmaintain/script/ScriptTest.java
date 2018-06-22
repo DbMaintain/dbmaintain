@@ -16,11 +16,12 @@
 package org.dbmaintain.script;
 
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.dbmaintain.util.TestUtils.createScript;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the script class
@@ -45,9 +46,9 @@ public class ScriptTest {
     /**
      * Verifies that an exception is thrown when a repeatable script is located inside an indexed folder.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void testIsIncremental_repeatableScriptInsideIndexedFolder() {
-        createScript("incremental/02_script1/repeatableScript.sql");
+        assertThrows(DbMaintainException.class, () -> createScript("incremental/02_script1/repeatableScript.sql"));
     }
 
     @Test
@@ -72,7 +73,7 @@ public class ScriptTest {
         for (int i = 0; i < scripts.length - 1; i++) {
             Script script1 = scripts[i];
             Script script2 = scripts[i + 1];
-            assertEquals("Expected script " + script1 + " to come before " + script2 + " but it doesn't", -1, script1.compareTo(script2));
+            assertEquals(-1, script1.compareTo(script2), "Expected script " + script1 + " to come before " + script2 + " but it doesn't");
         }
     }
 }

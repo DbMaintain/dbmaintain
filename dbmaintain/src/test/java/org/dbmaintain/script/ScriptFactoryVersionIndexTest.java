@@ -17,16 +17,18 @@ package org.dbmaintain.script;
 
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
-import static org.dbmaintain.config.DbMaintainProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_INDEX_REGEXP;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFIER_REGEXP;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_REGEXP;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Filip Neven
@@ -36,7 +38,7 @@ public class ScriptFactoryVersionIndexTest {
 
     private ScriptFactory scriptFactory;
 
-    @Before
+    @BeforeEach
     public void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         String scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);

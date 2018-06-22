@@ -19,8 +19,8 @@ import org.dbmaintain.script.Script;
 import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.script.repository.ScriptLocation;
 import org.dbmaintain.util.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,11 +29,11 @@ import java.util.SortedSet;
 
 import static java.io.File.createTempFile;
 import static java.util.Collections.singleton;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.IOUtils.contentEquals;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Filip Neven
@@ -45,7 +45,7 @@ public class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
 
     private File jarFile;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         Script script1 = TestUtils.createScriptWithContent("folder1/script1.sql", "Script 1 content");
         Script script2 = TestUtils.createScriptWithContent("folder1/script2.sql", "Script 2 content");

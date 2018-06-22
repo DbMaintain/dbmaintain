@@ -1,9 +1,9 @@
 package org.dbmaintain.script.parser.parsingstate.impl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Tim Ducheyne
@@ -38,10 +38,10 @@ public class PostgreSqlPlSqlBlockMatcherTest {
     }
 
     private void assertIsStartOfStoredProcedure(String text) {
-        assertTrue(text, postgreSqlPlSqlBlockMatcher.isStartOfPlSqlBlock(new StringBuilder(text)));
+        assertTrue(postgreSqlPlSqlBlockMatcher.isStartOfPlSqlBlock(new StringBuilder(text)), text);
     }
 
     private void assertIsNotStartOfStoredProcedure(String text) {
-        assertFalse(text, postgreSqlPlSqlBlockMatcher.isStartOfPlSqlBlock(new StringBuilder(text)));
+        assertFalse(postgreSqlPlSqlBlockMatcher.isStartOfPlSqlBlock(new StringBuilder(text)), text);
     }
 }

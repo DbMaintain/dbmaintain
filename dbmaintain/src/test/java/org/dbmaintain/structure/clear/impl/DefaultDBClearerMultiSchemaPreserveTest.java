@@ -15,29 +15,31 @@
  */
 package org.dbmaintain.structure.clear.impl;
 
-import java.util.HashSet;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
-import static org.dbmaintain.structure.model.DbItemType.*;
+import static org.dbmaintain.structure.model.DbItemType.SEQUENCE;
+import static org.dbmaintain.structure.model.DbItemType.TABLE;
+import static org.dbmaintain.structure.model.DbItemType.VIEW;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDatabases;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test class for the {@link org.dbmaintain.structure.clear.DBClearer} using multiple database schemas with configuration to preserve all items. <p>
@@ -59,7 +61,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     /**
      * Configures the tested object. Creates a test table, index, view and sequence
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databases = getDatabases("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
         defaultDatabase = databases.getDefaultDatabase();
@@ -89,7 +91,7 @@ public class DefaultDBClearerMultiSchemaPreserveTest {
     /**
      * Removes all test tables.
      */
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         cleanupTestDatabase();
     }

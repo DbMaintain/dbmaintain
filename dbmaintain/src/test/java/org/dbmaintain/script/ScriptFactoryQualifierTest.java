@@ -18,8 +18,8 @@ package org.dbmaintain.script;
 import org.dbmaintain.config.DbMaintainConfigurationLoader;
 import org.dbmaintain.script.qualifier.Qualifier;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,10 +28,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
-import static org.dbmaintain.config.DbMaintainProperties.*;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_INDEX_REGEXP;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_QUALIFIER_REGEXP;
+import static org.dbmaintain.config.DbMaintainProperties.PROPERTY_SCRIPT_TARGETDATABASE_REGEXP;
 import static org.dbmaintain.util.TestUtils.qualifiers;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Filip Neven
@@ -43,7 +46,7 @@ public class ScriptFactoryQualifierTest {
     private String targetDatabaseRegexp;
     private String qualifierRegexp;
 
-    @Before
+    @BeforeEach
     public void initialize() {
         Properties configuration = new DbMaintainConfigurationLoader().loadDefaultConfiguration();
         scriptIndexRegexp = configuration.getProperty(PROPERTY_SCRIPT_INDEX_REGEXP);
@@ -100,10 +103,10 @@ public class ScriptFactoryQualifierTest {
         assertTrue(script.getQualifiers().isEmpty());
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void qualifierNotRegistered() {
         ScriptFactory scriptFactory = createScriptFactoryWithRegisteredQualifiers();
-        scriptFactory.createScriptWithoutContent("01_#qualifer_my_script.sql", null, null);
+        assertThrows(DbMaintainException.class, () -> scriptFactory.createScriptWithoutContent("01_#qualifer_my_script.sql", null, null));
     }
 
     @Test
@@ -138,7 +141,7 @@ public class ScriptFactoryQualifierTest {
         final Collection<String> actualQualifierNames = qualifiers.stream().map(Qualifier::getQualifierName).collect(
                 Collectors.toList());
 
-        assertEquals("qualifierName", asList(qualifierNames), actualQualifierNames);
+        assertEquals(asList(qualifierNames), actualQualifierNames, "qualifierName");
     }
 
     private ScriptFactory createScriptFactoryWithRegisteredQualifiers(String... qualifierNames) {

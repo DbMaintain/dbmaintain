@@ -15,7 +15,6 @@
  */
 package org.dbmaintain.structure.clear.impl;
 
-import java.util.HashSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Databases;
@@ -25,17 +24,22 @@ import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.DbMaintainException;
 import org.dbmaintain.util.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
-import static org.dbmaintain.structure.model.DbItemType.*;
+import static org.dbmaintain.structure.model.DbItemType.MATERIALIZED_VIEW;
+import static org.dbmaintain.structure.model.DbItemType.SEQUENCE;
+import static org.dbmaintain.structure.model.DbItemType.SYNONYM;
+import static org.dbmaintain.structure.model.DbItemType.TABLE;
+import static org.dbmaintain.structure.model.DbItemType.VIEW;
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test class for the {@link org.dbmaintain.structure.clear.DBClearer} with preserve items configured, but some items do not exist.
@@ -58,7 +62,7 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      * <p>
      * todo Test_trigger_Preserve Test_CASE_Trigger_Preserve
      */
-    @Before
+    @BeforeEach
     public void initialize() {
         databases = TestUtils.getDatabases();
         constraintsDisabler = new DefaultConstraintsDisabler(databases);
@@ -69,12 +73,12 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     /**
      * Test for schemas to preserve that do not exist.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void schemasToPreserveDoNotExist() {
         Set<DbItemIdentifier> itemsToPreserve = asSet(
                 parseSchemaIdentifier("unexisting_schema1", databases),
                 parseSchemaIdentifier("unexisting_schema2", databases));
-        createDbClearer(itemsToPreserve).clearDatabase();
+        assertThrows(DbMaintainException.class, () -> createDbClearer(itemsToPreserve).clearDatabase());
     }
 
     private DefaultDBClearer createDbClearer(Set<DbItemIdentifier> itemsToPreserve) {
@@ -84,23 +88,23 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
     /**
      * Test for tables to preserve that do not exist.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void tablesToPreserveDoNotExist() {
         Set<DbItemIdentifier> itemsToPreserve = asSet(
                 parseItemIdentifier(TABLE, "unexisting_table1", databases),
                 parseItemIdentifier(TABLE, "unexisting_table2", databases));
-        createDbClearer(itemsToPreserve).clearDatabase();
+        assertThrows(DbMaintainException.class, () -> createDbClearer(itemsToPreserve).clearDatabase());
     }
 
     /**
      * Test for views to preserve that do not exist.
      */
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void viewsToPreserveDoNotExist() {
         Set<DbItemIdentifier> itemsToPreserve = asSet(
                 parseItemIdentifier(VIEW, "unexisting_view1", databases),
                 parseItemIdentifier(VIEW, "unexisting_view2", databases));
-        createDbClearer(itemsToPreserve).clearDatabase();
+        assertThrows(DbMaintainException.class, () -> createDbClearer(itemsToPreserve).clearDatabase());
     }
 
     /**
@@ -108,19 +112,14 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
      */
     @Test
     public void materializedViewsToPreserveDoNotExist() {
-    	if (!databases.getDefaultDatabase().supportsMaterializedViews()) {
-    		logger.warn("Current dialect does not support materialized views. Skipping test.");
-    		return;
-    	}
-    	try {
-    		Set<DbItemIdentifier> itemsToPreserve = asSet(
-    				parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases),
-    				parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView2", databases));
-    		createDbClearer(itemsToPreserve).clearDatabase();
-    		fail("DbMaintainException expected.");
-		} catch (DbMaintainException e) {
-			// expected
-		}
+        if (!databases.getDefaultDatabase().supportsMaterializedViews()) {
+            logger.warn("Current dialect does not support materialized views. Skipping test.");
+            return;
+        }
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+                parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView1", databases),
+                parseItemIdentifier(MATERIALIZED_VIEW, "unexisting_materializedView2", databases));
+        assertThrows(DbMaintainException.class, () -> createDbClearer(itemsToPreserve).clearDatabase());
     }
 
     /**
@@ -132,16 +131,11 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             logger.warn("Current dialect does not support sequences. Skipping test.");
             return;
         }
-        try {
-            Set<DbItemIdentifier> itemsToPreserve = asSet(
-                    parseItemIdentifier(SEQUENCE, "unexisting_sequence1", databases),
-                    parseItemIdentifier(SEQUENCE, "unexisting_sequence2", databases));
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+                parseItemIdentifier(SEQUENCE, "unexisting_sequence1", databases),
+                parseItemIdentifier(SEQUENCE, "unexisting_sequence2", databases));
 
-            createDbClearer(itemsToPreserve).clearDatabase();
-            fail("DbMaintainException expected.");
-        } catch (DbMaintainException e) {
-            // expected
-        }
+        assertThrows(DbMaintainException.class, () -> createDbClearer(itemsToPreserve).clearDatabase());
     }
 
     /**
@@ -153,15 +147,10 @@ public class DefaultDBClearerPreserveDoesNotExistTest {
             logger.warn("Current dialect does not support synonyms. Skipping test.");
             return;
         }
-        try {
-            Set<DbItemIdentifier> itemsToPreserve = asSet(
-                    parseItemIdentifier(SYNONYM, "unexisting_synonym1", databases),
-                    parseItemIdentifier(SYNONYM, "unexisting_synonym2", databases));
+        Set<DbItemIdentifier> itemsToPreserve = asSet(
+                parseItemIdentifier(SYNONYM, "unexisting_synonym1", databases),
+                parseItemIdentifier(SYNONYM, "unexisting_synonym2", databases));
 
-            createDbClearer(itemsToPreserve).clearDatabase();
-            fail("DbMaintainException expected.");
-        } catch (DbMaintainException e) {
-            // expected
-        }
+        assertThrows(DbMaintainException.class, () -> createDbClearer(itemsToPreserve).clearDatabase());
     }
 }

@@ -17,13 +17,16 @@ package org.dbmaintain.script.repository;
 
 import org.dbmaintain.script.Script;
 import org.dbmaintain.util.DbMaintainException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.*;
-import static org.junit.Assert.assertEquals;
+import static org.dbmaintain.util.TestUtils.createArchiveScriptLocation;
+import static org.dbmaintain.util.TestUtils.createScript;
+import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Filip Neven
@@ -36,7 +39,7 @@ public class ScriptRepositoryTest {
     ScriptLocation scriptLocation1;
     ScriptLocation scriptLocation2;
 
-    @Before
+    @BeforeEach
     public void init() {
         indexed1 = createScript("01_indexed1.sql");
         indexed2 = createScript("02_indexed2.sql");
@@ -62,16 +65,16 @@ public class ScriptRepositoryTest {
         assertEquals(asSortedSet(postProcessing1, postProcessing2), scriptRepository.getPostProcessingScripts());
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void errorInCaseOfDuplicateScript() {
         ScriptLocation location = createArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null);
-        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
+        assertThrows(DbMaintainException.class, () -> new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator()));
     }
 
-    @Test(expected = DbMaintainException.class)
+    @Test
     public void errorInCaseOfDuplicateIndex() {
         ScriptLocation location = createArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null);
-        new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator());
+        assertThrows(DbMaintainException.class, () -> new ScriptRepository(asSet(scriptLocation1, location), getTrivialQualifierEvaluator()));
     }
 
 }

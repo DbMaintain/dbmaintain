@@ -23,14 +23,14 @@ import org.dbmaintain.structure.sequence.SequenceUpdater;
 import org.dbmaintain.structure.sequence.impl.DefaultSequenceUpdater;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for the SequenceUpdater. Contains tests that can be implemented generally for all different database dialects.
@@ -63,7 +63,7 @@ public class SequenceUpdaterTest {
      * Test fixture. Configures the implementation of the SequenceUpdater that matches the currenlty configured dialect.
      * Creates a test table and test sequence.
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
@@ -78,7 +78,7 @@ public class SequenceUpdaterTest {
     /**
      * Clears the database, to avoid interference with other tests
      */
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         cleanupTestDatabase();
     }
@@ -157,7 +157,7 @@ public class SequenceUpdaterTest {
     private void assertCurrentSequenceValueBetween(long minValue, long maxValue) {
         String correctCaseSequenceName = defaultDatabase.toCorrectCaseIdentifier("test_sequence");
         long currentValue = defaultDatabase.getSequenceValue(defaultDatabase.getDefaultSchemaName(), correctCaseSequenceName);
-        assertTrue("Current sequence value is not between " + minValue + " and " + maxValue, (currentValue >= minValue && currentValue <= maxValue));
+        assertTrue((currentValue >= minValue && currentValue <= maxValue), "Current sequence value is not between " + minValue + " and " + maxValue);
     }
 
 
@@ -171,7 +171,7 @@ public class SequenceUpdaterTest {
         SQLTestUtils.executeUpdate("delete from test_table1", dataSource);
         SQLTestUtils.executeUpdate("insert into test_table1(col2) values('test')", dataSource);
         long currentValue = SQLTestUtils.getItemAsLong("select col1 from test_table1 where col2 = 'test'", dataSource);
-        assertTrue("Current sequence value is not between " + minValue + " and " + maxValue, (currentValue >= minValue && currentValue <= maxValue));
+        assertTrue((currentValue >= minValue && currentValue <= maxValue), "Current sequence value is not between " + minValue + " and " + maxValue);
     }
 
 

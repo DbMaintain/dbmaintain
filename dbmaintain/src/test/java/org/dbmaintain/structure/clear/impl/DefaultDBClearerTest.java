@@ -22,20 +22,28 @@ import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.constraint.impl.DefaultConstraintsDisabler;
-import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.SQLTestUtils;
 import org.dbmaintain.util.TestUtils;
 import org.hsqldb.Trigger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.HashSet;
 
-import static org.dbmaintain.util.SQLTestUtils.*;
+import static org.dbmaintain.util.SQLTestUtils.dropTestMaterializedViews;
+import static org.dbmaintain.util.SQLTestUtils.dropTestSequences;
+import static org.dbmaintain.util.SQLTestUtils.dropTestSynonyms;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTriggers;
+import static org.dbmaintain.util.SQLTestUtils.dropTestTypes;
+import static org.dbmaintain.util.SQLTestUtils.dropTestViews;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
+import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDefaultExecutedScriptInfoSource;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for the {@link org.dbmaintain.structure.clear.DBClearer}.
@@ -57,7 +65,7 @@ public class DefaultDBClearerTest {
     private Database defaultDatabase;
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
@@ -71,7 +79,7 @@ public class DefaultDBClearerTest {
         createTestDatabase();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         cleanupTestDatabase();
     }

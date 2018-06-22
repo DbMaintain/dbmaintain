@@ -19,12 +19,12 @@ import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -43,7 +44,7 @@ import static org.mockito.Mockito.when;
  * @author Mark Jeffrey
  * @see MultiPassErrorHandler
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefaultDBClearerMultiPassTest {
 
     @InjectMocks
@@ -64,7 +65,7 @@ public class DefaultDBClearerMultiPassTest {
     /**
      * Configures the tested object.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         when(database.getTableNames(anyString())).thenReturn(tableNames);
         when(database.getSchemaNames()).thenReturn(asSet(SCHEMA));
@@ -85,10 +86,10 @@ public class DefaultDBClearerMultiPassTest {
     /**
      * When exceptions do not decrease then we throw an exception.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testClearDatabase_ThrowExceptionWhenExceptionsDoNotDecrease() {
         doThrow(new IllegalStateException()).when(database).dropTable(SCHEMA, "TABLE2");
-        defaultDBClearer.clearDatabase();
+        assertThrows(IllegalStateException.class, () -> defaultDBClearer.clearDatabase());
     }
 
 }
