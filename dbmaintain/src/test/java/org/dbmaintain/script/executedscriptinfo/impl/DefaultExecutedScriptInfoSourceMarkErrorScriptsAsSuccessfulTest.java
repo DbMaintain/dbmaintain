@@ -122,7 +122,7 @@ public class DefaultExecutedScriptInfoSourceMarkErrorScriptsAsSuccessfulTest {
 
 
     private ExecutedScript createFailedScript(String scriptName, boolean successful) throws ParseException {
-        return new ExecutedScript(createScript(scriptName), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), successful);
+        return new ExecutedScript(createScript(scriptName), parseDate("20/05/2008 10:20:00", "dd/MM/yyyy hh:mm:ss"), successful);
     }
 
     private void dropExecutedScriptsTable() {

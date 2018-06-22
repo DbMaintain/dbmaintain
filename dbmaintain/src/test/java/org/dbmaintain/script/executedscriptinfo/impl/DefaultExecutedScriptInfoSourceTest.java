@@ -78,10 +78,12 @@ public class DefaultExecutedScriptInfoSourceTest {
 
     @BeforeEach
     public void initTestData() throws ParseException {
-        executedScript1 = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
-        executedScript2 = new ExecutedScript(createScript("script2.sql"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
-        executedPreprocessingScript = new ExecutedScript(createScript("preprocessing/preprocessingscript1.sql"), parseDate("20/05/2008 10:15:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
-        executedPostprocessingScript = new ExecutedScript(createScript("postprocessing/postprocessingscript1.sql"), parseDate("20/05/2008 10:25:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript1 = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", "dd/MM/yyyy hh:mm:ss"), false);
+        executedScript2 = new ExecutedScript(createScript("script2.sql"), parseDate("20/05/2008 10:25:00", "dd/MM/yyyy hh:mm:ss"), false);
+        executedPreprocessingScript = new ExecutedScript(createScript("preprocessing/preprocessingscript1.sql"), parseDate("20/05/2008 10:15:00",
+                "dd/MM/yyyy hh:mm:ss"), false);
+        executedPostprocessingScript = new ExecutedScript(createScript("postprocessing/postprocessingscript1.sql"), parseDate("20/05/2008 10:25:00",
+                "dd/MM/yyyy hh:mm:ss"), false);
     }
 
     @AfterEach

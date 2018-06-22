@@ -104,7 +104,7 @@ public class DefaultExecutedScriptInfoSourceBaselineRevisionTest {
 
 
     private ExecutedScript createScript(String scriptName) throws ParseException {
-        return new ExecutedScript(TestUtils.createScript(scriptName), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        return new ExecutedScript(TestUtils.createScript(scriptName), parseDate("20/05/2008 10:20:00", "dd/MM/yyyy hh:mm:ss"), false);
     }
 
     private void dropExecutedScriptsTable() {

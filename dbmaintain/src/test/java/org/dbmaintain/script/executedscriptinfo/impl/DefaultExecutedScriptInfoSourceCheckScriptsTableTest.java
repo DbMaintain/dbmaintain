@@ -56,7 +56,7 @@ public class DefaultExecutedScriptInfoSourceCheckScriptsTableTest {
 
         executedScriptInfoSourceAutoCreate = TestUtils.getDefaultExecutedScriptInfoSource(defaultDatabase, true);
 
-        executedScript = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", new String[]{"dd/MM/yyyy hh:mm:ss"}), false);
+        executedScript = new ExecutedScript(createScript("1_script1.sql"), parseDate("20/05/2008 10:20:00", "dd/MM/yyyy hh:mm:ss"), false);
         script = createScript("1_script1_renamed.sql");
 
         dropExecutedScriptsTable();
