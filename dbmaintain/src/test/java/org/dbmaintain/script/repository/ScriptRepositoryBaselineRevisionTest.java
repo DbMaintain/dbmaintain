@@ -20,6 +20,7 @@ import org.dbmaintain.script.ScriptFactory;
 import org.dbmaintain.script.executedscriptinfo.ScriptIndexes;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
@@ -79,7 +80,7 @@ public class ScriptRepositoryBaselineRevisionTest {
         SortedSet<Script> result = scriptRepository.getRepeatableScripts();
         List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
 
-        assertEquals(asList("repeatable/script.sql"), filenames);
+        assertEquals(Collections.singletonList("repeatable/script.sql"), filenames);
     }
 
     @Test
@@ -89,7 +90,7 @@ public class ScriptRepositoryBaselineRevisionTest {
     	SortedSet<Script> result = scriptRepository.getPreProcessingScripts();
         List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
 
-        assertEquals(asList("preprocessing/script.sql"), filenames);
+        assertEquals(Collections.singletonList("preprocessing/script.sql"), filenames);
     }
 
     @Test
@@ -99,7 +100,7 @@ public class ScriptRepositoryBaselineRevisionTest {
         SortedSet<Script> result = scriptRepository.getPostProcessingScripts();
         List<String> filenames = result.stream().map(Script::getFileName).collect(Collectors.toList());
 
-        assertEquals(asList("postprocessing/script.sql"), filenames);
+        assertEquals(Collections.singletonList("postprocessing/script.sql"), filenames);
     }
 
 

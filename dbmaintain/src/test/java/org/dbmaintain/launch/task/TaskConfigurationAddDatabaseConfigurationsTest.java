@@ -3,6 +3,7 @@ package org.dbmaintain.launch.task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
@@ -28,7 +29,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     @Test
     public void addUnnamedDatabase() {
         DbMaintainDatabase unnamedDatabase = new DbMaintainDatabase(null, true, "dialect", "driver", "url", "user", "pass", "schemas", null);
-        taskConfiguration.addDatabaseConfigurations(asList(unnamedDatabase));
+        taskConfiguration.addDatabaseConfigurations(Collections.singletonList(unnamedDatabase));
 
         assertNamedDatabasePropertiesSet("<unnamed>");
         assertPropertySet("databases.names", "<unnamed>");
@@ -37,7 +38,7 @@ public class TaskConfigurationAddDatabaseConfigurationsTest {
     @Test
     public void addNamedDatabase() {
         DbMaintainDatabase namedDatabase = new DbMaintainDatabase("db1", true, "dialect", "driver", "url", "user", "pass", "schemas", null);
-        taskConfiguration.addDatabaseConfigurations(asList(namedDatabase));
+        taskConfiguration.addDatabaseConfigurations(Collections.singletonList(namedDatabase));
 
         assertNamedDatabasePropertiesSet("db1");
         assertPropertySet("databases.names", "db1");

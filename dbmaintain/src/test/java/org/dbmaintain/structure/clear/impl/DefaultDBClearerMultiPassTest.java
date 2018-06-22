@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -70,7 +71,7 @@ public class DefaultDBClearerMultiPassTest {
         when(database.getTableNames(anyString())).thenReturn(tableNames);
         when(database.getSchemaNames()).thenReturn(asSet(SCHEMA));
 
-        Databases databases = new Databases(database, Arrays.asList(database), new ArrayList<>());
+        Databases databases = new Databases(database, Collections.singletonList(database), new ArrayList<>());
         defaultDBClearer = new DefaultDBClearer(databases, new HashSet<>(), new HashSet<>(), constraintsDisabler, executedScriptInfoSource);
     }
 

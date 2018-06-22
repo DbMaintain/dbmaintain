@@ -67,7 +67,7 @@ public abstract class TestUtils {
         DatabaseConnection databaseConnection = new DatabaseConnection(databaseInfo, sqlHandler, dataSource);
         IdentifierProcessor identifierProcessor = new IdentifierProcessor(UPPER_CASE, "\"", databaseInfo.getDefaultSchemaName());
         Database database = new HsqldbDatabase(databaseConnection, identifierProcessor);
-        return new Databases(database, asList(database), new ArrayList<>());
+        return new Databases(database, Collections.singletonList(database), new ArrayList<>());
     }
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable) {
