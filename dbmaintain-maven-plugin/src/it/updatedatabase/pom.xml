@@ -2,23 +2,25 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dbmaintain.test</groupId>
+
+  <parent>
+    <groupId>org.dbmaintain</groupId>
+    <artifactId>dbmaintain-parent</artifactId>
+    <version>2.7.3-SNAPSHOT</version>
+    <relativePath>../../../../pom.xml</relativePath>
+  </parent>
+  
   <artifactId>updatedatabase</artifactId>
   <packaging>pom</packaging>
   <version>1.0</version>
   <name>${project.artifactId}</name>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.dbmaintain</groupId>
         <artifactId>dbmaintain-maven-plugin</artifactId>
-        <version>@pom.version@</version>
-        <dependencies>
-          <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>1.8.0.10</version>
-          </dependency>
-        </dependencies>
+        <version>2.7.3-SNAPSHOT</version>
         <executions>
           <execution>
             <phase>integration-test</phase>
