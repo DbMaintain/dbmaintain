@@ -60,7 +60,7 @@ class DefaultDBCleanerTest {
      * data. One of these tables is configured as 'tabletopreserve'.
      */
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();

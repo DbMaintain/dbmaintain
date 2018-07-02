@@ -82,7 +82,7 @@ public class SqlLoaderScriptRunner extends BaseNativeScriptRunner {
         }
     }
     
-    private String getFileContent(File file) throws FileNotFoundException, IOException {
+    private String getFileContent(File file) throws IOException {
         if (!file.exists()) {
             return file.getAbsolutePath() + " doesn't exist";
         }

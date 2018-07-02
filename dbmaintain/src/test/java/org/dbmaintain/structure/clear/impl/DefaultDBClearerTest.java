@@ -133,7 +133,7 @@ class DefaultDBClearerTest {
     }
 
 
-    private void createTestDatabase() throws Exception {
+    private void createTestDatabase() {
         String dialect = defaultDatabase.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             createTestDatabaseHsqlDb();
@@ -154,7 +154,7 @@ class DefaultDBClearerTest {
         }
     }
 
-    private void cleanupTestDatabase() throws Exception {
+    private void cleanupTestDatabase() {
         dropExecutedScriptsTable();
 
         String dialect = defaultDatabase.getSupportedDatabaseDialect();

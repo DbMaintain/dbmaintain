@@ -52,7 +52,7 @@ class DefaultDBClearerMultiSchemaTest {
 
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         databases = getDatabases("PUBLIC", "SCHEMA_A", "SCHEMA_B");
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -67,7 +67,7 @@ class DefaultDBClearerMultiSchemaTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         dropTestDatabase();
     }
 

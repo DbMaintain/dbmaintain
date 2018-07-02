@@ -178,7 +178,7 @@ class SequenceUpdaterTest {
     /**
      * Creates all test database structures (view, tables...)
      */
-    private void createTestDatabase() throws Exception {
+    private void createTestDatabase() {
         String dialect = defaultDatabase.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             createTestDatabaseHsqlDb();
@@ -203,7 +203,7 @@ class SequenceUpdaterTest {
     /**
      * Drops all created test database structures (views, tables...)
      */
-    private void cleanupTestDatabase() throws Exception {
+    private void cleanupTestDatabase() {
         String dialect = defaultDatabase.getSupportedDatabaseDialect();
         if ("hsqldb".equals(dialect)) {
             cleanupTestDatabaseHsqlDb();

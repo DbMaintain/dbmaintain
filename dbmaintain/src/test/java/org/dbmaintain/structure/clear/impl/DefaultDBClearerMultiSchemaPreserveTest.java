@@ -62,7 +62,7 @@ class DefaultDBClearerMultiSchemaPreserveTest {
      * Configures the tested object. Creates a test table, index, view and sequence
      */
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         databases = getDatabases("PUBLIC", "SCHEMA_A", "\"SCHEMA_B\"", "schema_c");
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -92,7 +92,7 @@ class DefaultDBClearerMultiSchemaPreserveTest {
      * Removes all test tables.
      */
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         cleanupTestDatabase();
     }
 
