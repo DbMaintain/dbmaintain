@@ -176,133 +176,188 @@ public class DefaultDbMaintainer implements DbMaintainer {
         try {
             ScriptUpdates scriptUpdates = getScriptUpdates();
 
-            final List<String> tooLongFilenames = scriptUpdates.getRegularlyAddedOrModifiedScripts().stream().map(ScriptUpdate::getScript)
-                    .map(Script::getFileName).filter(filename -> filename.length() > filenameColumnSize).collect(Collectors.toList());
-            if (!tooLongFilenames.isEmpty()) {
-                throw new DbMaintainException(
-                        String.format("The filenames %s are longer than the configured maximum of %s.", tooLongFilenames,
-                                filenameColumnSize));
-            }
+            checkConsistencyOfScriptUpdates(scriptUpdates);
 
-            if (scriptUpdates.hasIgnoredScriptsAndScriptChanges()) {
-                throw new DbMaintainException(
-                        "DB-State is newer than current script release and scripts of current release are different to the corresponding script in the database");
-            }
+            informAboutIgnoredScripts(scriptUpdates);
 
-            if (!getIncrementalScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
-                ExecutedScript failedExecutedScriptScript = getIncrementalScriptsThatFailedDuringLastUpdate().first();
-                throw new DbMaintainException("During the latest update, the execution of the following incremental script failed: " +
-                        failedExecutedScriptScript + ". \nThis problem must be fixed before any other " +
-                        "updates can be performed.\n" + getErrorScriptOptionsMessage(failedExecutedScriptScript.getScript()));
-            }
+            if (databaseIsUpToDate(scriptUpdates)) return false;
 
-            if (!getRepeatableScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
-                ExecutedScript failedScript = getRepeatableScriptsThatFailedDuringLastUpdate().first();
-                if (!scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
-                        && !scriptUpdates.getRegularlyDeletedRepeatableScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
-                    throw new DbMaintainException("During the latest update, the execution of following repeatable script failed: " +
-                            getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed " +
-                            "before any other updates can be performed.");
-                }
-            }
-            if (scriptUpdates.hasIgnoredScripts()) {
-                logger.info("Database is newer than current release! Following scripts in database state are ignored:");
-                for (ScriptUpdate ignoredScript : scriptUpdates.getIgnoredScripts()) {
-                    logger.info("Script: " + ignoredScript.getScript().getFileName());
-                }
-                logger.info("Check the scripts and maybe repeat the deployment with a newer database release!");
-            }
-            if (scriptUpdates.isEmpty()) {
-                logger.info("The database is up to date");
-                return false;
-            }
-
-            boolean recreateFromScratch = false;
-            if (fromScratchEnabled && isInitialDatabaseUpdate()) {
-                logger.info("The database is updated for the first time. The database is cleared to be sure that we start with a clean database");
-                recreateFromScratch = true;
-            }
-
-            if (scriptUpdates.hasIrregularScriptUpdates()) {
-                if (fromScratchEnabled) {
-                    // Recreate the database from scratch
-                    logger.info("The database is recreated from scratch, since following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()));
-                    recreateFromScratch = true;
-                } else {
-                    throw new DbMaintainException("Following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()) +
-                            "\nBecause of this, dbmaintain can't perform the update. To solve this problem, you can do one of the following:\n" +
-                            "  1: Revert the irregular updates and use regular script updates instead\n" +
-                            "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
-                            "  3: Perform the updates manually on the database and invoke the markDatabaseAsUpToDate operation (error prone)\n");
-                }
-            }
+            boolean recreateFromScratch = isInitialDatabaseUpdate() || hasIrregularScriptUpdates(scriptUpdates);
 
             if (recreateFromScratch) {
-                if (baseLineRevision != null) {
-                    throw new DbMaintainException("Unable to recreate the database from scratch: a baseline revision is set.\n" +
-                            "After clearing the database only scripts starting from the baseline revision would have been executed. The other scripts would have been ignored resulting in an inconsistent database state.\n" +
-                            "Please clear the baseline revision if you want to perform a from scratch update.\n" +
-                            "Another option is to explicitly clear the database using the clear task and then performing the update.");
-                }
-                logger.info("The database is cleared, and all database scripts are executed.");
-                if (!dryRun) {
-                    dbClearer.clearDatabase();
-                    executedScriptInfoSource.resetCachedState();
-                    executeScripts(scriptRepository.getAllUpdateScripts());
-                }
+                recreateDatabaseFromScratch(dryRun);
             } else {
-                logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
-
-                if (!dryRun) {
-                    // If the disable constraints option is enabled, disable all FK and not null constraints
-                    if (disableConstraints) {
-                        constraintsDisabler.disableConstraints();
-                    }
-                    // If cleandb is enabled, remove all data from the database.
-                    if (cleanDb) {
-                        dbCleaner.cleanDatabase();
-                    }
-
-                    logger.info("Executing preprocessing scripts.");
-                    executePreprocessingScripts();
-                    // If there are incremental patch scripts with a lower index and the option allowOutOfSequenceExecutionOfPatches
-                    // is enabled, execute them first
-                    executeScriptUpdates(scriptUpdates.getRegularlyAddedPatchScripts());
-                    // Execute all new incremental and all new or modified repeatable scripts
-                    executeScriptUpdates(scriptUpdates.getRegularlyAddedOrModifiedScripts());
-                    // If repeatable scripts were removed, also remove them from the executed scripts
-                    removeDeletedRepeatableScriptsFromExecutedScripts(scriptUpdates.getRegularlyDeletedRepeatableScripts());
-                    // If regular script renames were detected, update the executed script records to reflect this
-                    performRegularScriptRenamesInExecutedScripts(scriptUpdates.getRegularlyRenamedScripts());
-                }
+                updateDatabaseIncrementally(dryRun, scriptUpdates);
             }
+
             if (scriptUpdates.noUpdatesOtherThanRepeatableScriptDeletionsOrRenames()) {
                 logger.info("No script updates were detected, except for repeatable script deletions and script renames. Therefore, actions such as the execution of postprocessing scripts and disabling the constraints are skipped.");
                 return false;
             }
 
-            if (!dryRun) {
-                // Execute all post processing scripts
-                executePostprocessingScripts();
+            postProcessing(dryRun);
 
-                // If the disable constraints option is enabled, disable all FK and not null constraints
-                if (disableConstraints) {
-                    constraintsDisabler.disableConstraints();
-                }
-                // the scripts could have added data, if cleandb is enabled, remove all data from the database.
-                if (cleanDb) {
-                    dbCleaner.cleanDatabase();
-                }
-                // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
-                if (updateSequences) {
-                    sequenceUpdater.updateSequences();
-                }
-                logger.info("The database has been updated successfully.");
-            }
             return true;
-
         } finally {
             sqlHandler.closeAllConnections();
+        }
+    }
+
+    private void postProcessing(boolean dryRun) {
+        if (!dryRun) {
+            // Execute all post processing scripts
+            executePostprocessingScripts();
+
+            // If the disable constraints option is enabled, disable all FK and not null constraints
+            if (disableConstraints) {
+                constraintsDisabler.disableConstraints();
+            }
+            // the scripts could have added data, if cleandb is enabled, remove all data from the database.
+            if (cleanDb) {
+                dbCleaner.cleanDatabase();
+            }
+            // If the update sequences option is enabled, update all sequences to have a value equal to or higher than the configured threshold
+            if (updateSequences) {
+                sequenceUpdater.updateSequences();
+            }
+            logger.info("The database has been updated successfully.");
+        }
+    }
+
+    private void checkConsistencyOfScriptUpdates(ScriptUpdates scriptUpdates) {
+        containTooLongFilenames(scriptUpdates);
+
+        containsIgnoredScriptsAndScriptChanges(scriptUpdates);
+
+        containsFailedIncrementalScripts(scriptUpdates);
+
+        containsFailedRepeatableScripts(scriptUpdates);
+    }
+
+    private void informAboutIgnoredScripts(ScriptUpdates scriptUpdates) {
+        if (scriptUpdates.hasIgnoredScripts()) {
+            logger.info("Database is newer than current release! Following scripts in database state are ignored:");
+            for (ScriptUpdate ignoredScript : scriptUpdates.getIgnoredScripts()) {
+                logger.info("Script: " + ignoredScript.getScript().getFileName());
+            }
+            logger.info("Check the scripts and maybe repeat the deployment with a newer database release!");
+        }
+    }
+
+    private void updateDatabaseIncrementally(boolean dryRun, ScriptUpdates scriptUpdates) {
+        logger.info("The database is updated incrementally, since following regular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getRegularScriptUpdates()));
+
+        if (!dryRun) {
+            // If the disable constraints option is enabled, disable all FK and not null constraints
+            if (disableConstraints) {
+                constraintsDisabler.disableConstraints();
+            }
+            // If cleandb is enabled, remove all data from the database.
+            if (cleanDb) {
+                dbCleaner.cleanDatabase();
+            }
+
+            logger.info("Executing preprocessing scripts.");
+            executePreprocessingScripts();
+            // If there are incremental patch scripts with a lower index and the option allowOutOfSequenceExecutionOfPatches
+            // is enabled, execute them first
+            executeScriptUpdates(scriptUpdates.getRegularlyAddedPatchScripts());
+            // Execute all new incremental and all new or modified repeatable scripts
+            executeScriptUpdates(scriptUpdates.getRegularlyAddedOrModifiedScripts());
+            // If repeatable scripts were removed, also remove them from the executed scripts
+            removeDeletedRepeatableScriptsFromExecutedScripts(scriptUpdates.getRegularlyDeletedRepeatableScripts());
+            // If regular script renames were detected, update the executed script records to reflect this
+            performRegularScriptRenamesInExecutedScripts(scriptUpdates.getRegularlyRenamedScripts());
+        }
+    }
+
+    private void recreateDatabaseFromScratch(boolean dryRun) {
+        if (baseLineRevision != null) {
+            throw new DbMaintainException("Unable to recreate the database from scratch: a baseline revision is set.\n" +
+                    "After clearing the database only scripts starting from the baseline revision would have been executed. The other scripts would have been ignored resulting in an inconsistent database state.\n" +
+                    "Please clear the baseline revision if you want to perform a from scratch update.\n" +
+                    "Another option is to explicitly clear the database using the clear task and then performing the update.");
+        }
+        logger.info("The database is cleared, and all database scripts are executed.");
+        if (!dryRun) {
+            dbClearer.clearDatabase();
+            executedScriptInfoSource.resetCachedState();
+            executeScripts(scriptRepository.getAllUpdateScripts());
+        }
+    }
+
+    private boolean hasIrregularScriptUpdates(ScriptUpdates scriptUpdates) {
+        if (scriptUpdates.hasIrregularScriptUpdates()) {
+            if (fromScratchEnabled) {
+                // Recreate the database from scratch
+                logger.info("The database is recreated from scratch, since following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()));
+                return true;
+            } else {
+                throw new DbMaintainException("Following irregular script updates were detected:\n" + scriptUpdatesFormatter.formatScriptUpdates(scriptUpdates.getIrregularScriptUpdates()) +
+                        "\nBecause of this, dbmaintain can't perform the update. To solve this problem, you can do one of the following:\n" +
+                        "  1: Revert the irregular updates and use regular script updates instead\n" +
+                        "  2: Enable the fromScratch option so that the database is recreated from scratch (all data will be lost)\n" +
+                        "  3: Perform the updates manually on the database and invoke the markDatabaseAsUpToDate operation (error prone)\n");
+            }
+        }
+        return false;
+    }
+
+    private boolean isInitialDatabaseUpdate() {
+        if (fromScratchEnabled && executedScriptInfoSource.getExecutedScripts().size() == 0 && scriptRepository.areScriptsAvailable()) {
+            logger.info("The database is updated for the first time. The database is cleared to be sure that we start with a clean database");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean databaseIsUpToDate(ScriptUpdates scriptUpdates) {
+        if (scriptUpdates.isEmpty()) {
+            logger.info("The database is up to date");
+            return true;
+        }
+        return false;
+    }
+
+    private void containsFailedRepeatableScripts(ScriptUpdates scriptUpdates) {
+        if (!getRepeatableScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
+            ExecutedScript failedScript = getRepeatableScriptsThatFailedDuringLastUpdate().first();
+            if (!scriptUpdates.getRegularlyAddedOrModifiedScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_UPDATED, failedScript.getScript()))
+                    && !scriptUpdates.getRegularlyDeletedRepeatableScripts().contains(new ScriptUpdate(REPEATABLE_SCRIPT_DELETED, failedScript.getScript()))) {
+                throw new DbMaintainException("During the latest update, the execution of following repeatable script failed: " +
+                        getRepeatableScriptsThatFailedDuringLastUpdate().first() + ". \nThis problem must be fixed " +
+                        "before any other updates can be performed.");
+            }
+        }
+    }
+
+    private void containsFailedIncrementalScripts(ScriptUpdates scriptUpdates) {
+        if (!getIncrementalScriptsThatFailedDuringLastUpdate().isEmpty() && !scriptUpdates.hasIrregularScriptUpdates()) {
+            ExecutedScript failedExecutedScriptScript = getIncrementalScriptsThatFailedDuringLastUpdate().first();
+            throw new DbMaintainException("During the latest update, the execution of the following incremental script failed: " +
+                    failedExecutedScriptScript + ". \nThis problem must be fixed before any other " +
+                    "updates can be performed.\n" + getErrorScriptOptionsMessage(failedExecutedScriptScript.getScript()));
+        }
+    }
+
+    private void containsIgnoredScriptsAndScriptChanges(ScriptUpdates scriptUpdates) {
+        if (scriptUpdates.hasIgnoredScriptsAndScriptChanges()) {
+            throw new DbMaintainException(
+                    "DB-State is newer than current script release and scripts of current release are different to the corresponding script in the database");
+        }
+    }
+
+    private void containTooLongFilenames(ScriptUpdates scriptUpdates) {
+        final List<String> tooLongFilenames = scriptUpdates.getRegularlyAddedOrModifiedScripts().stream()
+                .map(ScriptUpdate::getScript)
+                .map(Script::getFileName)
+                .filter(filename -> filename.length() > filenameColumnSize)
+                .collect(Collectors.toList());
+
+        if (!tooLongFilenames.isEmpty()) {
+            throw new DbMaintainException(
+                    String.format("The filenames %s are longer than the configured maximum of %s.", tooLongFilenames,
+                            filenameColumnSize));
         }
     }
 
@@ -317,14 +372,6 @@ public class DefaultDbMaintainer implements DbMaintainer {
                 allowOutOfSequenceExecutionOfPatchScripts, ignoreDeletions).calculateScriptUpdates();
     }
 
-
-    /**
-     * @return Whether we are running dbmaintain for the first time. If there are no scripts available yet, this method
-     *         returns false.
-     */
-    protected boolean isInitialDatabaseUpdate() {
-        return executedScriptInfoSource.getExecutedScripts().size() == 0 && scriptRepository.areScriptsAvailable();
-    }
 
     /**
      * Executes all preprocessing scripts
