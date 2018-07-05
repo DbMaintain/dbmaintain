@@ -40,7 +40,6 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static org.dbmaintain.database.StoredIdentifierCase.UPPER_CASE;
 import static org.dbmaintain.datasource.SimpleDataSource.createDataSource;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 
 /**
  * @author Filip Neven
@@ -76,7 +75,7 @@ public abstract class TestUtils {
 
     public static DefaultExecutedScriptInfoSource getDefaultExecutedScriptInfoSource(Database database, boolean autoCreateExecutedScriptsTable, ScriptIndexes baselineRevision) {
         ScriptFactory scriptFactory = new ScriptFactory("^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", Collections.emptySet(),
-                asSet(new Qualifier("patch")), "preprocessing", "postprocessing", baselineRevision);
+                Collections.singleton(new Qualifier("patch")), "preprocessing", "postprocessing", baselineRevision);
         return new DefaultExecutedScriptInfoSource(autoCreateExecutedScriptsTable,
                 "dbmaintain_scripts", "file_name", 150, "file_last_modified_at", "checksum", 50, "executed_at", 50, "succeeded",
                 new SimpleDateFormat("dd/MM/yyyy"), database, new DefaultSQLHandler(), scriptFactory);
@@ -111,7 +110,7 @@ public abstract class TestUtils {
 
     public static FileSystemScriptLocation createFileSystemLocation(File scriptRootLocation) {
         return new FileSystemScriptLocation(scriptRootLocation, "ISO-8859-1", "preprocessing", "postprocessing", Collections.emptySet(),
-                asSet(new Qualifier("patch")), "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql"), null, false);
+                Collections.singleton(new Qualifier("patch")), "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", Collections.singleton("sql"), null, false);
     }
 
     public static ArchiveScriptLocation createArchiveScriptLocation(SortedSet<Script> scripts, ScriptIndexes baseLineRevision) {
@@ -121,7 +120,7 @@ public abstract class TestUtils {
     public static ScriptRepository getScriptRepository(SortedSet<Script> scriptsToReturn) {
         ScriptLocation scriptLocation = new ArchiveScriptLocation(scriptsToReturn, null, null, null, null, null, "^([0-9]+)_", "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", null, null, false);
         QualifierEvaluator qualifierEvaluator = getTrivialQualifierEvaluator();
-        return new ScriptRepository(asSet(scriptLocation), qualifierEvaluator);
+        return new ScriptRepository(Collections.singleton(scriptLocation), qualifierEvaluator);
     }
 
 

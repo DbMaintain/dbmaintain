@@ -25,13 +25,11 @@ import java.io.File;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Filip Neven
@@ -95,8 +93,18 @@ class ArchiveScriptLocationRegularZipOrJarTest {
 
 
     private ArchiveScriptLocation createArchiveScriptLocationFromFile(File file) {
-        return new ArchiveScriptLocation(file, "ISO-8859-1", "preprocessing", "postprocessing",
-                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
-                "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);
+        return new ArchiveScriptLocation(
+                file,
+                "ISO-8859-1",
+                "preprocessing",
+                "postprocessing",
+                Stream.of(new Qualifier("qualifier1"), new Qualifier("qualifier2")).collect(Collectors.toSet()),
+                singleton(new Qualifier("patch")),
+                "^([0-9]+)_",
+                "(?:\\\\G|_)@([a-zA-Z0-9]+)_",
+                "(?:\\\\G|_)#([a-zA-Z0-9]+)_",
+                Stream.of("sql", "ddl").collect(Collectors.toSet()),
+                null,
+                false);
     }
 }

@@ -26,11 +26,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.io.File.createTempFile;
 import static java.util.Collections.singleton;
 import static org.apache.commons.io.IOUtils.contentEquals;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,13 +56,34 @@ class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
 
     @Test
     void writeToJarThenRereadFromJarAndEnsureContentIsEqual() throws IOException {
-        ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(scripts, "ISO-8859-1", "preprocessing", "postprocessing",
-                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
-                "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);
+        ArchiveScriptLocation originalScriptArchive = new ArchiveScriptLocation(
+                scripts,
+                "ISO-8859-1",
+                "preprocessing",
+                "postprocessing",
+                Stream.of(new Qualifier("qualifier1"), new Qualifier("qualifier2")).collect(Collectors.toSet()),
+                singleton(new Qualifier("patch")),
+                "^([0-9]+)_",
+                "(?:\\\\G|_)@([a-zA-Z0-9]+)_",
+                "(?:\\\\G|_)#([a-zA-Z0-9]+)_",
+                Stream.of("sql", "ddl").collect(Collectors.toSet()),
+                null,
+                false);
         originalScriptArchive.writeToJarFile(jarFile);
-        ArchiveScriptLocation scriptArchiveFromFile = new ArchiveScriptLocation(jarFile, "ISO-8859-1", "preprocessing", "postprocessing",
-                asSet(new Qualifier("qualifier1"), new Qualifier("qualifier2")), singleton(new Qualifier("patch")), "^([0-9]+)_",
-                "(?:\\\\G|_)@([a-zA-Z0-9]+)_", "(?:\\\\G|_)#([a-zA-Z0-9]+)_", asSet("sql", "ddl"), null, false);
+
+        ArchiveScriptLocation scriptArchiveFromFile = new ArchiveScriptLocation(
+                jarFile,
+                "ISO-8859-1",
+                "preprocessing",
+                "postprocessing",
+                Stream.of(new Qualifier("qualifier1"), new Qualifier("qualifier2")).collect(Collectors.toSet()),
+                singleton(new Qualifier("patch")),
+                "^([0-9]+)_",
+                "(?:\\\\G|_)@([a-zA-Z0-9]+)_",
+                "(?:\\\\G|_)#([a-zA-Z0-9]+)_",
+                Stream.of("sql", "ddl").collect(Collectors.toSet()),
+                null,
+                false);
 
         // Make sure the content of the original ScriptJar object is equal to the one reloaded from the jar file
         assertEqualProperties(originalScriptArchive, scriptArchiveFromFile);

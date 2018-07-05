@@ -26,14 +26,12 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.TABLE;
-import static org.dbmaintain.util.CollectionUtils.asSet;
-import static org.dbmaintain.util.SQLTestUtils.dropTestTables;
-import static org.dbmaintain.util.SQLTestUtils.dropTestViews;
-import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
-import static org.dbmaintain.util.SQLTestUtils.isEmpty;
+import static org.dbmaintain.util.SQLTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,7 +72,7 @@ class DefaultDBCleanerTest {
         DbItemIdentifier tableTest_table_Preserve = parseItemIdentifier(TABLE, "Test_table_Preserve", databases);
         DbItemIdentifier tableTest_CASE_Table_Preserve = parseItemIdentifier(TABLE, "Test_CASE_Table_Preserve", databases);
 
-        Set<DbItemIdentifier> itemsToPreserve = asSet(tableTest_table_Preserve, tableTest_CASE_Table_Preserve);
+        Set<DbItemIdentifier> itemsToPreserve = Stream.of(tableTest_table_Preserve, tableTest_CASE_Table_Preserve).collect(Collectors.toSet());
         defaultDBCleaner = new DefaultDBCleaner(databases, itemsToPreserve, new DefaultSQLHandler());
     }
 

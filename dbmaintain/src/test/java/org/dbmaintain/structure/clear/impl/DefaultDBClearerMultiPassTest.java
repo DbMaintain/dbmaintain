@@ -27,12 +27,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -61,7 +61,7 @@ class DefaultDBClearerMultiPassTest {
     private ExecutedScriptInfoSource executedScriptInfoSource;
 
     private static final String SCHEMA = "MYSCHEMA";
-    private final Set<String> tableNames = asSet("TABLE1", "TABLE2", "TABLE3");
+    private final Set<String> tableNames = Stream.of("TABLE1", "TABLE2", "TABLE3").collect(Collectors.toSet());
 
     /**
      * Configures the tested object.
@@ -69,7 +69,7 @@ class DefaultDBClearerMultiPassTest {
     @BeforeEach
     void setUp() {
         when(database.getTableNames(anyString())).thenReturn(tableNames);
-        when(database.getSchemaNames()).thenReturn(asSet(SCHEMA));
+        when(database.getSchemaNames()).thenReturn(Collections.singleton(SCHEMA));
 
         Databases databases = new Databases(database, Collections.singletonList(database), new ArrayList<>());
         defaultDBClearer = new DefaultDBClearer(databases, new HashSet<>(), new HashSet<>(), constraintsDisabler, executedScriptInfoSource);

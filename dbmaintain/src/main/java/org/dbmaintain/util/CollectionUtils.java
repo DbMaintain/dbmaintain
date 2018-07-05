@@ -30,23 +30,6 @@ import static java.util.Arrays.asList;
  */
 public class CollectionUtils {
 
-
-    /**
-     * Converts the given array of elements to a set.
-     *
-     * @param elements The elements
-     * @return The elements as a set, empty if elements was null
-     */
-    public static <T> Set<T> asSet(T... elements) {
-        Set<T> result = new HashSet<>();
-        if (elements == null) {
-            return result;
-        }
-        result.addAll(asList(elements));
-        return result;
-    }
-
-
     /**
      * Converts the given array of elements to a sortedset.
      *

@@ -26,11 +26,8 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.createArchiveScriptLocation;
-import static org.dbmaintain.util.TestUtils.createScriptFactory;
-import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
+import static org.dbmaintain.util.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -115,7 +112,7 @@ class ScriptRepositoryBaselineRevisionTest {
         SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, preProcessingScript, postProcessingScript);
 
         ScriptLocation scriptLocation = createArchiveScriptLocation(scripts, baseLineRevision);
-        return new ScriptRepository(asSet(scriptLocation), getTrivialQualifierEvaluator());
+        return new ScriptRepository(Collections.singleton(scriptLocation), getTrivialQualifierEvaluator());
     }
 
 

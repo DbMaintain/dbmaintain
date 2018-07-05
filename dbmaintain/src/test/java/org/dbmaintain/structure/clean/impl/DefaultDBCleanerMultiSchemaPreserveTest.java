@@ -26,11 +26,12 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.TABLE;
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -66,7 +67,7 @@ class DefaultDBCleanerMultiSchemaPreserveTest {
         DbItemIdentifier tableTest = parseItemIdentifier(TABLE, "test", databases);
         DbItemIdentifier tableTEST = parseItemIdentifier(TABLE, "\"SCHEMA_A\".\"TEST\"", databases);
 
-        Set<DbItemIdentifier> itemsToPreserve = asSet(schemaC, tableTest, tableTEST);
+        Set<DbItemIdentifier> itemsToPreserve = Stream.of(schemaC, tableTest, tableTEST).collect(Collectors.toSet());
         defaultDBCleaner = new DefaultDBCleaner(databases, itemsToPreserve, new DefaultSQLHandler());
     }
 

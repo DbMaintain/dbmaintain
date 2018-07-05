@@ -21,8 +21,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.dbmaintain.util.CollectionUtils.asSet;
 import static org.dbmaintain.util.TestUtils.createScript;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -50,6 +51,7 @@ class FileSystemScriptLocationTest {
 
     @Test
     void testGetAllFiles() {
-        assertEquals(asSet(indexed1, repeatable1, preProcessing1, postProcessing1), fileSystemScriptLocation.getScripts());
+        assertEquals(Stream.of(indexed1, repeatable1, preProcessing1, postProcessing1).collect(Collectors.toSet()),
+                fileSystemScriptLocation.getScripts());
     }
 }

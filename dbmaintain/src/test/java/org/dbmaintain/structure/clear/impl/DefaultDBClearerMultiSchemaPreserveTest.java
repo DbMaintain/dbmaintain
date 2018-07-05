@@ -28,13 +28,12 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.parseSchemaIdentifier;
-import static org.dbmaintain.structure.model.DbItemType.SEQUENCE;
-import static org.dbmaintain.structure.model.DbItemType.TABLE;
-import static org.dbmaintain.structure.model.DbItemType.VIEW;
-import static org.dbmaintain.util.CollectionUtils.asSet;
+import static org.dbmaintain.structure.model.DbItemType.*;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdate;
 import static org.dbmaintain.util.SQLTestUtils.executeUpdateQuietly;
 import static org.dbmaintain.util.TestUtils.getDatabases;
@@ -72,14 +71,16 @@ class DefaultDBClearerMultiSchemaPreserveTest {
         createTestDatabase();
 
         // configure items to preserve
-        Set<DbItemIdentifier> itemsToPreserve = asSet(
+        Set<DbItemIdentifier> itemsToPreserve = Stream.of(
                 parseSchemaIdentifier("schema_c", databases),
                 parseItemIdentifier(TABLE, "test_table", databases),
-                parseItemIdentifier(TABLE, defaultDatabase.quoted("SCHEMA_A") + "." + defaultDatabase.quoted("TEST_TABLE"), databases),
+                parseItemIdentifier(TABLE,
+                        defaultDatabase.quoted("SCHEMA_A") + "." + defaultDatabase.quoted("TEST_TABLE"), databases),
                 parseItemIdentifier(VIEW, "test_view", databases),
                 parseItemIdentifier(VIEW, "schema_a." + defaultDatabase.quoted("TEST_VIEW"), databases),
                 parseItemIdentifier(SEQUENCE, "test_sequence", databases),
-                parseItemIdentifier(SEQUENCE, defaultDatabase.quoted("SCHEMA_A") + ".test_sequence", databases));
+                parseItemIdentifier(SEQUENCE, defaultDatabase.quoted("SCHEMA_A") + ".test_sequence", databases))
+                .collect(Collectors.toSet());
 
         ConstraintsDisabler constraintsDisabler = new DefaultConstraintsDisabler(databases);
         ExecutedScriptInfoSource executedScriptInfoSource = getDefaultExecutedScriptInfoSource(defaultDatabase, true);
