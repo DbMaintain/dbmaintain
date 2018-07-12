@@ -23,11 +23,14 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.*;
+import static org.dbmaintain.util.TestUtils.createArchiveScriptLocation;
+import static org.dbmaintain.util.TestUtils.createScriptFactory;
+import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -109,7 +112,8 @@ class ScriptRepositoryBaselineRevisionTest {
         Script repeatableScript = scriptFactory.createScriptWithoutContent("repeatable/script.sql", 0L, "checksum");
         Script preProcessingScript = scriptFactory.createScriptWithoutContent("preprocessing/script.sql", 0L, "checksum");
         Script postProcessingScript = scriptFactory.createScriptWithoutContent("postprocessing/script.sql", 0L, "checksum");
-        SortedSet<Script> scripts = asSortedSet(script11, script12, script21, repeatableScript, preProcessingScript, postProcessingScript);
+        SortedSet<Script> scripts = Stream.of(script11, script12, script21, repeatableScript, preProcessingScript, postProcessingScript)
+                .collect(Collectors.toCollection(TreeSet::new));
 
         ScriptLocation scriptLocation = createArchiveScriptLocation(scripts, baseLineRevision);
         return new ScriptRepository(Collections.singleton(scriptLocation), getTrivialQualifierEvaluator());

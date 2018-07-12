@@ -19,8 +19,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static java.util.Arrays.asList;
-
 /**
  * Class containing collection related utilities
  *
@@ -28,22 +26,6 @@ import static java.util.Arrays.asList;
  * @author Tim Ducheyne
  */
 public class CollectionUtils {
-
-    /**
-     * Converts the given array of elements to a sortedset.
-     *
-     * @param elements The elements
-     * @return The elements as a set, empty if elements was null
-     */
-    public static <T> SortedSet<T> asSortedSet(T... elements) {
-        SortedSet<T> result = new TreeSet<>();
-        if (elements == null) {
-            return result;
-        }
-        result.addAll(asList(elements));
-        return result;
-    }
-
 
     public static <T> SortedSet<T> unionSortedSet(Set<T>... sets) {
         SortedSet<T> unionSet = new TreeSet<>();

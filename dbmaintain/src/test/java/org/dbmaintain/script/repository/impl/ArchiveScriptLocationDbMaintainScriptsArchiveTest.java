@@ -26,13 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.io.File.createTempFile;
 import static java.util.Collections.singleton;
 import static org.apache.commons.io.IOUtils.contentEquals;
-import static org.dbmaintain.util.CollectionUtils.asSortedSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -50,7 +50,7 @@ class ArchiveScriptLocationDbMaintainScriptsArchiveTest {
     void init() throws IOException {
         Script script1 = TestUtils.createScriptWithContent("folder1/script1.sql", "Script 1 content");
         Script script2 = TestUtils.createScriptWithContent("folder1/script2.sql", "Script 2 content");
-        scripts = asSortedSet(script1, script2);
+        scripts = Stream.of(script1, script2).collect(Collectors.toCollection(TreeSet::new));
         jarFile = createTempFile("scriptjar", ".jar");
     }
 

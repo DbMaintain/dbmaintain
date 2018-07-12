@@ -20,11 +20,13 @@ import org.dbmaintain.util.DbMaintainException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.dbmaintain.util.CollectionUtils.asSortedSet;
-import static org.dbmaintain.util.TestUtils.*;
+import static org.dbmaintain.util.TestUtils.createArchiveScriptLocation;
+import static org.dbmaintain.util.TestUtils.createScript;
+import static org.dbmaintain.util.TestUtils.getTrivialQualifierEvaluator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -59,25 +61,28 @@ class ScriptRepositoryTest {
         preProcessing1 = createScript("preprocessing/01_pre1.sql");
         preProcessing2 = createScript("preprocessing/02_pre2.sql");
 
-
-        scriptLocation1 = createArchiveScriptLocation(asSortedSet(indexed1, repeatable1, postProcessing1, preProcessing1), null);
-        scriptLocation2 = createArchiveScriptLocation(asSortedSet(indexed2, repeatable2, postProcessing2, preProcessing2), null);
+        scriptLocation1 = createArchiveScriptLocation(
+                Stream.of(indexed1, repeatable1, postProcessing1, preProcessing1).collect(Collectors.toCollection(TreeSet::new)), null);
+        scriptLocation2 = createArchiveScriptLocation(
+                Stream.of(indexed2, repeatable2, postProcessing2, preProcessing2).collect(Collectors.toCollection(TreeSet::new)), null);
     }
 
     @Test
     void getScripts() {
         ScriptRepository scriptRepository = new ScriptRepository(
-                Stream.of(scriptLocation1, scriptLocation2).collect(Collectors.toSet()),
-                getTrivialQualifierEvaluator());
+                Stream.of(scriptLocation1, scriptLocation2).collect(Collectors.toSet()), getTrivialQualifierEvaluator());
 
-        assertEquals(asSortedSet(indexed1, indexed2), scriptRepository.getIndexedScripts());
-        assertEquals(asSortedSet(repeatable1, repeatable2), scriptRepository.getRepeatableScripts());
-        assertEquals(asSortedSet(postProcessing1, postProcessing2), scriptRepository.getPostProcessingScripts());
+        assertEquals(Stream.of(indexed1, indexed2).collect(Collectors.toCollection(TreeSet::new)), scriptRepository.getIndexedScripts());
+        assertEquals(Stream.of(repeatable1, repeatable2).collect(Collectors.toCollection(TreeSet::new)),
+                scriptRepository.getRepeatableScripts());
+        assertEquals(Stream.of(postProcessing1, postProcessing2).collect(Collectors.toCollection(TreeSet::new)),
+                scriptRepository.getPostProcessingScripts());
     }
 
     @Test
     void errorInCaseOfDuplicateScript() {
-        ScriptLocation location = createArchiveScriptLocation(asSortedSet(indexed2, repeatable1, postProcessing2), null);
+        ScriptLocation location = createArchiveScriptLocation(
+                Stream.of(indexed2, repeatable1, postProcessing2).collect(Collectors.toCollection(TreeSet::new)), null);
         assertThrows(DbMaintainException.class,
                 () -> new ScriptRepository(Stream.of(scriptLocation1, location).collect(Collectors.toSet()),
                         getTrivialQualifierEvaluator()));
@@ -85,7 +90,8 @@ class ScriptRepositoryTest {
 
     @Test
     void errorInCaseOfDuplicateIndex() {
-        ScriptLocation location = createArchiveScriptLocation(asSortedSet(indexed2, duplicateIndex, repeatable2, postProcessing2), null);
+        ScriptLocation location = createArchiveScriptLocation(
+                Stream.of(indexed2, duplicateIndex, repeatable2, postProcessing2).collect(Collectors.toCollection(TreeSet::new)), null);
         assertThrows(DbMaintainException.class,
                 () -> new ScriptRepository(Stream.of(scriptLocation1, location).collect(Collectors.toSet()),
                         getTrivialQualifierEvaluator()));
