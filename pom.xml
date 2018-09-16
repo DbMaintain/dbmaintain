@@ -62,7 +62,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <parent-basedir>${basedir}</parent-basedir>
         <mvn.version>2.2.1</mvn.version>
-        <junit.version>5.3.0</junit.version>
+        <junit.version>5.3.1</junit.version>
         <mockito.version>2.21.0</mockito.version>
     </properties>
 
