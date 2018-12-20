@@ -22,24 +22,24 @@ then
 fi
 
 if [ -n "$SQL_GIT_URL" ]; then
-  git clone $SQL_GIT_URL /sql
+  git clone $SQL_GIT_URL $HOME/sql
 elif [ -n "$SQL_SVN_URL" ]; then
-  svn export $SQL_SVN_URL /sql
+  svn export $SQL_SVN_URL $HOME/sql
 fi
 
 
 if [ -n "$PROPERTIES_GIT_URL" ]; then
-  git clone $PROPERTIES_GIT_URL /dbmaintain
+  git clone $PROPERTIES_GIT_URL $HOME/dbmaintain
 elif [ -n "$PROPERTIES_SVN_URL" ]; then
-  svn export $PROPERTIES_SVN_URL /dbmaintain
+  svn export $PROPERTIES_SVN_URL $HOME/dbmaintain
 fi  
 
 
 if [ -n "$PROPERTIES_GIT_URL" ] || [ -n "$PROPERTIES_SVN_URL" ]; then
   if [ -n "$DBMAINTAIN_PROPERTIES_PATH" ]; then
-    cp /dbmaintain/$DBMAINTAIN_PROPERTIES_PATH /dbmaintain.properties
+    cp /dbmaintain/$DBMAINTAIN_PROPERTIES_PATH $HOME/dbmaintain.properties
   else   
-    cp /dbmaintain/dbmaintain.properties /dbmaintain.properties
+    cp /dbmaintain/dbmaintain.properties $HOME/dbmaintain.properties
   fi
 fi
 
@@ -49,18 +49,18 @@ if [ -n "$MAX_RETRY" ]; then
    until [ $n -ge $MAX_RETRY ]
    do
       dbmaintainreturn=0
-      java -DdbMaintainer.sqlPlusScriptRunner.preScriptFilePath=/prescriptsqlpus.sql $DBMAINTAIN_SYSTEM_PROPERTIES -DdbMaintainer.sqlPlusScriptRunner.postScriptFilePath=/postscriptsqlpus.sql -Dlog4j.configuration=file:/log4j.properties -cp "/lib/*" org.dbmaintain.launch.commandline.CommandLine $1 -config /dbmaintain.properties && break  
+      java -DdbMaintainer.sqlPlusScriptRunner.preScriptFilePath=$HOME/prescriptsqlpus.sql $DBMAINTAIN_SYSTEM_PROPERTIES -DdbMaintainer.sqlPlusScriptRunner.postScriptFilePath=$HOME/postscriptsqlpus.sql -Dlog4j.configuration=file:$HOME/log4j.properties -cp "/lib/*" org.dbmaintain.launch.commandline.CommandLine $1 -config $HOME/dbmaintain.properties && break
       dbmaintainreturn=$?	  
 	  n=$((n+1)) 
-	  echo "attempt no. $n"
+	  echo "retry no. $n"
       sleep 20
    done  
    if [ $dbmaintainreturn -ne 0 ]; then
-     echo "giving up after $n attempts - exit $dbmaintainreturn"
+     echo "giving up after $n retries - exit $dbmaintainreturn"
 	 exit $dbmaintainreturn
    fi
 else 
-  java -DdbMaintainer.sqlPlusScriptRunner.preScriptFilePath=/prescriptsqlpus.sql $DBMAINTAIN_SYSTEM_PROPERTIES -DdbMaintainer.sqlPlusScriptRunner.postScriptFilePath=/postscriptsqlpus.sql -Dlog4j.configuration=file:/log4j.properties -cp "/lib/*" org.dbmaintain.launch.commandline.CommandLine $1 -config /dbmaintain.properties
+  java -DdbMaintainer.sqlPlusScriptRunner.preScriptFilePath=$HOME/prescriptsqlpus.sql $DBMAINTAIN_SYSTEM_PROPERTIES -DdbMaintainer.sqlPlusScriptRunner.postScriptFilePath=$HOME/postscriptsqlpus.sql -Dlog4j.configuration=file:$HOME/log4j.properties -cp "/lib/*" org.dbmaintain.launch.commandline.CommandLine $1 -config $HOME/dbmaintain.properties
 fi
 
 if [ -n "$SLEEP_SUCCESS" ]; then
