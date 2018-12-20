@@ -92,11 +92,16 @@ public class CommandLine {
      * @param args The command line arguments
      */
     public static void main(String[] args) {
-        CommandLineArguments commandLineArguments = parseCommandLineArguments(args);
-        Properties configuration = loadConfiguration(commandLineArguments);
-        DbMaintainOperation operation = getDbMaintainOperation(commandLineArguments);
+        try {
+            CommandLineArguments commandLineArguments = parseCommandLineArguments(args);
+            Properties configuration = loadConfiguration(commandLineArguments);
+            DbMaintainOperation operation = getDbMaintainOperation(commandLineArguments);
 
-        executeOperation(operation, configuration, commandLineArguments);
+            executeOperation(operation, configuration, commandLineArguments);
+        } catch (Exception e) {
+            logger.error("Exception was thrown", e);
+            System.exit(1);
+        }
     }
 
     /**
