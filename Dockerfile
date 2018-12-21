@@ -1,9 +1,13 @@
 FROM java:openjdk-8-jdk
 
-ENV DBMAINTAIN_VERSION=2.7.2-SNAPSHOT
+ENV DBMAINTAIN_VERSION=2.7.3-SNAPSHOT
 
 COPY dbmaintain/target/dbmaintain-${DBMAINTAIN_VERSION}.jar /lib/
-RUN touch prescriptsqlpus.sql
-RUN touch postscriptsqlpus.sql
-COPY docker/entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+RUN useradd -m -d /opt/dbmaintain dbmaintain\
+    && touch /opt/dbmaintain/prescriptsqlpus.sql\
+    && touch /opt/dbmaintain/postscriptsqlpus.sql
+COPY docker/entrypoint.sh /opt/dbmaintain/
+COPY dbmaintain/src/main/resources/dbmaintain-default.properties /opt/dbmaintain/dbmaintain.properties
+RUN chown dbmaintain:dbmaintain -R /opt/dbmaintain/ && chmod -R a+r /lib
+USER dbmaintain
+ENTRYPOINT ["/opt/dbmaintain/entrypoint.sh"]
