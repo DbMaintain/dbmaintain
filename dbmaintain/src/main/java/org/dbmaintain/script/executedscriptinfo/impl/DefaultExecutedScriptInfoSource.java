@@ -332,7 +332,7 @@ public class DefaultExecutedScriptInfoSource implements ExecutedScriptInfoSource
 
         // does not exist yet, if auto-create create version table
         if (autoCreateExecutedScriptsTable) {
-            logger.warn("Executed scripts table " + getQualifiedExecutedScriptsTableName() + " doesn't exist yet or is invalid. A new one is created automatically.");
+            logger.info("Executed scripts table " + getQualifiedExecutedScriptsTableName() + " doesn't exist yet or is invalid. A new one is created automatically.");
             createExecutedScriptsTable();
             return false;
         }
