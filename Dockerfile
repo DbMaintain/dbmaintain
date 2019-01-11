@@ -8,7 +8,7 @@ RUN mvn package
 
 FROM java:openjdk-8-jdk
 
-ENV DBMAINTAIN_VERSION=2.7.3-SNAPSHOT
+ENV DBMAINTAIN_VERSION=2.7.3
 
 COPY --from=builder dbmaintain/target/dbmaintain-${DBMAINTAIN_VERSION}.jar /lib/
 RUN useradd -m -d /opt/dbmaintain dbmaintain\
