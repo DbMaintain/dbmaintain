@@ -1,8 +1,16 @@
+FROM maven:3.6-jdk-8-alpine as builder
+
+RUN cd /tmp
+COPY . .
+
+RUN mvn package
+
+
 FROM java:openjdk-8-jdk
 
 ENV DBMAINTAIN_VERSION=2.7.3-SNAPSHOT
 
-COPY dbmaintain/target/dbmaintain-${DBMAINTAIN_VERSION}.jar /lib/
+COPY --from=builder dbmaintain/target/dbmaintain-${DBMAINTAIN_VERSION}.jar /lib/
 RUN useradd -m -d /opt/dbmaintain dbmaintain\
     && touch /opt/dbmaintain/prescriptsqlpus.sql\
     && touch /opt/dbmaintain/postscriptsqlpus.sql
