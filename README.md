@@ -18,4 +18,6 @@ Updates are performed incrementally: Only what has been changed since the last d
 
 Documentation
 -------------
-See [documentation](https://dbmaintain.github.io/docs/) for getting started and full documentation.
+For usage with docker see [docker configuration](https://dbmaintain.github.io/docs/docker/).
+
+See [documentation](https://dbmaintain.github.io/docs/) for getting started and full documentation. 
