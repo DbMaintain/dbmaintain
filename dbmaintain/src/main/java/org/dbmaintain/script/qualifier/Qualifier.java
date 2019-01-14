@@ -15,6 +15,8 @@
  */
 package org.dbmaintain.script.qualifier;
 
+import java.util.Objects;
+
 /**
  * Represents a script qualifier, that characterizes a database script in some way, and that
  * can be used to exclude scripts from execution or to indicate 'patch' scripts.
@@ -40,7 +42,7 @@ public class Qualifier {
 
         Qualifier qualifier = (Qualifier) o;
 
-        if (qualifierName != null ? !qualifierName.equals(qualifier.qualifierName) : qualifier.qualifierName != null)
+        if (!Objects.equals(qualifierName, qualifier.qualifierName))
             return false;
 
         return true;

@@ -17,6 +17,8 @@ package org.dbmaintain.script.analyzer;
 
 import org.dbmaintain.script.Script;
 
+import java.util.Objects;
+
 /**
  * @author Filip Neven
  * @author Tim Ducheyne
@@ -61,7 +63,7 @@ public class ScriptUpdate implements Comparable<ScriptUpdate> {
 
         if (type != that.type) return false;
         if (!script.equals(that.script)) return false;
-        if (renamedToScript != null ? !renamedToScript.equals(that.renamedToScript) : that.renamedToScript != null)
+        if (!Objects.equals(renamedToScript, that.renamedToScript))
             return false;
 
         return true;
