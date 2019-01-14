@@ -71,7 +71,7 @@ public class JdbcScriptRunner implements ScriptRunner {
         }
 
         // get content stream
-        try(Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader()) {
+        try (Reader scriptContentReader = script.getScriptContentHandle().openScriptContentReader()) {
             // create a script parser for the target database in question
             ScriptParser scriptParser = databaseDialectScriptParserFactoryMap.get(targetDatabase.getSupportedDatabaseDialect()).createScriptParser(scriptContentReader);
             // parse and execute the statements

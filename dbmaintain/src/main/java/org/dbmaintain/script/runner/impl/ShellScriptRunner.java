@@ -74,8 +74,9 @@ public class ShellScriptRunner extends BaseNativeScriptRunner {
      * @param scriptFile File which shall be executable
      */
     private void chmodScript(File scriptFile) {
-        if (chmodCommand.equals(""))
+        if (chmodCommand.equals("")) {
             return;
+        }
         String[] chmodCmdWithArgs = StringUtils.split(chmodCommand);
         List<String> chmodArgs = new ArrayList<>(Arrays.asList(chmodCmdWithArgs).subList(1, chmodCmdWithArgs.length));
         chmodArgs.add(scriptFile.getAbsolutePath());

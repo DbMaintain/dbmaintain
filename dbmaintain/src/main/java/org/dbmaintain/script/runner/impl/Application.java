@@ -152,15 +152,15 @@ public class Application {
         }
 
         protected void appendProcessOutput(Process process) throws IOException {
-            BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = outReader.readLine()) != null) {
-                if (!isBlank(line)) {
-                    outputStringBuilder.append(line);
-                    outputStringBuilder.append('\n');
+            try (BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = outReader.readLine()) != null) {
+                    if (!isBlank(line)) {
+                        outputStringBuilder.append(line);
+                        outputStringBuilder.append('\n');
+                    }
                 }
             }
-            outReader.close();
         }
     }
 }
