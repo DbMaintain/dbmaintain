@@ -1,8 +1,0 @@
- --------
- Configuration
- --------
- --------
-
-Configuration
-~~~~~~~~
-    The full list of properties can be found in the {{{https://github.com/DbMaintain/dbmaintain/blob/master/dbmaintain/src/main/resources/dbmaintain-default.properties}dbmaintain-default.properties}} file.
