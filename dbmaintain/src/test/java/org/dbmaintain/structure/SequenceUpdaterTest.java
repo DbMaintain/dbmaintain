@@ -64,7 +64,7 @@ class SequenceUpdaterTest {
      * Creates a test table and test sequence.
      */
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -79,7 +79,7 @@ class SequenceUpdaterTest {
      * Clears the database, to avoid interference with other tests
      */
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         cleanupTestDatabase();
     }
 

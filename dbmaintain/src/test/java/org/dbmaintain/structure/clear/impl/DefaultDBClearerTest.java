@@ -66,7 +66,7 @@ class DefaultDBClearerTest {
 
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -80,7 +80,7 @@ class DefaultDBClearerTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         cleanupTestDatabase();
     }
 

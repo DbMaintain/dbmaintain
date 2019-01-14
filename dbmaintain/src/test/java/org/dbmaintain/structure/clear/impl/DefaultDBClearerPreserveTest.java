@@ -73,7 +73,7 @@ class DefaultDBClearerPreserveTest {
 
 
     @BeforeEach
-    void initialize() throws Exception {
+    void initialize() {
         databases = TestUtils.getDatabases();
         defaultDatabase = databases.getDefaultDatabase();
         dataSource = defaultDatabase.getDataSource();
@@ -109,7 +109,7 @@ class DefaultDBClearerPreserveTest {
     }
 
     @AfterEach
-    void cleanUp() throws Exception {
+    void cleanUp() {
         cleanupTestDatabase();
     }
 
