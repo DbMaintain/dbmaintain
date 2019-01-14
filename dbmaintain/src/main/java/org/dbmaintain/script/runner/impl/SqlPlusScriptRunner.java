@@ -82,7 +82,7 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
 		Matcher match = pattern.matcher(log);
 		return match.find();
 	}
-    
+
     protected File generateWrapperScriptFile(final DatabaseInfo databaseInfo, final File targetScriptFile) throws IOException {
         final File temporaryScriptsDir = createTemporaryScriptsDir();
         final File temporaryScriptWrapperFile = new File(temporaryScriptsDir, "wrapper-" + currentTimeMillis() + targetScriptFile.getName());
@@ -104,14 +104,13 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
             content.append(lineSeparator);
             content.append("alter session set current_schema=");
             content.append(databaseInfo.getDefaultSchemaName());
-            content.append(";");            
+            content.append(";");
             content.append(lineSeparator);
-            content.append("alter session set ddl_lock_timeout=30;");               
+            content.append("alter session set ddl_lock_timeout=30;");
             content.append(lineSeparator);
 
             // read content from custom script file
             final String preScriptFilePath = PropertyUtils.getString(PROPERTY_SQL_PLUS_PRE_SCRIPT_FILE_PATH, getConfiguration());
-            @SuppressWarnings("unchecked")
             final List<String> lines = FileUtils.readLines(new File(preScriptFilePath), scriptEncoding);
             for (final String line : lines) {
                 content.append(line).append(lineSeparator);
@@ -134,7 +133,7 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
             content.append(databaseInfo.getDefaultSchemaName());
             content.append(";");
             content.append(lineSeparator);
-            content.append("alter session set ddl_lock_timeout=30;");               
+            content.append("alter session set ddl_lock_timeout=30;");
             content.append(lineSeparator);
             content.append("set echo on");
             content.append(lineSeparator);
@@ -145,7 +144,6 @@ public class SqlPlusScriptRunner extends BaseNativeScriptRunner {
         if (PropertyUtils.containsProperty(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, getConfiguration())) {
             // read content from custom script file
             final String postScriptFilePath = PropertyUtils.getString(PROPERTY_SQL_PLUS_POST_SCRIPT_FILE_PATH, getConfiguration());
-            @SuppressWarnings("unchecked")
             final List<String> lines = FileUtils.readLines(new File(postScriptFilePath), scriptEncoding);
             for (final String line : lines) {
                 content.append(line).append(lineSeparator);

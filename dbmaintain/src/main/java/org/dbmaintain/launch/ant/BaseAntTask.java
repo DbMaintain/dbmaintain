@@ -69,7 +69,6 @@ public abstract class BaseAntTask extends Task {
         return new File(configFile);
     }
 
-    @SuppressWarnings({"unchecked"})
     protected Properties getAntProperties() {
         Properties properties = new Properties();
         properties.putAll(getProject().getProperties());
