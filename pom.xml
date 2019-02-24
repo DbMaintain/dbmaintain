@@ -65,7 +65,7 @@
         <parent-basedir>${basedir}</parent-basedir>
         <mvn.version>2.2.1</mvn.version>
         <junit.version>5.4.0</junit.version>
-        <mockito.version>2.23.4</mockito.version>
+        <mockito.version>2.24.5</mockito.version>
     </properties>
 
     <distributionManagement>
