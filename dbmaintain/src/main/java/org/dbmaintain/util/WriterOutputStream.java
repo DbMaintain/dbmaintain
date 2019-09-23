@@ -38,4 +38,9 @@ public class WriterOutputStream extends OutputStream {
         writer.write(b);
     }
 
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        final String text = new String(b);
+        writer.write(text.toCharArray(), off, len);
+    }
 }
