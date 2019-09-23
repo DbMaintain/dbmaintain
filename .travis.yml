@@ -3,8 +3,8 @@ sudo: required
 language: java
 script: mvn -q install --settings .travis-settings.xml
 jdk:
-  - oraclejdk8
-  
+  - openjdk8
+
 after_success:
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - docker build -t dbmaintain/dbmaintain:$TAG .
