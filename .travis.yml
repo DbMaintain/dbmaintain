@@ -4,6 +4,7 @@ language: java
 script: mvn -q install --settings .travis-settings.xml
 jdk:
   - openjdk8
+  - openjdk11
 
 after_success:
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
