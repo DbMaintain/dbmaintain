@@ -206,7 +206,9 @@ public class ArchiveScriptLocation extends ScriptLocation {
      * @param jarFile Path where the jar file is stored
      */
     public void writeToJarFile(File jarFile) {
-        try(JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile))) {
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(jarFile);
+             JarOutputStream jarOutputStream = new JarOutputStream(fileOutputStream)) {
 
             Reader propertiesAsFile = getPropertiesAsFile(getJarProperties());
             writeJarEntry(jarOutputStream, LOCATION_PROPERTIES_FILENAME, System.currentTimeMillis(), propertiesAsFile);

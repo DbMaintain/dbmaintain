@@ -106,13 +106,15 @@ public class FactoryWithDatabaseContext extends FactoryContext {
 
     protected Properties getScriptParameters() {
         String scriptParameterFile = PropertyUtils.getString(PROPERTY_SCRIPT_PARAMETER_FILE, null, getConfiguration());
-        try {
-            Properties scriptParameters = null;
-            if (scriptParameterFile != null) {
-                scriptParameters = new Properties();
-                String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, getConfiguration());
-                scriptParameters.load(new InputStreamReader(new FileInputStream(scriptParameterFile), scriptEncoding));
-            }
+
+        if (scriptParameterFile == null) {
+            return null;
+        }
+
+        try (FileInputStream scriptParameterFileInputStream = new FileInputStream(scriptParameterFile)) {
+            Properties scriptParameters = new Properties();
+            String scriptEncoding = getString(PROPERTY_SCRIPT_ENCODING, getConfiguration());
+            scriptParameters.load(new InputStreamReader(scriptParameterFileInputStream, scriptEncoding));
             return scriptParameters;
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load script parameter file " + scriptParameterFile, e);
