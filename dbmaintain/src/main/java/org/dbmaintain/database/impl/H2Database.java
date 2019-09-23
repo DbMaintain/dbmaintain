@@ -105,18 +105,20 @@ public class H2Database extends Database {
  
     protected void disableCheckAndUniqueConstraints(final String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
- 
-            resultSet = queryStatement.executeQuery("select TABLE_NAME, " +
+
+            queryStatement = connection.prepareStatement("select TABLE_NAME, " +
                     "CONSTRAINT_NAME from INFORMATION_SCHEMA.CONSTRAINTS where " +
                     "CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA " +
-                    "= '" + schemaName + "'");
+                    "= ?");
+            queryStatement.setString(1, schemaName);
+            resultSet = queryStatement.executeQuery();
+
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -134,23 +136,25 @@ public class H2Database extends Database {
  
     protected void disableNotNullConstraints(String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
  
             // Do not remove PK constraints
-            resultSet = queryStatement.executeQuery("select col.TABLE_NAME, " +
+            queryStatement = connection.prepareStatement("select col.TABLE_NAME, " +
                     "col.COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS col where " +
-                    "col.IS_NULLABLE = 'NO' and col.TABLE_SCHEMA = '" +
-                    schemaName + "' " + "AND NOT EXISTS (select COLUMN_NAME " +
+                    "col.IS_NULLABLE = 'NO' and col.TABLE_SCHEMA = ? " +
+                    "AND NOT EXISTS (select COLUMN_NAME " +
                     "from INFORMATION_SCHEMA.INDEXES pk where pk.TABLE_NAME = " +
                     "col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and " +
-                    "pk.TABLE_SCHEMA = '" + schemaName +
-                    "' AND pk.PRIMARY_KEY = TRUE)");
+                    "pk.TABLE_SCHEMA = ? AND pk.PRIMARY_KEY = TRUE)");
+            queryStatement.setString(1, schemaName);
+            queryStatement.setString(2, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String columnName = resultSet.getString("COLUMN_NAME");

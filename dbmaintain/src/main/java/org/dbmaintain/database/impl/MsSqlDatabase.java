@@ -17,10 +17,7 @@ package org.dbmaintain.database.impl;
 
 import org.dbmaintain.database.*;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -169,17 +166,19 @@ public class MsSqlDatabase extends Database {
     @Override
     public void disableReferentialConstraints(String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
             // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
-            resultSet = queryStatement.executeQuery("select t.name as tablename, f.name as constraintname from sys.foreign_keys f, sys.tables t, sys.schemas s " +
-                    "where f.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "' and f.is_disabled = 0");
+            queryStatement = connection.prepareStatement("select t.name as tablename, f.name as constraintname from sys.foreign_keys f, sys.tables t, sys.schemas s " +
+                    "where f.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = ? and f.is_disabled = 0");
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("tablename");
                 String constraintName = resultSet.getString("constraintname");
@@ -212,16 +211,18 @@ public class MsSqlDatabase extends Database {
      */
     public void disableUniqueConstraints(String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
-            resultSet = queryStatement.executeQuery("select t.name as tablename, k.name as constraintname from sys.key_constraints k, sys.tables t, sys.schemas s " +
-                    "where k.type = 'UQ' and k.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+            queryStatement = connection.prepareStatement("select t.name as tablename, k.name as constraintname from sys.key_constraints k, sys.tables t, sys.schemas s " +
+                    "where k.type = 'UQ' and k.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = ?");
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("tablename");
                 String constraintName = resultSet.getString("constraintname");
@@ -242,16 +243,18 @@ public class MsSqlDatabase extends Database {
      */
     public void disableCheckConstraints(String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
-            resultSet = queryStatement.executeQuery("select t.name as tablename, c.name as constraintname from sys.check_constraints c, sys.tables t, sys.schemas s " +
-                    "where c.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "' and is_disabled = 0");
+            queryStatement = connection.prepareStatement("select t.name as tablename, c.name as constraintname from sys.check_constraints c, sys.tables t, sys.schemas s " +
+                    "where c.parent_object_id = t.object_id and t.schema_id = s.schema_id and s.name = ? and is_disabled = 0");
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("tablename");
                 String constraintName = resultSet.getString("constraintname");
@@ -277,18 +280,19 @@ public class MsSqlDatabase extends Database {
         Map<String, Set<String>> tablePrimaryKeyColumnsMap = getTablePrimaryKeyColumnsMap(schemaName);
 
         Connection connection = null;
-        Statement statement = null;
+        PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            statement = connection.createStatement();
 
             // get all not-null columns but not row-guid, identity and computed columns (these cannot be altered in MS-Sql)
-            resultSet = statement.executeQuery("select t.name table_name, c.name column_name, upper(y.name) data_type, c.max_length, c.precision, c.scale " +
+            statement = connection.prepareStatement("select t.name table_name, c.name column_name, upper(y.name) data_type, c.max_length, c.precision, c.scale " +
                     "from sys.types y, sys.columns c, sys.tables t, sys.schemas s " +
                     "where c.is_nullable = 0 and c.is_rowguidcol = 0 and c.is_identity = 0 and c.is_computed = 0 " +
-                    "and y.user_type_id = c.user_type_id and c.object_id = t.object_id and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+                    "and y.user_type_id = c.user_type_id and c.object_id = t.object_id and t.schema_id = s.schema_id and s.name = ?");
+            statement.setString(1, schemaName);
 
+            resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("table_name");
                 String columnName = resultSet.getString("column_name");
@@ -338,18 +342,20 @@ public class MsSqlDatabase extends Database {
      */
     protected Map<String, Set<String>> getTablePrimaryKeyColumnsMap(String schemaName) {
         Connection connection = null;
-        Statement statement = null;
+        PreparedStatement statement = null;
         ResultSet resultSet = null;
 
         try {
             connection = getDataSource().getConnection();
-            statement = connection.createStatement();
 
             Map<String, Set<String>> tablePrimaryKeyColumnsMap = new HashMap<>();
-            resultSet = statement.executeQuery("select t.name table_name, c.name column_name from sys.key_constraints k, sys.index_columns i, sys.columns c, sys.tables t, sys.schemas s " +
+            statement = connection.prepareStatement("select t.name table_name, c.name column_name from sys.key_constraints k, sys.index_columns i, sys.columns c, sys.tables t, sys.schemas s " +
                     "where k.type = 'PK' and i.index_id = k.unique_index_id and i.column_id = c.column_id " +
                     "  and c.object_id = t.object_id and k.parent_object_id = t.object_id and i.object_id = t.object_id " +
-                    " and t.schema_id = s.schema_id and s.name = '" + schemaName + "'");
+                    " and t.schema_id = s.schema_id and s.name = ?");
+            statement.setString(1, schemaName);
+
+            resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("table_name");
                 String columnName = resultSet.getString("column_name");

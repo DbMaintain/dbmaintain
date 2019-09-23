@@ -128,19 +128,22 @@ public class HsqldbDatabase extends Database {
         int hsqlMajorVersionNumber = getHsqldbMajorVersionNumber();
 
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
             if (hsqlMajorVersionNumber < 2) {
-                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+                queryStatement = connection.prepareStatement("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = ?");
             } else {
-                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+                queryStatement = connection.prepareStatement("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_SCHEMA = ?");
             }
+
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -174,19 +177,22 @@ public class HsqldbDatabase extends Database {
         int hsqlMajorVersionNumber = getHsqldbMajorVersionNumber();
 
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
             if (hsqlMajorVersionNumber < 2) {
-                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+                queryStatement = connection.prepareStatement("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.SYSTEM_TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = ?");
             } else {
-                resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = '" + schemaName + "'");
+                queryStatement = connection.prepareStatement("select TABLE_NAME, CONSTRAINT_NAME from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE IN ('CHECK', 'UNIQUE') AND CONSTRAINT_SCHEMA = ?");
             }
+
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -209,22 +215,26 @@ public class HsqldbDatabase extends Database {
         int hsqlMajorVersionNumber = getHsqldbMajorVersionNumber();
 
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
             // Do not remove PK constraints
             if (hsqlMajorVersionNumber < 2) {
-                resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEM = '" + schemaName + "' " +
-                        "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
+                queryStatement = connection.prepareStatement("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEM = ? " +
+                        "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = ?)");
             } else {
-                resultSet = queryStatement.executeQuery("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEMA = '" + schemaName + "' " +
-                        "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = '" + schemaName + "' )");
+                queryStatement = connection.prepareStatement("select col.TABLE_NAME, col.COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS col where col.IS_NULLABLE = 'NO' and col.TABLE_SCHEMA = ? " +
+                        "AND NOT EXISTS ( select COLUMN_NAME from INFORMATION_SCHEMA.SYSTEM_PRIMARYKEYS pk where pk.TABLE_NAME = col.TABLE_NAME and pk.COLUMN_NAME = col.COLUMN_NAME and pk.TABLE_SCHEM = ?)");
             }
+
+            queryStatement.setString(1, schemaName);
+            queryStatement.setString(2, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String columnName = resultSet.getString("COLUMN_NAME");

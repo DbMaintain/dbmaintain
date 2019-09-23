@@ -82,16 +82,18 @@ public class OracleDatabase extends Database {
     private Map<String, Set<String>> getTableChildParentRelations(String schemaName) throws SQLException {
     	Map<String, Set<String>> childParentRelations = new HashMap<>();
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
 	        connection = getDataSource().getConnection();
-	        queryStatement = connection.createStatement();
 	        alterStatement = connection.createStatement();
 	
 	        // cascade or "set null" constraints can be ignored since they are handled correctly by the DBMS independent of the delete order
-	        resultSet = queryStatement.executeQuery("select p.table_name AS parent, c.table_name AS child from ALL_CONSTRAINTS p join ALL_CONSTRAINTS c on p.r_constraint_name = c.constraint_name and p.r_owner = c.owner where p.CONSTRAINT_TYPE = 'R' and c.OWNER = '" + schemaName + "' and p.DELETE_RULE = 'NO ACTION' and p.CONSTRAINT_NAME not like 'BIN$%' and p.STATUS <> 'DISABLED'");
+	        queryStatement = connection.prepareStatement("select p.table_name AS parent, c.table_name AS child from ALL_CONSTRAINTS p join ALL_CONSTRAINTS c on p.r_constraint_name = c.constraint_name and p.r_owner = c.owner where p.CONSTRAINT_TYPE = 'R' and c.OWNER = ? and p.DELETE_RULE = 'NO ACTION' and p.CONSTRAINT_NAME not like 'BIN$%' and p.STATUS <> 'DISABLED'");
+	        queryStatement.setString(1, schemaName);
+
+	        resultSet = queryStatement.executeQuery();
 	        while (resultSet.next()) {
 	        	String child = resultSet.getString("CHILD");
 	            String parent = resultSet.getString("PARENT");
@@ -324,16 +326,18 @@ public class OracleDatabase extends Database {
     @Override
     public void disableReferentialConstraints(String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
             // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
-            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE = 'R' and OWNER = '" + schemaName + "' and CONSTRAINT_NAME not like 'BIN$%' and STATUS <> 'DISABLED'");
+            queryStatement = connection.prepareStatement("select TABLE_NAME, CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE = 'R' and OWNER = ? and CONSTRAINT_NAME not like 'BIN$%' and STATUS <> 'DISABLED'");
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -355,18 +359,20 @@ public class OracleDatabase extends Database {
     @Override
     public void disableValueConstraints(String schemaName) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
 
             // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
             // The 'O' type of constraints are ignored. These constraints are generated when a view is created with
             // the with read-only option and can't be disabled with an alter table
-            resultSet = queryStatement.executeQuery("select TABLE_NAME, CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE in ('U', 'C', 'V') and OWNER = '" + schemaName + "' and CONSTRAINT_NAME not like 'BIN$%' and STATUS <> 'DISABLED'");
+            queryStatement = connection.prepareStatement("select TABLE_NAME, CONSTRAINT_NAME from ALL_CONSTRAINTS where CONSTRAINT_TYPE in ('U', 'C', 'V') and OWNER = ? and CONSTRAINT_NAME not like 'BIN$%' and STATUS <> 'DISABLED'");
+            queryStatement.setString(1, schemaName);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String tableName = resultSet.getString("TABLE_NAME");
                 String constraintName = resultSet.getString("CONSTRAINT_NAME");
@@ -404,11 +410,14 @@ public class OracleDatabase extends Database {
     public void incrementSequenceToValue(String schemaName, String sequenceName, long newSequenceValue) {
         Connection connection = null;
         ResultSet resultSet = null;
-        Statement statement = null;
+        PreparedStatement statement = null;
         try {
             connection = getDataSource().getConnection();
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery("select LAST_NUMBER, INCREMENT_BY from ALL_SEQUENCES where SEQUENCE_NAME = '" + sequenceName + "' and SEQUENCE_OWNER = '" + schemaName + "'");
+            statement = connection.prepareStatement("select LAST_NUMBER, INCREMENT_BY from ALL_SEQUENCES where SEQUENCE_NAME = ? and SEQUENCE_OWNER = ?");
+            statement.setString(1, sequenceName);
+            statement.setString(2, schemaName);
+
+            resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 long lastNumber = resultSet.getLong("LAST_NUMBER");
                 long incrementBy = resultSet.getLong("INCREMENT_BY");

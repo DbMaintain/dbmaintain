@@ -20,10 +20,7 @@ import org.dbmaintain.database.DatabaseConnection;
 import org.dbmaintain.database.DatabaseException;
 import org.dbmaintain.database.IdentifierProcessor;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Set;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
@@ -74,15 +71,18 @@ public class InformixDatabase extends Database {
 
     protected void disableConstraints(String schemaName, String constraintType) {
         Connection connection = null;
-        Statement queryStatement = null;
+        PreparedStatement queryStatement = null;
         Statement alterStatement = null;
         ResultSet resultSet = null;
         try {
             connection = getDataSource().getConnection();
-            queryStatement = connection.createStatement();
             alterStatement = connection.createStatement();
-            resultSet = queryStatement.executeQuery("SELECT SC.CONSTRNAME CONSTRAINTNAME FROM SYSCONSTRAINTS SC JOIN SYSTABLES ST " +
-                    "ON SC.TABID = ST.TABID WHERE ST.OWNER='" + schemaName + "' AND SC.CONSTRTYPE='" + constraintType + "'");
+            queryStatement = connection.prepareStatement("SELECT SC.CONSTRNAME CONSTRAINTNAME FROM SYSCONSTRAINTS SC JOIN SYSTABLES ST " +
+                    "ON SC.TABID = ST.TABID WHERE ST.OWNER=? AND SC.CONSTRTYPE=?");
+            queryStatement.setString(1, schemaName);
+            queryStatement.setString(2, constraintType);
+
+            resultSet = queryStatement.executeQuery();
             while (resultSet.next()) {
                 String constraintName = resultSet.getString("CONSTRAINTNAME");
                 alterStatement.executeUpdate("SET CONSTRAINTS " + quoted(constraintName) + " DISABLED");
