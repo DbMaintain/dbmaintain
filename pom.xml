@@ -68,6 +68,14 @@
         <mockito.version>3.0.0</mockito.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub DbMaintain Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/DbMaintain/dbmaintain</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
